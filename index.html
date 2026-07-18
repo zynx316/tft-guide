@@ -1,0 +1,1771 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>TFT Coach – Set 17 Space Gods</title>
+<style>
+/* ── Reset & Basis ───────────────────────────────────────────── */
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{height:100%;background:#080c20}
+body{
+  min-height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:#080c20;color:#eef0ff;font-size:15px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  padding-bottom:env(safe-area-inset-bottom);
+}
+button{font-family:inherit;cursor:pointer;-webkit-appearance:none;appearance:none}
+input{font-family:inherit;-webkit-appearance:none;appearance:none}
+
+/* ── Farben ──────────────────────────────────────────────────── */
+:root{
+  --bg:#080c20;--panel:#10163a;--card:#161e45;--line:rgba(255,255,255,.09);
+  --gold:#f0c25a;--violet:#8b7cf6;--green:#4fd18a;--blue:#5ba8ff;--red:#ff7a7a;
+  --muted:#7a82b8;--muted2:#4a5280;
+  --c1:#9aa4b2;--c2:#46c46a;--c3:#3d8bf5;--c4:#b06bf0;--c5:#f0a838;
+}
+
+/* ── Layout / Desktop ────────────────────────────────────────── */
+#app{max-width:1050px;margin:0 auto}
+
+/* ── Header ──────────────────────────────────────────────────── */
+#topbar{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  padding:14px 14px 0;max-width:1050px;margin:0 auto;
+}
+#topbar .brand{font-size:13px;font-weight:700;color:var(--gold);letter-spacing:.04em}
+#topbar .brand span{color:var(--muted);font-weight:600}
+#lvl-chip{
+  display:inline-flex;align-items:center;gap:6px;border-radius:999px;
+  padding:6px 12px;font-size:12px;font-weight:700;
+  border:1px solid rgba(139,124,246,.4);background:rgba(139,124,246,.12);color:#c4baff;
+}
+
+/* ── Bottom-Nav ──────────────────────────────────────────────── */
+#nav{
+  position:fixed;bottom:0;left:0;right:0;z-index:100;
+  display:flex;
+  background:rgba(8,12,32,.96);
+  border-top:1px solid var(--line);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  padding-bottom:env(safe-area-inset-bottom);
+}
+.nav-btn{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:10px 2px 8px;gap:4px;border:none;background:none;color:var(--muted);
+  font-size:10px;font-weight:600;letter-spacing:.02em;transition:color .15s;
+}
+.nav-btn .icon{font-size:21px;line-height:1}
+.nav-btn.active{color:var(--gold)}
+.nav-btn.active .icon{filter:drop-shadow(0 0 6px rgba(240,194,90,.5))}
+
+/* ── Views ───────────────────────────────────────────────────── */
+.view{display:none;padding:12px 14px 90px}
+.view.active{display:block}
+.view-title{font-size:22px;font-weight:700;margin-bottom:4px}
+.view-sub{font-size:13px;color:var(--muted);margin-bottom:16px}
+
+/* ── Cards / Labels / Pills ──────────────────────────────────── */
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px}
+.card+.card{margin-top:10px}
+.section-label{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+.mini-label{font-size:10px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--gold);margin-bottom:7px}
+.pill-btn{
+  flex-shrink:0;border-radius:999px;padding:6px 14px;font-size:13px;font-weight:600;
+  border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--muted);
+}
+.pill-btn.on{border-color:var(--gold);background:rgba(240,194,90,.15);color:var(--gold)}
+
+/* ── Level-Kacheln (kompakt, gleichmäßig, keine Pillen-Form) ──── */
+.lvl-tile{
+  border-radius:10px;padding:7px 2px 6px;font-size:13px;font-weight:700;line-height:1.15;
+  border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--muted);
+  display:flex;flex-direction:column;align-items:center;gap:1px;text-align:center;
+}
+.lvl-tile .slots{font-size:9px;font-weight:600;opacity:.65}
+.lvl-tile.on{border-color:var(--gold);background:rgba(240,194,90,.15);color:var(--gold)}
+.lvl-reset{
+  flex-shrink:0;border-radius:10px;padding:7px 10px;font-size:11px;font-weight:600;
+  border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--muted);
+}
+
+/* ── Suchfeld ────────────────────────────────────────────────── */
+.search-wrap{position:relative;margin-bottom:12px}
+.search-wrap .ico{position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:15px;opacity:.4;pointer-events:none}
+.search-wrap input{
+  width:100%;background:var(--card);border:1px solid var(--line);color:#eef0ff;
+  border-radius:13px;padding:11px 12px 11px 38px;font-size:15px;outline:none;
+}
+.search-wrap input:focus{border-color:var(--violet)}
+
+/* ── Chips ───────────────────────────────────────────────────── */
+.chip{
+  display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:5px 9px;
+  font-size:11px;font-weight:600;border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.05);color:#eef0ff;white-space:nowrap;
+}
+.chip.sel{border-color:rgba(79,209,138,.35);background:rgba(79,209,138,.1);color:#9af1be}
+.chip .cst{font-size:9px;font-weight:700}
+.trait-chip{
+  border-radius:999px;padding:4px 9px;font-size:11px;font-weight:600;
+  border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:var(--muted);
+  display:inline-block;margin:0 4px 4px 0;
+}
+.trait-chip.act{border-color:rgba(79,209,138,.4);background:rgba(79,209,138,.12);color:#9af1be}
+.trait-chip.gold{border-color:rgba(240,194,90,.45);background:rgba(240,194,90,.14);color:var(--gold)}
+
+/* ── Runde: Grid + Coach ─────────────────────────────────────── */
+#rd-split{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start}
+@media(min-width:700px){#rd-split{grid-template-columns:5fr 4fr}}
+#rd-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
+@media(min-width:700px){#rd-grid{grid-template-columns:repeat(4,1fr)}}
+.rd-champ{
+  border:2px solid var(--cc,var(--line));border-radius:13px;
+  padding:8px 5px 7px;text-align:center;width:100%;
+  background:rgba(255,255,255,.04);position:relative;font:inherit;
+}
+.rd-champ.sel{background:rgba(79,209,138,.13);border-color:#4fd18a !important}
+.coach-box{border-radius:12px;background:rgba(255,255,255,.05);border:1px solid var(--line);padding:11px;margin-bottom:8px}
+.tipbox{background:rgba(240,194,90,.08);border:1px solid rgba(240,194,90,.25);border-radius:12px;padding:10px 12px;font-size:13px;line-height:1.55;margin-bottom:10px}
+.item-row{
+  display:flex;align-items:center;gap:8px;padding:7px 10px;
+  border-radius:10px;background:rgba(255,255,255,.05);border:1px solid var(--line);
+  margin-bottom:5px;font-size:12px;font-weight:600;
+}
+.prog{height:5px;border-radius:3px;background:rgba(255,255,255,.08);overflow:hidden;margin:6px 0}
+.prog i{display:block;height:100%;background:var(--green);border-radius:3px}
+.empty-hint{text-align:center;padding:28px 0;color:var(--muted2);font-size:13px;line-height:1.7}
+.empty-hint .big{font-size:30px;margin-bottom:8px}
+
+/* ── Positionierungs-Board (grafisch) ────────────────────────── */
+.board{
+  background:linear-gradient(180deg,rgba(255,122,122,.05),rgba(79,209,138,.07));
+  border:1px solid var(--line);border-radius:12px;padding:10px 10px 6px;
+}
+.board-arrow{text-align:center;font-size:10px;font-weight:700;letter-spacing:.12em;color:var(--muted2);padding:2px 0 8px}
+.board-row{display:flex;align-items:center;gap:8px;padding:5px 2px;border-left:3px solid var(--row-cc,var(--line));padding-left:8px;margin-bottom:6px}
+.board-row.dashed{border-left-style:dashed;opacity:.92}
+.board-row-label{flex-shrink:0;width:74px;font-size:10px;font-weight:700;line-height:1.25}
+.board-row-cells{display:flex;flex-wrap:wrap;gap:6px;flex:1}
+.board-cell{width:36px;height:36px;border-radius:8px;border:2px solid var(--cell-cc,var(--line));overflow:hidden;flex-shrink:0;background:var(--panel);position:relative}
+.board-cell img{width:100%;height:100%;object-fit:cover;display:block}
+.board-cell .bc-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:14px}
+.board-cell .bc-cost{position:absolute;bottom:-1px;right:-1px;font-size:7px;font-weight:800;color:#0a0c1f;background:var(--cell-cc);border-radius:4px 0 6px 0;padding:0px 3px;line-height:1.3}
+.board-legend{display:flex;flex-wrap:wrap;gap:9px;margin-top:8px;padding-top:8px;border-top:1px solid var(--line)}
+.board-legend span{font-size:10.5px;color:var(--muted);display:flex;align-items:center;gap:4px}
+.board-legend i{width:8px;height:8px;border-radius:50%;display:inline-block}
+
+/* ── Comps ───────────────────────────────────────────────────── */
+.comp-card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:15px;margin-bottom:12px}
+.comp-card.rec{border-color:rgba(240,194,90,.45)}
+.comp-head{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+.comp-head h3{font-size:16px;font-weight:700;flex:1;min-width:0}
+.tier-badge{font-size:11px;font-weight:800;width:24px;height:24px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+.tier-S{background:rgba(240,194,90,.2);border:1px solid rgba(240,194,90,.5);color:var(--gold)}
+.tier-A{background:rgba(91,168,255,.15);border:1px solid rgba(91,168,255,.4);color:var(--blue)}
+.tier-B{background:rgba(255,255,255,.08);border:1px solid var(--line);color:var(--muted)}
+.diff-badge{font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;white-space:nowrap}
+.diff-e{background:rgba(79,209,138,.15);border:1px solid rgba(79,209,138,.4);color:var(--green)}
+.diff-m{background:rgba(91,168,255,.12);border:1px solid rgba(91,168,255,.35);color:var(--blue)}
+.diff-h{background:rgba(255,122,122,.12);border:1px solid rgba(255,122,122,.35);color:var(--red)}
+.style-badge{font-size:11px;font-weight:600;padding:3px 10px;border-radius:999px;background:rgba(139,124,246,.12);border:1px solid rgba(139,124,246,.35);color:#c4baff;white-space:nowrap}
+.rec-badge{font-size:10px;font-weight:700;padding:3px 9px;border-radius:999px;background:rgba(240,194,90,.16);border:1px solid rgba(240,194,90,.45);color:var(--gold);white-space:nowrap}
+.comp-champs{display:flex;flex-wrap:wrap;gap:6px;margin:9px 0}
+.unit-chip{
+  display:inline-flex;align-items:center;gap:5px;
+  border-radius:999px;padding:5px 11px;font-size:12px;font-weight:600;
+  background:rgba(255,255,255,.06);border:1px solid var(--line);
+  border-left:3px solid var(--cc,var(--line));
+}
+.unit-chip.carry{background:rgba(240,194,90,.12);border-color:rgba(240,194,90,.4);color:var(--gold)}
+.itemfocus{background:rgba(240,194,90,.08);border:1px solid rgba(240,194,90,.2);border-radius:10px;padding:9px 11px;margin:4px 0;font-size:13px}
+.comp-tip{font-size:13px;color:var(--muted);margin-top:8px;line-height:1.5}
+
+/* ── Champions ───────────────────────────────────────────────── */
+.champ-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px}
+.champ-btn{
+  background:var(--card);border:1.5px solid var(--cc,var(--line));border-top-width:3px;
+  border-radius:13px;padding:8px 6px 9px;text-align:center;width:100%;font:inherit;
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+}
+
+/* ── Modal ───────────────────────────────────────────────────── */
+#champModal{
+  display:none;position:fixed;inset:0;z-index:150;
+  background:rgba(4,7,20,.8);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:20px 14px 40px;
+}
+#champModal .modal-box{
+  max-width:500px;margin:0 auto;
+  background:linear-gradient(160deg,#1a2255,#0f1535);
+  border:1px solid rgba(139,124,246,.3);border-radius:20px;padding:20px;
+}
+.modal-close{float:right;background:rgba(255,255,255,.08);border:1px solid var(--line);color:var(--muted);border-radius:9px;width:34px;height:34px;font-size:18px;line-height:34px;text-align:center}
+
+/* ── Traits-View ─────────────────────────────────────────────── */
+.trait-row{padding:13px 0;border-bottom:1px solid var(--line)}
+.trait-row:last-child{border-bottom:none}
+.trait-row h4{font-size:14px;font-weight:700;margin-bottom:3px}
+.trait-row h4 .en{font-size:11px;font-weight:400;color:var(--muted2)}
+.trait-row p{font-size:13px;color:var(--muted);line-height:1.5}
+.trait-row .bp{font-size:12px;font-weight:700;color:var(--gold)}
+
+/* ── Guide ───────────────────────────────────────────────────── */
+.guide-item{border-bottom:1px solid var(--line);padding:13px 0}
+.guide-item:last-child{border-bottom:none}
+.guide-item h4{font-size:15px;font-weight:700;margin-bottom:4px}
+.guide-item p{font-size:13px;color:var(--muted);line-height:1.6}
+.god-card{border-radius:12px;background:rgba(255,255,255,.05);border:1px solid var(--line);padding:10px 12px;margin-bottom:7px}
+.god-card b{font-size:13px}
+.god-card p{font-size:12px;color:var(--muted);line-height:1.5;margin-top:2px}
+.recipe-row{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid var(--line);margin-bottom:5px;font-size:12px}
+.recipe-row b{flex:1}
+.recipe-row .rc{color:var(--muted);white-space:nowrap}
+
+/* ── Onboarding / Level-Wahl ─────────────────────────────────── */
+#onboard{
+  display:none;position:fixed;inset:0;z-index:300;
+  background:rgba(4,7,20,.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  overflow-y:auto;padding:30px 18px 40px;
+}
+#onboard .ob-box{max-width:460px;margin:0 auto}
+.ob-card{
+  width:100%;text-align:left;background:var(--card);border:2px solid var(--line);
+  border-radius:18px;padding:16px;margin-bottom:12px;color:#eef0ff;font:inherit;
+  transition:border-color .15s;
+}
+.ob-card:active{border-color:var(--gold)}
+.ob-card .ob-icon{font-size:28px;line-height:1;margin-bottom:8px}
+.ob-card h3{font-size:17px;font-weight:700;margin-bottom:3px}
+.ob-card p{font-size:13px;color:var(--muted);line-height:1.5}
+.ob-card ul{margin:8px 0 0 18px;font-size:12px;color:var(--muted2);line-height:1.7}
+
+::-webkit-scrollbar{width:0;height:0}
+</style>
+</head>
+<body>
+
+<!-- ═══ HEADER ═════════════════════════════════════════════════ -->
+<div id="topbar">
+  <div class="brand">TFT COACH <span>· Set 17 Space Gods</span></div>
+  <button id="lvl-chip" onclick="openOnboard()">🐣 Anfänger ▾</button>
+</div>
+
+<div id="app">
+
+<!-- ═══ VIEW: NEUE RUNDE ═══════════════════════════════════════ -->
+<div id="view-runde" class="view active">
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+    <div class="view-title" style="margin:0;flex:1;">🎮 Neue Runde</div>
+    <button onclick="resetRound()" class="pill-btn" style="border-color:rgba(255,122,122,.4);color:var(--red);">🔄 Neue Runde</button>
+  </div>
+  <div class="view-sub">Tippe an was du im Shop / auf dem Brett hast — der Coach sagt dir was passt.</div>
+
+  <div id="rd-mode" style="display:flex;gap:6px;margin-bottom:10px;"></div>
+  <div id="rd-buildsw" style="display:none;gap:6px;margin-bottom:10px;flex-wrap:wrap;"></div>
+
+  <div style="margin-bottom:8px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+      <span style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);">Dein Level</span>
+      <button onclick="setPlvl(4)" style="font-size:10px;color:var(--muted2);background:none;border:1px solid var(--line);border-radius:7px;padding:3px 8px;">↺ Zurücksetzen (4)</button>
+    </div>
+    <div id="rd-plvl" style="display:grid;grid-template-columns:repeat(7,1fr);gap:5px;"></div>
+  </div>
+  <div id="rd-odds" style="font-size:11px;color:var(--muted2);margin-bottom:10px;"></div>
+
+  <div id="rd-filters" style="display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:8px;margin-bottom:10px;scrollbar-width:none;"></div>
+
+  <div class="search-wrap">
+    <span class="ico">🔎</span>
+    <input id="rd-search" type="search" placeholder="Champion oder Trait suchen…" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false">
+  </div>
+
+  <div id="rd-split">
+    <div>
+      <div class="section-label">Einheiten wählen <span id="rd-count" style="color:var(--muted);text-transform:none;letter-spacing:0;"></span></div>
+      <div id="rd-grid"></div>
+    </div>
+    <div id="rd-coach">
+      <div class="section-label">Coach</div>
+      <div class="empty-hint"><div class="big">👈</div>Wähle Einheiten — der Coach zeigt dir Traits, passende Comps und Items.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ VIEW: COMPS ════════════════════════════════════════════ -->
+<div id="view-comps" class="view">
+  <div class="view-title">⚔ Comps</div>
+  <div class="view-sub" id="comps-sub">Aktuelle Meta-Comps (Patch 17.6)</div>
+  <div id="comps-filters" style="display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:8px;margin-bottom:10px;scrollbar-width:none;"></div>
+  <div id="comps-list"></div>
+</div>
+
+<!-- ═══ VIEW: CHAMPIONS ════════════════════════════════════════ -->
+<div id="view-champs" class="view">
+  <div class="view-title">🧑‍🚀 Champions</div>
+  <div class="view-sub">Alle 63 Einheiten von Set 17 — tippe für Details</div>
+  <div class="search-wrap">
+    <span class="ico">🔎</span>
+    <input id="ch-search" type="search" placeholder="Champion oder Trait suchen…" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false">
+  </div>
+  <div id="ch-filters" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px"></div>
+  <div id="ch-grid" class="champ-grid"></div>
+</div>
+
+<!-- ═══ VIEW: TRAITS ═══════════════════════════════════════════ -->
+<div id="view-traits" class="view">
+  <div class="view-title">✨ Traits</div>
+  <div class="view-sub">Alle Synergien mit Stufen — tippe einen Champion für Details</div>
+  <div class="card">
+    <div class="section-label">Ursprünge (Origins)</div>
+    <div id="trait-origins"></div>
+  </div>
+  <div class="card">
+    <div class="section-label">Klassen (Classes)</div>
+    <div id="trait-classes"></div>
+  </div>
+</div>
+
+<!-- ═══ VIEW: GUIDE ════════════════════════════════════════════ -->
+<div id="view-guide" class="view">
+  <div class="view-title">📖 Guide</div>
+  <div class="view-sub">Zugeschnitten auf deinen Spielertyp — Tabs zum Wechseln</div>
+  <div id="guide-tabs" style="display:flex;gap:6px;margin-bottom:14px;"></div>
+  <div class="card"><div id="guide-content"></div></div>
+  <div class="card">
+    <div class="section-label">🌌 Die Götter (Set-Mechanik)</div>
+    <p style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:10px;">
+      Das „Reich der Götter" ersetzt das Karussell: Bei Götter-Begegnungen wählst du zwischen den Angeboten
+      von <b style="color:#eef0ff;">zwei zufälligen Göttern</b> (plus einer neutralen Pengu-Option).
+      Gewählte Götter lassen den Rest des Spiels immer wieder Loot springen.
+    </p>
+    <div id="gods-list"></div>
+  </div>
+  <div class="card">
+    <div class="section-label">🎲 Shop-Chancen &amp; Pool</div>
+    <p style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:10px;">
+      Chance pro Shop-Slot je Spielerlevel (Richtwerte Patch 17.6). Faustregel:
+      <b style="color:#eef0ff;">2-Kosten auf Lv 6, 3-Kosten auf Lv 7, 4-Kosten auf Lv 8, 5-Kosten ab Lv 9</b> rollen.
+    </p>
+    <div id="odds-table" style="overflow-x:auto;"></div>
+    <p style="font-size:12px;color:var(--muted2);margin-top:8px;">
+      Pool (geteilt mit allen Spielern): 1★ 30 · 2★ 25 · 3★ 18 · 4★ 10 · 5★ 9 Kopien pro Champion.
+      Kaufen andere Spieler deinen Carry, sinkt deine Trefferchance — deshalb „contested" meiden.
+    </p>
+  </div>
+  <div class="card">
+    <div class="section-label">🛠 Item-Rezepte (die wichtigsten)</div>
+    <p style="font-size:12px;color:var(--muted2);margin-bottom:8px;">Komponenten: Schwert (AD) · Bogen (AS) · Stab (AP) · Träne (Mana) · Weste (Rüstung) · Mantel (MR) · Gürtel (HP) · Handschuh (Krit)</p>
+    <div id="recipes-list"></div>
+  </div>
+</div>
+
+<!-- ═══ VIEW: CHONCC'S LEGENDEN (Set 16 Nostalgie-Modus) ═════════ -->
+<div id="view-choncc" class="view">
+  <div class="view-title">🐾 Choncc's Legenden</div>
+  <div class="view-sub">Set 16 Nostalgie-Modus (Patch 17.7) — 93 Champions, eigener Katalog</div>
+  <div class="search-wrap">
+    <span class="ico">🔎</span>
+    <input id="cc-search" type="search" placeholder="Champion oder Trait suchen…" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false">
+  </div>
+  <div id="cc-filters" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px"></div>
+  <div id="cc-grid" class="champ-grid"></div>
+</div>
+
+</div><!-- /app -->
+
+<!-- ═══ BOTTOM NAV ═════════════════════════════════════════════ -->
+<div id="nav">
+  <button class="nav-btn active" data-view="runde"><span class="icon">🎮</span>Runde</button>
+  <button class="nav-btn" data-view="comps"><span class="icon">⚔</span>Comps</button>
+  <button class="nav-btn" data-view="champs"><span class="icon">🧑‍🚀</span>Units</button>
+  <button class="nav-btn" data-view="traits"><span class="icon">✨</span>Traits</button>
+  <button class="nav-btn" data-view="guide"><span class="icon">📖</span>Guide</button>
+  <button class="nav-btn" data-view="choncc"><span class="icon">🐾</span>Choncc</button>
+</div>
+
+<!-- ═══ CHAMPION MODAL ═════════════════════════════════════════ -->
+<div id="champModal">
+  <div class="modal-box">
+    <button class="modal-close" id="champClose">✕</button>
+    <div id="champDetail"></div>
+  </div>
+</div>
+
+<!-- ═══ ONBOARDING ═════════════════════════════════════════════ -->
+<div id="onboard">
+  <div class="ob-box">
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="font-size:36px;margin-bottom:8px;">🌌</div>
+      <h2 style="font-size:21px;font-weight:700;">Wie spielst du TFT?</h2>
+      <p style="font-size:13px;color:var(--muted);margin-top:4px;">Der Guide passt sich an dich an — du kannst jederzeit oben rechts wechseln.</p>
+    </div>
+    <button class="ob-card" onclick="setLevel('a')">
+      <div class="ob-icon">🐣</div>
+      <h3>Anfänger</h3>
+      <p>Ich lerne TFT gerade oder spiele nur ab und zu.</p>
+      <ul><li>Einfache Comps, klare Schritt-für-Schritt-Tipps</li><li>Grundlagen-Guide: Gold, Sterne, Items</li><li>Der Coach sagt dir genau was du tun sollst</li></ul>
+    </button>
+    <button class="ob-card" onclick="setLevel('f')">
+      <div class="ob-icon">⚔</div>
+      <h3>Fortgeschritten</h3>
+      <p>Ich kenne die Basics und will konstant Top 4 gehen.</p>
+      <ul><li>Econ-Kurven, Level-Timings, Stage-Plan</li><li>Mehr Comp-Auswahl inkl. mittlerer Schwierigkeit</li><li>Scouting- & Item-Slam-Regeln</li></ul>
+    </button>
+    <button class="ob-card" onclick="setLevel('p')">
+      <div class="ob-icon">👑</div>
+      <h3>Profi</h3>
+      <p>Ich will die Meta, Tempo-Lines und Feinheiten.</p>
+      <ul><li>Volle Meta-Tierlist (Patch 17.6) & Pivot-Pfade</li><li>Rolldown-Fenster, Positionierungs-Details</li><li>God-Value & Fast-9-Bedingungen</li></ul>
+    </button>
+  </div>
+</div>
+
+<!-- ═══ SCRIPT ═════════════════════════════════════════════════ -->
+<script>
+// ── KONSTANTEN ────────────────────────────────────────────────
+var CC={1:'#9aa4b2',2:'#46c46a',3:'#3d8bf5',4:'#b06bf0',5:'#f0a838'};
+// Shop-Chancen pro Slot je Spielerlevel (Set 17, Richtwerte Patch 17.6) + Pool-Größen
+var ODDS={3:[75,25,0,0,0],4:[55,30,15,0,0],5:[45,33,20,2,0],6:[30,40,25,5,0],7:[19,30,40,10,1],8:[17,24,32,24,3],9:[15,18,25,30,12],10:[5,10,20,40,25]};
+var POOL={1:30,2:25,3:18,4:10,5:9};
+// Brettgröße: wie viele Champions bei diesem Spielerlevel gleichzeitig aufs Feld dürfen (TFT-Standard)
+var BOARD_SIZE={1:1,2:2,3:3,4:4,5:5,6:6,7:7,8:8,9:9,10:10};
+function boardSizeFor(lvl){ return BOARD_SIZE[lvl]||lvl; }
+function oddsFor(lvl,cost){var r=ODDS[lvl]||ODDS[6];return r[cost-1]||0;}
+var ROLE_ICON={tank:'🛡',ad:'🏹',ap:'🔮',fight:'⚔',assa:'🗡',supp:'💚',flex:'🎭'};
+var ROLE_NAME={tank:'Frontkämpfer',ad:'Fernkampf-Schaden',ap:'Magie-Schaden',fight:'Kämpfer',assa:'Assassine',supp:'Unterstützung',flex:'Flex-Carry'};
+// Positionierung: jede Rolle -> Zone (vorne/mitte/hinten/flex) + Reihenfolge fürs Board (hinten zuerst gerendert)
+var POSITION={
+  tank:{zone:'front',order:3,label:'Vorderste Reihe',why:'Tankt den ersten Angriff, schützt dein Team dahinter.'},
+  fight:{zone:'mid',order:2,label:'Mittlere Reihe',why:'Braucht etwas Deckung, kämpft aber im Nahbereich mit.'},
+  assa:{zone:'flex',order:2,label:'Hinten oder Ecke',why:'Springt selbst zum Ziel — muss nicht vorne stehen.'},
+  ap:{zone:'back',order:1,label:'Hinterste Reihe · Ecke',why:'Dein Haupt-Schaden — unbedingt vor Angriffen schützen.'},
+  ad:{zone:'back',order:1,label:'Hinterste Reihe · Ecke',why:'Braucht Reichweite und Schutz vor Assassinen.'},
+  supp:{zone:'mid',order:2,label:'Mittlere Reihe, bei Carries',why:'Muss nah an den Verbündeten stehen, die sie unterstützt.'},
+  flex:{zone:'back',order:1,label:'Hinterste Reihe · Ecke',why:'Flexibler Carry — meist wie ein Hauptschaden behandeln.'},
+};
+function posInfo(role){ return POSITION[role] || {zone:'mid',order:2,label:'Mittlere Reihe',why:'Rolle nicht eindeutig — sicherheitshalber nicht ganz vorne.'}; }
+var LEVELS={a:{icon:'🐣',name:'Anfänger'},f:{icon:'⚔',name:'Fortgeschritten'},p:{icon:'👑',name:'Profi'}};
+
+// ── CHAMPIONS (Set 17 "Space Gods", Patch 17.6) ───────────────
+// t = Traits (deutsch), r = Rolle, it = beste Items, note = Hinweis
+var CHAMPS=[
+ // 1-Kosten
+ {id:'aatrox',name:'Aatrox',cost:1,r:'tank',t:['N.O.V.A.','Bastion'],it:['Warmogs Rüstung','Dornenweste','Gargoyle-Steinplatte'],note:'Solide frühe Frontline. Sein N.O.V.A.-Surge senkt Rüstung & MR ALLER Gegner — bleibt oft bis spät im Team.'},
+ {id:'briar',name:'Briar',cost:1,r:'fight',t:['Anima','Urzeitlich','Schurke'],it:['Titanentrotz','Blutdürster'],note:'3 Traits auf einer 1-Kosten-Einheit — super Opener für Anima- und Urzeitlich-Starts.'},
+ {id:'caitlyn',name:'Caitlyn',cost:1,r:'ad',t:['N.O.V.A.','Fateweaver'],it:['Unendlichkeitsklinge','Guinsoos Wutklinge'],note:'Ihr N.O.V.A.-Surge gibt dem ganzen Team Angriffstempo.'},
+ {id:'chogath',name:"Cho'Gath",cost:1,r:'tank',t:['Dunkler Stern','Schläger'],it:['Warmogs Rüstung','Dornenweste','Gargoyle-Steinplatte'],note:'Kern-Frontline für Dunkler-Stern-Starts. In der Lissandra-Reroll-Comp auf 3★ rollen.'},
+ {id:'ezreal',name:'Ezreal',cost:1,r:'ad',t:['Zeitbrecher','Scharfschütze'],it:['Roter Buff','Guinsoos Wutklinge'],note:'Früher Schadensträger; gibt Items später einfach weiter.'},
+ {id:'leona',name:'Leona',cost:1,r:'tank',t:['Schiedsrichter','Vanguard'],it:['Warmogs Rüstung','Drachenklaue'],note:'Zäher 1-Kosten-Tank für Schiedsrichter-Openings.'},
+ {id:'lissandra',name:'Lissandra',cost:1,r:'ap',t:['Dunkler Stern','Hirte','Replikator'],it:['Nashors Zahn ×2','Schmuckhandschuh'],note:'Eigene Carry in der günstigsten Reroll-Comp des Sets — auf Level 5 bleiben und 3★ rollen.'},
+ {id:'nasus',name:'Nasus',cost:1,r:'tank',t:['Weltraum-Groove','Vanguard'],it:['Warmogs Rüstung','Dornenweste'],note:'Früher Groove-Tank, z. B. für Gwen Reroll.'},
+ {id:'poppy',name:'Poppy',cost:1,r:'tank',t:['Meeple','Bastion'],it:['Dornenweste','Warmogs Rüstung'],note:'Meeple-Frontline — Teil der Gnar-Druckerei.'},
+ {id:'reksai',name:"Rek'Sai",cost:1,r:'tank',t:['Urzeitlich','Schläger'],it:['Warmogs Rüstung','Gargoyle-Steinplatte'],note:'Günstige Urzeitlich-Frontline.'},
+ {id:'talon',name:'Talon',cost:1,r:'assa',t:['Sternenschauer','Schurke'],it:['Unendlichkeitsklinge','Schmuckhandschuh'],note:'Günstiger Assassine für Sternenschauer-Starts.'},
+ {id:'teemo',name:'Teemo',cost:1,r:'supp',t:['Weltraum-Groove','Hirte'],it:['Blauer Buff','Speer von Shojin'],note:'Doppel-Trait-Support — Kern im Gwen-Reroll-Opener. Braucht kaum Items, gib ihm Mana-Items oder nutze ihn nur für die Traits.'},
+ {id:'twistedfate',name:'Twisted Fate',cost:1,r:'ap',t:['Sternenschauer','Fateweaver'],it:['Blauer Buff','Schmuckhandschuh','Nashors Zahn'],note:'Guter früher AP-Träger; Fateweaver macht seine Zufallskarten „Lucky".'},
+ {id:'veigar',name:'Veigar',cost:1,r:'ap',t:['Meeple','Replikator'],it:['Nashors Zahn ×2','Schmuckhandschuh'],note:'Budget-Carry der Meeple-Comps; Replikator wiederholt seine Fähigkeit.'},
+ // 2-Kosten
+ {id:'akali',name:'Akali',cost:2,r:'assa',t:['N.O.V.A.','Plünderer'],it:['Unendlichkeitsklinge','Schmuckhandschuh','Blutdürster'],note:'Springt auf die Backline — gut in N.O.V.A. Kindred.'},
+ {id:'belveth',name:"Bel'Veth",cost:2,r:'tank',t:['Urzeitlich','Herausforderer','Plünderer'],it:['Titanentrotz','Guinsoos Wutklinge','Blutdürster'],note:'3 Traits, starke Kämpferin für Urzeitlich-Bretter. Frontline trotz Kämpfer-Spielstil.'},
+ {id:'gnar',name:'Gnar',cost:2,r:'ad',t:['Meeple','Scharfschütze'],it:['Todesklinge','Guinsoos Wutklinge','Unendlichkeitsklinge'],note:'DER Reroll-Carry des Patches („Gnar-Druckerei"). Auf 3★ ist er ein Monster — aber oft umkämpft.'},
+ {id:'gragas',name:'Gragas',cost:2,r:'tank',t:['Psionik','Schläger'],it:['Warmogs Rüstung','Dornenweste','Sonnenfeuer-Umhang'],note:'Dicke Frontline, aktiviert Psionik für die Gratis-Items.'},
+ {id:'gwen',name:'Gwen',cost:2,r:'fight',t:['Weltraum-Groove','Schurke'],it:['Diebeshandschuhe','Standhaftes Herz','Steraks Pfand'],note:'Carry der einsteigerfreundlichsten Comp: Gwen Reroll mit Diebeshandschuhen — einfach und stark.'},
+ {id:'jax',name:'Jax',cost:2,r:'tank',t:['Sternenschauer','Bastion'],it:['Titanentrotz','Warmogs Rüstung'],note:'Sternenschauer-Frontline; auf verstärkte Hexes stellen.'},
+ {id:'jinx',name:'Jinx',cost:2,r:'ad',t:['Anima','Herausforderer'],it:['Blauer Buff','Guinsoos Wutklinge','Hextech-Gunblade'],note:'Carry der Anima-Lose-Streak-Comp. Früh verlieren, Tech sammeln, dann durchdrehen.'},
+ {id:'meepsie',name:'Meepsie',cost:2,r:'supp',t:['Meeple','Hirte','Reisender'],it:['Blauer Buff','Speer von Shojin'],note:'3 Traits auf einmal — Klebstoff für viele Comps (Gnar, LeBlanc, Meeple). Reine Trait-Bot, braucht keine teuren Items.'},
+ {id:'milio',name:'Milio',cost:2,r:'supp',t:['Zeitbrecher','Fateweaver'],it:['Blauer Buff','Speer von Shojin'],note:'Flexibler Support; Zeitbrecher gibt Gratis-Rerolls nach Niederlagen.'},
+ {id:'mordekaiser',name:'Mordekaiser',cost:2,r:'tank',t:['Dunkler Stern','Konduit','Vanguard'],it:['Sonnenfeuer-Umhang','Dornenweste','Warmogs Rüstung'],note:'Haupttank der Dunkler-Stern-Comps — 3 nützliche Traits.'},
+ {id:'pantheon',name:'Pantheon',cost:2,r:'tank',t:['Zeitbrecher','Schläger','Replikator'],it:['Gargoyle-Steinplatte','Dornenweste'],note:'Zäher Brückentank mit 3 Traits.'},
+ {id:'pyke',name:'Pyke',cost:2,r:'assa',t:['Psionik','Reisender'],it:['Unendlichkeitsklinge','Nachtschneide'],note:'Psionik-Assassine; Reisender gibt ihm Schild oder Schadensbonus.'},
+ {id:'zoe',name:'Zoe',cost:2,r:'ap',t:['Schiedsrichter','Konduit'],it:['Blauer Buff','Schmuckhandschuh'],note:'Früher AP-Schaden mit Mana-Support.'},
+ // 3-Kosten
+ {id:'aurora',name:'Aurora',cost:3,r:'ap',t:['Anima','Reisender'],it:['Rabadons Todeshaube','Schmuckhandschuh'],note:'Zweit-Carry in Anima Jinx.'},
+ {id:'diana',name:'Diana',cost:3,r:'assa',t:['Schiedsrichter','Herausforderer'],it:['Schmuckhandschuh','Unendlichkeitsklinge'],note:'Herausforderer-Assassine — springt nach Takedowns weiter.'},
+ {id:'fizz',name:'Fizz',cost:3,r:'assa',t:['Meeple','Schurke'],it:['Schmuckhandschuh','Unendlichkeitsklinge'],note:'Meeple-Assassine für die Gnar-/Veigar-Comps.'},
+ {id:'illaoi',name:'Illaoi',cost:3,r:'tank',t:['Anima','Vanguard','Hirte'],it:['Gargoyle-Steinplatte','Warmogs Rüstung','Steraks Pfand'],note:'Dicker 3-Trait-Tank — Frontline in mehreren Meta-Comps.'},
+ {id:'kaisa',name:"Kai'Sa",cost:3,r:'ad',t:['Dunkler Stern','Schurke'],it:['Unendlichkeitsklinge','Riesenschlächter','Speer von Shojin'],note:'S-Tier-Carry: „Dunkler Stern Kai\'Sa" ist eine der stärksten Comps des Patches. Auf Level 7 3★ rollen.'},
+ {id:'lulu',name:'Lulu',cost:3,r:'supp',t:['Sternenschauer','Replikator'],it:['Blauer Buff','Speer von Shojin'],note:'Starker Support — Replikator wiederholt ihren Buff.'},
+ {id:'maokai',name:'Maokai',cost:3,r:'tank',t:['N.O.V.A.','Schläger'],it:['Warmogs Rüstung','Gargoyle-Steinplatte','Dornenweste'],note:'Haupttank in N.O.V.A. Kindred.'},
+ {id:'missfortune',name:'Miss Fortune',cost:3,r:'flex',t:['Waffengöttin'],it:['Schmuckhandschuh','Unendlichkeitsklinge'],note:'Beim Platzieren wählst du ihren Modus (Konduit / Herausforderer / Replikator) — Fähigkeit & Trait ändern sich.'},
+ {id:'ornn',name:'Ornn',cost:3,r:'tank',t:['Weltraum-Groove','Bastion'],it:['Gargoyle-Steinplatte','Dornenweste','Warmogs Rüstung'],note:'Haupttank der Groove-Comps (Gwen, Samira, Nami).'},
+ {id:'rhaast',name:'Rhaast',cost:3,r:'tank',t:['Erlöser'],it:['Titanentrotz','Blutdürster'],note:'Solo-Trait: Erlöser bufft dein Team für jeden aktiven Trait — gute Frontline in trait-lastigen Brettern.'},
+ {id:'samira',name:'Samira',cost:3,r:'ad',t:['Weltraum-Groove','Scharfschütze'],it:['Letzter Seufzer','Speer von Shojin','Todesklinge'],note:'Eigene Reroll-Comp oder Zweit-Carry bei Gwen/Nami.'},
+ {id:'urgot',name:'Urgot',cost:3,r:'tank',t:['Mech','Schläger','Plünderer'],it:['Gargoyle-Steinplatte','Steraks Pfand','Titanentrotz'],note:'Mech-Frontline — transformiert braucht er 2 Plätze, zählt aber doppelt für Mech.'},
+ {id:'viktor',name:'Viktor',cost:3,r:'ap',t:['Psionik','Konduit'],it:['Blauer Buff','Schmuckhandschuh','Rabadons Todeshaube'],note:'Flexibler AP-Träger; Kern der Mech-Asol-Comp und Psionik-Aktivator.'},
+ // 4-Kosten
+ {id:'asol',name:'Aurelion Sol',cost:4,r:'ap',t:['Mech','Konduit'],it:['Schmuckhandschuh','Riesenschlächter','Rabadons Todeshaube'],note:'S-Tier-Carry der Mech-Comp. Transformiert = 2 Plätze. Auf Level 8 suchen.'},
+ {id:'corki',name:'Corki',cost:4,r:'ad',t:['Meeple','Fateweaver'],it:['Todesklinge','Letzter Seufzer','Roter Buff'],note:'Zweit-Carry der Gnar-Druckerei.'},
+ {id:'karma',name:'Karma',cost:4,r:'ap',t:['Dunkler Stern','Reisender'],it:['Blauer Buff','Rabadons Todeshaube','Schmuckhandschuh'],note:'Pusht Dunkler Stern Richtung 6 und trägt AP-Items gut.'},
+ {id:'kindred',name:'Kindred',cost:4,r:'ad',t:['N.O.V.A.','Herausforderer'],it:['Guinsoos Wutklinge','Riesenschlächter','Krakenfurie'],note:'Carry der N.O.V.A.-Comp; ihr Surge schildet den Tank.'},
+ {id:'leblanc',name:'LeBlanc',cost:4,r:'ap',t:['Schiedsrichter','Hirte'],it:['Guinsoos Wutklinge','Rabadons Todeshaube','Schmuckhandschuh'],note:'Carry der Hirten-Comp — skaliert mit Bia & Bayin.'},
+ {id:'masteryi',name:'Master Yi',cost:4,r:'fight',t:['Psionik','Plünderer'],it:['Riesenschlächter','Nachtschneide','Quecksilber'],note:'Schneidet durch Bretter, braucht Überlebens-Items (Nachtschneide/QSS).'},
+ {id:'morgana',name:'Morgana',cost:4,r:'tank',t:['Dunkle Lady'],it:['Adaptivhelm','Gargoyle-Steinplatte','Steraks Pfand'],note:'Seit Patch 17.3 ein 4-Kosten-Magie-Tank; gibt dem Team Zähigkeit. Top-Tank für Fast-9-Bretter.'},
+ {id:'nami',name:'Nami',cost:4,r:'ap',t:['Weltraum-Groove','Replikator'],it:['Schmuckhandschuh','Morellonomicon','Leerenstab'],note:'Carry der Groove-Comp — je länger der Kampf, desto stärker.'},
+ {id:'nunu',name:'Nunu & Willump',cost:4,r:'tank',t:['Sternenschauer','Vanguard'],it:['Warmogs Rüstung','Gargoyle-Steinplatte','Adaptivhelm'],note:'Sehr zäher 4-Kosten-Tank, Kern vieler Endgame-Bretter.'},
+ {id:'rammus',name:'Rammus',cost:4,r:'tank',t:['Meeple','Bastion'],it:['Dornenweste','Gargoyle-Steinplatte','Warmogs Rüstung'],note:'Haupttank der Meeple-Comps — Dornenweste bestraft Auto-Attacker.'},
+ {id:'riven',name:'Riven',cost:4,r:'fight',t:['Zeitbrecher','Schurke'],it:['Blutdürster','Unendlichkeitsklinge','Titanentrotz'],note:'Starke Solo-Kämpferin mit Schurken-Sprung.'},
+ {id:'tahm',name:'Tahm Kench',cost:4,r:'tank',t:['Orakel','Schläger'],it:['Warmogs Rüstung','Drachenklaue','Gargoyle-Steinplatte'],note:'Orakel: gibt alle 3 Runden eine Belohnung — je früher er steht, desto mehr Value.'},
+ {id:'mech',name:'Mighty Mech',cost:4,r:'tank',t:['Mech','Reisender'],it:['Gargoyle-Steinplatte','Warmogs Rüstung','Sonnenfeuer-Umhang'],note:'Der große Mech — transformiert 2 Plätze, zählt doppelt für den Mech-Trait.'},
+ {id:'xayah',name:'Xayah',cost:4,r:'ad',t:['Sternenschauer','Scharfschütze'],it:['Krakenfurie','Roter Buff','Guinsoos Wutklinge'],note:'AD-Carry der Sternenschauer-Comp — ganz hinten auf verstärkte Hexes stellen.'},
+ // 5-Kosten
+ {id:'bard',name:'Bard',cost:5,r:'supp',t:['Meeple','Konduit'],it:['Blauer Buff','Speer von Shojin'],note:'Starker 5er-Support — Upgrade für alle Meeple-Bretter.'},
+ {id:'blitzcrank',name:'Blitzcrank',cost:5,r:'tank',t:['Partytier','Weltraum-Groove','Vanguard'],it:['Warmogs Rüstung','Dornenweste','Gargoyle-Steinplatte'],note:'Hooked gegnerische Carries in deine Front. Partytier: wird unter 45% HP kurz unangreifbar und heilt sich.'},
+ {id:'fiora',name:'Fiora',cost:5,r:'fight',t:['Göttlicher Duellant','Anima','Plünderer'],it:['Blutdürster','Steraks Pfand','Titanentrotz'],note:'Gewinnt jedes 1v1. Starkes Endgame-Upgrade für Anima- und Groove-Bretter.'},
+ {id:'graves',name:'Graves',cost:5,r:'ad',t:['Fabrikneu'],it:['Quecksilber','Todesklinge','Unendlichkeitsklinge'],note:'Kauft nach jedem Kampf permanente Upgrades — je früher gefunden, desto stärker. Kern von Fast 9.'},
+ {id:'jhin',name:'Jhin',cost:5,r:'ad',t:['Dunkler Stern','Vernichter','Scharfschütze'],it:['Unendlichkeitsklinge','Letzter Seufzer','Todesklinge'],note:'Vernichter senkt Rüstung & MR aller Gegner. Endgame-Upgrade der Kai\'Sa- und Sniper-Bretter.'},
+ {id:'shen',name:'Shen',cost:5,r:'tank',t:['Bollwerk','Bastion'],it:['Warmogs Rüstung','Drachenklaue','Dornenweste'],note:'Einer der besten Tanks — sein Bollwerk-Relikt schildet angrenzende Verbündete.'},
+ {id:'sona',name:'Sona',cost:5,r:'supp',t:['Kommandantin','Psionik','Hirte'],it:['Blauer Buff','Speer von Shojin'],note:'Mächtige Endgame-Unterstützung — sofort kaufen wenn sie auftaucht.'},
+ {id:'vex',name:'Vex',cost:5,r:'ap',t:['Doomer'],it:['Guinsoos Wutklinge','Riesenschlächter','Hextech-Gunblade'],note:'Carry der Fast-9-Comp. Doomer markiert alle Gegner und stiehlt AD/AP.'},
+ {id:'zed',name:'Zed',cost:5,r:'assa',t:['Galaxie-Jäger'],it:['Unendlichkeitsklinge','Nachtschneide'],note:'Nur über das Invader-Augment erhältlich — nicht im normalen Shop.'},
+];
+
+var IMG={
+ aatrox:'Aatrox',briar:'Briar',caitlyn:'Caitlyn',chogath:'Chogath',ezreal:'Ezreal',
+ leona:'Leona',lissandra:'Lissandra',nasus:'Nasus',poppy:'Poppy',reksai:'RekSai',
+ talon:'Talon',teemo:'Teemo',twistedfate:'TwistedFate',veigar:'Veigar',
+ akali:'Akali',belveth:'Belveth',gnar:'Gnar',gragas:'Gragas',gwen:'Gwen',jax:'Jax',
+ jinx:'Jinx',milio:'Milio',mordekaiser:'Mordekaiser',pantheon:'Pantheon',
+ pyke:'Pyke',zoe:'Zoe',
+ aurora:'Aurora',diana:'Diana',fizz:'Fizz',illaoi:'Illaoi',kaisa:'Kaisa',lulu:'Lulu',
+ maokai:'Maokai',missfortune:'MissFortune',ornn:'Ornn',rhaast:'Kayn',samira:'Samira',
+ urgot:'Urgot',viktor:'Viktor',
+ asol:'AurelionSol',corki:'Corki',karma:'Karma',kindred:'Kindred',leblanc:'Leblanc',
+ masteryi:'MasterYi',morgana:'Morgana',nami:'Nami',nunu:'Nunu',rammus:'Rammus',
+ riven:'Riven',tahm:'TahmKench',xayah:'Xayah',
+ bard:'Bard',blitzcrank:'Blitzcrank',fiora:'Fiora',graves:'Graves',jhin:'Jhin',
+ shen:'Shen',sona:'Sona',vex:'Vex',zed:'Zed',
+ // meepsie & mech bewusst NICHT drin: reine TFT-Kreaturen ohne echtes LoL-Champion-Portrait.
+ // Ein erfundenes Bild (z.B. Lulu oder Viktor) wäre falsch — lieber kein Bild als ein falsches.
+};
+var DDRAGON='https://ddragon.leagueoflegends.com/cdn/16.13.1/img/champion/';
+function champImg(id){ return IMG[id] ? DDRAGON+IMG[id]+'.png' : null; }
+// Baut ein <img> oder, falls kein echtes Portrait existiert (Meepsie, Mighty Mech),
+// eine farbige Platzhalter-Kachel — NIE eine erfundene/falsche Bild-URL.
+function champImgTag(ch, size, borderColor, extraStyle){
+  var img=champImg(ch.id);
+  var radius=(size>=50?'12px':'8px');
+  var st='width:'+size+'px;height:'+size+'px;border-radius:'+radius+';border:2px solid '+borderColor+';'+(extraStyle||'');
+  if(img){
+    // Simples onerror: Bild ausblenden, Emoji-Fallback im Elternelement übernimmt automatisch (kein JS-String-Trick mehr).
+    return '<span style="'+st+'display:flex;align-items:center;justify-content:center;background:var(--panel);overflow:hidden;position:relative;">'
+      +'<img src="'+img+'" width="'+size+'" height="'+size+'" loading="lazy" onerror="this.style.opacity=0" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;">'
+      +'</span>';
+  }
+  return '<span style="'+st+'display:flex;align-items:center;justify-content:center;background:var(--panel);font-size:'+Math.round(size*0.4)+'px;">🤖</span>';
+}
+
+// ── TRAITS ────────────────────────────────────────────────────
+// bp = Stufen; kind: o=Origin, c=Klasse
+var TRAITS=[
+ {name:'Anima',en:'Anima',kind:'o',bp:[3,6],desc:'Lose-Streak-Trait: Niederlagen geben Tech (mehr bei längerer Serie). Je 100 Tech gibt es Prototyp-Waffen. Bei 6 droppen auch Siege Loot.'},
+ {name:'Schiedsrichter',en:'Arbiter',kind:'o',bp:[2,3],desc:'Du erlässt dein eigenes Gesetz: Wähle eine Bedingung und einen Effekt. Bei 3 werden die Effekte stärker.'},
+ {name:'Dunkler Stern',en:'Dark Star',kind:'o',bp:[2,4,6,9],desc:'Ein schwarzes Loch verschlingt Gegner unter 10% Leben. 4: +30% AD/AP. 6: stärkster Dunkler Stern wird supermassiv. 9: alle supermassiv.'},
+ {name:'Dunkle Lady',en:'Dark Lady',kind:'o',bp:[1],desc:'Team erhält 4% Zähigkeit, 10% solange Morgana in ihrer dunklen Form ist.'},
+ {name:'Doomer',en:'Doomer',kind:'o',bp:[1],desc:'Vex markiert zu Kampfbeginn alle Gegner mit „Doom". Der erste Treffer verbraucht die Marke und stiehlt 8% AD/AP für Vex.'},
+ {name:'Göttlicher Duellant',en:'Divine Duelist',kind:'o',bp:[1],desc:'Heilt 15% des verursachten Spielerschadens. Fiora gewinnt jedes 1-gegen-1.'},
+ {name:'Vernichter',en:'Eradicator',kind:'o',bp:[1],desc:'Gegner haben 14% weniger Rüstung und Magieresistenz.'},
+ {name:'Fabrikneu',en:'Factory New',kind:'o',bp:[1],desc:'Nach jedem Kampf öffnet sich eine Waffenkammer mit permanenten Graves-Upgrades.'},
+ {name:'Fateweaver',en:'Fateweaver',kind:'o',bp:[2,4],desc:'Zufallseffekte der Fähigkeiten sind „Lucky" (2× würfeln, besseres Ergebnis zählt). 4: +20% Krit-Chance, Krits sind Lucky.'},
+ {name:'Galaxie-Jäger',en:'Galaxy Hunter',kind:'o',bp:[1],desc:'Zed kommt nur über das Invader-Augment. Solange sein Klon lebt: +40% AD.'},
+ {name:'Waffengöttin',en:'Gun Goddess',kind:'o',bp:[1],desc:'Miss Fortune wählt einen Modus (Konduit / Herausforderer / Replikator) — Fähigkeit und Trait ändern sich.'},
+ {name:'Mech',en:'Mecha',kind:'o',bp:[3,4,6],desc:'Mechs transformieren in ihre Ultimate-Form: +60% HP, verbesserte Fähigkeit, brauchen 2 Plätze, zählen doppelt. 3: +20% AD/AP · 4: +35% · 6: +1 Teamgröße.'},
+ {name:'Meeple',en:'Meeple',kind:'o',bp:[3,5,7,10],desc:'Stat- und HP-Bonus. Ab 7: Ein Klon-Slot druckt Gold und 1★-Kopien. Bei 10: vier Meeplords erscheinen.'},
+ {name:'N.O.V.A.',en:'N.O.V.A.',kind:'o',bp:[2,5],desc:'Jede N.O.V.A.-Einheit hat einen einzigartigen Power-Surge im Kampf (z. B. Aatrox: Rüstungsbruch für alle Gegner). Bei 5 wählst du den Surge selbst.'},
+ {name:'Orakel',en:'Oracle',kind:'o',bp:[1],desc:'Tahm Kench gewährt alle 3 Runden eine Belohnung.'},
+ {name:'Partytier',en:'Party Animal',kind:'o',bp:[1],desc:'Unter 45% HP wird Blitzcrank unangreifbar und repariert 15% max. HP pro Sekunde. Voll geheilt feuert er 4× schneller.'},
+ {name:'Urzeitlich',en:'Primordian',kind:'o',bp:[2,3],desc:'8% des erlittenen Schadens werden zu Bonusschaden; Schaden spawnt Schwärmlinge. 3: mehr Schwärmlinge + jede Runde ein gratis 1-/2-Kosten-Champ.'},
+ {name:'Psionik',en:'Psionic',kind:'o',bp:[2,4],desc:'2: du erhältst Psionik-Item Stufe 1 · 4: Stufe 2. Psionik-Items haben Extra-Effekte auf Psionik-Einheiten.'},
+ {name:'Erlöser',en:'Redeemer',kind:'o',bp:[1],desc:'Für jeden aktiven (nicht-einzigartigen) Trait erhält das Team Angriffstempo, Rüstung und MR.'},
+ {name:'Weltraum-Groove',en:'Space Groove',kind:'o',bp:[1,3,5,7,10],desc:'Groovianer kommen im Kampf „in den Groove": Angriffstempo + HP-Regeneration, skaliert mit Anzahl. 5: stapelnd +AD/AP pro Sekunde im Groove.'},
+ {name:'Sternenschauer',en:'Stargazer',kind:'o',bp:[3],desc:'Wähle zu Spielbeginn ein Sternbild — es verstärkt bestimmte Hexes mit einem Spezialbonus. Mehr Hexes pro Spielerlevel.'},
+ {name:'Zeitbrecher',en:'Timebreaker',kind:'o',bp:[2,3,4],desc:'2: Niederlagen geben Gratis-Rerolls, Siege speichern XP im Zeitkern. 3: Team +15% Angriffstempo. 4: Zeitbrecher +50%.'},
+ {name:'Kommandantin',en:'Commander',kind:'o',bp:[1],desc:'Sona gewährt alle 2 Runden einen zufälligen Befehls-Mod, der das Kampfverhalten der Verbündeten verändert.'},
+ {name:'Bollwerk',en:'Bulwark',kind:'o',bp:[1],desc:'Shen beschwört ein platzierbares Relikt: angrenzende Verbündete erhalten 18% max.-HP-Schild und 20% Angriffstempo.'},
+ // Klassen
+ {name:'Bastion',en:'Bastion',kind:'c',bp:[2,4,6],desc:'Team +12 Rüstung/MR, Bastione deutlich mehr (16/35/55) — in den ersten 10 Sekunden verdoppelt. 6: auch Nicht-Bastione +20.'},
+ {name:'Schläger',en:'Brawler',kind:'c',bp:[2,4,6],desc:'Team +7% HP; Schläger +25/45/65% maximale HP.'},
+ {name:'Herausforderer',en:'Challenger',kind:'c',bp:[2,3,4,5],desc:'Team +10% Angriffstempo; Herausforderer +15/22/30/40%. Bei Takedown: +50% für 2,5s und Sprung zum nächsten Ziel.'},
+ {name:'Konduit',en:'Conduit',kind:'c',bp:[2,3,4,5],desc:'Konduits erhalten +20% Mana aus allen Quellen; Team erhält Mana-Regeneration, Konduits mehr.'},
+ {name:'Plünderer',en:'Marauder',kind:'c',bp:[2,4,6],desc:'Team +5% Omnivamp; Plünderer +5/7/10% Omnivamp und +20/30/40% AD. Überheilung wird zu Schild (max. 25% HP).'},
+ {name:'Replikator',en:'Replicator',kind:'c',bp:[2,4],desc:'Fähigkeiten wiederholen sich mit 25% / 50% Stärke.'},
+ {name:'Schurke',en:'Rogue',kind:'c',bp:[2,3,4,5],desc:'+15/30/45/60% AD & AP. Erstmalig unter 50% HP tauchen Schurken in die Schatten und Gegner wechseln das Ziel.'},
+ {name:'Hirte',en:'Shepherd',kind:'c',bp:[3,5,7],desc:'Beschwört Bia (ab 3) und Bayin (ab 5) — Mutter-Tochter-Duo. Ihre Stärke skaliert mit den Sternstufen deiner Hirten. 7: ihr Band vertieft sich.'},
+ {name:'Scharfschütze',en:'Sniper',kind:'c',bp:[2,3,4,5],desc:'+18/24/28/32% Schadensverstärkung, plus +2/3/4/5% pro Hex Entfernung zum Ziel — deshalb ganz nach hinten stellen.'},
+ {name:'Vanguard',en:'Vanguard',kind:'c',bp:[2,4,6],desc:'Schild zu Kampfbeginn und bei 50% HP (16/28/40% max. HP für 10s); +5% Zähigkeit solange geschildet.'},
+ {name:'Reisender',en:'Voyager',kind:'c',bp:[2,3,4,5,6],desc:'Tanks/Kämpfer erhalten einen Schild (175–700), alle anderen Schadensverstärkung (9–27%). Reisende erhalten das Doppelte.'},
+];
+
+// ── COMPS (Meta Patch 17.6) ───────────────────────────────────
+var COMPS=[
+ {id:'primordian',name:'Urzeitlich Psionik',tier:'A',diff:'e',style:'Slow-Roll Lv 6',styleKey:'reroll',
+  carry:'Viktor',carryIt:['Blauer Buff','Schmuckhandschuh','Rabadons Todeshaube'],
+  sec:'Master Yi',tank:'Gragas',tankIt:['Warmogs Rüstung','Dornenweste','Gargoyle-Steinplatte'],
+  core:['Gragas','Pyke','Viktor','Master Yi'],extras:["Rek'Sai",'Milio','Lulu','Sona'],
+  tip:'Der einfachste Einstieg ins Set. Auf Level 6 bleiben, Psionik-Items an Viktor oder Master Yi. Sona als 5-Kosten sofort aufwerten, wenn gefunden.',
+  pro:'Sehr verzeihend für Anfänger — Urzeitlich spawnt gratis Einheiten, Psionik gibt flexible Items für jeden Carry-Typ.'},
+ {id:'gnar',name:'Gnar-Druckerei',tier:'S',diff:'m',style:'Slow-Roll Lv 6–7',styleKey:'reroll',
+  carry:'Gnar',carryIt:['Todesklinge','Guinsoos Wutklinge','Unendlichkeitsklinge'],
+  sec:'Corki',tank:'Rammus',tankIt:['Dornenweste','Gargoyle-Steinplatte','Warmogs Rüstung'],
+  core:['Poppy','Veigar','Gnar','Meepsie','Fizz','Corki','Rammus'],extras:['Bard'],
+  tip:'Meeple 7 aktivieren — der Klon-Slot druckt Gold und Einheiten. Über 50 Gold bleiben und Gnar langsam auf 3★ rollen.',
+  pro:'Stärkste Line des Patches, aber fast immer contested — bei 2+ Mitspielern auf der Line früh Richtung Veigar/anderes pivoten.'},
+ {id:'kaisa',name:"Dunkler Stern Kai'Sa",tier:'S',diff:'m',style:'Reroll Lv 7',styleKey:'reroll',
+  carry:"Kai'Sa",carryIt:['Unendlichkeitsklinge','Riesenschlächter','Speer von Shojin'],
+  sec:'Jhin',tank:'Mordekaiser',tankIt:['Sonnenfeuer-Umhang','Dornenweste','Warmogs Rüstung'],
+  core:["Cho'Gath",'Lissandra','Mordekaiser',"Kai'Sa",'Illaoi','Karma','Jhin'],extras:['Shen'],
+  tip:"Auf Level 7 Kai'Sa auf 3★ rollen. Dunkler Stern exekutiert alles unter 10% HP — Karma und Jhin bringen den Trait Richtung 6.",
+  pro:'Beste Winrate im Patch (Top-4 ~64%). Jhin als Item-Zweitträger; bei 6 Dunkler Stern wird der stärkste supermassiv.'},
+ {id:'asol',name:'Mech Aurelion Sol',tier:'S',diff:'h',style:'Fast 8',styleKey:'fast8',
+  carry:'Aurelion Sol',carryIt:['Schmuckhandschuh','Riesenschlächter','Rabadons Todeshaube'],
+  sec:'Bard',tank:'Tahm Kench',tankIt:['Warmogs Rüstung','Drachenklaue','Gargoyle-Steinplatte'],
+  core:['Urgot','Viktor','Aurelion Sol','Mighty Mech','Tahm Kench','Morgana','Bard'],extras:[],
+  tip:'Schnell auf Level 8, dann Asol 2★ suchen. Achtung: Transformierte Mechs brauchen 2 Plätze auf dem Brett!',
+  pro:'Mit Mech-Emblem auf 6 Mecha gehen (+1 Teamgröße). Transformations-Timing gegen Burst-Bretter einplanen.'},
+ {id:'vex',name:'Doomer Fast 9 (Vex)',tier:'S',diff:'h',style:'Fast 9',styleKey:'fast9',
+  carry:'Vex',carryIt:['Guinsoos Wutklinge','Riesenschlächter','Hextech-Gunblade'],
+  sec:'Graves',tank:'Morgana',tankIt:['Adaptivhelm','Gargoyle-Steinplatte','Steraks Pfand'],
+  core:['Vex','Graves','Nunu & Willump','Morgana','Rammus','Shen','Sona'],extras:[],
+  tip:'Nur mit gutem Gold-Start spielen: HP bewusst opfern, auf Level 9 die 5-Kosten-Legendaries stapeln.',
+  pro:'Bedingungen für Fast 9: ~50+ Gold auf Stage 4 und >40 HP. Graves so früh wie möglich finden — seine Upgrades skalieren mit der Zeit.'},
+ {id:'nami',name:'Weltraum-Groove Nami',tier:'S',diff:'h',style:'Fast 8',styleKey:'fast8',
+  carry:'Nami',carryIt:['Schmuckhandschuh','Morellonomicon','Leerenstab'],
+  sec:'Fiora',tank:'Ornn',tankIt:['Gargoyle-Steinplatte','Dornenweste','Warmogs Rüstung'],
+  core:['Gragas','Ornn','Samira','Nami','Blitzcrank','Fiora'],extras:['Gwen','Nasus'],
+  tip:'Je länger der Kampf dauert, desto stärker wird der Groove — auf zähe Frontline bauen und den Kampf strecken.',
+  pro:'Mit Groove-Emblem deutlich stärker (7er-Groove). Blitzcrank hooked gegnerische Carries — clever positionieren.'},
+ {id:'kindred',name:'N.O.V.A. Kindred',tier:'A',diff:'m',style:'Fast 8',styleKey:'fast8',
+  carry:'Kindred',carryIt:['Guinsoos Wutklinge','Riesenschlächter','Krakenfurie'],
+  sec:'Master Yi',tank:'Maokai',tankIt:['Warmogs Rüstung','Gargoyle-Steinplatte','Dornenweste'],
+  core:['Aatrox','Akali','Maokai','Kindred','Master Yi','Tahm Kench'],extras:[],
+  tip:'Solide Allround-Comp: Kindred carried, Master Yi räumt hinten auf.',
+  pro:'Bei N.O.V.A. 5 den Surge wählen der zum Spot passt — meistens Caitlyns Team-Angriffstempo für Kindred.'},
+ {id:'stargazer',name:'Sternenschauer-Scharfschützen',tier:'A',diff:'h',style:'Fast 8 → 9',styleKey:'fast8',
+  carry:'Xayah',carryIt:['Krakenfurie','Roter Buff','Guinsoos Wutklinge'],
+  sec:'Jhin',tank:'Nunu & Willump',tankIt:['Warmogs Rüstung','Gargoyle-Steinplatte','Adaptivhelm'],
+  core:['Twisted Fate','Jax','Lulu','Nunu & Willump','Xayah','Jhin'],extras:['Talon'],
+  tip:'Sternbild früh wählen und Xayah maximal weit hinten auf verstärkte Hexes stellen — Scharfschützen machen mehr Schaden pro Hex Entfernung.',
+  pro:'Constellation-abhängig: offensive Sternbilder für Xayah-Hexes priorisieren. Auf 9 kommt Jhin als zweiter Sniper dazu.'},
+ {id:'samira',name:'Samira Reroll',tier:'A',diff:'m',style:'Reroll Lv 7',styleKey:'reroll',
+  carry:'Samira',carryIt:['Letzter Seufzer','Speer von Shojin','Todesklinge'],
+  sec:'Xayah',tank:'Ornn',tankIt:['Gargoyle-Steinplatte','Dornenweste','Warmogs Rüstung'],
+  core:['Nasus','Gwen','Ornn','Samira','Miss Fortune','Xayah'],extras:[],
+  tip:'Samira auf Level 7 auf 3★ rollen. Weltraum-Groove-Gerüst hält die Front, Samira schießt von hinten durch.',
+  pro:'Flexibler Pivot-Pfad: aus demselben Gerüst in Nami Fast 8 wechseln wenn Samira contested ist.'},
+ {id:'gwen',name:'Gwen Reroll',tier:'A',diff:'e',style:'Slow-Roll Lv 6',styleKey:'reroll',
+  carry:'Gwen',carryIt:['Diebeshandschuhe','Standhaftes Herz','Steraks Pfand'],
+  sec:'Samira',tank:'Ornn',tankIt:['Gargoyle-Steinplatte','Dornenweste','Warmogs Rüstung'],
+  core:['Teemo','Gwen','Gragas','Ornn','Samira'],extras:['Nasus'],
+  tip:'Perfekt für den Einstieg: Auf Level 6 bleiben, über 50 Gold jede Runde rollen, Gwen auf 3★ bringen. Diebeshandschuhe = keine Item-Sorgen.',
+  pro:'Einfachste stabile Top-4-Line. Wenig contested; Übergang auf Groove-Endgame mit Blitzcrank/Fiora.'},
+ {id:'tfreroll',name:'Twisted Fate Reroll',tier:'B',diff:'e',style:'Slow-Roll Lv 6',styleKey:'reroll',
+  carry:'Twisted Fate',carryIt:['Blauer Buff','Schmuckhandschuh','Nashors Zahn'],
+  sec:'Xayah',tank:'Jax',tankIt:['Gargoyle-Steinplatte','Dornenweste','Warmogs Rüstung'],
+  core:['Twisted Fate','Jax','Lulu'],extras:['Talon','Nunu & Willump'],
+  tip:'Sehr guter erster Reroll-Plan: Twisted Fate kostet nur 1★, ist im Shop häufig und günstig auf 3★ zu bringen. Auf Level 6 bleiben und über 50 Gold rollen.',
+  pro:'Braucht nur 3 Kern-Einheiten, passt fast immer aufs Feld — auch schon auf niedrigem Level.'},
+ {id:'leblanc',name:'Hirte LeBlanc',tier:'A',diff:'h',style:'Fast 8',styleKey:'fast8',
+  carry:'LeBlanc',carryIt:['Guinsoos Wutklinge','Rabadons Todeshaube','Schmuckhandschuh'],
+  sec:'Karma',tank:'Nunu & Willump',tankIt:['Adaptivhelm','Gargoyle-Steinplatte','Warmogs Rüstung'],
+  core:['Lissandra','Meepsie','Illaoi','Lulu','LeBlanc','Nami','Sona'],extras:[],
+  tip:'Das Hirten-Duo Bia & Bayin skaliert mit den Sternstufen deiner Hirten — Upgrades zählen doppelt.',
+  pro:'Mit Hirten-Emblem Richtung 7 Hirten. Braucht sauberes Econ-Spiel, belohnt mit sehr starkem Lategame.'},
+ {id:'lissandra',name:'Dunkler Stern Lissandra',tier:'B',diff:'e',style:'Reroll Lv 5',styleKey:'reroll',
+  carry:'Lissandra',carryIt:['Nashors Zahn ×2','Schmuckhandschuh'],
+  sec:"Kai'Sa",tank:"Cho'Gath",tankIt:['Warmogs Rüstung','Dornenweste','Gargoyle-Steinplatte'],
+  core:["Cho'Gath",'Lissandra','Veigar','Mordekaiser',"Kai'Sa"],extras:[],
+  tip:"Die günstigste Comp des Sets: Auf Level 5 bleiben, Lissandra und Cho'Gath auf 3★ rollen. Später fließend in Dunkler Stern Kai'Sa übergehen.",
+  pro:'Guter Low-Roll-Plan: minimales Risiko, solide Top-6, mit Kai\'Sa-Hit Top-4-Potenzial.'},
+ {id:'veigar',name:'Meeple Veigar',tier:'B',diff:'m',style:'Reroll Lv 6–7',styleKey:'reroll',
+  carry:'Veigar',carryIt:['Nashors Zahn ×2','Schmuckhandschuh'],
+  sec:'Corki',tank:'Rammus',tankIt:['Dornenweste','Gargoyle-Steinplatte','Warmogs Rüstung'],
+  core:['Poppy','Veigar','Gnar','Meepsie','Fizz','Corki','Rammus'],extras:['Bard'],
+  tip:'Budget-Version der Gnar-Druckerei — spielen wenn Gnar contested ist, gleiche Meeple-7-Engine.',
+  pro:'AP-Items statt AD: gleiche Einheiten, andere Item-Leiste. Meeple-Klonslot druckt trotzdem.'},
+ {id:'jinx',name:'Anima Jinx',tier:'B',diff:'m',style:'Reroll Lv 6',styleKey:'reroll',
+  carry:'Jinx',carryIt:['Blauer Buff','Guinsoos Wutklinge','Hextech-Gunblade'],
+  sec:'Aurora',tank:'Illaoi',tankIt:['Gargoyle-Steinplatte','Warmogs Rüstung','Steraks Pfand'],
+  core:['Briar','Jinx','Aurora','Illaoi','Xayah','Fiora'],extras:[],
+  tip:'Lose-Streak-Deck: Früh bewusst verlieren, Anima-Tech und Zinsen sammeln — dann mit Jinx 3★ und Prototyp-Waffen spiken.',
+  pro:'Streak nie brechen! Jeder Anima-Takedown gibt Extra-Tech. Fiora als Endgame-Anima-Upgrade.'},
+];
+
+// ── GÖTTER ────────────────────────────────────────────────────
+var GODS=[
+ {g:'Soraka — Göttin der Sterne',d:'HP-Unterstützung, zugeschnitten auf Lose-Streak-Spiel. Stark wenn du früh viel Leben verlierst.'},
+ {g:'Ahri — Göttin des Wohlstands',d:'Gold und Econ, hilft bei 3★-Plänen. Gute Standard-Wahl für Reroll-Comps.'},
+ {g:'Aurelion Sol — Gott der Wunder',d:'Quest-Segen: erst Aufgabe erfüllen, dann Belohnung. Value, wenn du die Quest sicher schaffst.'},
+ {g:'Yasuo — Gott des Abgrunds',d:'Verstärkt Hexes über Einheiten-/Positions-Kombos. Für Spieler, die gern positionieren.'},
+ {g:'Varus — Gott der Liebe',d:'Champion-Angebote inkl. erhöhter 5-Kosten-Chancen. Stark für Fast-9-Pläne.'},
+ {g:'Evelynn — Göttin der Versuchung',d:'Hohes Risiko, hohe Belohnung — verlangt Opfer (HP, Shop-Zugriff). Nur nehmen wenn du vorne liegst.'},
+ {g:'Thresh — Gott der Pakte',d:'Zufällige Segen anderer Götter plus Extra-Gold. Solider Allrounder.'},
+ {g:'Kayle — Göttin der Ordnung',d:'Unkomplizierte Item-Angebote. Die sichere Wahl, wenn dir Items fehlen — Anfänger-Empfehlung.'},
+ {g:'Ekko — Gott der Zeit',d:'Einheiten, Artefakte und temporäre Scuttle-Krabben. Gut für Tempo-Spikes und Artefakt-Builds.'},
+];
+
+// ── ITEM-REZEPTE ──────────────────────────────────────────────
+var RECIPES=[
+ ['Guinsoos Wutklinge','Bogen + Stab'],['Unendlichkeitsklinge','Schwert + Handschuh'],
+ ['Todesklinge','Schwert + Schwert'],['Riesenschlächter','Schwert + Bogen'],
+ ['Speer von Shojin','Schwert + Träne'],['Blutdürster','Schwert + Mantel'],
+ ['Steraks Pfand','Schwert + Gürtel'],['Nachtschneide','Schwert + Weste'],
+ ['Hextech-Gunblade','Schwert + Stab'],['Roter Buff','Bogen + Bogen'],
+ ['Nashors Zahn','Bogen + Gürtel'],['Titanentrotz','Bogen + Weste'],
+ ['Schmuckhandschuh','Stab + Handschuh'],['Rabadons Todeshaube','Stab + Stab'],
+ ['Morellonomicon','Stab + Gürtel'],['Blauer Buff','Träne + Träne'],
+ ['Adaptivhelm','Träne + Mantel'],['Beschützergelübde','Träne + Weste'],
+ ['Gargoyle-Steinplatte','Weste + Mantel'],['Dornenweste','Weste + Weste'],
+ ['Standhaftes Herz','Weste + Handschuh'],['Sonnenfeuer-Umhang','Weste + Gürtel'],
+ ['Drachenklaue','Mantel + Mantel'],['Quecksilber','Mantel + Handschuh'],
+ ['Warmogs Rüstung','Gürtel + Gürtel'],['Diebeshandschuhe','Handschuh + Handschuh'],
+ ['Letzter Seufzer','Bogen + Handschuh'],['Krakenfurie','Bogen + Mantel'],['Leerenstab','Bogen + Träne'],
+];
+
+// ── GUIDE-INHALTE ─────────────────────────────────────────────
+var GUIDE={
+ a:{intro:'Dein Ziel: <b>Top 4</b> — das zählt als Sieg. Du musst nicht Erster werden. Lern erstmal EINE einfache Comp und diese Grundregeln:',
+  items:[
+   {i:'🎯',t:'Lern zuerst EINE Comp',x:'Empfohlen: <b>Gwen Reroll</b> (im Comps-Tab, „Einfach"). Immer dieselbe Comp spielen, bis die Abläufe sitzen. Zweite Wahl: Dunkler Stern Lissandra — noch günstiger.'},
+   {i:'💰',t:'Gold & Zinsen',x:'Für je 10 Gold gibt es 1 Gold Zinsen pro Runde (max. 5 bei 50 Gold). Faustregel: <b>bis 50 Gold sparen</b>, erst dann Gold ausgeben — außer du verlierst zu viel Leben.'},
+   {i:'⭐',t:'3 Sterne = viel stärker',x:'3 gleiche Einheiten = 2★, drei 2★ = 3★. Eine 3★-Einheit ist 2–3× stärker. Bei Reroll-Comps ist das dein Hauptziel für den Carry.'},
+   {i:'🗡',t:'Alle Items auf EINEN Carry',x:'Verteil Items nicht! 3 Schadens-Items auf deinen Carry, 2–3 Tank-Items auf deinen Haupttank. Der Champions-Tab zeigt dir für jede Einheit die besten Items.'},
+   {i:'🧭',t:'Aufstellung',x:'Tanks in die vorderste Reihe, Schaden ganz nach hinten. Scharfschützen (Gnar, Xayah, Jhin) in die hinterste Ecke — sie machen mehr Schaden aus der Distanz.'},
+   {i:'📈',t:'Level oder Rollen?',x:'Als Anfänger: <b>bleib auf Level 6</b> (bzw. dem Level deiner Comp), sammle 50 Gold und rolle dann jede Runde das Gold ÜBER 50 weg, bis dein Carry 3★ ist.'},
+   {i:'🎲',t:'Augments einfach wählen',x:'3× im Spiel wählst du einen Verstärker. Nimm was zu deiner Comp passt — im Zweifel Gold, XP oder Items. Nichts Kompliziertes.'},
+   {i:'🌌',t:'Götter: nimm das Einfache',x:'Bei Götter-Begegnungen als Anfänger: <b>Kayle (Items)</b> oder <b>Ahri (Gold)</b> nehmen. Finger weg von Evelynn (Risiko-Angebote).'},
+   {i:'✅',t:'Jede Runde: Mini-Checkliste',x:'1) Shop anschauen: Paare kaufen. 2) Gold-Ziel checken (50). 3) Items auf Carry/Tank. 4) Aufstellung kurz prüfen. Mehr brauchst du am Anfang nicht.'},
+  ]},
+ f:{intro:'Du kennst die Basics — jetzt geht es um <b>Konstanz</b>: richtiges Econ-Management, Level-Timings und Anpassung an die Lobby.',
+  items:[
+   {i:'📈',t:'Standard-Level-Timings',x:'Kein Reroll-Plan? Dann: Level 7 auf Stage 4-1, Level 8 auf 4-5/5-1 mit Rolldown auf deine 4-Kosten-Carries. Reroll-Comps: auf 6/7 bleiben (siehe Comp-Karte „Spielstil").'},
+   {i:'📉',t:'Streaks aktiv steuern',x:'Win- und Lose-Streaks geben Bonus-Gold. Entscheide dich auf Stage 2 für eine Richtung und bleib dabei. Halbherzige Mitte = kein Streak-Gold + HP-Verlust. Anima ist DER Lose-Streak-Trait des Sets.'},
+   {i:'🔭',t:'Scouting',x:'Schau dir jede Stage die Gegner an: Wer spielt was? Wenn 2+ Spieler deine Comp spielen („contested"), pivotiere — dieselben Einheiten sind schneller leer gekauft.'},
+   {i:'🔨',t:'Items slammen vs. horten',x:'Verlierst du HP: Items sofort bauen („slammen") — ein fertiges Item jetzt gewinnt mehr Kämpfe als das perfekte Item später. Bist du stabil: Komponenten für Best-in-Slot aufheben.'},
+   {i:'🗺',t:'Stage-Plan',x:'Stage 1: Paare & Komponenten sammeln · Stage 2: Streak-Richtung festlegen, erstes Augment · Stage 3: Econ aufbauen, Board stabilisieren · Stage 4: Level 8 + Rolldown · Stage 5+: Legendaries & Positionierung feintunen.'},
+   {i:'✨',t:'Trait-Breakpoints nutzen',x:'Plane Bretter um Breakpoints (2/4/6): Eine Einheit mehr kann +30% AD/AP für alle bedeuten. Der Runde-Tab zeigt dir live, wie weit du vom nächsten Breakpoint bist.'},
+   {i:'🌌',t:'Götter strategisch wählen',x:'Soraka bei Lose-Streak (HP zurück), Varus wenn du auf 5-Koster gehst, Ahri für Reroll-Gold, Aurelion Sol wenn die Quest zu deinem Plan passt. Evelynn nur mit HP-Polster.'},
+   {i:'🔄',t:'Flexibel bleiben',x:'Forciere nicht jede Runde dieselbe Comp: Spiele was der Shop und die Items dir geben. Die stärksten Spieler entscheiden auf Stage 2–3 anhand ihrer Drops, nicht vorher.'},
+  ]},
+ p:{intro:'Meta-Stand Patch 17.6 (flat Meta, kein Auto-Win-Deck): <b>Gnar-Druckerei</b>, <b>Dunkler Stern Kai\'Sa</b> und <b>Mech Asol</b> führen, Doomer Fast 9 ist die beste High-Roll-Line. Feinheiten:',
+  items:[
+   {i:'⏱',t:'Tempo vs. Value',x:'Die Lobby bestimmt dein Tempo: Aggressive Lobbys (viel Slam, frühe 2★-Boards) → mitslammen und Streak sichern. Passive Lobbys → greeden, Econ-Vorsprung mitnehmen. Rolldown-Fenster hart begrenzen: geplantes Gold rein, Rest Econ.'},
+   {i:'🚀',t:'Fast-9-Bedingungen (Vex/Graves)',x:'Nur mit ~50+ Gold auf Stage 4 UND >40 HP. Graves-Value skaliert mit Kampfanzahl — je früher gefunden, desto besser. Sonst die Lv-8-Top-4-Line nehmen statt Platz 8 zu riskieren.'},
+   {i:'🧭',t:'Positionierungs-Details',x:'Gegen Blitzcrank: Carry in die Ecke, Köder-Einheit gegenüber. Mechs brauchen transformiert 2 Hexes — Backline nicht einquetschen. Dunkler Stern 6: supermassives Loch auf die gegnerische Carry-Seite lenken. Scharfschützen maximal weit weg vom nächsten Gegner.'},
+   {i:'🔀',t:'Pivot-Pfade',x:'Groove-Gerüst (Nasus/Gragas/Ornn/Samira) → Gwen Reroll, Samira Reroll ODER Nami Fast 8 je nach Hits. Dunkler-Stern-Opener → Lissandra Reroll (low) oder Kai\'Sa (Standard) → Jhin-Endgame. Meeple-Opener → Gnar (AD) oder Veigar (AP) je nach Komponenten.'},
+   {i:'🌌',t:'God-Value nach Spot',x:'Evelynn = höchster Ceiling, nur mit HP/Board-Vorsprung. Soraka-Squeeze bei geplantem Lose-Streak (Anima!). Varus vor Fast-9-Rolldowns. Ekko für Artefakt-abhängige Builds (Jinx: Battle-Bunny-Armbrust). Thresh wenn beide Alternativen schwach sind.'},
+   {i:'🧪',t:'Set-spezifische Feinheiten',x:'Anima: Tech skaliert mit Streak-Länge UND Anima-Takedowns — verlier „gewinnbringend". N.O.V.A. 5: Surge aktiv wählen (meist Caitlyn-AS). Zeitbrecher 2 macht Verlust-Runden zu Gratis-Rerolls — stark in Reroll-Openern. Meeple-7-Klonslot: teuerste Einheit reinstellen (Klonzeit = Kosten, Value = Kosten).'},
+   {i:'🛡',t:'Item-Prio 17.6',x:'AD: Wutklinge/IE/Riesenschlächter sind universell. AP: Schmuckhandschuh + Riesenschlächter auf Burst-Carries (Asol). Tank: Adaptivhelm & Gargoyle > HP-Stacking in dieser Meta. Steraks auf Kampf-Carries (Gwen, Fiora). Diebeshandschuhe = Tempo-Slam auf Interims-Carries.'},
+   {i:'📊',t:'Contested-Regel',x:'Gnar ist der meist-contestete Carry des Patches. Regel: 3+ Spieler auf einer 2-Kosten-Reroll-Line = maximal einer hittet. Beim Scouting auf Stage 2–3 zählen — notfalls sofort auf Kai\'Sa/Kindred umsteigen.'},
+  ]},
+};
+
+// ── STATE ─────────────────────────────────────────────────────
+var state={level:null,sel:[],selP:[],mode:'solo',activeBuild:'me',rdCost:'Alle',rdQ:'',chCost:'Alle',chQ:'',compFilter:'Alle',guideTab:null,plvl:6,ccCost:'Alle',ccQ:''};
+try{state.level=localStorage.getItem('tft17_level')||null;}catch(e){}
+try{var s=localStorage.getItem('tft17_sel');if(s)state.sel=JSON.parse(s);}catch(e){}
+try{var sp=localStorage.getItem('tft17_selP');if(sp)state.selP=JSON.parse(sp);}catch(e){}
+try{var md=localStorage.getItem('tft17_mode');if(md==='solo'||md==='duo')state.mode=md;}catch(e){}
+try{var p=parseInt(localStorage.getItem('tft17_plvl'),10);if(p>=3&&p<=10)state.plvl=p;}catch(e){}
+
+// ── HELPERS ───────────────────────────────────────────────────
+function costColor(c){return CC[c]||'#6e74a3';}
+function champById(id){return CHAMPS.find(function(c){return c.id===id;});}
+function champByName(n){return CHAMPS.find(function(c){return c.name===n;});}
+function traitByName(n){return TRAITS.find(function(t){return t.name===n;});}
+function esc(s){return String(s).replace(/'/g,"\\'");}
+function saveSel(){try{localStorage.setItem('tft17_sel',JSON.stringify(state.sel));localStorage.setItem('tft17_selP',JSON.stringify(state.selP));localStorage.setItem('tft17_mode',state.mode);}catch(e){}}
+function compsOfChamp(name){
+  return COMPS.filter(function(c){return c.core.indexOf(name)>=0||(c.extras||[]).indexOf(name)>=0;});
+}
+function diffLabel(d){return d==='e'?'Einfach':d==='m'?'Mittel':'Schwer';}
+function recForLevel(c){
+  if(state.level==='a')return c.diff==='e';
+  if(state.level==='f')return c.diff!=='h'&&(c.tier==='S'||c.tier==='A');
+  return c.tier==='S';
+}
+function unitChip(name,isCarry){
+  var ch=champByName(name);
+  var cc=ch?costColor(ch.cost):'var(--line)';
+  return '<span class="unit-chip'+(isCarry?' carry':'')+'" style="--cc:'+cc+';">'
+    +(ch?'<span style="font-size:9px;font-weight:700;color:'+cc+';">'+ch.cost+'★</span>':'')
+    +name+(isCarry?' ⭐':'')+'</span>';
+}
+
+// ── NAV ───────────────────────────────────────────────────────
+document.getElementById('nav').addEventListener('click',function(e){
+  var btn=e.target.closest('.nav-btn');if(!btn)return;
+  document.querySelectorAll('.nav-btn').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  document.querySelectorAll('.view').forEach(function(v){v.classList.remove('active');});
+  document.getElementById('view-'+btn.dataset.view).classList.add('active');
+  window.scrollTo(0,0);
+});
+
+// ── LEVEL / ONBOARDING ────────────────────────────────────────
+function openOnboard(){document.getElementById('onboard').style.display='block';document.body.style.overflow='hidden';}
+function setLevel(l){
+  state.level=l;
+  try{localStorage.setItem('tft17_level',l);}catch(e){}
+  document.getElementById('onboard').style.display='none';
+  document.body.style.overflow='';
+  state.guideTab=l;
+  applyLevel();
+}
+function applyLevel(){
+  var L=LEVELS[state.level]||LEVELS.a;
+  document.getElementById('lvl-chip').innerHTML=L.icon+' '+L.name+' ▾';
+  renderComps();renderGuide();renderCoach();
+}
+
+// ── VIEW: NEUE RUNDE ──────────────────────────────────────────
+var RD_COSTS=['Alle','1','2','3','4','5'];
+function initRunde(){
+  renderMode();renderPlvl();renderRdFilters();renderRdGrid();
+  document.getElementById('rd-search').addEventListener('input',function(e){
+    state.rdQ=e.target.value;renderRdGrid();
+  });
+}
+// ── Modus Solo / 2v2 Double Up ────────────────────────────────
+function renderMode(){
+  var modes=[['solo','🧍 Solo'],['duo','🤝 2v2 Double Up']];
+  document.getElementById('rd-mode').innerHTML=modes.map(function(m){
+    return '<button onclick="setMode(\''+m[0]+'\')" class="pill-btn'+(state.mode===m[0]?' on':'')+'" style="flex:1;">'+m[1]+'</button>';
+  }).join('');
+  document.getElementById('rd-buildsw').style.display=state.mode==='duo'?'flex':'none';
+  renderBuildSwitch();
+}
+function setMode(m){state.mode=m;saveSel();renderMode();renderRdGrid();renderCoach();}
+function renderBuildSwitch(){
+  if(state.mode!=='duo')return;
+  document.getElementById('rd-buildsw').innerHTML=
+    '<div style="font-size:11px;color:var(--muted);line-height:1.4;">👇 Tippe <b style="color:#9af1be;">DU</b> oder <b style="color:#c4baff;">P</b> direkt auf einer Einheit unten — kein Umschalten nötig. '
+    +'<b style="color:#9af1be;">Du: '+state.sel.length+'</b> · <b style="color:#c4baff;">Partner: '+state.selP.length+'</b></div>';
+}
+function activeSelArr(){return (state.mode==='duo'&&state.activeBuild==='partner')?state.selP:state.sel;}
+function rdRemove(id,which){
+  var arr=which==='partner'?state.selP:state.sel;
+  var i=arr.indexOf(id);if(i>=0)arr.splice(i,1);
+  saveSel();renderMode();renderRdGrid();renderCoach();
+}
+function setPlvl(l){
+  state.plvl=l;
+  try{localStorage.setItem('tft17_plvl',String(l));}catch(e){}
+  renderPlvl();renderCoach();
+}
+function renderPlvl(){
+  var lvls=[4,5,6,7,8,9,10];
+  document.getElementById('rd-plvl').innerHTML=lvls.map(function(l){
+    return '<button onclick="setPlvl('+l+')" class="lvl-tile'+(state.plvl===l?' on':'')+'">'+l+'<span class="slots">'+boardSizeFor(l)+'⛊</span></button>';
+  }).join('');
+  var o=ODDS[state.plvl];
+  document.getElementById('rd-odds').innerHTML='<b style="color:#eef0ff;">'+boardSizeFor(state.plvl)+' Feld-Plätze</b> auf Lv '+state.plvl+' · Shop-Chance pro Slot: '
+    +o.map(function(p,i){var c=i+1;return '<span style="color:'+(p?costColor(c):'var(--muted2)')+';font-weight:'+(p?'700':'400')+';">'+c+'★ '+p+'%</span>';}).join(' · ');
+}
+function renderRdFilters(){
+  document.getElementById('rd-filters').innerHTML=RD_COSTS.map(function(c){
+    var on=state.rdCost===c;
+    return '<button onclick="rdSetCost(\''+c+'\')" class="pill-btn'+(on?' on':'')+'">'+(c==='Alle'?'Alle':c+'★')+'</button>';
+  }).join('');
+}
+function rdSetCost(c){state.rdCost=c;renderRdFilters();renderRdGrid();}
+function resetRound(){
+  if(state.mode==='duo'){state.sel=[];state.selP=[];}else{state.sel=[];}
+  state.plvl=4;
+  try{localStorage.setItem('tft17_plvl','4');}catch(e){}
+  saveSel();renderMode();renderRdGrid();renderPlvl();renderCoach();
+}
+
+function renderRdGrid(){
+  var q=state.rdQ.toLowerCase().trim();
+  var duo=state.mode==='duo';
+  var list=CHAMPS.filter(function(ch){
+    if(state.rdCost!=='Alle'&&String(ch.cost)!==state.rdCost)return false;
+    if(q&&!(ch.name+' '+ch.t.join(' ')).toLowerCase().includes(q))return false;
+    return true;
+  }).sort(function(a,b){return a.cost-b.cost||a.name.localeCompare(b.name,'de');});
+  var meMap={};state.sel.forEach(function(id){meMap[id]=1;});
+  var pMap={};state.selP.forEach(function(id){pMap[id]=1;});
+  document.getElementById('rd-count').textContent=duo
+    ? '· Du '+state.sel.length+' / Partner '+state.selP.length
+    : (state.sel.length?'· '+state.sel.length+' gewählt':'');
+  document.getElementById('rd-grid').innerHTML=list.map(function(ch){
+    var cc=costColor(ch.cost);
+    var inMe=meMap[ch.id],inP=duo&&pMap[ch.id];
+    var selAny=inMe||inP;
+    var bcol=(inMe&&inP)?'#f0c25a':inMe?'#4fd18a':inP?'#8b7cf6':cc;
+    var bg=duo?'background:'+((inMe&&inP)?'rgba(240,194,90,.13)':inMe?'rgba(79,209,138,.13)':inP?'rgba(139,124,246,.13)':'rgba(255,255,255,.04)')+';':'';
+    if(duo){
+      // 2v2: zwei eigene Tap-Zonen direkt auf der Kachel — kein globales Umschalten nötig
+      return '<div class="rd-champ" style="--cc:'+cc+';'+bg+'border-color:'+bcol+' !important;cursor:default;padding-bottom:4px;">'
+        +champImgTag(ch,38,bcol,'margin:0 auto 3px;')
+        +'<div style="font-size:9px;font-weight:700;color:'+cc+';line-height:1;margin-bottom:3px;">'+ch.cost+'★</div>'
+        +'<div style="font-size:10.5px;font-weight:600;color:#eef0ff;line-height:1.15;word-break:break-word;margin-bottom:4px;">'+ch.name+'</div>'
+        +'<div style="display:flex;gap:3px;">'
+          +'<button onclick="rdTapWho(\''+ch.id+'\',\'me\')" style="flex:1;border-radius:6px;padding:4px 2px;font-size:9px;font-weight:800;border:1px solid '+(inMe?'#4fd18a':'var(--line)')+';background:'+(inMe?'rgba(79,209,138,.25)':'rgba(255,255,255,.05)')+';color:'+(inMe?'#9af1be':'var(--muted)')+';">'+(inMe?'✓ DU':'DU')+'</button>'
+          +'<button onclick="rdTapWho(\''+ch.id+'\',\'partner\')" style="flex:1;border-radius:6px;padding:4px 2px;font-size:9px;font-weight:800;border:1px solid '+(inP?'#8b7cf6':'var(--line)')+';background:'+(inP?'rgba(139,124,246,.25)':'rgba(255,255,255,.05)')+';color:'+(inP?'#c4baff':'var(--muted)')+';">'+(inP?'✓ P':'P')+'</button>'
+        +'</div>'
+        +'</div>';
+    }
+    var extra='<div style="font-size:9px;color:var(--muted2);line-height:1.3;margin-top:2px;">'+ch.t.join(' · ')+'</div>';
+    return '<button onclick="rdTap(\''+ch.id+'\')" class="rd-champ'+(inMe?' sel':'')+'" style="--cc:'+cc+';border-color:'+bcol+' !important;">'
+      +champImgTag(ch,42,bcol,'margin:0 auto 4px;')
+      +'<div style="font-size:10px;font-weight:700;color:'+cc+';line-height:1;margin-bottom:2px;">'+ch.cost+'★ '+ROLE_ICON[ch.r]+'</div>'
+      +'<div style="font-size:11px;font-weight:600;color:#eef0ff;line-height:1.2;word-break:break-word;">'+ch.name+(inMe?' ✓':'')+'</div>'
+      +extra
+      +'</button>';
+  }).join('')||'<div style="color:var(--muted);font-size:13px;grid-column:1/-1;padding:10px 0;">Nichts gefunden</div>';
+}
+// Direkter Tap auf DU/P-Button, unabhängig vom globalen activeBuild-Umschalter
+function rdTapWho(id,who){
+  var arr=who==='partner'?state.selP:state.sel;
+  var i=arr.indexOf(id);
+  if(i>=0)arr.splice(i,1);else arr.push(id);
+  saveSel();renderRdGrid();renderBuildSwitch();renderCoach();
+}
+function rdTap(id){
+  var arr=activeSelArr();
+  var i=arr.indexOf(id);
+  if(i>=0)arr.splice(i,1);else arr.push(id);
+  saveSel();renderMode();renderRdGrid();renderCoach();
+}
+// Klick auf eine Comp-Karte: fügt fehlende Kern-Einheiten zur aktiven Auswahl hinzu.
+// Begrenzt auf die aktuelle Feld-Größe, damit nicht mehr als möglich reingestopft wird.
+function applyComp(compName){
+  var c=COMPS.find(function(x){return x.name===compName;});
+  if(!c)return;
+  var arr=activeSelArr();
+  var have={};arr.forEach(function(id){have[id]=1;});
+  var slots=boardSizeFor(state.plvl);
+  var added=0,blockedByBoard=0,alreadyHave=0;
+  c.core.forEach(function(name){
+    var ch=champByName(name);
+    if(!ch)return;
+    if(have[ch.id]){alreadyHave++;return;}
+    if(arr.length>=slots){blockedByBoard++;return;}
+    arr.push(ch.id);have[ch.id]=1;added++;
+  });
+  saveSel();renderMode();renderRdGrid();renderCoach();
+  var box=document.getElementById('rd-coach');
+  if(box)box.scrollIntoView({behavior:'smooth',block:'start'});
+  // Sichtbares Feedback, auch wenn nichts hinzugefügt wurde
+  var msg=document.getElementById('rd-toast');
+  if(!msg){
+    msg=document.createElement('div');msg.id='rd-toast';
+    msg.style.cssText='position:fixed;left:50%;bottom:90px;transform:translateX(-50%);z-index:999;background:#1a2040;border:1px solid rgba(240,194,90,.4);color:#eef0ff;padding:9px 16px;border-radius:999px;font-size:13px;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.4);pointer-events:none;opacity:0;transition:opacity .2s;';
+    document.body.appendChild(msg);
+  }
+  var text=added>0?('✅ '+added+' Einheit'+(added>1?'en':'')+' hinzugefügt')
+    :blockedByBoard>0?('⚠️ Feld voll (Lv '+state.plvl+', '+slots+' Plätze) — erst leveln oder Einheit entfernen')
+    :'✓ Alle Kern-Einheiten sind schon gewählt';
+  msg.textContent=text;
+  msg.style.opacity='1';
+  clearTimeout(window._rdToastT);
+  window._rdToastT=setTimeout(function(){msg.style.opacity='0';},2200);
+}
+
+// ── COACH v2 ──────────────────────────────────────────────────
+// Bewertet Comps, Kauf-Prioritäten und 3★-Reihenfolge unter Einbezug
+// der Shop-Wahrscheinlichkeiten auf dem gewählten Spielerlevel.
+
+function scoreComps(selNames){
+  var tierBonus={S:1.2,A:0.6,B:0};
+  return COMPS.map(function(c){
+    var all=c.core.concat(c.extras||[]);
+    var m=selNames.filter(function(n){return all.indexOf(n)>=0;});
+    if(!m.length)return null;
+    var miss=c.core.filter(function(n){return selNames.indexOf(n)<0;});
+    // Rollbarkeit: Ø Shop-Chance der fehlenden Kern-Einheiten auf dem Spielerlevel
+    var roll=1.5;
+    if(miss.length){
+      var sum=0;miss.forEach(function(n){var ch=champByName(n);sum+=ch?oddsFor(state.plvl,ch.cost):0;});
+      roll=Math.min(1.5,(sum/miss.length)/40*1.5);
+    }
+    var score=m.length+(m.indexOf(c.carry)>=0?1.5:0)+tierBonus[c.tier]+roll;
+    return {c:c,m:m,miss:miss,roll:roll,score:score};
+  }).filter(Boolean).sort(function(a,b){return b.score-a.score;});
+}
+
+function rollHint(x){
+  // Ab welchem Level sind die fehlenden Einheiten realistisch (≥10% pro Slot)?
+  if(!x.miss.length)return {ok:true,txt:'✓ komplett'};
+  var maxCost=0;
+  x.miss.forEach(function(n){var ch=champByName(n);if(ch&&ch.cost>maxCost)maxCost=ch.cost;});
+  if(oddsFor(state.plvl,maxCost)>=10)return {ok:true,txt:'🎲 gut rollbar auf Lv '+state.plvl};
+  for(var l=state.plvl+1;l<=10;l++){if(oddsFor(l,maxCost)>=10)return {ok:false,txt:'🎲 realistisch ab Lv '+l+' ('+maxCost+'★-Einheiten)'};}
+  return {ok:false,txt:'🎲 sehr schwer zu treffen'};
+}
+
+function buyPriorities(sel,selNames,tmap,hits){
+  var hasTank=sel.some(function(c){return c.r==='tank';});
+  var hasDmg=sel.some(function(c){return c.r!=='tank'&&c.r!=='supp';});
+  var selIds={};sel.forEach(function(c){selIds[c.id]=1;});
+  var slots=boardSizeFor(state.plvl);
+  var freeSlots=Math.max(0,slots-sel.length);
+  var out=[];
+  CHAMPS.forEach(function(ch){
+    if(selIds[ch.id])return;
+    var odds=oddsFor(state.plvl,ch.cost);
+    var score=odds/20,reasons=[];
+    // Beitrag zu den besten passenden Comps
+    hits.slice(0,3).forEach(function(x,ri){
+      if(x.c.core.indexOf(ch.name)>=0){
+        score+=[3,2,1][ri];
+        if(ch.name===x.c.carry){score+=2;reasons.push('Carry von „'+x.c.name+'"');}
+        else if(ri===0){reasons.push('Kern von „'+x.c.name+'"');}
+      }
+    });
+    // Trait-Breakpoints vervollständigen
+    ch.t.forEach(function(t){
+      var cur=tmap[t]||0;
+      if(cur>0){
+        var tr=traitByName(t);
+        if(tr&&tr.bp.indexOf(cur+1)>=0){score+=2.2;reasons.push('aktiviert '+t+' '+(cur+1));}
+        else score+=0.6;
+      }
+    });
+    // Team-Balance
+    if(!hasTank&&ch.r==='tank'){score+=1;if(reasons.length<2)reasons.push('dir fehlt Frontline');}
+    if(!hasDmg&&(ch.r==='ad'||ch.r==='ap')){score+=1;if(reasons.length<2)reasons.push('dir fehlt Schaden');}
+    // Findbarkeit
+    if(odds===0){score-=2;reasons.push('auf Lv '+state.plvl+' nicht im Shop!');}
+    else if(odds>=25&&reasons.length<3)reasons.push(odds+'% Shop-Chance');
+    else if(reasons.length&&reasons.length<3)reasons.push(odds+'% Chance auf Lv '+state.plvl);
+    if(score>0.8)out.push({ch:ch,score:score,reasons:reasons,bench:freeSlots<=0});
+  });
+  // Zeige ein VOLLES Team: so viele Vorschläge wie freie Feld-Plätze (mind. 3, damit auch bei vollem Feld noch
+  // ein paar Bank-Alternativen sichtbar sind), statt einer festen Zahl.
+  var count=Math.max(3,freeSlots);
+  return out.sort(function(a,b){return b.score-a.score;}).slice(0,count);
+}
+
+function starPriorities(sel){
+  var out=[];
+  sel.forEach(function(ch){
+    if(ch.cost>3)return;
+    var score=ch.cost===1?2.2:ch.cost===2?1.8:0.7;
+    var reasons=[];
+    var rr=COMPS.find(function(c){return c.styleKey==='reroll'&&c.carry===ch.name;});
+    if(rr){score+=3;reasons.push('Carry von „'+rr.name+'" (Reroll)');}
+    else{
+      var inRr=COMPS.find(function(c){return c.styleKey==='reroll'&&c.core.indexOf(ch.name)>=0;});
+      if(inRr){score+=1;reasons.push('Kern von „'+inRr.name+'"');}
+    }
+    var odds=oddsFor(state.plvl,ch.cost);
+    score+=odds/40;
+    reasons.push(POOL[ch.cost]+' Kopien im Pool · '+odds+'% auf Lv '+state.plvl);
+    out.push({ch:ch,score:score,reasons:reasons});
+  });
+  return out.sort(function(a,b){return b.score-a.score;}).slice(0,3);
+}
+
+// Item-Plan: bestimmt Carry- und Tank-Champ + deren Item-Reihenfolge (Prio 1/2/3)
+function itemPlan(sel,selNames,hits){
+  var plan={carry:null,tank:null};
+  var dmgRoles={ad:1,ap:1,fight:1,assa:1,flex:1};
+  function pickSel(pred){
+    return sel.filter(pred).sort(function(a,b){return b.cost-a.cost;})[0]||null;
+  }
+  if(hits.length){
+    var best=hits[0].c;
+    var carryCh=champByName(best.carry),tankCh=champByName(best.tank);
+    plan.carry={name:best.carry,cost:carryCh?carryCh.cost:null,items:best.carryIt.slice(0,3),have:selNames.indexOf(best.carry)>=0,src:'„'+best.name+'"'};
+    plan.tank ={name:best.tank, cost:tankCh?tankCh.cost:null, items:best.tankIt.slice(0,3), have:selNames.indexOf(best.tank)>=0, src:'„'+best.name+'"'};
+  }else{
+    var c=pickSel(function(x){return dmgRoles[x.r];});
+    var t=pickSel(function(x){return x.r==='tank';});
+    // Fallback: keine Schadens-/Tank-Rolle gewählt (z. B. nur ein Support) → teuerste Einheit als Item-Träger
+    if(!c&&!t)c=pickSel(function(){return true;});
+    if(c)plan.carry={name:c.name,cost:c.cost,items:c.it.slice(0,3),have:true,src:'deine Auswahl'};
+    if(t)plan.tank ={name:t.name,cost:t.cost,items:t.it.slice(0,3),have:true,src:'deine Auswahl'};
+  }
+  return plan;
+}
+function renderItemBlock(label,color,p){
+  if(!p||!p.items.length)return '';
+  var h='<div class="coach-box" style="padding:10px 11px;'+(p.have?'':'opacity:.92;')+'">'
+    +'<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">'
+    +'<span style="font-size:11px;font-weight:700;color:'+color+';">'+label+':</span>'
+    +'<b style="font-size:13px;">'+p.name+'</b>'
+    +(p.cost!=null?'<span class="cst" style="font-size:9px;font-weight:700;color:'+costColor(p.cost)+';">'+p.cost+'★</span>':'')
+    +(p.have?'<span style="font-size:10px;color:var(--green);margin-left:auto;">✓ dabei</span>':'<span style="font-size:10px;color:var(--muted2);margin-left:auto;">⏳ noch holen</span>')
+    +'</div>';
+  p.items.forEach(function(item,i){
+    var rec=RECIPES.find(function(r){return r[0]===item.replace(' ×2','');});
+    h+='<div class="item-row" style="margin-bottom:4px;">'
+      +'<span style="font-size:11px;font-weight:800;color:'+(i===0?'var(--gold)':i===1?'#c8cee6':'#c9956a')+';width:16px;">'+(i+1)+'.</span>'
+      +'<span style="flex:1;">'+item+'</span>'
+      +(rec?'<span style="color:var(--muted2);font-size:10px;font-weight:400;">'+rec[1]+'</span>':'')+'</div>';
+  });
+  h+='</div>';
+  return h;
+}
+
+// ── Team-Build-Analyse (für Solo & Duo wiederverwendbar) ──────
+function analyzeBuild(ids){
+  var sel=ids.map(champById).filter(Boolean);
+  var selNames=sel.map(function(c){return c.name;});
+  var tmap={};sel.forEach(function(ch){ch.t.forEach(function(t){tmap[t]=(tmap[t]||0)+1;});});
+  var hits=scoreComps(selNames);
+  return {sel:sel,selNames:selNames,tmap:tmap,hits:hits,best:hits[0]||null};
+}
+function duoPlayerCard(icon,label,which,A){
+  var col=which==='partner'?'#c4baff':'#9af1be';
+  var accent=which==='partner'?'rgba(139,124,246,.4)':'rgba(79,209,138,.4)';
+  var h='<div class="coach-box" style="border-color:'+accent+';">'
+    +'<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">'
+    +'<b style="font-size:14px;color:'+col+';flex:1;">'+icon+' '+label+'</b>'
+    +'<button onclick="setActiveBuild(\''+which+'\')" class="pill-btn'+(state.activeBuild===which?' on':'')+'" style="padding:3px 9px;font-size:10px;">'+(state.activeBuild===which?'● bearbeiten':'bearbeiten')+'</button>'
+    +'</div>';
+  if(!A.sel.length){
+    h+='<div style="font-size:12px;color:var(--muted);">Noch leer. Tippe hier auf „bearbeiten" und wähle links Einheiten.</div></div>';
+    return h;
+  }
+  h+='<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px;">';
+  A.sel.forEach(function(ch){
+    h+='<button onclick="rdRemove(\''+ch.id+'\',\''+which+'\')" class="chip" style="font:inherit;font-size:10px;font-weight:600;"><span class="cst" style="color:'+costColor(ch.cost)+';">'+ch.cost+'★</span>'+ch.name+' ✕</button>';
+  });
+  h+='</div>';
+  if(A.sel.length){
+    h+='<div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:6px;">🧭 Positionierung</div>'+renderPositionBoard(A.sel);
+  }
+  var goodHit=A.best&&A.best.m.length>=2;
+  if(goodHit){
+    var c=A.best.c,pct=Math.round(100*A.best.m.length/c.core.length),rh=rollHint(A.best);
+    h+='<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">'
+      +'<span class="tier-badge tier-'+c.tier+'">'+c.tier+'</span>'
+      +'<b style="font-size:13px;flex:1;">'+c.name+'</b>'
+      +'<span class="diff-badge diff-'+c.diff+'">'+diffLabel(c.diff)+'</span></div>'
+      +'<div style="font-size:11px;color:var(--muted);">'+c.style+' · Carry: <b style="color:#eef0ff;">'+c.carry+'</b> · '+A.best.m.length+'/'+c.core.length+' Kern</div>'
+      +'<div class="prog"><i style="width:'+pct+'%;"></i></div>'
+      +'<div style="font-size:11px;color:'+(rh.ok?'var(--green)':'var(--red)')+';margin-bottom:6px;">'+rh.txt+'</div>'
+      +'<div style="font-size:11px;color:var(--gold);margin-bottom:4px;">🗡 '+c.carry+': '+c.carryIt.map(function(it,i){return (i+1)+'. '+it;}).join(' · ')+'</div>';
+    var pr=buyPriorities(A.sel,A.selNames,A.tmap,A.hits);
+    if(pr.length){
+      h+='<div style="font-size:11px;color:var(--muted);margin-bottom:2px;">🛒 Als Nächstes:</div>';
+      pr.slice(0,2).forEach(function(p,i){
+        h+='<div style="font-size:11px;margin-bottom:2px;"><b style="color:#eef0ff;">'+(i+1)+'. '+p.ch.name+'</b>'
+          +(p.ch.it&&p.ch.it.length?' <span style="color:var(--gold);">→ '+p.ch.it.slice(0,2).join(' + ')+'</span>':'')
+          +'</div>';
+      });
+    }
+  }else{
+    // Generischer Trait-Fallback, wie im Solo-Coach — greift auch hier, statt nur schwacher Kaufhinweise
+    var tArrD=Object.entries(A.tmap).sort(function(a,b){return b[1]-a[1];});
+    if(tArrD.length){
+      var mainT=tArrD[0],trD=traitByName(mainT[0]);
+      h+='<div style="font-size:12px;color:var(--muted);margin-bottom:4px;">Kein Top-Comp-Match, aber stärkster Trait: <b style="color:var(--gold);">'+mainT[0]+'</b> ('+mainT[1]+')</div>';
+    }
+    var pr2=buyPriorities(A.sel,A.selNames,A.tmap,A.hits);
+    if(pr2.length){
+      h+='<div style="font-size:11px;color:var(--muted);margin-bottom:2px;">🛒 Passt dazu:</div>';
+      pr2.slice(0,3).forEach(function(p){
+        h+='<div style="font-size:11px;margin-bottom:2px;"><b style="color:#eef0ff;">'+p.ch.name+'</b>'
+          +(p.ch.it&&p.ch.it.length?' <span style="color:var(--gold);">→ '+p.ch.it.slice(0,2).join(' + ')+'</span>':'')
+          +'</div>';
+      });
+    }
+  }
+  h+='</div>';
+  return h;
+}
+function renderCoachDuo(){
+  var box=document.getElementById('rd-coach');
+  var meA=analyzeBuild(state.sel),pA=analyzeBuild(state.selP);
+  var html='<div class="section-label">🤝 Team-Coach (2v2 Double Up)</div>';
+  if(!state.sel.length&&!state.selP.length){
+    html+='<div class="empty-hint"><div class="big">🤝</div>Baut euer Team: oben „bearbeiten" für <b>Dein Build</b> oder <b>Partner</b> wählen und links Einheiten antippen. Der Coach plant beide Builds und zeigt eure Team-Synergien.</div>';
+    box.innerHTML=html;return;
+  }
+  html+=duoPlayerCard('🧍','Dein Build','me',meA);
+  html+=duoPlayerCard('🤝','Partner-Build','partner',pA);
+
+  html+='<div class="mini-label">🤝 Team-Synergie &amp; Doppel-Tipps</div>';
+  var tips=[];
+  var meGood=meA.best&&meA.best.m.length>=2, pGood=pA.best&&pA.best.m.length>=2;
+  // Contest im geteilten Pool
+  var contest=[];
+  if(meGood&&pGood){
+    var pCore={};pA.best.c.core.forEach(function(n){pCore[n]=1;});
+    meA.best.c.core.forEach(function(n){if(pCore[n])contest.push(n);});
+  }
+  var bothOwn=state.sel.filter(function(id){return state.selP.indexOf(id)>=0;}).map(function(id){return champById(id).name;});
+  contest=Array.from(new Set(contest.concat(bothOwn)));
+  if(meGood&&pGood){
+    if(meA.best.c.id===pA.best.c.id)
+      tips.push(['⚠️','var(--red)','Beide bauen <b>'+meA.best.c.name+'</b> — einer sollte wechseln.']);
+    else
+      tips.push(['✓','var(--green)','Unterschiedliche Carries (<b>'+meA.best.c.carry+'</b> / <b>'+pA.best.c.carry+'</b>) — kaum Contest.']);
+  }
+  if(contest.length)
+    tips.push(['🔀','var(--gold)','Beide brauchen: <b>'+contest.slice(0,5).join(', ')+'</b> — Priorität absprechen.']);
+  function tempo(A){var c=(A.best&&A.best.m.length>=2)?A.best.c:null;if(!c)return 0;return (c.styleKey==='reroll'?2:0)+(c.diff==='e'?2:c.diff==='m'?1:0);}
+  if(meA.sel.length&&pA.sel.length){
+    var mt=tempo(meA),pt=tempo(pA);
+    if(mt>pt)tips.push(['🛡','var(--blue)','<b>Du</b> stabilisierst früher — Verstärkung geht an Partner.']);
+    else if(pt>mt)tips.push(['🛡','var(--blue)','<b>Partner</b> stabilisiert früher — Verstärkung kommt zu dir.']);
+    else tips.push(['🛡','var(--blue)','Ähnliches Tempo — Verstärkung geht an wer zuerst gewinnt.']);
+  }
+  tips.push(['🎁','#c4baff','<b>Rune of Allegiance</b> (4-3 / 6-1): überzählige Copies &amp; Items rüberschicken.']);
+  tips.push(['❤️','var(--red)','Gemeinsames Leben — nie beide gleichzeitig schwach spielen.']);
+  tips.forEach(function(t){
+    html+='<div class="coach-box" style="padding:7px 11px;"><div style="font-size:12px;line-height:1.4;"><span style="color:'+t[1]+';font-weight:700;">'+t[0]+'</span> '+t[2]+'</div></div>';
+  });
+  box.innerHTML=html;
+}
+
+// ── Positionierungs-Board (grafisch) ───────────────────────────
+function boardRow(label,entries,color,dashed){
+  if(!entries.length)return '';
+  var cells=entries.map(function(x){
+    var img=champImg(x.ch.id);
+    var isBench=!!x.bench;
+    var visual=img?'<img src="'+img+'" loading="lazy" onerror="this.style.visibility=\'hidden\'" style="'+(isBench?'filter:grayscale(1);opacity:.55;':'')+'">':'<div class="bc-fallback">🎴</div>';
+    return '<div class="board-cell" style="--cell-cc:'+(isBench?'var(--muted2)':costColor(x.ch.cost))+(isBench?';opacity:.7':'')+'" title="'+x.ch.name+(isBench?' (Bank)':'')+'">'+visual+'<span class="bc-cost">'+x.ch.cost+'</span></div>';
+  }).join('');
+  return '<div class="board-row'+(dashed?' dashed':'')+'" style="--row-cc:'+color+'">'
+    +'<div class="board-row-label" style="color:'+color+'">'+label+'</div>'
+    +'<div class="board-row-cells">'+cells+'</div></div>';
+}
+function renderPositionBoard(sel){
+  var slots=boardSizeFor(state.plvl);
+  var MECH_IDS={urgot:1,asol:1,mech:1}; // Mech-Einheiten transformiert = 2 Feld-Plätze statt 1
+  // Effektiv belegte Plätze: Mechs zählen doppelt
+  var effectiveUsed=sel.reduce(function(sum,ch){return sum+(MECH_IDS[ch.id]?2:1);},0);
+  var over=effectiveUsed>slots;
+  // Bei Überschreitung: die Einheiten mit dem geringsten Comp-Wert (hier: niedrigste Kosten zuerst) gelten als Bank-Kandidaten
+  var sorted=sel.slice().sort(function(a,b){return b.cost-a.cost;});
+  var benchIds={};
+  if(over){
+    var used=0;
+    sorted.forEach(function(ch){
+      var need=MECH_IDS[ch.id]?2:1;
+      if(used+need>slots){benchIds[ch.id]=1;}else{used+=need;}
+    });
+  }
+
+  var withPos=sel.map(function(ch){return {ch:ch,pos:posInfo(ch.r),bench:!!benchIds[ch.id],isMech:!!MECH_IDS[ch.id]};});
+  var zones={front:[],mid:[],back:[],flex:[]};
+  withPos.forEach(function(x){zones[x.pos.zone].push(x);});
+  var hasMechSel=sel.some(function(ch){return MECH_IDS[ch.id];});
+  var html='<div class="board" aria-label="Empfohlene Aufstellung">'
+    +'<div class="board-arrow">⚔ RICHTUNG GEGNER ⚔ · '+Math.min(effectiveUsed,slots)+'/'+slots+' Feld-Plätze'+(hasMechSel?' <span style="color:#b06bf0;">(Mechs zählen doppelt)</span>':'')+'</div>'
+    +boardRow('Hinten · Ecken',zones.back,'#ff7a7a')
+    +boardRow('Mittlere Reihe',zones.mid,'#5ba8ff')
+    +boardRow('Vorderste Reihe',zones.front,'#4fd18a')
+    +(zones.flex.length?boardRow('Assassinen',zones.flex,'#8b7cf6',true):'')
+    +'<div class="board-legend">'
+    +'<span><i style="background:#ff7a7a;"></i>Hauptschaden</span>'
+    +'<span><i style="background:#5ba8ff;"></i>Support/Kämpfer</span>'
+    +'<span><i style="background:#4fd18a;"></i>Tank</span>'
+    +(zones.flex.length?'<span><i style="background:#8b7cf6;"></i>Assassine</span>':'')
+    +(hasMechSel?'<span><i style="background:#b06bf0;"></i>Mech (2 Plätze)</span>':'')
+    +(over?'<span><i style="background:var(--muted2);"></i>Auf der Bank</span>':'')
+    +'</div></div>';
+  if(hasMechSel){
+    var mechNames=sel.filter(function(ch){return MECH_IDS[ch.id];}).map(function(ch){return ch.name;});
+    html+='<div style="font-size:11px;color:#c9a8f0;margin-top:8px;">🤖 <b style="color:#eef0ff;">'+mechNames.join(', ')+'</b>: transformiert '+(mechNames.length>1?'brauchen sie':'braucht er')+' je 2 Feld-Plätze nebeneinander — plane die Nachbarfelder frei.</div>';
+  }
+  if(over){
+    var benchNames=Object.keys(benchIds).map(function(id){return champById(id).name;});
+    html+='<div style="font-size:11px;color:var(--red);margin-top:8px;">⚠️ '+effectiveUsed+' Feld-Plätze gebraucht (inkl. Mech-Doppelbelegung), aber nur '+slots+' auf Lv '+state.plvl+'. <b style="color:#eef0ff;">'+benchNames.join(', ')+'</b> würde'+(benchNames.length>1?'n':'')+' auf der Bank bleiben.</div>';
+  }
+  if(zones.back.length){
+    html+='<div style="font-size:11px;color:var(--gold);margin-top:8px;">💡 Hauptschaden in eine Ecke, nicht in die Mitte — Assassinen &amp; Blitzcrank-Hooks brauchen so länger.</div>';
+  }
+  if(zones.flex.length){
+    html+='<div style="font-size:11px;color:var(--muted);margin-top:5px;">Assassinen springen selbst ins Ziel — Startposition ist zweitrangig.</div>';
+  }
+  return html;
+}
+
+function renderCoach(){
+  if(state.mode==='duo')return renderCoachDuo();
+  var box=document.getElementById('rd-coach');
+  var sel=state.sel.map(champById).filter(Boolean);
+  if(!sel.length){
+    box.innerHTML='<div class="section-label">Coach</div>'
+      +'<div class="empty-hint"><div class="big">👈</div>Wähle Einheiten — der Coach zeigt dir die beste Kombination, Kauf-Prioritäten und Items.</div>';
+    return;
+  }
+  var html='<div class="section-label">Coach</div>';
+
+  // Gewählte Einheiten
+  html+='<div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px;">';
+  sel.forEach(function(ch){
+    html+='<button onclick="rdTap(\''+ch.id+'\')" class="chip sel" style="font:inherit;font-size:11px;font-weight:600;">'
+      +'<span class="cst" style="color:'+costColor(ch.cost)+';">'+ch.cost+'★</span>'+ch.name+' ✕</button>';
+  });
+  html+='</div>';
+
+  // Traits mit Breakpoints
+  var tmap={};
+  sel.forEach(function(ch){ch.t.forEach(function(t){tmap[t]=(tmap[t]||0)+1;});});
+  var tArr=Object.entries(tmap).sort(function(a,b){return b[1]-a[1];});
+  if(tArr.length){
+    html+='<div class="mini-label">✨ Traits</div><div style="margin-bottom:12px;">';
+    tArr.forEach(function(e){
+      var tr=traitByName(e[0]);var n=e[1];
+      var bp=tr?tr.bp:[2];
+      var act=null,next=null;
+      bp.forEach(function(b){if(n>=b)act=b;else if(next===null)next=b;});
+      var lbl=e[0]+' '+n+(next?'/'+next:act?' ✓':'');
+      html+='<span class="trait-chip'+(act?' act':'')+'">'+lbl+'</span>';
+    });
+    html+='</div>';
+  }
+
+  var selNames=sel.map(function(c){return c.name;});
+  var hits=scoreComps(selNames);
+  var goodHit=hits.length && hits[0].m.length>=2; // mind. 2 echte Kern-Treffer, sonst zu schwach um "die beste Kombination" zu heißen
+
+  // 🛒 Als Nächstes kaufen — WICHTIGSTE Sektion, direkt nach den Traits, mit Items pro Vorschlag
+  var prios=buyPriorities(sel,selNames,tmap,hits);
+  if(prios.length){
+    var medals=['🥇','🥈','🥉'];
+    html+='<div class="mini-label">🛒 Als Nächstes kaufen</div>';
+    prios.forEach(function(p,i){
+      html+='<div class="coach-box" style="padding:9px 11px;'+(p.bench?'opacity:.85;':'')+'">'
+        +'<div style="display:flex;align-items:center;gap:7px;">'
+        +'<span style="font-size:13px;">'+medals[i]+'</span>'
+        +'<span class="cst" style="font-size:10px;font-weight:700;color:'+costColor(p.ch.cost)+';">'+p.ch.cost+'★</span>'
+        +'<b style="font-size:13px;flex:1;">'+p.ch.name+'</b>'
+        +(p.bench?'<span style="font-size:9px;font-weight:700;color:var(--muted2);background:rgba(255,255,255,.08);border-radius:5px;padding:2px 6px;">BANK</span>':'')
+        +'</div>'
+        +(p.ch.it&&p.ch.it.length?'<div style="font-size:11px;color:var(--gold);margin-top:4px;">🏆 '+p.ch.it.slice(0,3).join(' + ')+'</div>':'')
+        +'</div>';
+    });
+  }
+
+  // 🧭 Positionierung — grafisches Board
+  html+='<div class="mini-label">🧭 Positionierung</div>'+renderPositionBoard(sel);
+
+  // ⚔ Beste Kombination(en) — nur wenn wirklich ein kuratiertes Comp gut passt
+  var maxComps=Math.max(3,state.level==='a'?3:state.level==='f'?4:5);
+  if(goodHit){
+    html+='<div class="mini-label">⚔ Beste Kombination'+(hits.length>1?'en':'')+'</div>';
+    hits.slice(0,maxComps).forEach(function(x,xi){
+      var c=x.c;
+      var pct=Math.round(100*x.m.length/c.core.length);
+      var miss=x.miss.slice().sort(function(a,b){var ca=champByName(a),cb=champByName(b);return (ca?ca.cost:9)-(cb?cb.cost:9);});
+      var rh=rollHint(x);
+      var slotsHere=boardSizeFor(state.plvl);
+      var fitsBoard=c.core.length<=slotsHere;
+      html+='<button onclick="applyComp(\''+c.name.replace(/'/g,"\\'")+'\')" class="coach-box" style="display:block;width:100%;text-align:left;cursor:pointer;'+(xi===0?'border-color:rgba(240,194,90,.4);':'')+'">'
+        +'<div style="display:flex;align-items:center;gap:7px;margin-bottom:4px;">'
+        +'<span class="tier-badge tier-'+c.tier+'">'+c.tier+'</span>'
+        +'<b style="font-size:13px;flex:1;">'+(xi===0?'👉 ':'')+c.name+'</b>'
+        +'<span class="diff-badge diff-'+c.diff+'">'+diffLabel(c.diff)+'</span>'
+        +'</div>'
+        +'<div style="font-size:11px;color:var(--muted);">Carry: <b style="color:#eef0ff;">'+c.carry+'</b> · '+x.m.length+'/'+c.core.length+'</div>'
+        +'<div class="prog"><i style="width:'+pct+'%;"></i></div>'
+        +(fitsBoard?'':'<div style="font-size:11px;color:var(--red);">⚠️ Braucht '+c.core.length+' Plätze, du hast '+slotsHere+'.</div>')
+        +'<div style="font-size:11px;color:'+(rh.ok?'var(--green)':'var(--red)')+';">'+rh.txt+'</div>'
+        +(miss.length?'<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;">'
+          +miss.slice(0,6).map(function(n){var ch=champByName(n);
+            return '<span class="chip"><span class="cst" style="color:'+(ch?costColor(ch.cost):'#888')+';">'+(ch?ch.cost+'★':'')+'</span>'+n+'</span>';}).join('')
+          +'</div>'
+          :'<div style="color:var(--green);font-size:11px;">✓ Alle Kern-Einheiten dabei!</div>')
+        +'</button>';
+    });
+  } else {
+    // ── Generischer Trait-Fallback ──────────────────────────────
+    if(tArr.length){
+      var mainTrait=tArr[0];
+      var tr=traitByName(mainTrait[0]);
+      var have=mainTrait[1];
+      var nextBp=null;
+      if(tr){ tr.bp.forEach(function(b){ if(nextBp===null && b>have) nextBp=b; }); }
+      html+='<div class="mini-label">⚔ Richtung: '+mainTrait[0]+'</div>';
+      html+='<div class="coach-box"><div style="font-size:12px;color:var(--muted);">'+have+(nextBp?'/'+nextBp:'')+' aktiv'+(tr?' — '+tr.desc:'')+'</div></div>';
+    }
+  }
+
+  // 🎯 Feld-Status: wie viele Slots hat dieses Level, sind schon alle belegt?
+  var slots=boardSizeFor(state.plvl);
+  var free=slots-sel.length;
+  html+='<div class="mini-label">🎯 Feld · Lv '+state.plvl+'</div>';
+  html+='<div class="coach-box" style="padding:9px 11px;display:flex;align-items:center;gap:8px;">'
+    +'<span style="font-size:13px;font-weight:700;">'+sel.length+' / '+slots+' Plätze belegt</span>'
+    +'<div class="prog" style="flex:1;margin:0;"><i style="width:'+Math.min(100,Math.round(100*sel.length/slots))+'%;background:'+(free<0?'var(--red)':free===0?'var(--gold)':'var(--green)')+';"></i></div>'
+    +'</div>';
+  if(free<0){
+    html+='<div style="font-size:11px;color:var(--red);margin:5px 0 10px;">⚠️ '+(-free)+' zu viel für Lv '+state.plvl+'.</div>';
+  }else if(free===0){
+    html+='<div style="font-size:11px;color:var(--gold);margin:5px 0 10px;">Feld ist voll — für jeden neuen Champ musst du erst leveln oder tauschen.</div>';
+  }else{
+    html+='<div style="font-size:11px;color:var(--muted);margin:5px 0 10px;">Noch '+free+' freie'+(free>1?'':''+'r')+' Platz'+(free>1?'plätze':'')+' bis Level '+state.plvl+' voll ist.</div>';
+  }
+
+  // ⭐ 3★-Reihenfolge
+  var stars=starPriorities(sel);
+  if(stars.length){
+    html+='<div class="mini-label">⭐ Zuerst auf 3★ rollen</div>';
+    stars.forEach(function(s,i){
+      html+='<div class="coach-box" style="padding:8px 11px;">'
+        +'<div style="display:flex;align-items:center;gap:7px;">'
+        +'<span style="font-size:12px;font-weight:800;color:var(--gold);">'+(i+1)+'.</span>'
+        +'<span class="cst" style="font-size:10px;font-weight:700;color:'+costColor(s.ch.cost)+';">'+s.ch.cost+'★</span>'
+        +'<b style="font-size:13px;flex:1;">'+s.ch.name+'</b>'
+        +'</div>'
+        +'<div style="font-size:11px;color:var(--muted);margin-top:2px;">'+s.reasons.join(' · ')+'</div>'
+        +'</div>';
+    });
+  }else if(sel.length){
+    html+='<div class="mini-label">⭐ Zuerst auf 3★ rollen</div>'
+      +'<div style="font-size:12px;color:var(--muted);margin-bottom:10px;">4- und 5-Kosten-Einheiten rollt man nicht auf 3★ — Ziel ist dort 2★. Wähle 1–3-Kosten-Einheiten für einen Reroll-Plan.</div>';
+  }
+
+  // 🏆 Items — Prio 1/2/3 pro Carry & Tank, mit Champ-Zuordnung
+  var plan=itemPlan(sel,selNames,hits);
+  if(plan.carry||plan.tank){
+    html+='<div class="mini-label">🏆 Items bauen (in dieser Reihenfolge)</div>';
+    html+=renderItemBlock('🗡 Carry-Items','var(--gold)',plan.carry);
+    html+=renderItemBlock('🛡 Tank-Items','var(--blue)',plan.tank);
+    if(state.level==='a'){
+      html+='<div style="font-size:11px;color:var(--muted);margin:2px 0 8px;line-height:1.5;">👉 Alle 3 Carry-Items auf <b style="color:#eef0ff;">'+(plan.carry?plan.carry.name:'deinen Carry')+'</b>, die Tank-Items auf <b style="color:#eef0ff;">'+(plan.tank?plan.tank.name:'deinen Tank')+'</b>. Verteil sie NICHT auf mehrere Einheiten.</div>';
+    }
+  }
+
+  // 💡 Spielplan-Tipp
+  if(hits.length){
+    var best=hits[0].c,tip='';
+    if(state.level==='a'){
+      tip=best.styleKey==='reroll'
+        ?'<b>Dein Plan:</b> '+best.style+' — auf diesem Level bleiben, über 50 Gold sparen, dann jede Runde das Gold darüber in Rerolls stecken, bis <b>'+best.carry+'</b> 3★ ist. Alle Schadens-Items auf '+best.carry+'.'
+        :'<b>Dein Plan:</b> '+best.style+' — zügig auf Level 8 kommen (XP kaufen), dann nach <b>'+best.carry+'</b> suchen. Tank-Items auf '+best.tank+'.';
+    }else if(state.level==='f'){
+      tip='<b>Plan:</b> '+best.style+'. '+best.tip;
+    }else{
+      tip='<b>Plan:</b> '+best.style+'. '+best.tip+(best.pro?' <span style="color:var(--muted);">— '+best.pro+'</span>':'');
+    }
+    html+='<div class="tipbox">💡 '+tip+'</div>';
+  }
+
+  box.innerHTML=html;
+}
+
+// ── VIEW: COMPS ───────────────────────────────────────────────
+var COMP_FILTERS=['Alle','Einfach','Mittel','Schwer','S-Tier'];
+function compSetFilter(f){state.compFilter=f;renderComps();}
+function renderComps(){
+  document.getElementById('comps-filters').innerHTML=COMP_FILTERS.map(function(f){
+    return '<button onclick="compSetFilter(\''+f+'\')" class="pill-btn'+(state.compFilter===f?' on':'')+'">'+f+'</button>';
+  }).join('');
+  var L=LEVELS[state.level]||LEVELS.a;
+  document.getElementById('comps-sub').innerHTML='Aktuelle Meta-Comps (Patch 17.6) · <b style="color:var(--gold);">⭐ = empfohlen für '+L.name+'</b>';
+  var list=COMPS.filter(function(c){
+    if(state.compFilter==='Einfach')return c.diff==='e';
+    if(state.compFilter==='Mittel')return c.diff==='m';
+    if(state.compFilter==='Schwer')return c.diff==='h';
+    if(state.compFilter==='S-Tier')return c.tier==='S';
+    return true;
+  });
+  // Empfohlene zuerst, dann nach Tier
+  var tierOrd={S:0,A:1,B:2};
+  list=list.slice().sort(function(a,b){
+    var ra=recForLevel(a)?0:1,rb=recForLevel(b)?0:1;
+    return ra-rb||tierOrd[a.tier]-tierOrd[b.tier];
+  });
+  document.getElementById('comps-list').innerHTML=list.map(function(c){
+    var rec=recForLevel(c);
+    return '<div class="comp-card'+(rec?' rec':'')+'">'
+      +'<div class="comp-head">'
+      +'<span class="tier-badge tier-'+c.tier+'">'+c.tier+'</span>'
+      +'<h3>'+c.name+'</h3>'
+      +(rec?'<span class="rec-badge">⭐ Für dich</span>':'')
+      +'<span class="diff-badge diff-'+c.diff+'">'+diffLabel(c.diff)+'</span>'
+      +'<span class="style-badge">'+c.style+'</span>'
+      +'</div>'
+      +'<div class="comp-champs">'
+      +c.core.map(function(n){return unitChip(n,n===c.carry);}).join('')
+      +((c.extras||[]).length?'<span style="color:var(--muted2);font-size:11px;align-self:center;">+ '+c.extras.join(', ')+'</span>':'')
+      +'</div>'
+      +'<div class="itemfocus"><span style="color:var(--gold);font-weight:700;">🏆 '+c.carry+':</span> '+c.carryIt.join(' + ')+'</div>'
+      +'<div class="itemfocus" style="background:rgba(91,168,255,.07);border-color:rgba(91,168,255,.2);"><span style="color:var(--blue);font-weight:700;">🛡 '+c.tank+':</span> '+c.tankIt.join(' + ')+'</div>'
+      +'<div class="comp-tip">💡 '+c.tip+'</div>'
+      +(state.level==='p'&&c.pro?'<div class="comp-tip" style="color:#c4baff;">👑 '+c.pro+'</div>':'')
+      +'</div>';
+  }).join('')||'<div class="empty-hint">Keine Comps mit diesem Filter.</div>';
+}
+
+// ── VIEW: CHAMPIONS ───────────────────────────────────────────
+var CH_COSTS=['Alle','1','2','3','4','5'];
+// ══════════════════════════════════════════════════════════════
+// CHONCC'S LEGENDEN — Set 16 "Lore & Legends", Nostalgie-Modus (Patch 17.7)
+// Quelle: offizielle Champion-Liste, Kosten + Traits pro Einheit.
+// ══════════════════════════════════════════════════════════════
+var CHONCC=[
+ // 1-Kosten
+ {id:'cc_anivia',name:'Anivia',cost:1,t:['Freljord','Invoker']},
+ {id:'cc_blitzcrank',name:'Blitzcrank',cost:1,t:['Zaun','Juggernaut']},
+ {id:'cc_briar',name:'Briar',cost:1,t:['Noxus','Slayer','Juggernaut']},
+ {id:'cc_caitlyn',name:'Caitlyn',cost:1,t:['Piltover','Longshot']},
+ {id:'cc_illaoi',name:'Illaoi',cost:1,t:['Bilgewater','Bruiser']},
+ {id:'cc_jarvan',name:'Jarvan IV',cost:1,t:['Demacia','Defender']},
+ {id:'cc_jhin',name:'Jhin',cost:1,t:['Ionia','Gunslinger']},
+ {id:'cc_kogmaw',name:"Kog'Maw",cost:1,t:['Void','Arcanist','Longshot']},
+ {id:'cc_lulu',name:'Lulu',cost:1,t:['Yordle','Arcanist']},
+ {id:'cc_qiyana',name:'Qiyana',cost:1,t:['Ixtal','Slayer']},
+ {id:'cc_rumble',name:'Rumble',cost:1,t:['Yordle','Defender']},
+ {id:'cc_shen',name:'Shen',cost:1,t:['Ionia','Bruiser']},
+ {id:'cc_sona',name:'Sona',cost:1,t:['Demacia','Invoker']},
+ {id:'cc_viego',name:'Viego',cost:1,t:['Shadow Isles','Quickstriker']},
+ // 2-Kosten
+ {id:'cc_aphelios',name:'Aphelios',cost:2,t:['Targon']},
+ {id:'cc_ashe',name:'Ashe',cost:2,t:['Freljord','Quickstriker']},
+ {id:'cc_bard',name:'Bard',cost:2,t:['Caretaker']},
+ {id:'cc_chogath',name:"Cho'Gath",cost:2,t:['Void','Juggernaut']},
+ {id:'cc_ekko',name:'Ekko',cost:2,t:['Zaun','Disruptor']},
+ {id:'cc_graves',name:'Graves',cost:2,t:['Bilgewater','Gunslinger']},
+ {id:'cc_neeko',name:'Neeko',cost:2,t:['Ixtal','Arcanist','Defender']},
+ {id:'cc_orianna',name:'Orianna',cost:2,t:['Piltover','Invoker']},
+ {id:'cc_poppy',name:'Poppy',cost:2,t:['Demacia','Yordle','Juggernaut']},
+ {id:'cc_reksai',name:"Rek'Sai",cost:2,t:['Void','Vanquisher']},
+ {id:'cc_sion',name:'Sion',cost:2,t:['Noxus','Bruiser']},
+ {id:'cc_teemo',name:'Teemo',cost:2,t:['Yordle','Longshot']},
+ {id:'cc_tristana',name:'Tristana',cost:2,t:['Yordle','Gunslinger']},
+ {id:'cc_tryndamere',name:'Tryndamere',cost:2,t:['Freljord','Slayer']},
+ {id:'cc_tf',name:'Twisted Fate',cost:2,t:['Bilgewater','Quickstriker']},
+ {id:'cc_vi',name:'Vi',cost:2,t:['Piltover','Zaun','Defender']},
+ {id:'cc_xinzhao',name:'Xin Zhao',cost:2,t:['Demacia','Ionia','Warden']},
+ {id:'cc_yasuo',name:'Yasuo',cost:2,t:['Ionia','Slayer']},
+ {id:'cc_yorick',name:'Yorick',cost:2,t:['Shadow Isles','Warden']},
+ // 3-Kosten
+ {id:'cc_ahri',name:'Ahri',cost:3,t:['Ionia','Arcanist']},
+ {id:'cc_darius',name:'Darius',cost:3,t:['Noxus','Defender']},
+ {id:'cc_mundo',name:'Dr. Mundo',cost:3,t:['Zaun','Bruiser']},
+ {id:'cc_draven',name:'Draven',cost:3,t:['Noxus','Quickstriker']},
+ {id:'cc_gangplank',name:'Gangplank',cost:3,t:['Bilgewater','Slayer','Vanquisher']},
+ {id:'cc_gwen',name:'Gwen',cost:3,t:['Shadow Isles','Disruptor']},
+ {id:'cc_jinx',name:'Jinx',cost:3,t:['Zaun','Gunslinger']},
+ {id:'cc_kennen',name:'Kennen',cost:3,t:['Ionia','Yordle','Defender']},
+ {id:'cc_kobukoyuumi',name:'Kobuko & Yuumi',cost:3,t:['Yordle','Bruiser','Invoker']},
+ {id:'cc_leblanc',name:'LeBlanc',cost:3,t:['Noxus','Invoker']},
+ {id:'cc_leona',name:'Leona',cost:3,t:['Targon']},
+ {id:'cc_loris',name:'Loris',cost:3,t:['Piltover','Warden']},
+ {id:'cc_malzahar',name:'Malzahar',cost:3,t:['Void','Disruptor']},
+ {id:'cc_milio',name:'Milio',cost:3,t:['Ixtal','Invoker']},
+ {id:'cc_nautilus',name:'Nautilus',cost:3,t:['Bilgewater','Juggernaut','Warden']},
+ {id:'cc_sejuani',name:'Sejuani',cost:3,t:['Freljord','Defender']},
+ {id:'cc_vayne',name:'Vayne',cost:3,t:['Demacia','Longshot']},
+ {id:'cc_zoe',name:'Zoe',cost:3,t:['Targon']},
+ // 4-Kosten
+ {id:'cc_ambessa',name:'Ambessa',cost:4,t:['Noxus','Vanquisher']},
+ {id:'cc_belveth',name:"Bel'Veth",cost:4,t:['Void','Slayer']},
+ {id:'cc_braum',name:'Braum',cost:4,t:['Freljord','Warden']},
+ {id:'cc_diana',name:'Diana',cost:4,t:['Targon']},
+ {id:'cc_fizz',name:'Fizz',cost:4,t:['Bilgewater','Yordle']},
+ {id:'cc_garen',name:'Garen',cost:4,t:['Demacia','Defender']},
+ {id:'cc_kaisa',name:"Kai'Sa",cost:4,t:['Assimilator','Void','Longshot']},
+ {id:'cc_kalista',name:'Kalista',cost:4,t:['Shadow Isles','Vanquisher']},
+ {id:'cc_lissandra',name:'Lissandra',cost:4,t:['Freljord','Invoker']},
+ {id:'cc_lux',name:'Lux',cost:4,t:['Demacia','Arcanist']},
+ {id:'cc_missfortune',name:'Miss Fortune',cost:4,t:['Bilgewater','Gunslinger']},
+ {id:'cc_nasus',name:'Nasus',cost:4,t:['Shurima']},
+ {id:'cc_nidalee',name:'Nidalee',cost:4,t:['Ixtal','Huntress']},
+ {id:'cc_renekton',name:'Renekton',cost:4,t:['Shurima']},
+ {id:'cc_riftherald',name:'Rift Herald',cost:4,t:['Void','Bruiser']},
+ {id:'cc_seraphine',name:'Seraphine',cost:4,t:['Piltover','Disruptor']},
+ {id:'cc_singed',name:'Singed',cost:4,t:['Zaun','Juggernaut']},
+ {id:'cc_skarner',name:'Skarner',cost:4,t:['Ixtal']},
+ {id:'cc_swain',name:'Swain',cost:4,t:['Noxus','Arcanist','Juggernaut']},
+ {id:'cc_taric',name:'Taric',cost:4,t:['Targon']},
+ {id:'cc_veigar',name:'Veigar',cost:4,t:['Yordle','Arcanist']},
+ {id:'cc_warwick',name:'Warwick',cost:4,t:['Zaun','Quickstriker']},
+ {id:'cc_wukong',name:'Wukong',cost:4,t:['Ionia','Bruiser']},
+ {id:'cc_yone',name:'Yone',cost:4,t:['Ionia','Slayer']},
+ {id:'cc_yunara',name:'Yunara',cost:4,t:['Ionia','Quickstriker']},
+ // 5-Kosten
+ {id:'cc_aatrox',name:'Aatrox',cost:5,t:['Darkin','World Ender','Slayer']},
+ {id:'cc_annie',name:'Annie',cost:5,t:['Dark Child','Arcanist']},
+ {id:'cc_azir',name:'Azir',cost:5,t:['Shurima','Emperor','Disruptor']},
+ {id:'cc_fiddlesticks',name:'Fiddlesticks',cost:5,t:['Harvester','Vanquisher']},
+ {id:'cc_galio',name:'Galio',cost:5,t:['Demacia','Heroic']},
+ {id:'cc_kindred',name:'Kindred',cost:5,t:['Eternal','Quickstriker']},
+ {id:'cc_lucsenna',name:'Lucian & Senna',cost:5,t:['Soulbound','Gunslinger']},
+ {id:'cc_mel',name:'Mel',cost:5,t:['Noxus','Disruptor']},
+ {id:'cc_ornn',name:'Ornn',cost:5,t:['Blacksmith','Warden']},
+ {id:'cc_sett',name:'Sett',cost:5,t:['Ionia','The Boss']},
+ {id:'cc_shyvana',name:'Shyvana',cost:5,t:['Dragonborn','Juggernaut']},
+ {id:'cc_thex',name:'T-Hex',cost:5,t:['HexMech','Piltover','Gunslinger']},
+ {id:'cc_tahm',name:'Tahm Kench',cost:5,t:['Bilgewater','Glutton','Bruiser']},
+ {id:'cc_thresh',name:'Thresh',cost:5,t:['Shadow Isles','Warden']},
+ {id:'cc_tibbers',name:'Tibbers',cost:5,t:['Arcanist']},
+ {id:'cc_volibear',name:'Volibear',cost:5,t:['Freljord','Bruiser']},
+ {id:'cc_xerath',name:'Xerath',cost:5,t:['Shurima','Ascendant']},
+ {id:'cc_ziggs',name:'Ziggs',cost:5,t:['Zaun','Yordle','Longshot']},
+ {id:'cc_zilean',name:'Zilean',cost:5,t:['Chronokeeper','Invoker']},
+ // 7-Kosten (Legenden)
+ {id:'cc_asol',name:'Aurelion Sol',cost:7,t:['Targon','Star Forger']},
+ {id:'cc_baron',name:'Baron Nashor',cost:7,t:['Void','Riftscourge']},
+ {id:'cc_brock',name:'Brock',cost:7,t:['Ixtal']},
+ {id:'cc_ryze',name:'Ryze',cost:7,t:['Rune Mage']},
+ {id:'cc_sylas',name:'Sylas',cost:7,t:['Chainbreaker','Arcanist','Defender']},
+ {id:'cc_zaahen',name:'Zaahen',cost:7,t:['Darkin','Immortal']},
+];
+var CC_COSTS=['Alle','1','2','3','4','5','7'];
+function initChoncc(){
+  renderCcFilters();renderCcGrid();
+  document.getElementById('cc-search').addEventListener('input',function(e){
+    state.ccQ=e.target.value;renderCcGrid();
+  });
+}
+function ccSetCost(c){state.ccCost=c;renderCcFilters();renderCcGrid();}
+function renderCcFilters(){
+  document.getElementById('cc-filters').innerHTML=CC_COSTS.map(function(c){
+    return '<button onclick="ccSetCost(\''+c+'\')" class="pill-btn'+(state.ccCost===c?' on':'')+'">'+(c==='Alle'?'Alle':c+'★')+'</button>';
+  }).join('');
+}
+function renderCcGrid(){
+  var q=(state.ccQ||'').toLowerCase().trim();
+  var list=CHONCC.filter(function(ch){
+    if(state.ccCost&&state.ccCost!=='Alle'&&String(ch.cost)!==state.ccCost)return false;
+    if(q&&!(ch.name+' '+ch.t.join(' ')).toLowerCase().includes(q))return false;
+    return true;
+  }).sort(function(a,b){return a.cost-b.cost||a.name.localeCompare(b.name,'de');});
+  document.getElementById('cc-grid').innerHTML=list.map(function(ch){
+    var cc=costColor(Math.min(ch.cost,5)); // Farbskala hat nur 1-5, 7-Kosten nutzt 5er-Farbe
+    return '<div class="champ-btn" style="--cc:'+cc+';cursor:default;">'
+      +'<div style="width:46px;height:46px;border-radius:8px;border:2px solid '+cc+';background:var(--panel);display:flex;align-items:center;justify-content:center;font-size:18px;margin:0 auto;">🐾</div>'
+      +'<div style="font-size:9px;font-weight:700;color:'+cc+';line-height:1;margin-top:3px;">'+ch.cost+'★</div>'
+      +'<div style="font-size:12px;font-weight:600;color:#eef0ff;line-height:1.25;word-break:break-word;">'+ch.name+'</div>'
+      +'<div style="display:flex;flex-wrap:wrap;gap:2px;justify-content:center;margin-top:2px;">'
+      +ch.t.map(function(t){return '<span style="font-size:9px;background:rgba(255,255,255,.07);border-radius:4px;padding:1px 5px;color:var(--muted);">'+t+'</span>';}).join('')
+      +'</div></div>';
+  }).join('')||'<div style="color:var(--muted);font-size:13px;grid-column:1/-1;padding:16px 0;">Nichts gefunden.</div>';
+}
+
+function initChamps(){
+  renderChFilters();renderChGrid();
+  document.getElementById('ch-search').addEventListener('input',function(e){
+    state.chQ=e.target.value;renderChGrid();
+  });
+}
+function chSetCost(c){state.chCost=c;renderChFilters();renderChGrid();}
+function renderChFilters(){
+  document.getElementById('ch-filters').innerHTML=CH_COSTS.map(function(c){
+    return '<button onclick="chSetCost(\''+c+'\')" class="pill-btn'+(state.chCost===c?' on':'')+'">'+(c==='Alle'?'Alle':c+'★')+'</button>';
+  }).join('');
+}
+function renderChGrid(){
+  var q=state.chQ.toLowerCase().trim();
+  var list=CHAMPS.filter(function(ch){
+    if(state.chCost!=='Alle'&&String(ch.cost)!==state.chCost)return false;
+    if(q&&!(ch.name+' '+ch.t.join(' ')).toLowerCase().includes(q))return false;
+    return true;
+  }).sort(function(a,b){return a.cost-b.cost||a.name.localeCompare(b.name,'de');});
+  document.getElementById('ch-grid').innerHTML=list.map(function(ch){
+    var cc=costColor(ch.cost);
+    return '<button onclick="openChamp(\''+ch.id+'\')" class="champ-btn" style="--cc:'+cc+';">'
+      +champImgTag(ch,46,cc,'')
+      +'<div style="font-size:9px;font-weight:700;color:'+cc+';line-height:1;">'+ch.cost+'★ '+ROLE_ICON[ch.r]+'</div>'
+      +'<div style="font-size:12px;font-weight:600;color:#eef0ff;line-height:1.25;word-break:break-word;">'+ch.name+'</div>'
+      +'<div style="display:flex;flex-wrap:wrap;gap:2px;justify-content:center;margin-top:2px;">'
+      +ch.t.map(function(t){return '<span style="font-size:9px;background:rgba(255,255,255,.07);border-radius:4px;padding:1px 5px;color:var(--muted);">'+t+'</span>';}).join('')
+      +'</div></button>';
+  }).join('')||'<div style="color:var(--muted);font-size:13px;grid-column:1/-1;padding:16px 0;">Nichts gefunden.</div>';
+}
+function openChamp(id){
+  var ch=champById(id);if(!ch)return;
+  var cc=costColor(ch.cost);
+  var comps=compsOfChamp(ch.name);
+  document.getElementById('champDetail').innerHTML=
+    '<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;padding-right:40px;">'
+    +champImgTag(ch,56,cc,'')
+    +'<div><h2 style="font-size:20px;font-weight:700;">'+ch.name+'</h2>'
+    +'<div style="color:var(--muted);font-size:13px;">'+ROLE_ICON[ch.r]+' '+ROLE_NAME[ch.r]+'</div>'
+    +'<div style="margin-top:4px;"><span style="font-size:12px;font-weight:700;color:var(--bg);background:'+cc+';border-radius:6px;padding:2px 8px;">'+ch.cost+'★ Kosten</span></div>'
+    +'</div></div>'
+    +'<div class="section-label">Traits</div>'
+    +'<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;">'
+    +ch.t.map(function(t){var tr=traitByName(t);
+      return '<span style="border-radius:999px;padding:5px 11px;font-size:12px;font-weight:600;background:rgba(139,124,246,.15);border:1px solid rgba(139,124,246,.3);color:#c4baff;">'+t+(tr?' <span style="opacity:.6;font-weight:400;">('+tr.bp.join('/')+')</span>':'')+'</span>';}).join('')
+    +'</div>'
+    +'<div class="section-label">Beste Items</div>'
+    +'<div style="margin-bottom:14px;">'
+    +ch.it.map(function(item,i){
+      var rec=RECIPES.find(function(r){return r[0]===item.replace(' ×2','');});
+      return '<div class="item-row"><span>'+(i===0?'🥇':i===1?'🥈':'🥉')+'</span><span style="flex:1;font-size:13px;">'+item+'</span>'
+      +(rec?'<span style="color:var(--muted2);font-size:11px;font-weight:400;">'+rec[1]+'</span>':'')+'</div>';}).join('')
+    +'</div>'
+    +(comps.length?'<div class="section-label">Spielt in</div><div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px;">'
+      +comps.map(function(c){return '<span class="chip"><span class="tier-badge tier-'+c.tier+'" style="width:18px;height:18px;font-size:9px;">'+c.tier+'</span>'+c.name+(c.carry===ch.name?' ⭐':'')+'</span>';}).join('')+'</div>':'')
+    +(ch.note?'<div class="tipbox" style="margin:0;">💡 '+ch.note+'</div>':'');
+  document.getElementById('champModal').style.display='block';
+  document.body.style.overflow='hidden';
+}
+document.getElementById('champClose').addEventListener('click',function(){
+  document.getElementById('champModal').style.display='none';document.body.style.overflow='';
+});
+document.getElementById('champModal').addEventListener('click',function(e){
+  if(e.target===this){this.style.display='none';document.body.style.overflow='';}
+});
+
+// ── VIEW: TRAITS ──────────────────────────────────────────────
+function renderTraits(){
+  function row(t){
+    var members=CHAMPS.filter(function(c){return c.t.indexOf(t.name)>=0;})
+      .sort(function(a,b){return a.cost-b.cost;});
+    return '<div class="trait-row">'
+      +'<h4>'+t.name+' <span class="en">('+t.en+')</span> <span class="bp">'+t.bp.join(' / ')+'</span></h4>'
+      +'<p>'+t.desc+'</p>'
+      +'<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;">'
+      +members.map(function(c){return '<button onclick="openChamp(\''+c.id+'\')" class="chip" style="font:inherit;font-size:11px;font-weight:600;"><span class="cst" style="color:'+costColor(c.cost)+';">'+c.cost+'★</span>'+c.name+'</button>';}).join('')
+      +'</div></div>';
+  }
+  document.getElementById('trait-origins').innerHTML=TRAITS.filter(function(t){return t.kind==='o';}).map(row).join('');
+  document.getElementById('trait-classes').innerHTML=TRAITS.filter(function(t){return t.kind==='c';}).map(row).join('');
+}
+
+// ── VIEW: GUIDE ───────────────────────────────────────────────
+function setGuideTab(l){state.guideTab=l;renderGuide();}
+function renderGuide(){
+  var tab=state.guideTab||state.level||'a';
+  document.getElementById('guide-tabs').innerHTML=['a','f','p'].map(function(l){
+    var L=LEVELS[l];var on=tab===l;
+    return '<button onclick="setGuideTab(\''+l+'\')" class="pill-btn'+(on?' on':'')+'" style="flex:1;">'+L.icon+' '+L.name+'</button>';
+  }).join('');
+  var g=GUIDE[tab];
+  document.getElementById('guide-content').innerHTML=
+    '<p style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:6px;">'+g.intro+'</p>'
+    +g.items.map(function(it){
+      return '<div class="guide-item"><h4>'+it.i+' '+it.t+'</h4><p>'+it.x+'</p></div>';
+    }).join('');
+  document.getElementById('gods-list').innerHTML=GODS.map(function(gd){
+    return '<div class="god-card"><b>'+gd.g+'</b><p>'+gd.d+'</p></div>';
+  }).join('');
+  document.getElementById('recipes-list').innerHTML=RECIPES.map(function(r){
+    return '<div class="recipe-row"><b>'+r[0]+'</b><span class="rc">'+r[1]+'</span></div>';
+  }).join('');
+  renderOddsTable();
+}
+function renderOddsTable(){
+  var lvls=[4,5,6,7,8,9,10];
+  var html='<table style="width:100%;border-collapse:collapse;font-size:12px;min-width:320px;">'
+    +'<tr><th style="text-align:left;padding:5px 6px;color:var(--muted);font-size:11px;">Level</th>'
+    +[1,2,3,4,5].map(function(c){return '<th style="padding:5px 6px;color:'+costColor(c)+';font-size:11px;">'+c+'★</th>';}).join('')+'</tr>'
+    +lvls.map(function(l){
+      return '<tr style="border-top:1px solid var(--line);">'
+        +'<td style="padding:5px 6px;font-weight:700;">Lv '+l+'</td>'
+        +ODDS[l].map(function(p,i){
+          var strong=p>=25;
+          return '<td style="padding:5px 6px;text-align:center;color:'+(p?(strong?costColor(i+1):'#eef0ff'):'var(--muted2)')+';font-weight:'+(strong?'700':'400')+';">'+(p?p+'%':'–')+'</td>';
+        }).join('')+'</tr>';
+    }).join('')+'</table>';
+  document.getElementById('odds-table').innerHTML=html;
+}
+
+// ── INIT ──────────────────────────────────────────────────────
+initRunde();initChamps();renderTraits();initChoncc();
+if(!state.level){
+  state.level='a';renderComps();renderGuide();renderCoach();
+  openOnboard();
+}else{
+  state.guideTab=state.level;applyLevel();
+}
+</script>
+</body>
+</html>
