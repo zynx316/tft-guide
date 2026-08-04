@@ -11,9 +11,11 @@
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html{height:100%;background:#080c20}
 body{
-  min-height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-  background:#080c20;color:#eef0ff;font-size:15px;line-height:1.5;
+  min-height:100%;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  background:#080c20;color:#eef0ff;font-size:16px;line-height:1.55;
   -webkit-font-smoothing:antialiased;
+  font-variant-numeric:tabular-nums;
   padding-bottom:env(safe-area-inset-bottom);
 }
 button{font-family:inherit;cursor:pointer;-webkit-appearance:none;appearance:none}
@@ -23,7 +25,7 @@ input{font-family:inherit;-webkit-appearance:none;appearance:none}
 :root{
   --bg:#080c20;--panel:#10163a;--card:#161e45;--line:rgba(255,255,255,.09);
   --gold:#f0c25a;--violet:#8b7cf6;--green:#4fd18a;--blue:#5ba8ff;--red:#ff7a7a;
-  --muted:#7a82b8;--muted2:#4a5280;
+  --muted:#9aa2d4;--muted2:#6c76a8;
   --c1:#9aa4b2;--c2:#46c46a;--c3:#3d8bf5;--c4:#b06bf0;--c5:#f0a838;
 }
 
@@ -54,8 +56,8 @@ input{font-family:inherit;-webkit-appearance:none;appearance:none}
 }
 .nav-btn{
   flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  padding:10px 2px 8px;gap:4px;border:none;background:none;color:var(--muted);
-  font-size:10px;font-weight:600;letter-spacing:.02em;transition:color .15s;
+  padding:10px 1px 8px;gap:4px;border:none;background:none;color:var(--muted);
+  font-size:11px;font-weight:600;letter-spacing:0;transition:color .15s;
 }
 .nav-btn .icon{font-size:21px;line-height:1}
 .nav-btn.active{color:var(--gold)}
@@ -70,10 +72,10 @@ input{font-family:inherit;-webkit-appearance:none;appearance:none}
 /* ── Cards / Labels / Pills ──────────────────────────────────── */
 .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px}
 .card+.card{margin-top:10px}
-.section-label{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
-.mini-label{font-size:10px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--gold);margin-bottom:7px}
+.section-label{font-size:13px;font-weight:700;letter-spacing:.04em;color:var(--gold);margin-bottom:10px}
+.mini-label{font-size:13px;font-weight:700;letter-spacing:.02em;color:var(--gold);margin-bottom:8px;margin-top:14px}
 .pill-btn{
-  flex-shrink:0;border-radius:999px;padding:6px 14px;font-size:13px;font-weight:600;
+  flex-shrink:0;border-radius:999px;padding:8px 15px;font-size:14px;font-weight:600;
   border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--muted);
 }
 .pill-btn.on{border-color:var(--gold);background:rgba(240,194,90,.15);color:var(--gold)}
@@ -117,9 +119,9 @@ input{font-family:inherit;-webkit-appearance:none;appearance:none}
 .trait-chip.gold{border-color:rgba(240,194,90,.45);background:rgba(240,194,90,.14);color:var(--gold)}
 
 /* ── Runde: Grid + Coach ─────────────────────────────────────── */
-#rd-split{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start}
+#rd-split{display:grid;grid-template-columns:1fr;gap:14px;align-items:start}
 @media(min-width:700px){#rd-split{grid-template-columns:5fr 4fr}}
-#rd-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
+#rd-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
 @media(min-width:700px){#rd-grid{grid-template-columns:repeat(4,1fr)}}
 .rd-champ{
   border:2px solid var(--cc,var(--line));border-radius:13px;
@@ -243,6 +245,85 @@ input{font-family:inherit;-webkit-appearance:none;appearance:none}
 .ob-card p{font-size:13px;color:var(--muted);line-height:1.5}
 .ob-card ul{margin:8px 0 0 18px;font-size:12px;color:var(--muted2);line-height:1.7}
 
+/* ── Hex-Board (4 Reihen × 7 Hexes) ──────────────────────────── */
+.board-frame{
+  background:linear-gradient(180deg,rgba(139,124,246,.10),rgba(0,0,0,.28));
+  border:1px solid var(--line);border-radius:14px;padding:9px 9px 11px;margin:10px 0;
+}
+.board-axis{display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:600;color:var(--muted2);margin-bottom:5px}
+.board-axis .front{color:#ffb0b0}
+.hexboard{width:100%}
+.hex-row{display:grid;grid-template-columns:repeat(16,1fr);align-items:start}
+.hex-row+.hex-row{margin-top:-3.5%}
+.hex-row.off .hex:first-child{grid-column-start:2}
+.hex{
+  grid-column:span 2;aspect-ratio:1/1.1547;position:relative;
+  clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);
+  background:rgba(255,255,255,.055);
+}
+.hex.filled{background:var(--hc,#6e74a3)}
+.hex.carry{background:var(--gold)}
+.hex-in{
+  position:absolute;inset:7%;overflow:hidden;
+  clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);
+  background:#111736;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:800;color:#eef0ff;text-align:center;line-height:1;
+}
+.hex-in img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.hex .star{position:absolute;bottom:12%;left:0;right:0;text-align:center;font-size:10px;z-index:2;text-shadow:0 1px 2px #000}
+.board-legend{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px}
+.bl-item{
+  display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:4px 10px;
+  font-size:12px;font-weight:600;background:rgba(255,255,255,.06);
+  border:1px solid var(--line);border-left:3px solid var(--hc,var(--line));
+}
+.bl-item.carry{background:rgba(240,194,90,.13);border-color:rgba(240,194,90,.45);color:var(--gold)}
+.board-note{font-size:13px;color:var(--muted);line-height:1.5;margin-top:8px}
+
+/* ── Jetzt / Fahrplan ────────────────────────────────────────── */
+#jz-steps{display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:9px;scrollbar-width:none}
+.jz-step{
+  flex-shrink:0;border-radius:11px;padding:7px 13px;font-size:14px;font-weight:700;
+  border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--muted);white-space:nowrap;
+}
+.jz-step.on{border-color:var(--gold);background:rgba(240,194,90,.16);color:var(--gold)}
+.jz-head{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;margin-bottom:3px}
+.jz-when{font-size:24px;font-weight:800;color:var(--gold);letter-spacing:.01em}
+.jz-phase{font-size:14px;color:var(--muted)}
+.jz-do{
+  background:rgba(79,209,138,.11);border:1px solid rgba(79,209,138,.34);
+  border-radius:13px;padding:13px 14px;margin:11px 0 10px;
+}
+.jz-do .lbl{font-size:12px;font-weight:800;color:var(--green);letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px}
+.jz-do .txt{font-size:17px;font-weight:600;line-height:1.4}
+.jz-kpi{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.jz-box{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.jz-box .lbl{font-size:11px;font-weight:700;color:var(--muted2);letter-spacing:.06em;text-transform:uppercase}
+.jz-box .val{font-size:19px;font-weight:800;margin-top:2px}
+.jz-box.gold .val{color:var(--gold)}
+.jz-box.lvl .val{color:var(--blue)}
+.jz-box .sub{font-size:12px;color:var(--muted);margin-top:2px;line-height:1.35}
+.jz-tip{display:flex;gap:9px;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px;line-height:1.5}
+.jz-tip:last-child{border-bottom:none}
+.jz-tip .ic{flex-shrink:0;font-size:16px;width:20px;text-align:center}
+.jz-nav{display:flex;gap:8px;margin-top:12px}
+.jz-nav button{
+  flex:1;border-radius:12px;padding:12px;font-size:15px;font-weight:700;
+  border:1px solid var(--line);background:rgba(255,255,255,.06);color:#eef0ff;
+}
+.jz-nav button:disabled{opacity:.35}
+
+/* ── Item-Plan-Zeilen (Comps) ────────────────────────────────── */
+.ip-block{border-radius:12px;padding:10px 11px;margin:7px 0;border:1px solid var(--line)}
+.ip-block.carry{background:rgba(240,194,90,.07);border-color:rgba(240,194,90,.28)}
+.ip-block.tank{background:rgba(91,168,255,.06);border-color:rgba(91,168,255,.25)}
+.ip-head{display:flex;align-items:center;gap:7px;margin-bottom:7px;font-size:14px}
+.ip-row{display:flex;align-items:center;gap:8px;padding:6px 9px;border-radius:9px;background:rgba(255,255,255,.05);margin-bottom:4px;font-size:13px}
+.ip-row .no{font-size:12px;font-weight:800;width:15px;flex-shrink:0}
+.ip-row .nm{flex:1;font-weight:600}
+.ip-row .rc{font-size:12px;color:var(--muted2);white-space:nowrap}
+
 ::-webkit-scrollbar{width:0;height:0}
 </style>
 </head>
@@ -257,7 +338,15 @@ input{font-family:inherit;-webkit-appearance:none;appearance:none}
 <div id="app">
 
 <!-- ═══ VIEW: NEUE RUNDE ═══════════════════════════════════════ -->
-<div id="view-runde" class="view active">
+<div id="view-jetzt" class="view active">
+  <div class="view-title">🎯 Jetzt</div>
+  <div class="view-sub">In welcher Runde bist du? Antippen — und du siehst in 3 Sekunden was zu tun ist.</div>
+  <div id="jz-steps"></div>
+  <div id="jz-card"></div>
+</div>
+
+<!-- ═══ VIEW: NEUE RUNDE ═══════════════════════════════════════ -->
+<div id="view-runde" class="view">
   <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
     <div class="view-title" style="margin:0;flex:1;">🎮 Neue Runde</div>
     <button onclick="resetRound()" class="pill-btn" style="border-color:rgba(255,122,122,.4);color:var(--red);">🔄 Neue Runde</button>
@@ -303,22 +392,23 @@ input{font-family:inherit;-webkit-appearance:none;appearance:none}
   <div id="comps-list"></div>
 </div>
 
-<!-- ═══ VIEW: CHAMPIONS ════════════════════════════════════════ -->
+<!-- ═══ VIEW: CHAMPIONS + TRAITS ═══════════════════════════════ -->
 <div id="view-champs" class="view">
-  <div class="view-title">🧑‍🚀 Champions</div>
-  <div class="view-sub">Alle 63 Einheiten von Set 17 — tippe für Details</div>
-  <div class="search-wrap">
-    <span class="ico">🔎</span>
-    <input id="ch-search" type="search" placeholder="Champion oder Trait suchen…" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false">
+  <div class="view-title">🧑‍🚀 Nachschlagen</div>
+  <div class="view-sub">Alle Einheiten und Synergien — tippe für Details</div>
+  <div style="display:flex;gap:6px;margin-bottom:12px;">
+    <button onclick="setUnitsTab('c')" id="ut-c" class="pill-btn on" style="flex:1;">🧑‍🚀 Champions</button>
+    <button onclick="setUnitsTab('t')" id="ut-t" class="pill-btn" style="flex:1;">✨ Traits</button>
   </div>
-  <div id="ch-filters" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px"></div>
-  <div id="ch-grid" class="champ-grid"></div>
-</div>
-
-<!-- ═══ VIEW: TRAITS ═══════════════════════════════════════════ -->
-<div id="view-traits" class="view">
-  <div class="view-title">✨ Traits</div>
-  <div class="view-sub">Alle Synergien mit Stufen — tippe einen Champion für Details</div>
+  <div id="units-champs">
+    <div class="search-wrap">
+      <span class="ico">🔎</span>
+      <input id="ch-search" type="search" placeholder="Champion oder Trait suchen…" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false">
+    </div>
+    <div id="ch-filters" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px"></div>
+    <div id="ch-grid" class="champ-grid"></div>
+  </div>
+  <div id="units-traits" style="display:none;">
   <div class="card">
     <div class="section-label">Ursprünge (Origins)</div>
     <div id="trait-origins"></div>
@@ -326,6 +416,7 @@ input{font-family:inherit;-webkit-appearance:none;appearance:none}
   <div class="card">
     <div class="section-label">Klassen (Classes)</div>
     <div id="trait-classes"></div>
+  </div>
   </div>
 </div>
 
@@ -335,6 +426,74 @@ input{font-family:inherit;-webkit-appearance:none;appearance:none}
   <div class="view-sub">Zugeschnitten auf deinen Spielertyp — Tabs zum Wechseln</div>
   <div id="guide-tabs" style="display:flex;gap:6px;margin-bottom:14px;"></div>
   <div class="card"><div id="guide-content"></div></div>
+
+  <div class="card" style="border-color:rgba(240,194,90,.3);">
+    <div class="section-label">🗓 Datenstand</div>
+    <p style="font-size:14px;color:var(--muted);line-height:1.6;">
+      Champions, Traits, Comps und Aufstellungen sind <b style="color:#eef0ff;">Set 17 „Space Gods"</b>
+      (Choncc's Legenden: Set 16). Mit dem Start von <b style="color:#eef0ff;">Set 18 am 12.08.2026</b>
+      gelten sie nicht mehr und müssen ersetzt werden.
+      <br><br>
+      Alles andere bleibt gültig: der <b style="color:#eef0ff;">Fahrplan</b> im Tab „Jetzt", die
+      <b style="color:#eef0ff;">Aufstellungs-Regeln</b> und die <b style="color:#eef0ff;">Zahlen</b> weiter unten
+      ändern sich mit einem neuen Set nicht.
+    </p>
+  </div>
+
+  <div class="card">
+    <div class="section-label">📐 Aufstellung — gilt in jedem Set</div>
+    <div id="role-board"></div>
+    <div class="guide-item">
+      <h4>🛡 Reihe 1 — Frontline</h4>
+      <p>Deine Tanks. Sie sollen den Gegner aufhalten, bevor er deine Backline erreicht. Mittig aufstellen, damit sie zuerst getroffen werden.</p>
+    </div>
+    <div class="guide-item">
+      <h4>⚔ Reihe 2 — Kämpfer</h4>
+      <p>Einheiten, die selbst in den Nahkampf gehen. Nicht in Reihe 1 quetschen — sie sollen nachrücken, wenn die Front bricht.</p>
+    </div>
+    <div class="guide-item">
+      <h4>💚 Reihe 3 — Unterstützung</h4>
+      <p>Supports und Magier. Weit genug hinten, um zu überleben, aber nicht auf dem Platz deiner Carry.</p>
+    </div>
+    <div class="guide-item">
+      <h4>🏹 Reihe 4 — deine Carry</h4>
+      <p>Die Einheit mit den Items steht ganz hinten, möglichst in der <b>Ecke</b>. Scharfschützen machen dort zusätzlich mehr Schaden, weil ihr Bonus mit der Entfernung wächst.</p>
+    </div>
+    <div class="tipbox" style="margin-top:10px;">
+      🧭 <b>Die einzige Regel, die du wirklich brauchst:</b> Wurde deine Carry im letzten Kampf als Erstes getötet, stimmt die Position nicht — verschieb sie in die andere Ecke und schau beim nächsten Kampf wieder hin.
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-label">📏 Zahlen, die immer gelten</div>
+    <p style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:10px;">
+      Diese Werte hängen nicht am Set und ändern sich auch beim nächsten Patch praktisch nie.
+    </p>
+    <div class="guide-item">
+      <h4>💰 Einkommen &amp; Zinsen</h4>
+      <p>+5 Gold Grundeinkommen pro Runde. Dazu <b>+1 Gold je volle 10 Gold</b> auf der Bank, maximal +5 bei 50 Gold. Deshalb ist 50 die magische Zahl.</p>
+    </div>
+    <div class="guide-item">
+      <h4>🔥 Serien-Gold (Streak)</h4>
+      <p><b>2–3 Siege oder Niederlagen in Folge: +1 Gold · 4 in Folge: +2 · 5 und mehr: +3.</b> Sieges- und Niederlagenserien geben gleich viel — deshalb ist konsequentes Verlieren besser als abwechselnd gewinnen und verlieren.</p>
+    </div>
+    <div class="guide-item">
+      <h4>⬆️ Erfahrung</h4>
+      <p>+2 XP automatisch pro Runde. Dazu <b>4 Gold = 4 XP</b>. Ein Level kaufen heißt fast immer: mehrfach 4 Gold ausgeben.</p>
+    </div>
+    <div class="guide-item">
+      <h4>💸 Verkaufen</h4>
+      <p>Eine 1★-Einheit gibt <b>den vollen Kaufpreis</b> zurück. Bei 2★ und 3★ bekommst du den gesamten Wert aller verbauten Kopien <b>minus 1 Gold</b> — außer bei 1-Kosten-Einheiten, die immer den vollen Wert zurückgeben. Verkaufen ist also fast verlustfrei: trau dich, umzubauen.</p>
+    </div>
+    <div class="guide-item">
+      <h4>🎲 Rerollen</h4>
+      <p>2 Gold pro Neuwürfeln des Shops. Rechne nach: 10 Rerolls = 20 Gold = die Zinsen von 4 Runden. Deshalb rollt man nur mit Plan und nur oberhalb von 50 Gold.</p>
+    </div>
+    <div class="guide-item">
+      <h4>⭐ Sternstufen</h4>
+      <p>3 gleiche 1★ = eine 2★. Drei 2★ = eine 3★ (also 9 Kopien). Jede Stufe bedeutet grob doppelte Werte — eine 2★-Einheit schlägt fast immer zwei verschiedene 1★.</p>
+    </div>
+  </div>
   <div class="card">
     <div class="section-label">🌌 Die Götter (Set-Mechanik)</div>
     <p style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:10px;">
@@ -379,10 +538,10 @@ input{font-family:inherit;-webkit-appearance:none;appearance:none}
 
 <!-- ═══ BOTTOM NAV ═════════════════════════════════════════════ -->
 <div id="nav">
-  <button class="nav-btn active" data-view="runde"><span class="icon">🎮</span>Runde</button>
+  <button class="nav-btn active" data-view="jetzt"><span class="icon">🎯</span>Jetzt</button>
+  <button class="nav-btn" data-view="runde"><span class="icon">🎮</span>Coach</button>
   <button class="nav-btn" data-view="comps"><span class="icon">⚔</span>Comps</button>
   <button class="nav-btn" data-view="champs"><span class="icon">🧑‍🚀</span>Units</button>
-  <button class="nav-btn" data-view="traits"><span class="icon">✨</span>Traits</button>
   <button class="nav-btn" data-view="guide"><span class="icon">📖</span>Guide</button>
   <button class="nav-btn" data-view="choncc"><span class="icon">🐾</span>Choncc</button>
 </div>
@@ -427,6 +586,29 @@ input{font-family:inherit;-webkit-appearance:none;appearance:none}
 <!-- ═══ SCRIPT ═════════════════════════════════════════════════ -->
 <script>
 // ── KONSTANTEN ────────────────────────────────────────────────
+/* ══════════════════════════════════════════════════════════════
+   SET-WECHSEL — was ausgetauscht werden muss
+   ══════════════════════════════════════════════════════════════
+   Set 17 „Space Gods" endet; Set 18 startet am 12.08.2026.
+
+   AUSTAUSCHEN (set-spezifisch):
+     ODDS   Shop-Chancen je Level        CHAMPS  Einheiten + Traits + Items
+     IMG    DDragon-Bildnamen            TRAITS  Synergien + Stufen
+     COMPS  Meta-Comps des Patches       POS     Aufstellungen je Comp
+     GODS   Set-Mechanik                 RECIPES Item-Rezepte
+     CHONCC Nostalgie-Katalog (eigenes Set, nur bei Bedarf)
+   Ausserdem: Titel/Header („Set 17 Space Gods") und den Datenstand im Guide.
+
+   BLEIBT UNVERAENDERT (set-unabhaengig):
+     PLAN                Rundenfahrplan („Jetzt")
+     renderBoard         feste Aufstellungen (nur die POS-Daten wechseln)
+     renderPositionBoard dynamische Einsortierung nach Rolle
+     Guide-Karten        „Aufstellung" und „Zahlen, die immer gelten"
+
+   Nach dem Austausch pruefen mit 90_Pruefskripte/check-tft.js (Datenkonsistenz
+   + Render-Smoke) und board-struct.js (4x7-Boards).
+   ══════════════════════════════════════════════════════════════ */
+
 var CC={1:'#9aa4b2',2:'#46c46a',3:'#3d8bf5',4:'#b06bf0',5:'#f0a838'};
 // Shop-Chancen pro Slot je Spielerlevel (Set 17, Richtwerte Patch 17.6) + Pool-Größen
 var ODDS={3:[75,25,0,0,0],4:[55,30,15,0,0],5:[45,33,20,2,0],6:[30,40,25,5,0],7:[19,30,40,10,1],8:[17,24,32,24,3],9:[15,18,25,30,12],10:[5,10,20,40,25]};
@@ -724,6 +906,109 @@ var RECIPES=[
  ['Letzter Seufzer','Bogen + Handschuh'],['Krakenfurie','Bogen + Mantel'],['Leerenstab','Bogen + Träne'],
 ];
 
+// ── BOARD-AUFSTELLUNGEN ───────────────────────────────────────
+// Reihe 1 = vorderste (Kontakt zum Gegner) … Reihe 4 = hinterste (deine Seite).
+// Spalte 1–7 von links. Beim Set-Wechsel zusammen mit COMPS austauschen.
+var POS={
+ primordian:{note:'Der einfachste Einstieg: zwei Tanks mittig, Viktor ganz hinten in die Ecke. Master Yi und Pyke gehen von selbst rein — an die Ränder stellen, damit sie die Backline nicht blockieren.',
+  p:{"Rek'Sai":[1,3],'Gragas':[1,4],'Pyke':[2,2],'Master Yi':[2,6],'Milio':[3,3],'Sona':[3,4],'Lulu':[3,5],'Viktor':[4,7]}},
+ gnar:{note:'Gnar ist Scharfschütze — er macht mehr Schaden je weiter der Gegner weg ist. Deshalb hinterste Ecke, niemals mittig.',
+  p:{'Rammus':[1,4],'Poppy':[1,3],'Fizz':[1,6],'Meepsie':[3,3],'Veigar':[3,5],'Corki':[4,5],'Gnar':[4,7]}},
+ kaisa:{note:"Kai'Sa ganz in die Ecke, Jhin daneben. Die drei Tanks decken die Mitte ab, damit der Gegner nicht durchläuft.",
+  p:{"Cho'Gath":[1,3],'Mordekaiser':[1,4],'Illaoi':[1,5],'Lissandra':[3,3],'Karma':[3,5],'Jhin':[4,6],"Kai'Sa":[4,7]}},
+ asol:{note:'Achtung: Transformierte Mechs belegen 2 Hexes. Lass neben Mighty Mech und Urgot Platz, sonst rutscht deine Backline durcheinander.',
+  p:{'Mighty Mech':[1,3],'Urgot':[1,4],'Tahm Kench':[1,5],'Morgana':[2,4],'Viktor':[3,3],'Bard':[3,5],'Aurelion Sol':[4,6]}},
+ vex:{note:'Vier Tanks als Wand, Vex und Graves dahinter. Gegen Assassinen Vex eine Reihe nach vorn in die Mitte ziehen.',
+  p:{'Rammus':[1,2],'Nunu & Willump':[1,3],'Morgana':[1,4],'Shen':[1,5],'Sona':[3,4],'Graves':[4,6],'Vex':[4,7]}},
+ nami:{note:'Der Groove wird stärker je länger der Kampf dauert — baue die Front breit, damit du Zeit gewinnst. Fiora hinter der Front, sie sucht sich ihr Ziel selbst.',
+  p:{'Gragas':[1,3],'Ornn':[1,4],'Blitzcrank':[1,5],'Fiora':[2,4],'Samira':[4,6],'Nami':[4,7]}},
+ kindred:{note:'Master Yi und Akali gehen von selbst rein — stell sie an den Rand, damit sie deine Backline nicht blockieren.',
+  p:{'Akali':[1,2],'Aatrox':[1,3],'Maokai':[1,4],'Tahm Kench':[1,5],'Master Yi':[2,6],'Kindred':[4,7]}},
+ stargazer:{note:'Zwei Scharfschützen (Xayah, Jhin) — beide maximal weit weg vom nächsten Gegner. Wenn dein Sternbild bestimmte Hexes verstärkt, hat Xayah Vorrang darauf.',
+  p:{'Jax':[1,3],'Nunu & Willump':[1,4],'Lulu':[3,3],'Twisted Fate':[3,5],'Jhin':[4,6],'Xayah':[4,7]}},
+ samira:{note:'Samira in die Ecke, Xayah daneben. Gwen hält als zweite Front die Mitte, wenn Ornn fällt.',
+  p:{'Nasus':[1,3],'Ornn':[1,4],'Gwen':[2,4],'Miss Fortune':[3,5],'Xayah':[4,6],'Samira':[4,7]}},
+ gwen:{note:'Gwen ist Kämpferin, sie gehört nach VORNE neben den Tank — nicht in die Backline. Samira räumt von hinten auf.',
+  p:{'Gragas':[1,3],'Ornn':[1,4],'Gwen':[1,5],'Teemo':[3,3],'Samira':[4,7]}},
+ tfreroll:{note:'Nur drei Kern-Einheiten — deshalb passt die Aufstellung auf jedem Level. Twisted Fate immer in die hinterste Ecke, Talon springt sowieso selbst.',
+  p:{'Jax':[1,3],'Nunu & Willump':[1,4],'Talon':[2,6],'Lulu':[3,4],'Twisted Fate':[4,7]}},
+ leblanc:{note:'Bia & Bayin (Hirten-Duo) erscheinen zusätzlich — halte die Mitte der hinteren Reihen frei, damit sie nicht deine Carry verdrängen.',
+  p:{'Illaoi':[1,3],'Nunu & Willump':[1,4],'Meepsie':[3,2],'Lissandra':[3,3],'Lulu':[3,5],'Sona':[3,6],'Nami':[4,6],'LeBlanc':[4,7]}},
+ lissandra:{note:'Günstigste Aufstellung des Sets: zwei Tanks vorne, Lissandra ganz hinten. Sobald du auf 8 Einheiten gehst, wandert Kai\'Sa in die andere Ecke.',
+  p:{'Mordekaiser':[1,3],"Cho'Gath":[1,4],'Veigar':[3,5],"Kai'Sa":[4,6],'Lissandra':[4,7]}},
+ veigar:{note:'Gleiche Einheiten wie die Gnar-Druckerei, aber Veigar trägt die Items und bekommt die Ecke — Gnar rückt eine Reihe vor.',
+  p:{'Poppy':[1,3],'Rammus':[1,4],'Fizz':[1,6],'Meepsie':[3,3],'Corki':[3,5],'Gnar':[4,5],'Veigar':[4,7]}},
+ jinx:{note:'Jinx braucht Zeit zum Hochlaufen — Illaoi, Briar und Fiora müssen den Kampf lange halten. Jinx immer maximal weit vom Gegner weg.',
+  p:{'Briar':[1,3],'Illaoi':[1,4],'Fiora':[1,5],'Aurora':[3,5],'Xayah':[4,6],'Jinx':[4,7]}},
+};
+
+// ── FAHRPLAN („Jetzt") ────────────────────────────────────────
+// Set-unabhängig: Rundenstruktur, Econ und Level-Timings ändern sich beim Set-Wechsel nicht.
+var PLAN=[
+ {when:'1-1 → 1-4',phase:'Aufwärmen · nur PvE',
+  doA:'Kauf alles Billige und stell dein Brett voll — jede Einheit kämpft mit.',
+  doF:'Board voll, Komponenten einsammeln, auf Trait-Paare achten. Noch keine Entscheidung erzwingen.',
+  gold:'egal',goldSub:'Zinsen gibt es noch nicht — hier ist Ausgeben richtig.',
+  lvl:'3',lvlSub:'kommt automatisch',
+  tips:[['🎠','Beim ersten Angebot lieber die <b>Item-Komponente</b> nehmen als den Champion.'],
+        ['🔨','<b>Noch keine Items bauen.</b> Erst sehen, welcher Carry es wird.'],
+        ['👀','Merk dir, welche Komponenten du hast — sie entscheiden mit über deine Comp.']]},
+
+ {when:'2-1',phase:'Erstes Augment · Weichenstellung',
+  doA:'Wähl das Augment, das zu deinen Einheiten passt. Im Zweifel: Gold oder Items.',
+  doF:'Augment wählen und <b>Streak-Richtung festlegen</b>: durchgewinnen oder bewusst verlieren.',
+  gold:'ausgeben',goldSub:'Alles, was dein Brett jetzt stärker macht.',
+  lvl:'4',lvlSub:'kaufen, wenn du auf Win-Streak gehst',
+  tips:[['⚔️','Ab jetzt kämpfst du gegen echte Spieler — jede Niederlage kostet Leben.'],
+        ['🔀','Entscheide dich: <b>gewinnen</b> oder <b>verlieren</b>. Die Mitte gibt kein Streak-Gold und kostet trotzdem Leben.'],
+        ['💎','Kein Augment passt? Nimm das mit Gold oder Items — nie das komplizierteste.']]},
+
+ {when:'2-2 → 2-7',phase:'Früh-PvP · Econ aufbauen',
+  doA:'Nicht rollen! Nur kaufen, was du direkt aufs Brett stellst. Gold sammeln.',
+  doF:'Stärkstes Board spielen, Zinsstufen mitnehmen, Paare halten statt verkaufen.',
+  gold:'10 → 20',goldSub:'+1 Zins je volle 10 Gold, jede Runde.',
+  lvl:'4 → 5',lvlSub:'Level 5 gegen Ende von Stage 2',
+  tips:[['🚫','<b>Jetzt nicht rerollen.</b> Das ist der häufigste Anfängerfehler.'],
+        ['🔨','Verlierst du viel Leben: <b>ein Item fertig bauen</b> („slammen"). Ein fertiges Item jetzt schlägt das perfekte Item später.'],
+        ['👥','Zwei gleiche Einheiten? Behalten — die dritte macht sie doppelt so stark.']]},
+
+ {when:'3-1 → 3-7',phase:'Richtung festlegen · sparen',
+  doA:'Auf <b>50 Gold</b> sparen und dich für EINE Comp entscheiden. Items auf deinen Carry.',
+  doF:'Comp festlegen, Econ auf 50 bringen, scouten wer dieselbe Line spielt.',
+  gold:'50',goldSub:'Ab 50 gibt es die maximalen +5 Zinsen — das ist dein Ziel.',
+  lvl:'6',lvlSub:'Level 6 etwa auf 3-2',
+  tips:[['🔭','<b>Scouten:</b> Spielen zwei andere deine Comp, wird deine Carry knapp — dann wechseln.'],
+        ['🗡','Alle Schadens-Items auf <b>einen</b> Carry, Tank-Items auf <b>einen</b> Tank. Nicht verteilen.'],
+        ['💎','Zweites Augment: jetzt passend zur festgelegten Comp wählen.']]},
+
+ {when:'4-1 → 4-2',phase:'Der wichtigste Abschnitt',
+  doA:'Level 7 kaufen. Bist du auf einer Reroll-Comp, bleib auf 6 und rolle das Gold über 50.',
+  doF:'Level 7, drittes Augment. Reroll-Lines bleiben auf ihrem Level und rollen den Überschuss.',
+  gold:'über 50 halten',goldSub:'Nur das Gold ÜBER 50 verrollen — die Zinsen laufen weiter.',
+  lvl:'7',lvlSub:'Reroll-Comps: auf 6 bzw. 7 bleiben',
+  tips:[['⭐','Reroll-Plan? Ziel ist <b>3★ auf dem Carry</b> — dafür jede Runde den Überschuss rollen.'],
+        ['📈','Standard-Plan? Weiter sparen für den Rolldown auf Level 8.'],
+        ['❤️','Unter 40 Leben: lieber jetzt stabilisieren als auf später hoffen.']]},
+
+ {when:'4-5 → 5-1',phase:'Rolldown · Board fertig bauen',
+  doA:'Level 8 kaufen und dann runterrollen, bis deine Einheiten stehen.',
+  doF:'Level 8, geplanter Rolldown auf die 4-Kosten-Carries. Vorher alle Items fertig bauen.',
+  gold:'30–50 einsetzen',goldSub:'Bewusst ausgeben — aber ~10 Gold übrig lassen.',
+  lvl:'8',lvlSub:'der Standard-Spike des Spiels',
+  tips:[['🔨','<b>Vor</b> dem Rolldown alle Items fertig bauen — mitten im Rollen vergisst man es.'],
+        ['🛑','Nicht auf 0 rollen. Wer bei 0 steht, hat nächste Runde nichts.'],
+        ['📊','Nach dem Rolldown wieder Zinsen aufbauen, nicht weiter rollen.']]},
+
+ {when:'5-2 und später',phase:'Endgame · Feinschliff',
+  doA:'Alle Kern-Einheiten auf 2★ bringen, dann Level 9. Aufstellung nach jedem Kampf prüfen.',
+  doF:'Level 9, 5-Kosten-Upgrades einbauen, gegen die verbleibenden Gegner positionieren.',
+  gold:'einsetzen',goldSub:'Jetzt zählt nur noch Brettstärke.',
+  lvl:'9',lvlSub:'nur mit Gold-Polster',
+  tips:[['🧭','<b>Nach jedem Kampf</b>: Wurde dein Carry zuerst getötet? Dann Position ändern.'],
+        ['🔭','Schau dir die verbleibenden Gegner an und stell dich gegen den <b>stärksten</b> auf.'],
+        ['👑','5-Kosten-Einheiten sofort kaufen, wenn sie auftauchen — sie sind fast immer ein Upgrade.']]},
+];
+
 // ── GUIDE-INHALTE ─────────────────────────────────────────────
 var GUIDE={
  a:{intro:'Dein Ziel: <b>Top 4</b> — das zählt als Sieg. Du musst nicht Erster werden. Lern erstmal EINE einfache Comp und diese Grundregeln:',
@@ -763,7 +1048,8 @@ var GUIDE={
 };
 
 // ── STATE ─────────────────────────────────────────────────────
-var state={level:null,sel:[],selP:[],mode:'solo',activeBuild:'me',rdCost:'Alle',rdQ:'',chCost:'Alle',chQ:'',compFilter:'Alle',guideTab:null,plvl:6,ccCost:'Alle',ccQ:''};
+var state={level:null,sel:[],selP:[],mode:'solo',activeBuild:'me',rdCost:'Alle',rdQ:'',chCost:'Alle',chQ:'',compFilter:'Alle',guideTab:null,plvl:6,ccCost:'Alle',ccQ:'',jz:0,unitsTab:'c'};
+try{var j=parseInt(localStorage.getItem('tft_jz'),10);if(j>=0&&j<=6)state.jz=j;}catch(e){}
 try{state.level=localStorage.getItem('tft17_level')||null;}catch(e){}
 try{var s=localStorage.getItem('tft17_sel');if(s)state.sel=JSON.parse(s);}catch(e){}
 try{var sp=localStorage.getItem('tft17_selP');if(sp)state.selP=JSON.parse(sp);}catch(e){}
@@ -790,7 +1076,7 @@ function unitChip(name,isCarry){
   var ch=champByName(name);
   var cc=ch?costColor(ch.cost):'var(--line)';
   return '<span class="unit-chip'+(isCarry?' carry':'')+'" style="--cc:'+cc+';">'
-    +(ch?'<span style="font-size:9px;font-weight:700;color:'+cc+';">'+ch.cost+'★</span>':'')
+    +(ch?'<span style="font-size:11px;font-weight:700;color:'+cc+';">'+ch.cost+'★</span>':'')
     +name+(isCarry?' ⭐':'')+'</span>';
 }
 
@@ -817,7 +1103,117 @@ function setLevel(l){
 function applyLevel(){
   var L=LEVELS[state.level]||LEVELS.a;
   document.getElementById('lvl-chip').innerHTML=L.icon+' '+L.name+' ▾';
-  renderComps();renderGuide();renderCoach();
+  renderComps();renderGuide();renderCoach();renderJetzt();
+}
+
+// ── BOARD-RENDERING ───────────────────────────────────────────
+function inits(n){
+  var w=n.replace(/['’&]/g,'').split(/\s+/).filter(Boolean);
+  return (w.length>1?w[0].charAt(0)+w[1].charAt(0):n.slice(0,2)).toUpperCase();
+}
+// Zeichnet die feste 4×7-Aufstellung einer Comp. Reihe 1 steht dem Gegner zugewandt.
+// (Ergaenzt renderPositionBoard, das die AKTUELLE Auswahl im Coach einsortiert.)
+function renderBoard(compId){
+  var P=POS[compId];if(!P)return'';
+  var comp=COMPS.find(function(c){return c.id===compId;});
+  var carry=comp?comp.carry:'';
+  var cell={},order=[];
+  Object.keys(P.p).forEach(function(n){cell[P.p[n][0]+'-'+P.p[n][1]]=n;});
+
+  var h='<div class="board-frame">'
+    +'<div class="board-axis"><span class="front">▲ Richtung Gegner</span><span>Deine Seite ▼</span></div>'
+    +'<div class="hexboard">';
+  for(var r=1;r<=4;r++){
+    h+='<div class="hex-row'+(r%2===0?' off':'')+'">';
+    for(var c=1;c<=7;c++){
+      var n=cell[r+'-'+c];
+      if(!n){h+='<div class="hex"></div>';continue;}
+      var ch=champByName(n),isC=(n===carry),col=ch?costColor(ch.cost):'#6e74a3';
+      var src=ch?champImg(ch.id):null;
+      order.push({n:n,ch:ch,isC:isC,col:col});
+      h+='<div class="hex '+(isC?'carry':'filled')+'" style="--hc:'+col+';">'
+        +'<div class="hex-in">'+inits(n)
+        +(src?'<img src="'+src+'" loading="lazy" alt="" onerror="this.remove()">':'')
+        +'</div>'+(isC?'<div class="star">⭐</div>':'')+'</div>';
+    }
+    h+='</div>';
+  }
+  h+='</div><div class="board-legend">'
+    +order.map(function(o){
+      return '<span class="bl-item'+(o.isC?' carry':'')+'" style="--hc:'+o.col+';">'
+        +(o.ch?ROLE_ICON[o.ch.r]+' ':'')+o.n+(o.isC?' ⭐':'')+'</span>';
+    }).join('')
+    +'</div><div class="board-note">📐 '+P.note+'</div></div>';
+  return h;
+}
+
+// Generisches Rollen-Schema (ohne Champions) für den Guide.
+function renderRoleBoard(){
+  var demo={'1-3':['🛡','#5ba8ff'],'1-4':['🛡','#5ba8ff'],'1-5':['🛡','#5ba8ff'],
+            '2-4':['⚔','#ff7a7a'],'3-3':['💚','#4fd18a'],'3-5':['🔮','#8b7cf6'],
+            '4-7':['🏹','#f0c25a']};
+  var h='<div class="board-frame">'
+    +'<div class="board-axis"><span class="front">▲ Richtung Gegner</span><span>Deine Seite ▼</span></div>'
+    +'<div class="hexboard">';
+  for(var r=1;r<=4;r++){
+    h+='<div class="hex-row'+(r%2===0?' off':'')+'">';
+    for(var c=1;c<=7;c++){
+      var d=demo[r+'-'+c];
+      if(!d){h+='<div class="hex"></div>';continue;}
+      var isC=(r===4);
+      h+='<div class="hex '+(isC?'carry':'filled')+'" style="--hc:'+d[1]+';">'
+        +'<div class="hex-in" style="font-size:15px;">'+d[0]+'</div>'
+        +(isC?'<div class="star">⭐</div>':'')+'</div>';
+    }
+    h+='</div>';
+  }
+  h+='</div><div class="board-legend">'
+    +'<span class="bl-item" style="--hc:#5ba8ff;">🛡 Tanks</span>'
+    +'<span class="bl-item" style="--hc:#ff7a7a;">⚔ Kämpfer</span>'
+    +'<span class="bl-item" style="--hc:#4fd18a;">💚 Support</span>'
+    +'<span class="bl-item" style="--hc:#8b7cf6;">🔮 Magier</span>'
+    +'<span class="bl-item carry">🏹 Carry ⭐</span>'
+    +'</div></div>';
+  var el=document.getElementById('role-board');
+  if(el)el.innerHTML=h;
+}
+
+// ── VIEW: JETZT (Fahrplan) ────────────────────────────────────
+function setJz(i){
+  if(i<0||i>=PLAN.length)return;
+  state.jz=i;
+  try{localStorage.setItem('tft_jz',String(i));}catch(e){}
+  renderJetzt();window.scrollTo(0,0);
+}
+function renderJetzt(){
+  document.getElementById('jz-steps').innerHTML=PLAN.map(function(p,i){
+    return '<button onclick="setJz('+i+')" class="jz-step'+(state.jz===i?' on':'')+'">'+p.when+'</button>';
+  }).join('');
+  var p=PLAN[state.jz],adv=state.level!=='a';
+  document.getElementById('jz-card').innerHTML='<div class="card">'
+    +'<div class="jz-head"><span class="jz-when">'+p.when+'</span><span class="jz-phase">'+p.phase+'</span></div>'
+    +'<div class="jz-do"><div class="lbl">Was du jetzt tust</div><div class="txt">'+(adv?p.doF:p.doA)+'</div></div>'
+    +'<div class="jz-kpi">'
+    +'<div class="jz-box gold"><div class="lbl">💰 Gold</div><div class="val">'+p.gold+'</div><div class="sub">'+p.goldSub+'</div></div>'
+    +'<div class="jz-box lvl"><div class="lbl">⬆️ Level</div><div class="val">'+p.lvl+'</div><div class="sub">'+p.lvlSub+'</div></div>'
+    +'</div>'
+    +'<div class="mini-label">Nicht vergessen</div>'
+    +p.tips.map(function(t){return '<div class="jz-tip"><span class="ic">'+t[0]+'</span><span>'+t[1]+'</span></div>';}).join('')
+    +'</div>'
+    +'<div class="jz-nav">'
+    +'<button onclick="setJz('+(state.jz-1)+')"'+(state.jz===0?' disabled':'')+'>← Vorher</button>'
+    +'<button onclick="setJz('+(state.jz+1)+')"'+(state.jz===PLAN.length-1?' disabled':'')+'>Weiter →</button>'
+    +'</div>';
+}
+
+// ── VIEW: UNITS (Champions / Traits) ──────────────────────────
+function setUnitsTab(t){
+  state.unitsTab=t;
+  document.getElementById('units-champs').style.display=t==='c'?'block':'none';
+  document.getElementById('units-traits').style.display=t==='t'?'block':'none';
+  document.getElementById('ut-c').classList.toggle('on',t==='c');
+  document.getElementById('ut-t').classList.toggle('on',t==='t');
+  window.scrollTo(0,0);
 }
 
 // ── VIEW: NEUE RUNDE ──────────────────────────────────────────
@@ -841,9 +1237,13 @@ function setMode(m){state.mode=m;saveSel();renderMode();renderRdGrid();renderCoa
 function renderBuildSwitch(){
   if(state.mode!=='duo')return;
   document.getElementById('rd-buildsw').innerHTML=
-    '<div style="font-size:11px;color:var(--muted);line-height:1.4;">👇 Tippe <b style="color:#9af1be;">DU</b> oder <b style="color:#c4baff;">P</b> direkt auf einer Einheit unten — kein Umschalten nötig. '
+    '<div style="font-size:12px;color:var(--muted);line-height:1.4;">👇 Tippe <b style="color:#9af1be;">DU</b> oder <b style="color:#c4baff;">P</b> direkt auf einer Einheit unten — kein Umschalten nötig. '
     +'<b style="color:#9af1be;">Du: '+state.sel.length+'</b> · <b style="color:#c4baff;">Partner: '+state.selP.length+'</b></div>';
 }
+// Schaltet im 2v2-Modus zwischen eigenem und Partner-Build um.
+// (War in der GitHub-Fassung vom 18.07. versehentlich geloescht, obwohl die
+//  "bearbeiten"-Buttons sie weiter aufriefen — Duo-Umschaltung war dadurch tot.)
+function setActiveBuild(w){state.activeBuild=w;renderBuildSwitch();renderRdGrid();renderCoach();window.scrollTo(0,0);}
 function activeSelArr(){return (state.mode==='duo'&&state.activeBuild==='partner')?state.selP:state.sel;}
 function rdRemove(id,which){
   var arr=which==='partner'?state.selP:state.sel;
@@ -901,19 +1301,19 @@ function renderRdGrid(){
       // 2v2: zwei eigene Tap-Zonen direkt auf der Kachel — kein globales Umschalten nötig
       return '<div class="rd-champ" style="--cc:'+cc+';'+bg+'border-color:'+bcol+' !important;cursor:default;padding-bottom:4px;">'
         +champImgTag(ch,38,bcol,'margin:0 auto 3px;')
-        +'<div style="font-size:9px;font-weight:700;color:'+cc+';line-height:1;margin-bottom:3px;">'+ch.cost+'★</div>'
+        +'<div style="font-size:11px;font-weight:700;color:'+cc+';line-height:1;margin-bottom:3px;">'+ch.cost+'★</div>'
         +'<div style="font-size:10.5px;font-weight:600;color:#eef0ff;line-height:1.15;word-break:break-word;margin-bottom:4px;">'+ch.name+'</div>'
         +'<div style="display:flex;gap:3px;">'
-          +'<button onclick="rdTapWho(\''+ch.id+'\',\'me\')" style="flex:1;border-radius:6px;padding:4px 2px;font-size:9px;font-weight:800;border:1px solid '+(inMe?'#4fd18a':'var(--line)')+';background:'+(inMe?'rgba(79,209,138,.25)':'rgba(255,255,255,.05)')+';color:'+(inMe?'#9af1be':'var(--muted)')+';">'+(inMe?'✓ DU':'DU')+'</button>'
-          +'<button onclick="rdTapWho(\''+ch.id+'\',\'partner\')" style="flex:1;border-radius:6px;padding:4px 2px;font-size:9px;font-weight:800;border:1px solid '+(inP?'#8b7cf6':'var(--line)')+';background:'+(inP?'rgba(139,124,246,.25)':'rgba(255,255,255,.05)')+';color:'+(inP?'#c4baff':'var(--muted)')+';">'+(inP?'✓ P':'P')+'</button>'
+          +'<button onclick="rdTapWho(\''+ch.id+'\',\'me\')" style="flex:1;border-radius:6px;padding:4px 2px;font-size:11px;font-weight:800;border:1px solid '+(inMe?'#4fd18a':'var(--line)')+';background:'+(inMe?'rgba(79,209,138,.25)':'rgba(255,255,255,.05)')+';color:'+(inMe?'#9af1be':'var(--muted)')+';">'+(inMe?'✓ DU':'DU')+'</button>'
+          +'<button onclick="rdTapWho(\''+ch.id+'\',\'partner\')" style="flex:1;border-radius:6px;padding:4px 2px;font-size:11px;font-weight:800;border:1px solid '+(inP?'#8b7cf6':'var(--line)')+';background:'+(inP?'rgba(139,124,246,.25)':'rgba(255,255,255,.05)')+';color:'+(inP?'#c4baff':'var(--muted)')+';">'+(inP?'✓ P':'P')+'</button>'
         +'</div>'
         +'</div>';
     }
-    var extra='<div style="font-size:9px;color:var(--muted2);line-height:1.3;margin-top:2px;">'+ch.t.join(' · ')+'</div>';
+    var extra='<div style="font-size:11px;color:var(--muted2);line-height:1.3;margin-top:2px;">'+ch.t.join(' · ')+'</div>';
     return '<button onclick="rdTap(\''+ch.id+'\')" class="rd-champ'+(inMe?' sel':'')+'" style="--cc:'+cc+';border-color:'+bcol+' !important;">'
       +champImgTag(ch,42,bcol,'margin:0 auto 4px;')
-      +'<div style="font-size:10px;font-weight:700;color:'+cc+';line-height:1;margin-bottom:2px;">'+ch.cost+'★ '+ROLE_ICON[ch.r]+'</div>'
-      +'<div style="font-size:11px;font-weight:600;color:#eef0ff;line-height:1.2;word-break:break-word;">'+ch.name+(inMe?' ✓':'')+'</div>'
+      +'<div style="font-size:12px;font-weight:700;color:'+cc+';line-height:1;margin-bottom:2px;">'+ch.cost+'★ '+ROLE_ICON[ch.r]+'</div>'
+      +'<div style="font-size:12px;font-weight:600;color:#eef0ff;line-height:1.2;word-break:break-word;">'+ch.name+(inMe?' ✓':'')+'</div>'
       +extra
       +'</button>';
   }).join('')||'<div style="color:var(--muted);font-size:13px;grid-column:1/-1;padding:10px 0;">Nichts gefunden</div>';
@@ -1087,17 +1487,17 @@ function renderItemBlock(label,color,p){
   if(!p||!p.items.length)return '';
   var h='<div class="coach-box" style="padding:10px 11px;'+(p.have?'':'opacity:.92;')+'">'
     +'<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">'
-    +'<span style="font-size:11px;font-weight:700;color:'+color+';">'+label+':</span>'
+    +'<span style="font-size:12px;font-weight:700;color:'+color+';">'+label+':</span>'
     +'<b style="font-size:13px;">'+p.name+'</b>'
-    +(p.cost!=null?'<span class="cst" style="font-size:9px;font-weight:700;color:'+costColor(p.cost)+';">'+p.cost+'★</span>':'')
-    +(p.have?'<span style="font-size:10px;color:var(--green);margin-left:auto;">✓ dabei</span>':'<span style="font-size:10px;color:var(--muted2);margin-left:auto;">⏳ noch holen</span>')
+    +(p.cost!=null?'<span class="cst" style="font-size:11px;font-weight:700;color:'+costColor(p.cost)+';">'+p.cost+'★</span>':'')
+    +(p.have?'<span style="font-size:12px;color:var(--green);margin-left:auto;">✓ dabei</span>':'<span style="font-size:12px;color:var(--muted2);margin-left:auto;">⏳ noch holen</span>')
     +'</div>';
   p.items.forEach(function(item,i){
     var rec=RECIPES.find(function(r){return r[0]===item.replace(' ×2','');});
     h+='<div class="item-row" style="margin-bottom:4px;">'
-      +'<span style="font-size:11px;font-weight:800;color:'+(i===0?'var(--gold)':i===1?'#c8cee6':'#c9956a')+';width:16px;">'+(i+1)+'.</span>'
+      +'<span style="font-size:12px;font-weight:800;color:'+(i===0?'var(--gold)':i===1?'#c8cee6':'#c9956a')+';width:16px;">'+(i+1)+'.</span>'
       +'<span style="flex:1;">'+item+'</span>'
-      +(rec?'<span style="color:var(--muted2);font-size:10px;font-weight:400;">'+rec[1]+'</span>':'')+'</div>';
+      +(rec?'<span style="color:var(--muted2);font-size:12px;font-weight:400;">'+rec[1]+'</span>':'')+'</div>';
   });
   h+='</div>';
   return h;
@@ -1117,7 +1517,7 @@ function duoPlayerCard(icon,label,which,A){
   var h='<div class="coach-box" style="border-color:'+accent+';">'
     +'<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">'
     +'<b style="font-size:14px;color:'+col+';flex:1;">'+icon+' '+label+'</b>'
-    +'<button onclick="setActiveBuild(\''+which+'\')" class="pill-btn'+(state.activeBuild===which?' on':'')+'" style="padding:3px 9px;font-size:10px;">'+(state.activeBuild===which?'● bearbeiten':'bearbeiten')+'</button>'
+    +'<button onclick="setActiveBuild(\''+which+'\')" class="pill-btn'+(state.activeBuild===which?' on':'')+'" style="padding:3px 9px;font-size:12px;">'+(state.activeBuild===which?'● bearbeiten':'bearbeiten')+'</button>'
     +'</div>';
   if(!A.sel.length){
     h+='<div style="font-size:12px;color:var(--muted);">Noch leer. Tippe hier auf „bearbeiten" und wähle links Einheiten.</div></div>';
@@ -1125,11 +1525,11 @@ function duoPlayerCard(icon,label,which,A){
   }
   h+='<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px;">';
   A.sel.forEach(function(ch){
-    h+='<button onclick="rdRemove(\''+ch.id+'\',\''+which+'\')" class="chip" style="font:inherit;font-size:10px;font-weight:600;"><span class="cst" style="color:'+costColor(ch.cost)+';">'+ch.cost+'★</span>'+ch.name+' ✕</button>';
+    h+='<button onclick="rdRemove(\''+ch.id+'\',\''+which+'\')" class="chip" style="font:inherit;font-size:12px;font-weight:600;"><span class="cst" style="color:'+costColor(ch.cost)+';">'+ch.cost+'★</span>'+ch.name+' ✕</button>';
   });
   h+='</div>';
   if(A.sel.length){
-    h+='<div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:6px;">🧭 Positionierung</div>'+renderPositionBoard(A.sel);
+    h+='<div style="font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:6px;">🧭 Positionierung</div>'+renderPositionBoard(A.sel);
   }
   var goodHit=A.best&&A.best.m.length>=2;
   if(goodHit){
@@ -1138,15 +1538,15 @@ function duoPlayerCard(icon,label,which,A){
       +'<span class="tier-badge tier-'+c.tier+'">'+c.tier+'</span>'
       +'<b style="font-size:13px;flex:1;">'+c.name+'</b>'
       +'<span class="diff-badge diff-'+c.diff+'">'+diffLabel(c.diff)+'</span></div>'
-      +'<div style="font-size:11px;color:var(--muted);">'+c.style+' · Carry: <b style="color:#eef0ff;">'+c.carry+'</b> · '+A.best.m.length+'/'+c.core.length+' Kern</div>'
+      +'<div style="font-size:12px;color:var(--muted);">'+c.style+' · Carry: <b style="color:#eef0ff;">'+c.carry+'</b> · '+A.best.m.length+'/'+c.core.length+' Kern</div>'
       +'<div class="prog"><i style="width:'+pct+'%;"></i></div>'
-      +'<div style="font-size:11px;color:'+(rh.ok?'var(--green)':'var(--red)')+';margin-bottom:6px;">'+rh.txt+'</div>'
-      +'<div style="font-size:11px;color:var(--gold);margin-bottom:4px;">🗡 '+c.carry+': '+c.carryIt.map(function(it,i){return (i+1)+'. '+it;}).join(' · ')+'</div>';
+      +'<div style="font-size:12px;color:'+(rh.ok?'var(--green)':'var(--red)')+';margin-bottom:6px;">'+rh.txt+'</div>'
+      +'<div style="font-size:12px;color:var(--gold);margin-bottom:4px;">🗡 '+c.carry+': '+c.carryIt.map(function(it,i){return (i+1)+'. '+it;}).join(' · ')+'</div>';
     var pr=buyPriorities(A.sel,A.selNames,A.tmap,A.hits);
     if(pr.length){
-      h+='<div style="font-size:11px;color:var(--muted);margin-bottom:2px;">🛒 Als Nächstes:</div>';
+      h+='<div style="font-size:12px;color:var(--muted);margin-bottom:2px;">🛒 Als Nächstes:</div>';
       pr.slice(0,2).forEach(function(p,i){
-        h+='<div style="font-size:11px;margin-bottom:2px;"><b style="color:#eef0ff;">'+(i+1)+'. '+p.ch.name+'</b>'
+        h+='<div style="font-size:12px;margin-bottom:2px;"><b style="color:#eef0ff;">'+(i+1)+'. '+p.ch.name+'</b>'
           +(p.ch.it&&p.ch.it.length?' <span style="color:var(--gold);">→ '+p.ch.it.slice(0,2).join(' + ')+'</span>':'')
           +'</div>';
       });
@@ -1160,9 +1560,9 @@ function duoPlayerCard(icon,label,which,A){
     }
     var pr2=buyPriorities(A.sel,A.selNames,A.tmap,A.hits);
     if(pr2.length){
-      h+='<div style="font-size:11px;color:var(--muted);margin-bottom:2px;">🛒 Passt dazu:</div>';
+      h+='<div style="font-size:12px;color:var(--muted);margin-bottom:2px;">🛒 Passt dazu:</div>';
       pr2.slice(0,3).forEach(function(p){
-        h+='<div style="font-size:11px;margin-bottom:2px;"><b style="color:#eef0ff;">'+p.ch.name+'</b>'
+        h+='<div style="font-size:12px;margin-bottom:2px;"><b style="color:#eef0ff;">'+p.ch.name+'</b>'
           +(p.ch.it&&p.ch.it.length?' <span style="color:var(--gold);">→ '+p.ch.it.slice(0,2).join(' + ')+'</span>':'')
           +'</div>';
       });
@@ -1266,17 +1666,17 @@ function renderPositionBoard(sel){
     +'</div></div>';
   if(hasMechSel){
     var mechNames=sel.filter(function(ch){return MECH_IDS[ch.id];}).map(function(ch){return ch.name;});
-    html+='<div style="font-size:11px;color:#c9a8f0;margin-top:8px;">🤖 <b style="color:#eef0ff;">'+mechNames.join(', ')+'</b>: transformiert '+(mechNames.length>1?'brauchen sie':'braucht er')+' je 2 Feld-Plätze nebeneinander — plane die Nachbarfelder frei.</div>';
+    html+='<div style="font-size:12px;color:#c9a8f0;margin-top:8px;">🤖 <b style="color:#eef0ff;">'+mechNames.join(', ')+'</b>: transformiert '+(mechNames.length>1?'brauchen sie':'braucht er')+' je 2 Feld-Plätze nebeneinander — plane die Nachbarfelder frei.</div>';
   }
   if(over){
     var benchNames=Object.keys(benchIds).map(function(id){return champById(id).name;});
-    html+='<div style="font-size:11px;color:var(--red);margin-top:8px;">⚠️ '+effectiveUsed+' Feld-Plätze gebraucht (inkl. Mech-Doppelbelegung), aber nur '+slots+' auf Lv '+state.plvl+'. <b style="color:#eef0ff;">'+benchNames.join(', ')+'</b> würde'+(benchNames.length>1?'n':'')+' auf der Bank bleiben.</div>';
+    html+='<div style="font-size:12px;color:var(--red);margin-top:8px;">⚠️ '+effectiveUsed+' Feld-Plätze gebraucht (inkl. Mech-Doppelbelegung), aber nur '+slots+' auf Lv '+state.plvl+'. <b style="color:#eef0ff;">'+benchNames.join(', ')+'</b> würde'+(benchNames.length>1?'n':'')+' auf der Bank bleiben.</div>';
   }
   if(zones.back.length){
-    html+='<div style="font-size:11px;color:var(--gold);margin-top:8px;">💡 Hauptschaden in eine Ecke, nicht in die Mitte — Assassinen &amp; Blitzcrank-Hooks brauchen so länger.</div>';
+    html+='<div style="font-size:12px;color:var(--gold);margin-top:8px;">💡 Hauptschaden in eine Ecke, nicht in die Mitte — Assassinen &amp; Blitzcrank-Hooks brauchen so länger.</div>';
   }
   if(zones.flex.length){
-    html+='<div style="font-size:11px;color:var(--muted);margin-top:5px;">Assassinen springen selbst ins Ziel — Startposition ist zweitrangig.</div>';
+    html+='<div style="font-size:12px;color:var(--muted);margin-top:5px;">Assassinen springen selbst ins Ziel — Startposition ist zweitrangig.</div>';
   }
   return html;
 }
@@ -1295,7 +1695,7 @@ function renderCoach(){
   // Gewählte Einheiten
   html+='<div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px;">';
   sel.forEach(function(ch){
-    html+='<button onclick="rdTap(\''+ch.id+'\')" class="chip sel" style="font:inherit;font-size:11px;font-weight:600;">'
+    html+='<button onclick="rdTap(\''+ch.id+'\')" class="chip sel" style="font:inherit;font-size:12px;font-weight:600;">'
       +'<span class="cst" style="color:'+costColor(ch.cost)+';">'+ch.cost+'★</span>'+ch.name+' ✕</button>';
   });
   html+='</div>';
@@ -1330,11 +1730,11 @@ function renderCoach(){
       html+='<div class="coach-box" style="padding:9px 11px;'+(p.bench?'opacity:.85;':'')+'">'
         +'<div style="display:flex;align-items:center;gap:7px;">'
         +'<span style="font-size:13px;">'+medals[i]+'</span>'
-        +'<span class="cst" style="font-size:10px;font-weight:700;color:'+costColor(p.ch.cost)+';">'+p.ch.cost+'★</span>'
+        +'<span class="cst" style="font-size:12px;font-weight:700;color:'+costColor(p.ch.cost)+';">'+p.ch.cost+'★</span>'
         +'<b style="font-size:13px;flex:1;">'+p.ch.name+'</b>'
-        +(p.bench?'<span style="font-size:9px;font-weight:700;color:var(--muted2);background:rgba(255,255,255,.08);border-radius:5px;padding:2px 6px;">BANK</span>':'')
+        +(p.bench?'<span style="font-size:11px;font-weight:700;color:var(--muted2);background:rgba(255,255,255,.08);border-radius:5px;padding:2px 6px;">BANK</span>':'')
         +'</div>'
-        +(p.ch.it&&p.ch.it.length?'<div style="font-size:11px;color:var(--gold);margin-top:4px;">🏆 '+p.ch.it.slice(0,3).join(' + ')+'</div>':'')
+        +(p.ch.it&&p.ch.it.length?'<div style="font-size:12px;color:var(--gold);margin-top:4px;">🏆 '+p.ch.it.slice(0,3).join(' + ')+'</div>':'')
         +'</div>';
     });
   }
@@ -1359,16 +1759,17 @@ function renderCoach(){
         +'<b style="font-size:13px;flex:1;">'+(xi===0?'👉 ':'')+c.name+'</b>'
         +'<span class="diff-badge diff-'+c.diff+'">'+diffLabel(c.diff)+'</span>'
         +'</div>'
-        +'<div style="font-size:11px;color:var(--muted);">Carry: <b style="color:#eef0ff;">'+c.carry+'</b> · '+x.m.length+'/'+c.core.length+'</div>'
+        +'<div style="font-size:12px;color:var(--muted);">Carry: <b style="color:#eef0ff;">'+c.carry+'</b> · '+x.m.length+'/'+c.core.length+'</div>'
         +'<div class="prog"><i style="width:'+pct+'%;"></i></div>'
-        +(fitsBoard?'':'<div style="font-size:11px;color:var(--red);">⚠️ Braucht '+c.core.length+' Plätze, du hast '+slotsHere+'.</div>')
-        +'<div style="font-size:11px;color:'+(rh.ok?'var(--green)':'var(--red)')+';">'+rh.txt+'</div>'
+        +(fitsBoard?'':'<div style="font-size:12px;color:var(--red);">⚠️ Braucht '+c.core.length+' Plätze, du hast '+slotsHere+'.</div>')
+        +'<div style="font-size:12px;color:'+(rh.ok?'var(--green)':'var(--red)')+';">'+rh.txt+'</div>'
         +(miss.length?'<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;">'
           +miss.slice(0,6).map(function(n){var ch=champByName(n);
             return '<span class="chip"><span class="cst" style="color:'+(ch?costColor(ch.cost):'#888')+';">'+(ch?ch.cost+'★':'')+'</span>'+n+'</span>';}).join('')
           +'</div>'
-          :'<div style="color:var(--green);font-size:11px;">✓ Alle Kern-Einheiten dabei!</div>')
-        +'</button>';
+          :'<div style="color:var(--green);font-size:12px;">✓ Alle Kern-Einheiten dabei!</div>')
+        +'</button>'
+        +(xi===0?'<div style="font-size:12px;color:var(--muted);margin:8px 0 -4px;">🎯 So sieht die fertige Aufstellung aus:</div>'+renderBoard(c.id):'');
     });
   } else {
     // ── Generischer Trait-Fallback ──────────────────────────────
@@ -1392,11 +1793,11 @@ function renderCoach(){
     +'<div class="prog" style="flex:1;margin:0;"><i style="width:'+Math.min(100,Math.round(100*sel.length/slots))+'%;background:'+(free<0?'var(--red)':free===0?'var(--gold)':'var(--green)')+';"></i></div>'
     +'</div>';
   if(free<0){
-    html+='<div style="font-size:11px;color:var(--red);margin:5px 0 10px;">⚠️ '+(-free)+' zu viel für Lv '+state.plvl+'.</div>';
+    html+='<div style="font-size:12px;color:var(--red);margin:5px 0 10px;">⚠️ '+(-free)+' zu viel für Lv '+state.plvl+'.</div>';
   }else if(free===0){
-    html+='<div style="font-size:11px;color:var(--gold);margin:5px 0 10px;">Feld ist voll — für jeden neuen Champ musst du erst leveln oder tauschen.</div>';
+    html+='<div style="font-size:12px;color:var(--gold);margin:5px 0 10px;">Feld ist voll — für jeden neuen Champ musst du erst leveln oder tauschen.</div>';
   }else{
-    html+='<div style="font-size:11px;color:var(--muted);margin:5px 0 10px;">Noch '+free+' freie'+(free>1?'':''+'r')+' Platz'+(free>1?'plätze':'')+' bis Level '+state.plvl+' voll ist.</div>';
+    html+='<div style="font-size:12px;color:var(--muted);margin:5px 0 10px;">Noch '+free+' freie'+(free>1?'':''+'r')+' Platz'+(free>1?'plätze':'')+' bis Level '+state.plvl+' voll ist.</div>';
   }
 
   // ⭐ 3★-Reihenfolge
@@ -1407,10 +1808,10 @@ function renderCoach(){
       html+='<div class="coach-box" style="padding:8px 11px;">'
         +'<div style="display:flex;align-items:center;gap:7px;">'
         +'<span style="font-size:12px;font-weight:800;color:var(--gold);">'+(i+1)+'.</span>'
-        +'<span class="cst" style="font-size:10px;font-weight:700;color:'+costColor(s.ch.cost)+';">'+s.ch.cost+'★</span>'
+        +'<span class="cst" style="font-size:12px;font-weight:700;color:'+costColor(s.ch.cost)+';">'+s.ch.cost+'★</span>'
         +'<b style="font-size:13px;flex:1;">'+s.ch.name+'</b>'
         +'</div>'
-        +'<div style="font-size:11px;color:var(--muted);margin-top:2px;">'+s.reasons.join(' · ')+'</div>'
+        +'<div style="font-size:12px;color:var(--muted);margin-top:2px;">'+s.reasons.join(' · ')+'</div>'
         +'</div>';
     });
   }else if(sel.length){
@@ -1425,7 +1826,7 @@ function renderCoach(){
     html+=renderItemBlock('🗡 Carry-Items','var(--gold)',plan.carry);
     html+=renderItemBlock('🛡 Tank-Items','var(--blue)',plan.tank);
     if(state.level==='a'){
-      html+='<div style="font-size:11px;color:var(--muted);margin:2px 0 8px;line-height:1.5;">👉 Alle 3 Carry-Items auf <b style="color:#eef0ff;">'+(plan.carry?plan.carry.name:'deinen Carry')+'</b>, die Tank-Items auf <b style="color:#eef0ff;">'+(plan.tank?plan.tank.name:'deinen Tank')+'</b>. Verteil sie NICHT auf mehrere Einheiten.</div>';
+      html+='<div style="font-size:12px;color:var(--muted);margin:2px 0 8px;line-height:1.5;">👉 Alle 3 Carry-Items auf <b style="color:#eef0ff;">'+(plan.carry?plan.carry.name:'deinen Carry')+'</b>, die Tank-Items auf <b style="color:#eef0ff;">'+(plan.tank?plan.tank.name:'deinen Tank')+'</b>. Verteil sie NICHT auf mehrere Einheiten.</div>';
     }
   }
 
@@ -1448,6 +1849,25 @@ function renderCoach(){
 }
 
 // ── VIEW: COMPS ───────────────────────────────────────────────
+// Item-Block einer Comp: wer trägt was, in welcher Reihenfolge, aus welchen Komponenten.
+function compItemBlock(kind,label,who,items){
+  if(!items||!items.length)return'';
+  var ch=champByName(who),col=kind==='carry'?'var(--gold)':'var(--blue)';
+  return '<div class="ip-block '+kind+'">'
+    +'<div class="ip-head"><span style="font-weight:700;color:'+col+';">'+label+'</span>'
+    +'<b>'+who+'</b>'
+    +(ch?'<span style="font-size:12px;font-weight:700;color:'+costColor(ch.cost)+';">'+ch.cost+'★</span>':'')
+    +'</div>'
+    +items.slice(0,3).map(function(it,i){
+      var rec=RECIPES.find(function(r){return r[0]===it.replace(' ×2','');});
+      return '<div class="ip-row">'
+        +'<span class="no" style="color:'+(i===0?'var(--gold)':i===1?'#c8cee6':'#c9956a')+';">'+(i+1)+'.</span>'
+        +'<span class="nm">'+it+'</span>'
+        +(rec?'<span class="rc">'+rec[1]+'</span>':'')+'</div>';
+    }).join('')
+    +'</div>';
+}
+
 var COMP_FILTERS=['Alle','Einfach','Mittel','Schwer','S-Tier'];
 function compSetFilter(f){state.compFilter=f;renderComps();}
 function renderComps(){
@@ -1481,10 +1901,11 @@ function renderComps(){
       +'</div>'
       +'<div class="comp-champs">'
       +c.core.map(function(n){return unitChip(n,n===c.carry);}).join('')
-      +((c.extras||[]).length?'<span style="color:var(--muted2);font-size:11px;align-self:center;">+ '+c.extras.join(', ')+'</span>':'')
+      +((c.extras||[]).length?'<span style="color:var(--muted2);font-size:12px;align-self:center;">+ '+c.extras.join(', ')+'</span>':'')
       +'</div>'
-      +'<div class="itemfocus"><span style="color:var(--gold);font-weight:700;">🏆 '+c.carry+':</span> '+c.carryIt.join(' + ')+'</div>'
-      +'<div class="itemfocus" style="background:rgba(91,168,255,.07);border-color:rgba(91,168,255,.2);"><span style="color:var(--blue);font-weight:700;">🛡 '+c.tank+':</span> '+c.tankIt.join(' + ')+'</div>'
+      +renderBoard(c.id)
+      +compItemBlock('carry','🗡 Carry-Items',c.carry,c.carryIt)
+      +compItemBlock('tank','🛡 Tank-Items',c.tank,c.tankIt)
       +'<div class="comp-tip">💡 '+c.tip+'</div>'
       +(state.level==='p'&&c.pro?'<div class="comp-tip" style="color:#c4baff;">👑 '+c.pro+'</div>':'')
       +'</div>';
@@ -1630,10 +2051,10 @@ function renderCcGrid(){
     var cc=costColor(Math.min(ch.cost,5)); // Farbskala hat nur 1-5, 7-Kosten nutzt 5er-Farbe
     return '<div class="champ-btn" style="--cc:'+cc+';cursor:default;">'
       +'<div style="width:46px;height:46px;border-radius:8px;border:2px solid '+cc+';background:var(--panel);display:flex;align-items:center;justify-content:center;font-size:18px;margin:0 auto;">🐾</div>'
-      +'<div style="font-size:9px;font-weight:700;color:'+cc+';line-height:1;margin-top:3px;">'+ch.cost+'★</div>'
+      +'<div style="font-size:11px;font-weight:700;color:'+cc+';line-height:1;margin-top:3px;">'+ch.cost+'★</div>'
       +'<div style="font-size:12px;font-weight:600;color:#eef0ff;line-height:1.25;word-break:break-word;">'+ch.name+'</div>'
       +'<div style="display:flex;flex-wrap:wrap;gap:2px;justify-content:center;margin-top:2px;">'
-      +ch.t.map(function(t){return '<span style="font-size:9px;background:rgba(255,255,255,.07);border-radius:4px;padding:1px 5px;color:var(--muted);">'+t+'</span>';}).join('')
+      +ch.t.map(function(t){return '<span style="font-size:11px;background:rgba(255,255,255,.07);border-radius:4px;padding:1px 5px;color:var(--muted);">'+t+'</span>';}).join('')
       +'</div></div>';
   }).join('')||'<div style="color:var(--muted);font-size:13px;grid-column:1/-1;padding:16px 0;">Nichts gefunden.</div>';
 }
@@ -1661,10 +2082,10 @@ function renderChGrid(){
     var cc=costColor(ch.cost);
     return '<button onclick="openChamp(\''+ch.id+'\')" class="champ-btn" style="--cc:'+cc+';">'
       +champImgTag(ch,46,cc,'')
-      +'<div style="font-size:9px;font-weight:700;color:'+cc+';line-height:1;">'+ch.cost+'★ '+ROLE_ICON[ch.r]+'</div>'
+      +'<div style="font-size:11px;font-weight:700;color:'+cc+';line-height:1;">'+ch.cost+'★ '+ROLE_ICON[ch.r]+'</div>'
       +'<div style="font-size:12px;font-weight:600;color:#eef0ff;line-height:1.25;word-break:break-word;">'+ch.name+'</div>'
       +'<div style="display:flex;flex-wrap:wrap;gap:2px;justify-content:center;margin-top:2px;">'
-      +ch.t.map(function(t){return '<span style="font-size:9px;background:rgba(255,255,255,.07);border-radius:4px;padding:1px 5px;color:var(--muted);">'+t+'</span>';}).join('')
+      +ch.t.map(function(t){return '<span style="font-size:11px;background:rgba(255,255,255,.07);border-radius:4px;padding:1px 5px;color:var(--muted);">'+t+'</span>';}).join('')
       +'</div></button>';
   }).join('')||'<div style="color:var(--muted);font-size:13px;grid-column:1/-1;padding:16px 0;">Nichts gefunden.</div>';
 }
@@ -1689,10 +2110,10 @@ function openChamp(id){
     +ch.it.map(function(item,i){
       var rec=RECIPES.find(function(r){return r[0]===item.replace(' ×2','');});
       return '<div class="item-row"><span>'+(i===0?'🥇':i===1?'🥈':'🥉')+'</span><span style="flex:1;font-size:13px;">'+item+'</span>'
-      +(rec?'<span style="color:var(--muted2);font-size:11px;font-weight:400;">'+rec[1]+'</span>':'')+'</div>';}).join('')
+      +(rec?'<span style="color:var(--muted2);font-size:12px;font-weight:400;">'+rec[1]+'</span>':'')+'</div>';}).join('')
     +'</div>'
     +(comps.length?'<div class="section-label">Spielt in</div><div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px;">'
-      +comps.map(function(c){return '<span class="chip"><span class="tier-badge tier-'+c.tier+'" style="width:18px;height:18px;font-size:9px;">'+c.tier+'</span>'+c.name+(c.carry===ch.name?' ⭐':'')+'</span>';}).join('')+'</div>':'')
+      +comps.map(function(c){return '<span class="chip"><span class="tier-badge tier-'+c.tier+'" style="width:18px;height:18px;font-size:11px;">'+c.tier+'</span>'+c.name+(c.carry===ch.name?' ⭐':'')+'</span>';}).join('')+'</div>':'')
     +(ch.note?'<div class="tipbox" style="margin:0;">💡 '+ch.note+'</div>':'');
   document.getElementById('champModal').style.display='block';
   document.body.style.overflow='hidden';
@@ -1713,7 +2134,7 @@ function renderTraits(){
       +'<h4>'+t.name+' <span class="en">('+t.en+')</span> <span class="bp">'+t.bp.join(' / ')+'</span></h4>'
       +'<p>'+t.desc+'</p>'
       +'<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;">'
-      +members.map(function(c){return '<button onclick="openChamp(\''+c.id+'\')" class="chip" style="font:inherit;font-size:11px;font-weight:600;"><span class="cst" style="color:'+costColor(c.cost)+';">'+c.cost+'★</span>'+c.name+'</button>';}).join('')
+      +members.map(function(c){return '<button onclick="openChamp(\''+c.id+'\')" class="chip" style="font:inherit;font-size:12px;font-weight:600;"><span class="cst" style="color:'+costColor(c.cost)+';">'+c.cost+'★</span>'+c.name+'</button>';}).join('')
       +'</div></div>';
   }
   document.getElementById('trait-origins').innerHTML=TRAITS.filter(function(t){return t.kind==='o';}).map(row).join('');
@@ -1740,13 +2161,13 @@ function renderGuide(){
   document.getElementById('recipes-list').innerHTML=RECIPES.map(function(r){
     return '<div class="recipe-row"><b>'+r[0]+'</b><span class="rc">'+r[1]+'</span></div>';
   }).join('');
-  renderOddsTable();
+  renderOddsTable();renderRoleBoard();
 }
 function renderOddsTable(){
   var lvls=[4,5,6,7,8,9,10];
   var html='<table style="width:100%;border-collapse:collapse;font-size:12px;min-width:320px;">'
-    +'<tr><th style="text-align:left;padding:5px 6px;color:var(--muted);font-size:11px;">Level</th>'
-    +[1,2,3,4,5].map(function(c){return '<th style="padding:5px 6px;color:'+costColor(c)+';font-size:11px;">'+c+'★</th>';}).join('')+'</tr>'
+    +'<tr><th style="text-align:left;padding:5px 6px;color:var(--muted);font-size:12px;">Level</th>'
+    +[1,2,3,4,5].map(function(c){return '<th style="padding:5px 6px;color:'+costColor(c)+';font-size:12px;">'+c+'★</th>';}).join('')+'</tr>'
     +lvls.map(function(l){
       return '<tr style="border-top:1px solid var(--line);">'
         +'<td style="padding:5px 6px;font-weight:700;">Lv '+l+'</td>'
@@ -1759,9 +2180,9 @@ function renderOddsTable(){
 }
 
 // ── INIT ──────────────────────────────────────────────────────
-initRunde();initChamps();renderTraits();initChoncc();
+initRunde();initChamps();renderTraits();initChoncc();renderJetzt();
 if(!state.level){
-  state.level='a';renderComps();renderGuide();renderCoach();
+  state.level='a';renderComps();renderGuide();renderCoach();renderJetzt();
   openOnboard();
 }else{
   state.guideTab=state.level;applyLevel();
