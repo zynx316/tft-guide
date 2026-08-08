@@ -118,17 +118,81 @@ input{font-family:inherit;-webkit-appearance:none;appearance:none}
 .trait-chip.act{border-color:rgba(79,209,138,.4);background:rgba(79,209,138,.12);color:#9af1be}
 .trait-chip.gold{border-color:rgba(240,194,90,.45);background:rgba(240,194,90,.14);color:var(--gold)}
 
-/* ── Runde: Grid + Coach ─────────────────────────────────────── */
-#rd-split{display:grid;grid-template-columns:1fr;gap:14px;align-items:start}
-@media(min-width:700px){#rd-split{grid-template-columns:5fr 4fr}}
-#rd-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
-@media(min-width:700px){#rd-grid{grid-template-columns:repeat(4,1fr)}}
+/* ── Runde: Kader + Coach ────────────────────────────────────── */
+/* Das Champion-Grid lebt seit v3.2 im Picker-Sheet, nicht mehr in der Seite —
+   dadurch steht der Coach sofort oben statt hinter 63 Kacheln. */
+/* minmax(0,1fr) statt 1fr: sonst zieht die nowrap-Trait-Zeile die Spalten-Mindestbreite
+   auf die Textbreite hoch und das Raster laeuft seitlich aus dem Bild. */
+#rd-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+@media(min-width:700px){#rd-grid{grid-template-columns:repeat(5,minmax(0,1fr))}}
 .rd-champ{
   border:2px solid var(--cc,var(--line));border-radius:13px;
-  padding:8px 5px 7px;text-align:center;width:100%;
+  padding:7px 4px 6px;text-align:center;width:100%;
   background:rgba(255,255,255,.04);position:relative;font:inherit;
 }
-.rd-champ.sel{background:rgba(79,209,138,.13);border-color:#4fd18a !important}
+/* Ausgewaehlt wird NICHT ueber die Rahmenfarbe angezeigt: der Rahmen traegt die
+   TFT-Kostenfarbe, und 2-Kosten-Gruen (#46c46a) ist vom Auswahl-Gruen (#4fd18a)
+   kaum zu unterscheiden — jede 2-Kosten-Einheit sah gewaehlt aus. Stattdessen
+   Innenring + Haekchen-Abzeichen. */
+.rd-champ.sel{background:rgba(79,209,138,.2);box-shadow:inset 0 0 0 2px #4fd18a}
+.rd-check{
+  position:absolute;top:3px;right:3px;width:19px;height:19px;border-radius:50%;
+  background:var(--green);color:#05210f;font-size:12px;font-weight:900;
+  display:flex;align-items:center;justify-content:center;line-height:1;
+  box-shadow:0 1px 4px rgba(0,0,0,.5);
+}
+.rd-traits{
+  font-size:10px;color:var(--muted2);line-height:1.25;margin-top:2px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+
+/* Kader-Block: was gerade auf dem Brett steht + Einstieg in den Picker */
+#rd-kader{
+  border:1px solid var(--line);border-radius:14px;padding:10px 11px;
+  background:rgba(255,255,255,.04);margin-bottom:14px;
+}
+.kd-head{display:flex;align-items:baseline;gap:8px;margin-bottom:8px}
+.kd-head .kd-t{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.kd-head .kd-n{font-size:13px;font-weight:800;margin-left:auto}
+.kd-chips{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:9px}
+.kd-empty{font-size:13px;color:var(--muted2);line-height:1.5;margin-bottom:9px}
+.kd-add{
+  display:block;width:100%;border-radius:12px;padding:13px 10px;
+  font:inherit;font-size:15px;font-weight:800;
+  border:1px solid rgba(240,194,90,.45);background:rgba(240,194,90,.13);color:var(--gold);
+}
+.kd-add:active{background:rgba(240,194,90,.22)}
+
+/* ── Picker-Sheet (Vollbild-Auswahl) ─────────────────────────── */
+.pk-back{position:fixed;inset:0;z-index:119;background:rgba(4,6,18,.7);display:none}
+.pk-back.on{display:block}
+#picker{
+  position:fixed;inset:0;z-index:120;background:var(--bg);
+  display:none;flex-direction:column;
+}
+#picker.on{display:flex}
+@media(min-width:700px){
+  #picker{
+    top:4vh;bottom:4vh;left:50%;transform:translateX(-50%);
+    width:min(720px,94vw);border:1px solid var(--line);border-radius:18px;overflow:hidden;
+  }
+}
+.pk-head{
+  display:flex;align-items:center;gap:10px;flex-shrink:0;
+  padding:calc(12px + env(safe-area-inset-top)) 14px 10px;
+  border-bottom:1px solid var(--line);background:var(--panel);
+}
+.pk-title{font-size:16px;font-weight:800;line-height:1.2}
+.pk-status{font-size:11.5px;color:var(--muted);line-height:1.35;margin-top:2px}
+.pk-done{
+  flex-shrink:0;border-radius:11px;padding:10px 16px;font:inherit;font-size:14px;font-weight:800;
+  border:1px solid rgba(79,209,138,.5);background:rgba(79,209,138,.16);color:#9af1be;
+}
+.pk-tools{flex-shrink:0;padding:10px 14px 0}
+.pk-body{
+  flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:2px 14px calc(20px + env(safe-area-inset-bottom));
+}
 .coach-box{border-radius:12px;background:rgba(255,255,255,.05);border:1px solid var(--line);padding:11px;margin-bottom:8px}
 .tipbox{background:rgba(240,194,90,.08);border:1px solid rgba(240,194,90,.25);border-radius:12px;padding:10px 12px;font-size:13px;line-height:1.55;margin-bottom:10px}
 .item-row{
@@ -141,23 +205,32 @@ input{font-family:inherit;-webkit-appearance:none;appearance:none}
 .empty-hint{text-align:center;padding:28px 0;color:var(--muted2);font-size:13px;line-height:1.7}
 .empty-hint .big{font-size:30px;margin-bottom:8px}
 
-/* ── Positionierungs-Board (grafisch) ────────────────────────── */
-.board{
-  background:linear-gradient(180deg,rgba(255,122,122,.05),rgba(79,209,138,.07));
-  border:1px solid var(--line);border-radius:12px;padding:10px 10px 6px;
+/* ── Deine Aufstellung (dynamisch berechnetes Hex-Feld) ──────── */
+/* Nutzt dasselbe .hexboard/.hex-CSS wie die festen Comp-Aufstellungen weiter unten.
+   Bis v3.1 war das hier eine Liste aus Reihen mit Quadraten (.board-row) — sie
+   aktualisierte sich zwar, sah aber nicht aus wie das Spielfeld. Ersetzt. */
+.lu-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:2px 0 0}
+.lu-mirror{
+  flex-shrink:0;white-space:nowrap;
+  border-radius:9px;padding:6px 11px;font:inherit;font-size:11.5px;font-weight:700;
+  border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--muted);
 }
-.board-arrow{text-align:center;font-size:10px;font-weight:700;letter-spacing:.12em;color:var(--muted2);padding:2px 0 8px}
-.board-row{display:flex;align-items:center;gap:8px;padding:5px 2px;border-left:3px solid var(--row-cc,var(--line));padding-left:8px;margin-bottom:6px}
-.board-row.dashed{border-left-style:dashed;opacity:.92}
-.board-row-label{flex-shrink:0;width:74px;font-size:10px;font-weight:700;line-height:1.25}
-.board-row-cells{display:flex;flex-wrap:wrap;gap:6px;flex:1}
-.board-cell{width:36px;height:36px;border-radius:8px;border:2px solid var(--cell-cc,var(--line));overflow:hidden;flex-shrink:0;background:var(--panel);position:relative}
-.board-cell img{width:100%;height:100%;object-fit:cover;display:block}
-.board-cell .bc-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:14px}
-.board-cell .bc-cost{position:absolute;bottom:-1px;right:-1px;font-size:7px;font-weight:800;color:#0a0c1f;background:var(--cell-cc);border-radius:4px 0 6px 0;padding:0px 3px;line-height:1.3}
-.board-legend{display:flex;flex-wrap:wrap;gap:9px;margin-top:8px;padding-top:8px;border-top:1px solid var(--line)}
-.board-legend span{font-size:10.5px;color:var(--muted);display:flex;align-items:center;gap:4px}
-.board-legend i{width:8px;height:8px;border-radius:50%;display:inline-block}
+.lu-hint{font-size:11px;color:var(--muted2);line-height:1.35;flex:1;min-width:150px}
+/* Legenden-Chips im Aufstellungs-Board kompakter als im festen Comp-Board:
+   bei 9 Einheiten sind das sonst drei volle Zeilen. */
+.board-frame .board-legend .bl-item{padding:3px 8px;font-size:11.5px;gap:4px}
+.lu-mirror.on{border-color:rgba(139,124,246,.5);background:rgba(139,124,246,.15);color:#c4baff}
+.hex.ghost{background:rgba(255,255,255,.13)}
+.hex.ghost .hex-in{color:var(--muted2);font-size:9.5px;background:#0d1330;opacity:.95}
+.hex.mech2{background:rgba(176,107,240,.45)}
+.hex.mech2 .hex-in{font-size:13px;background:#1a1140;color:#d9c2ff}
+.bl-item.bench{opacity:.6;text-decoration:line-through}
+.bl-item.ghost{border-style:dashed;color:var(--muted2)}
+.lu-why{
+  font-size:12.5px;color:var(--muted);line-height:1.5;margin-top:8px;
+  min-height:1.5em;border-left:2px solid var(--line);padding-left:8px;
+}
+.lu-note{font-size:12.5px;line-height:1.5;margin-top:8px}
 
 /* ── Comps ───────────────────────────────────────────────────── */
 .comp-card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:15px;margin-bottom:12px}
@@ -347,41 +420,46 @@ input{font-family:inherit;-webkit-appearance:none;appearance:none}
 
 <!-- ═══ VIEW: NEUE RUNDE ═══════════════════════════════════════ -->
 <div id="view-runde" class="view">
-  <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
     <div class="view-title" style="margin:0;flex:1;">🎮 Neue Runde</div>
-    <button onclick="resetRound()" class="pill-btn" style="border-color:rgba(255,122,122,.4);color:var(--red);">🔄 Neue Runde</button>
+    <button onclick="resetRound()" class="pill-btn" style="border-color:rgba(255,122,122,.4);color:var(--red);">🔄 Reset</button>
   </div>
-  <div class="view-sub">Tippe an was du im Shop / auf dem Brett hast — der Coach sagt dir was passt.</div>
 
-  <div id="rd-mode" style="display:flex;gap:6px;margin-bottom:10px;"></div>
-  <div id="rd-buildsw" style="display:none;gap:6px;margin-bottom:10px;flex-wrap:wrap;"></div>
+  <div id="rd-mode" style="display:flex;gap:6px;margin-bottom:8px;"></div>
+  <div id="rd-buildsw" style="display:none;gap:6px;margin-bottom:8px;flex-wrap:wrap;"></div>
 
-  <div style="margin-bottom:8px;">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-      <span style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);">Dein Level</span>
-      <button onclick="setPlvl(4)" style="font-size:10px;color:var(--muted2);background:none;border:1px solid var(--line);border-radius:7px;padding:3px 8px;">↺ Zurücksetzen (4)</button>
+  <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:5px;">Dein Level</div>
+  <div id="rd-plvl" style="display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:6px;"></div>
+  <div id="rd-odds" style="font-size:11px;color:var(--muted2);margin-bottom:12px;"></div>
+
+  <div id="rd-kader"></div>
+
+  <div id="rd-coach">
+    <div class="section-label">Coach</div>
+    <div class="empty-hint"><div class="big">👆</div>Wähle Einheiten — der Coach zeigt dir deine Aufstellung, Kauf-Prioritäten und Items.</div>
+  </div>
+</div>
+
+<!-- ═══ PICKER-SHEET: Champion-Auswahl als Vollbild-Overlay ═════ -->
+<!-- Liegt bewusst ausserhalb von #view-runde: es deckt auch die Bottom-Nav ab,
+     damit man beim Tippen nicht versehentlich die View wechselt. -->
+<div id="pk-back" class="pk-back" onclick="closePicker()"></div>
+<div id="picker" role="dialog" aria-modal="true" aria-label="Einheiten wählen">
+  <div class="pk-head">
+    <div style="flex:1;min-width:0;">
+      <div class="pk-title">Einheiten wählen</div>
+      <div class="pk-status" id="pk-status"></div>
     </div>
-    <div id="rd-plvl" style="display:grid;grid-template-columns:repeat(7,1fr);gap:5px;"></div>
+    <button onclick="closePicker()" class="pk-done">Fertig ✓</button>
   </div>
-  <div id="rd-odds" style="font-size:11px;color:var(--muted2);margin-bottom:10px;"></div>
-
-  <div id="rd-filters" style="display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:8px;margin-bottom:10px;scrollbar-width:none;"></div>
-
-  <div class="search-wrap">
-    <span class="ico">🔎</span>
-    <input id="rd-search" type="search" placeholder="Champion oder Trait suchen…" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false">
-  </div>
-
-  <div id="rd-split">
-    <div>
-      <div class="section-label">Einheiten wählen <span id="rd-count" style="color:var(--muted);text-transform:none;letter-spacing:0;"></span></div>
-      <div id="rd-grid"></div>
+  <div class="pk-tools">
+    <div class="search-wrap" style="margin-bottom:8px;">
+      <span class="ico">🔎</span>
+      <input id="rd-search" type="search" placeholder="Champion oder Trait suchen…" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false">
     </div>
-    <div id="rd-coach">
-      <div class="section-label">Coach</div>
-      <div class="empty-hint"><div class="big">👈</div>Wähle Einheiten — der Coach zeigt dir Traits, passende Comps und Items.</div>
-    </div>
+    <div id="rd-filters" style="display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:8px;scrollbar-width:none;"></div>
   </div>
+  <div class="pk-body"><div id="rd-grid"></div></div>
 </div>
 
 <!-- ═══ VIEW: COMPS ════════════════════════════════════════════ -->
@@ -619,17 +697,43 @@ function boardSizeFor(lvl){ return BOARD_SIZE[lvl]||lvl; }
 function oddsFor(lvl,cost){var r=ODDS[lvl]||ODDS[6];return r[cost-1]||0;}
 var ROLE_ICON={tank:'🛡',ad:'🏹',ap:'🔮',fight:'⚔',assa:'🗡',supp:'💚',flex:'🎭'};
 var ROLE_NAME={tank:'Frontkämpfer',ad:'Fernkampf-Schaden',ap:'Magie-Schaden',fight:'Kämpfer',assa:'Assassine',supp:'Unterstützung',flex:'Flex-Carry'};
-// Positionierung: jede Rolle -> Zone (vorne/mitte/hinten/flex) + Reihenfolge fürs Board (hinten zuerst gerendert)
+// ── Positionierungs-Regeln ────────────────────────────────────
+// Eine Quelle für alles, was die Auto-Aufstellung braucht:
+//   row  = Wunsch-Reihe (1 = vorderste, Richtung Gegner … 4 = hinterste, eigene Seite)
+//   cols = Wunsch-Spalten in absteigender Priorität (1–7, 4 = Mitte)
+//   why  = Begründung, die im Board angezeigt wird
+// Grundmuster ist "Carry rechts in der Ecke". Der Spiegeln-Schalter dreht das komplette
+// Feld (Spalte c -> 8-c), z. B. wenn der Gegner seinen Carry auf derselben Seite hat.
 var POSITION={
-  tank:{zone:'front',order:3,label:'Vorderste Reihe',why:'Tankt den ersten Angriff, schützt dein Team dahinter.'},
-  fight:{zone:'mid',order:2,label:'Mittlere Reihe',why:'Braucht etwas Deckung, kämpft aber im Nahbereich mit.'},
-  assa:{zone:'flex',order:2,label:'Hinten oder Ecke',why:'Springt selbst zum Ziel — muss nicht vorne stehen.'},
-  ap:{zone:'back',order:1,label:'Hinterste Reihe · Ecke',why:'Dein Haupt-Schaden — unbedingt vor Angriffen schützen.'},
-  ad:{zone:'back',order:1,label:'Hinterste Reihe · Ecke',why:'Braucht Reichweite und Schutz vor Assassinen.'},
-  supp:{zone:'mid',order:2,label:'Mittlere Reihe, bei Carries',why:'Muss nah an den Verbündeten stehen, die sie unterstützt.'},
-  flex:{zone:'back',order:1,label:'Hinterste Reihe · Ecke',why:'Flexibler Carry — meist wie ein Hauptschaden behandeln.'},
+  tank:{row:1,cols:[4,3,5,2,6,1,7],label:'Vorderste Reihe',why:'Frontlinie — fängt den ersten Angriff ab. Mittig, damit der Gegner nicht außen herumläuft.'},
+  fight:{row:2,cols:[4,3,5,2,6],label:'Zweite Reihe',why:'Nahkämpfer mit etwas Deckung — rückt nach, sobald die Front fällt.'},
+  assa:{row:2,cols:[1,2,7,6],label:'Am Rand',why:'Springt selbst ins Ziel — an den Rand, damit er deine eigene Backline nicht blockiert.'},
+  supp:{row:3,cols:[4,5,3,6,2],label:'Mittlere Reihe, bei den Carries',why:'Muss in Reichweite der Verbündeten stehen, die er unterstützt.'},
+  ap:{row:4,cols:[6,5,7,4,3],label:'Hinterste Reihe',why:'Magie-Schaden — hinten, geschützt hinter der Front.'},
+  ad:{row:4,cols:[6,5,7,4,3],label:'Hinterste Reihe',why:'Braucht Reichweite und Schutz vor Assassinen.'},
+  flex:{row:4,cols:[6,5,7,4,3],label:'Hinterste Reihe',why:'Flexibler Carry — wie einen Hauptschaden behandeln.'},
 };
-function posInfo(role){ return POSITION[role] || {zone:'mid',order:2,label:'Mittlere Reihe',why:'Rolle nicht eindeutig — sicherheitshalber nicht ganz vorne.'}; }
+var POS_FALLBACK={row:3,cols:[4,3,5,2,6],label:'Mittlere Reihe',why:'Rolle nicht eindeutig — sicherheitshalber nicht ganz vorne.'};
+function posInfo(role){ return POSITION[role] || POS_FALLBACK; }
+var CARRY_WHY='Dein Hauptschaden — maximal weit weg vom Gegner in die Ecke. Assassinen und Haken brauchen so am längsten bis zu ihm.';
+// Nur Fernkampf/Magie gehoert in die Ecke. Ein Carry, der Nahkaempfer ist (z. B. Gwen),
+// gehoert nach VORNE — die kuratierten Aufstellungen sagen das ausdruecklich.
+var BACK_ROLES={ad:1,ap:1,flex:1};
+function cornerCarry(ch,isCarry){ return !!(isCarry&&BACK_ROLES[ch.r]); }
+function placementWhy(ch,isCarry){
+  var pi=posInfo(ch.r);
+  if(cornerCarry(ch,isCarry))return CARRY_WHY;
+  if(isCarry)return 'Trägt deine Items, ist aber '+(ROLE_NAME[ch.r]||'Nahkämpfer')+' — er gehört nicht in die Ecke. '+pi.why;
+  return pi.why;
+}
+// Transformierte Mechs belegen zwei benachbarte Hexes statt einem.
+var MECH_IDS={urgot:1,asol:1,mech:1};
+// Reihen von der Wunsch-Reihe nach außen, falls die Zielreihe schon voll ist.
+function rowOrder(row){
+  var out=[row];
+  for(var d=1;d<=3;d++){ if(row-d>=1)out.push(row-d); if(row+d<=4)out.push(row+d); }
+  return out;
+}
 var LEVELS={a:{icon:'🐣',name:'Anfänger'},f:{icon:'⚔',name:'Fortgeschritten'},p:{icon:'👑',name:'Profi'}};
 
 // ── CHAMPIONS (Set 17 "Space Gods", Patch 17.6) ───────────────
@@ -1048,13 +1152,14 @@ var GUIDE={
 };
 
 // ── STATE ─────────────────────────────────────────────────────
-var state={level:null,sel:[],selP:[],mode:'solo',activeBuild:'me',rdCost:'Alle',rdQ:'',chCost:'Alle',chQ:'',compFilter:'Alle',guideTab:null,plvl:6,ccCost:'Alle',ccQ:'',jz:0,unitsTab:'c'};
+var state={level:null,sel:[],selP:[],mode:'solo',activeBuild:'me',rdCost:'Alle',rdQ:'',chCost:'Alle',chQ:'',compFilter:'Alle',guideTab:null,plvl:6,ccCost:'Alle',ccQ:'',jz:0,unitsTab:'c',mirror:false};
 try{var j=parseInt(localStorage.getItem('tft_jz'),10);if(j>=0&&j<=6)state.jz=j;}catch(e){}
 try{state.level=localStorage.getItem('tft17_level')||null;}catch(e){}
 try{var s=localStorage.getItem('tft17_sel');if(s)state.sel=JSON.parse(s);}catch(e){}
 try{var sp=localStorage.getItem('tft17_selP');if(sp)state.selP=JSON.parse(sp);}catch(e){}
 try{var md=localStorage.getItem('tft17_mode');if(md==='solo'||md==='duo')state.mode=md;}catch(e){}
 try{var p=parseInt(localStorage.getItem('tft17_plvl'),10);if(p>=3&&p<=10)state.plvl=p;}catch(e){}
+try{state.mirror=localStorage.getItem('tft_mirror')==='1';}catch(e){}
 
 // ── HELPERS ───────────────────────────────────────────────────
 function costColor(c){return CC[c]||'#6e74a3';}
@@ -1219,10 +1324,86 @@ function setUnitsTab(t){
 // ── VIEW: NEUE RUNDE ──────────────────────────────────────────
 var RD_COSTS=['Alle','1','2','3','4','5'];
 function initRunde(){
-  renderMode();renderPlvl();renderRdFilters();renderRdGrid();
+  renderMode();renderPlvl();renderRdFilters();renderRdGrid();renderKader();
   document.getElementById('rd-search').addEventListener('input',function(e){
     state.rdQ=e.target.value;renderRdGrid();
   });
+}
+
+// ── Picker-Sheet: Auswahl als Overlay ─────────────────────────
+// Bis v3.1 stand das 63-Kacheln-Grid direkt in der Seite, der Coach erst darunter —
+// am Handy rund zwei Bildschirmhoehen Scrollen zwischen Antippen und Ergebnis.
+function openPicker(){
+  document.getElementById('picker').classList.add('on');
+  document.getElementById('pk-back').classList.add('on');
+  document.body.style.overflow='hidden';
+  renderRdGrid();renderPkStatus();
+  // Kein Autofokus aufs Suchfeld: am Handy wuerde die Tastatur das halbe Grid verdecken.
+}
+function closePicker(){
+  document.getElementById('picker').classList.remove('on');
+  document.getElementById('pk-back').classList.remove('on');
+  document.body.style.overflow='';
+  renderKader();renderCoach();
+}
+function pickerOpen(){
+  var el=document.getElementById('picker');
+  return !!(el&&el.classList&&el.classList.contains&&el.classList.contains('on'));
+}
+// Live-Rueckmeldung im Sheet-Kopf, damit man zum Zaehlen nicht schliessen muss.
+function renderPkStatus(){
+  var el=document.getElementById('pk-status');if(!el)return;
+  var slots=boardSizeFor(state.plvl);
+  var txt;
+  if(state.mode==='duo'){
+    txt='<b style="color:#9af1be;">Du '+state.sel.length+'</b> · <b style="color:#c4baff;">Partner '+state.selP.length+'</b> · Lv '+state.plvl+' = '+slots+' Plätze';
+  }else{
+    var over=state.sel.length>slots;
+    txt='<b style="color:'+(over?'var(--red)':state.sel.length===slots?'var(--gold)':'#eef0ff')+';">'
+      +state.sel.length+'/'+slots+' Plätze</b> · Lv '+state.plvl;
+    var sel=state.sel.map(champById).filter(Boolean);
+    var tmap={};sel.forEach(function(ch){ch.t.forEach(function(t){tmap[t]=(tmap[t]||0)+1;});});
+    var act=Object.entries(tmap).filter(function(e){
+      var tr=traitByName(e[0]);return tr&&tr.bp.some(function(b){return e[1]>=b;});
+    }).sort(function(a,b){return b[1]-a[1];}).slice(0,3);
+    if(act.length)txt+=' · <span style="color:#9af1be;">'+act.map(function(e){return e[0]+' '+e[1];}).join(', ')+'</span>';
+  }
+  el.innerHTML=txt;
+}
+
+// ── Kader-Block: was steht gerade auf dem Brett ───────────────
+function renderKader(){
+  var box=document.getElementById('rd-kader');if(!box)return;
+  var slots=boardSizeFor(state.plvl);
+  var duo=state.mode==='duo';
+  var h='<div class="kd-head"><span class="kd-t">Dein Kader</span>';
+  if(duo){
+    h+='<span class="kd-n"><span style="color:#9af1be;">'+state.sel.length+'</span> / <span style="color:#c4baff;">'+state.selP.length+'</span></span>';
+  }else{
+    var over=state.sel.length>slots;
+    h+='<span class="kd-n" style="color:'+(over?'var(--red)':state.sel.length===slots?'var(--gold)':'var(--green)')+';">'+state.sel.length+' / '+slots+'</span>';
+  }
+  h+='</div>';
+
+  var total=state.sel.length+(duo?state.selP.length:0);
+  if(!total){
+    h+='<div class="kd-empty">Noch nichts gewählt. Tippe unten an, was du im Shop oder auf dem Brett hast.</div>';
+  }else{
+    h+='<div class="kd-chips">';
+    state.sel.map(champById).filter(Boolean).forEach(function(ch){
+      h+='<button onclick="rdRemove(\''+ch.id+'\',\'me\')" class="chip sel" style="font:inherit;font-size:12px;font-weight:600;">'
+        +'<span class="cst" style="color:'+costColor(ch.cost)+';">'+ch.cost+'★</span>'+ch.name+' ✕</button>';
+    });
+    if(duo){
+      state.selP.map(champById).filter(Boolean).forEach(function(ch){
+        h+='<button onclick="rdRemove(\''+ch.id+'\',\'partner\')" class="chip" style="font:inherit;font-size:12px;font-weight:600;border-color:rgba(139,124,246,.45);background:rgba(139,124,246,.13);color:#c4baff;">'
+          +'<span class="cst" style="color:'+costColor(ch.cost)+';">'+ch.cost+'★</span>'+ch.name+' ✕</button>';
+      });
+    }
+    h+='</div>';
+  }
+  h+='<button onclick="openPicker()" class="kd-add">➕ Einheiten wählen</button>';
+  box.innerHTML=h;
 }
 // ── Modus Solo / 2v2 Double Up ────────────────────────────────
 function renderMode(){
@@ -1233,27 +1414,34 @@ function renderMode(){
   document.getElementById('rd-buildsw').style.display=state.mode==='duo'?'flex':'none';
   renderBuildSwitch();
 }
-function setMode(m){state.mode=m;saveSel();renderMode();renderRdGrid();renderCoach();}
+// Ein Aufruf nach jeder Aenderung an Auswahl/Level. Der Coach wird bewusst NICHT
+// gerendert, solange das Picker-Sheet offen ist — er ist dann unsichtbar, aber die
+// teuerste Berechnung der App (alle Comps scoren). closePicker() holt es nach.
+function refreshRound(){
+  renderRdGrid();renderKader();renderBuildSwitch();
+  if(!pickerOpen())renderCoach();
+}
+function setMode(m){state.mode=m;saveSel();renderMode();refreshRound();}
 function renderBuildSwitch(){
   if(state.mode!=='duo')return;
   document.getElementById('rd-buildsw').innerHTML=
-    '<div style="font-size:12px;color:var(--muted);line-height:1.4;">👇 Tippe <b style="color:#9af1be;">DU</b> oder <b style="color:#c4baff;">P</b> direkt auf einer Einheit unten — kein Umschalten nötig. '
+    '<div style="font-size:12px;color:var(--muted);line-height:1.4;">👉 In der Auswahl tippst du auf einer Einheit direkt <b style="color:#9af1be;">DU</b> oder <b style="color:#c4baff;">P</b> — kein Umschalten nötig. '
     +'<b style="color:#9af1be;">Du: '+state.sel.length+'</b> · <b style="color:#c4baff;">Partner: '+state.selP.length+'</b></div>';
 }
 // Schaltet im 2v2-Modus zwischen eigenem und Partner-Build um.
 // (War in der GitHub-Fassung vom 18.07. versehentlich geloescht, obwohl die
 //  "bearbeiten"-Buttons sie weiter aufriefen — Duo-Umschaltung war dadurch tot.)
-function setActiveBuild(w){state.activeBuild=w;renderBuildSwitch();renderRdGrid();renderCoach();window.scrollTo(0,0);}
+function setActiveBuild(w){state.activeBuild=w;refreshRound();window.scrollTo(0,0);}
 function activeSelArr(){return (state.mode==='duo'&&state.activeBuild==='partner')?state.selP:state.sel;}
 function rdRemove(id,which){
   var arr=which==='partner'?state.selP:state.sel;
   var i=arr.indexOf(id);if(i>=0)arr.splice(i,1);
-  saveSel();renderMode();renderRdGrid();renderCoach();
+  saveSel();refreshRound();
 }
 function setPlvl(l){
   state.plvl=l;
   try{localStorage.setItem('tft17_plvl',String(l));}catch(e){}
-  renderPlvl();renderCoach();
+  renderPlvl();refreshRound();
 }
 function renderPlvl(){
   var lvls=[4,5,6,7,8,9,10];
@@ -1275,7 +1463,7 @@ function resetRound(){
   if(state.mode==='duo'){state.sel=[];state.selP=[];}else{state.sel=[];}
   state.plvl=4;
   try{localStorage.setItem('tft17_plvl','4');}catch(e){}
-  saveSel();renderMode();renderRdGrid();renderPlvl();renderCoach();
+  saveSel();renderMode();renderPlvl();refreshRound();
 }
 
 function renderRdGrid(){
@@ -1288,9 +1476,7 @@ function renderRdGrid(){
   }).sort(function(a,b){return a.cost-b.cost||a.name.localeCompare(b.name,'de');});
   var meMap={};state.sel.forEach(function(id){meMap[id]=1;});
   var pMap={};state.selP.forEach(function(id){pMap[id]=1;});
-  document.getElementById('rd-count').textContent=duo
-    ? '· Du '+state.sel.length+' / Partner '+state.selP.length
-    : (state.sel.length?'· '+state.sel.length+' gewählt':'');
+  renderPkStatus();
   document.getElementById('rd-grid').innerHTML=list.map(function(ch){
     var cc=costColor(ch.cost);
     var inMe=meMap[ch.id],inP=duo&&pMap[ch.id];
@@ -1309,11 +1495,14 @@ function renderRdGrid(){
         +'</div>'
         +'</div>';
     }
-    var extra='<div style="font-size:11px;color:var(--muted2);line-height:1.3;margin-top:2px;">'+ch.t.join(' · ')+'</div>';
-    return '<button onclick="rdTap(\''+ch.id+'\')" class="rd-champ'+(inMe?' sel':'')+'" style="--cc:'+cc+';border-color:'+bcol+' !important;">'
-      +champImgTag(ch,42,bcol,'margin:0 auto 4px;')
-      +'<div style="font-size:12px;font-weight:700;color:'+cc+';line-height:1;margin-bottom:2px;">'+ch.cost+'★ '+ROLE_ICON[ch.r]+'</div>'
-      +'<div style="font-size:12px;font-weight:600;color:#eef0ff;line-height:1.2;word-break:break-word;">'+ch.name+(inMe?' ✓':'')+'</div>'
+    // Traits einzeilig mit Ellipsis: informativ, aber halb so hohe Kachel wie in v3.1
+    var extra='<div class="rd-traits" title="'+ch.t.join(' · ')+'">'+ch.t.join(' · ')+'</div>';
+    // Rahmen = Kostenfarbe (nie Auswahl-Farbe), Auswahl = Haekchen + Innenring
+    return '<button onclick="rdTap(\''+ch.id+'\')" class="rd-champ'+(inMe?' sel':'')+'" style="--cc:'+cc+';border-color:'+cc+' !important;">'
+      +(inMe?'<span class="rd-check">✓</span>':'')
+      +champImgTag(ch,40,cc,'margin:0 auto 3px;')
+      +'<div style="font-size:11.5px;font-weight:700;color:'+cc+';line-height:1;margin-bottom:2px;">'+ch.cost+'★ '+ROLE_ICON[ch.r]+'</div>'
+      +'<div style="font-size:11.5px;font-weight:600;color:#eef0ff;line-height:1.2;word-break:break-word;">'+ch.name+'</div>'
       +extra
       +'</button>';
   }).join('')||'<div style="color:var(--muted);font-size:13px;grid-column:1/-1;padding:10px 0;">Nichts gefunden</div>';
@@ -1323,13 +1512,13 @@ function rdTapWho(id,who){
   var arr=who==='partner'?state.selP:state.sel;
   var i=arr.indexOf(id);
   if(i>=0)arr.splice(i,1);else arr.push(id);
-  saveSel();renderRdGrid();renderBuildSwitch();renderCoach();
+  saveSel();refreshRound();
 }
 function rdTap(id){
   var arr=activeSelArr();
   var i=arr.indexOf(id);
   if(i>=0)arr.splice(i,1);else arr.push(id);
-  saveSel();renderMode();renderRdGrid();renderCoach();
+  saveSel();refreshRound();
 }
 // Klick auf eine Comp-Karte: fügt fehlende Kern-Einheiten zur aktiven Auswahl hinzu.
 // Begrenzt auf die aktuelle Feld-Größe, damit nicht mehr als möglich reingestopft wird.
@@ -1347,7 +1536,7 @@ function applyComp(compName){
     if(arr.length>=slots){blockedByBoard++;return;}
     arr.push(ch.id);have[ch.id]=1;added++;
   });
-  saveSel();renderMode();renderRdGrid();renderCoach();
+  saveSel();renderMode();refreshRound();
   var box=document.getElementById('rd-coach');
   if(box)box.scrollIntoView({behavior:'smooth',block:'start'});
   // Sichtbares Feedback, auch wenn nichts hinzugefügt wurde
@@ -1520,7 +1709,7 @@ function duoPlayerCard(icon,label,which,A){
     +'<button onclick="setActiveBuild(\''+which+'\')" class="pill-btn'+(state.activeBuild===which?' on':'')+'" style="padding:3px 9px;font-size:12px;">'+(state.activeBuild===which?'● bearbeiten':'bearbeiten')+'</button>'
     +'</div>';
   if(!A.sel.length){
-    h+='<div style="font-size:12px;color:var(--muted);">Noch leer. Tippe hier auf „bearbeiten" und wähle links Einheiten.</div></div>';
+    h+='<div style="font-size:12px;color:var(--muted);">Noch leer. Öffne oben „➕ Einheiten wählen" und tippe dort auf der Einheit den passenden Knopf.</div></div>';
     return h;
   }
   h+='<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px;">';
@@ -1529,7 +1718,7 @@ function duoPlayerCard(icon,label,which,A){
   });
   h+='</div>';
   if(A.sel.length){
-    h+='<div style="font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:6px;">🧭 Positionierung</div>'+renderPositionBoard(A.sel);
+    h+='<div style="font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:6px;">🧭 Aufstellung</div>'+renderLineupBoard(A.sel,A.hits,which);
   }
   var goodHit=A.best&&A.best.m.length>=2;
   if(goodHit){
@@ -1616,69 +1805,239 @@ function renderCoachDuo(){
   box.innerHTML=html;
 }
 
-// ── Positionierungs-Board (grafisch) ───────────────────────────
-function boardRow(label,entries,color,dashed){
-  if(!entries.length)return '';
-  var cells=entries.map(function(x){
-    var img=champImg(x.ch.id);
-    var isBench=!!x.bench;
-    var visual=img?'<img src="'+img+'" loading="lazy" onerror="this.style.visibility=\'hidden\'" style="'+(isBench?'filter:grayscale(1);opacity:.55;':'')+'">':'<div class="bc-fallback">🎴</div>';
-    return '<div class="board-cell" style="--cell-cc:'+(isBench?'var(--muted2)':costColor(x.ch.cost))+(isBench?';opacity:.7':'')+'" title="'+x.ch.name+(isBench?' (Bank)':'')+'">'+visual+'<span class="bc-cost">'+x.ch.cost+'</span></div>';
-  }).join('');
-  return '<div class="board-row'+(dashed?' dashed':'')+'" style="--row-cc:'+color+'">'
-    +'<div class="board-row-label" style="color:'+color+'">'+label+'</div>'
-    +'<div class="board-row-cells">'+cells+'</div></div>';
+// ── Deine Aufstellung: berechnet aus der aktuellen Auswahl ─────
+// Ersetzt seit v3.2 die alte Reihen-Liste. Zwei Quellen fliessen zusammen:
+//  1. Passt eine Meta-Comp gut, werden deren handgebaute Hexes (POS) fuer genau die
+//     Einheiten uebernommen, die man wirklich besitzt — der Rest der Comp erscheint
+//     als Geisterfeld, damit man sieht, wohin die fehlenden Einheiten spaeter gehoeren.
+//  2. Alles, was nicht in der Vorlage steht, wird ueber POSITION (Reihe + Spalten je
+//     Rolle) in ein freies Hex einsortiert.
+// Dadurch aktualisiert sich das Feld bei jeder Aenderung an Auswahl, Level und Spiegelung.
+
+// Wer traegt die Items und gehoert damit in die Ecke?
+function pickCarry(sel,hits){
+  if(!sel.length)return null;
+  var ids={};sel.forEach(function(c){ids[c.id]=1;});
+  if(hits&&hits.length&&hits[0].m.length>=2){
+    var cc=champByName(hits[0].c.carry);
+    if(cc&&ids[cc.id])return cc;
+  }
+  var best=null;
+  var dmg={ad:1,ap:1,flex:1};
+  sel.forEach(function(ch){ if(dmg[ch.r]&&(!best||ch.cost>best.cost))best=ch; });
+  if(best)return best;
+  // Kein Fernkampf-/Magie-Carry dabei: teuerste Einheit, die kein reiner Tank/Support ist
+  sel.forEach(function(ch){ if(ch.r!=='tank'&&ch.r!=='supp'&&(!best||ch.cost>best.cost))best=ch; });
+  return best;
 }
-function renderPositionBoard(sel){
+
+function buildLineup(sel,hits){
   var slots=boardSizeFor(state.plvl);
-  var MECH_IDS={urgot:1,asol:1,mech:1}; // Mech-Einheiten transformiert = 2 Feld-Plätze statt 1
-  // Effektiv belegte Plätze: Mechs zählen doppelt
-  var effectiveUsed=sel.reduce(function(sum,ch){return sum+(MECH_IDS[ch.id]?2:1);},0);
-  var over=effectiveUsed>slots;
-  // Bei Überschreitung: die Einheiten mit dem geringsten Comp-Wert (hier: niedrigste Kosten zuerst) gelten als Bank-Kandidaten
-  var sorted=sel.slice().sort(function(a,b){return b.cost-a.cost;});
-  var benchIds={};
-  if(over){
-    var used=0;
-    sorted.forEach(function(ch){
-      var need=MECH_IDS[ch.id]?2:1;
-      if(used+need>slots){benchIds[ch.id]=1;}else{used+=need;}
+  var tpl=null;
+  if(hits&&hits.length&&hits[0].m.length>=2&&POS[hits[0].c.id]){
+    tpl={comp:hits[0].c,p:POS[hits[0].c.id].p,note:POS[hits[0].c.id].note};
+  }
+  var coreSet={};
+  if(tpl)tpl.comp.core.forEach(function(n){coreSet[n]=1;});
+
+  // 1) Wer kommt ueberhaupt aufs Feld? Comp-Kern vor teuer, Mechs brauchen 2 Plaetze.
+  var ranked=sel.slice().sort(function(a,b){
+    var ca=coreSet[a.name]?1:0,cb=coreSet[b.name]?1:0;
+    if(ca!==cb)return cb-ca;
+    return b.cost-a.cost||a.name.localeCompare(b.name,'de');
+  });
+  var onBoard=[],bench=[],used=0;
+  ranked.forEach(function(ch){
+    var need=MECH_IDS[ch.id]?2:1;
+    if(used+need<=slots){onBoard.push(ch);used+=need;}else{bench.push(ch);}
+  });
+
+  var carry=pickCarry(onBoard,hits);
+  var cells={},placed={},placedNames={},reserved={},ghosts={};
+  function isFree(r,c){return r>=1&&r<=4&&c>=1&&c<=7&&!cells[r+'-'+c]&&!reserved[r+'-'+c];}
+  // Ein Mech darf nur dort stehen, wo auch sein zweites Hex noch frei ist — sonst
+  // ist der Platz zwar verrechnet, aber auf dem Brett nicht vorhanden.
+  // HINWEIS: Solange Mechs zuerst platziert werden und sich die Reihen von der Mitte
+  // nach aussen fuellen, greift diese Zusatzpruefung nie (empirisch belegt in
+  // 90_Pruefskripte/lineup.js, Abschnitt "Nicht abgedeckt"). Sie steht als Absicherung
+  // fuer den Fall, dass die Spalten-Vorgaben in POSITION spaeter geaendert werden.
+  function canPlace(ch,r,c){
+    if(!isFree(r,c))return false;
+    if(MECH_IDS[ch.id])return isFree(r,c+1)||isFree(r,c-1);
+    return true;
+  }
+  function put(ch,r,c,why){
+    cells[r+'-'+c]={ch:ch,why:why};placed[ch.id]=[r,c];placedNames[ch.name]=1;
+    if(MECH_IDS[ch.id]){
+      // Nachbarfeld sofort sperren, nicht erst nachtraeglich — sonst belegt es
+      // in der Zwischenzeit eine andere Einheit.
+      var cand=[c+1,c-1];
+      for(var i=0;i<cand.length;i++){
+        if(isFree(r,cand[i])){reserved[r+'-'+cand[i]]=ch.name;break;}
+      }
+    }
+  }
+
+  // 2) Vorlage der passenden Meta-Comp
+  if(tpl){
+    // Mechs zuerst: sie brauchen zwei benachbarte Hexes und finden sie nur, solange
+    // um sie herum noch Platz ist.
+    onBoard.slice().sort(function(a,b){return (MECH_IDS[b.id]?1:0)-(MECH_IDS[a.id]?1:0);}).forEach(function(ch){
+      var p=tpl.p[ch.name];
+      if(p&&canPlace(ch,p[0],p[1]))put(ch,p[0],p[1],'Steht so in der Aufstellung „'+tpl.comp.name+'“. '+placementWhy(ch,!!(carry&&ch.id===carry.id)));
     });
   }
 
-  var withPos=sel.map(function(ch){return {ch:ch,pos:posInfo(ch.r),bench:!!benchIds[ch.id],isMech:!!MECH_IDS[ch.id]};});
-  var zones={front:[],mid:[],back:[],flex:[]};
-  withPos.forEach(function(x){zones[x.pos.zone].push(x);});
-  var hasMechSel=sel.some(function(ch){return MECH_IDS[ch.id];});
-  var html='<div class="board" aria-label="Empfohlene Aufstellung">'
-    +'<div class="board-arrow">⚔ RICHTUNG GEGNER ⚔ · '+Math.min(effectiveUsed,slots)+'/'+slots+' Feld-Plätze'+(hasMechSel?' <span style="color:#b06bf0;">(Mechs zählen doppelt)</span>':'')+'</div>'
-    +boardRow('Hinten · Ecken',zones.back,'#ff7a7a')
-    +boardRow('Mittlere Reihe',zones.mid,'#5ba8ff')
-    +boardRow('Vorderste Reihe',zones.front,'#4fd18a')
-    +(zones.flex.length?boardRow('Assassinen',zones.flex,'#8b7cf6',true):'')
-    +'<div class="board-legend">'
-    +'<span><i style="background:#ff7a7a;"></i>Hauptschaden</span>'
-    +'<span><i style="background:#5ba8ff;"></i>Support/Kämpfer</span>'
-    +'<span><i style="background:#4fd18a;"></i>Tank</span>'
-    +(zones.flex.length?'<span><i style="background:#8b7cf6;"></i>Assassine</span>':'')
-    +(hasMechSel?'<span><i style="background:#b06bf0;"></i>Mech (2 Plätze)</span>':'')
-    +(over?'<span><i style="background:var(--muted2);"></i>Auf der Bank</span>':'')
-    +'</div></div>';
-  if(hasMechSel){
-    var mechNames=sel.filter(function(ch){return MECH_IDS[ch.id];}).map(function(ch){return ch.name;});
-    html+='<div style="font-size:12px;color:#c9a8f0;margin-top:8px;">🤖 <b style="color:#eef0ff;">'+mechNames.join(', ')+'</b>: transformiert '+(mechNames.length>1?'brauchen sie':'braucht er')+' je 2 Feld-Plätze nebeneinander — plane die Nachbarfelder frei.</div>';
+  // 3) Alles Uebrige per Rolle einsortieren — Carry zuerst, damit ihm die Ecke sicher ist
+  var rest=onBoard.filter(function(ch){return !placed[ch.id];});
+  var ordVal=function(ch){
+    if(carry&&ch.id===carry.id)return 0;
+    if(MECH_IDS[ch.id])return 1; // zwei Hexes am Stueck — solange noch Platz ist
+    return {ad:2,ap:2,flex:2,supp:3,tank:4,fight:5,assa:6}[ch.r]||4;
+  };
+  rest.sort(function(a,b){return ordVal(a)-ordVal(b)||b.cost-a.cost;});
+  rest.forEach(function(ch){
+    var isCarry=!!(carry&&ch.id===carry.id);
+    var pi=posInfo(ch.r);
+    var wishCols=cornerCarry(ch,isCarry)?[7,1,6,2,5]:pi.cols;
+    var cols=wishCols.concat([1,2,3,4,5,6,7]); // Notfall-Spalten anhaengen
+    var rows=rowOrder(pi.row);
+    var why=placementWhy(ch,isCarry);
+    var done=false;
+    for(var ri=0;ri<rows.length&&!done;ri++){
+      for(var ci=0;ci<cols.length&&!done;ci++){
+        if(canPlace(ch,rows[ri],cols[ci])){put(ch,rows[ri],cols[ci],why);done=true;}
+      }
+    }
+    // Notfall: Mech findet nirgends zwei freie Hexes nebeneinander — dann lieber
+    // einzeln aufstellen als die Einheit ganz verschwinden zu lassen.
+    if(!done){
+      for(var r2=1;r2<=4&&!done;r2++){
+        for(var c2=1;c2<=7&&!done;c2++){
+          if(isFree(r2,c2)){put(ch,r2,c2,why);done=true;}
+        }
+      }
+    }
+  });
+
+  // 4) Geisterfelder: fehlende Kern-Einheiten der Vorlage, begrenzt auf die noch
+  //    freien Plaetze dieses Levels — sonst zeigt Lv 4 die ganze 8er-Comp an.
+  var ghostBudget=Math.max(0,slots-used);
+  if(tpl&&ghostBudget>0){
+    tpl.comp.core.forEach(function(n){
+      if(ghostBudget<=0||placedNames[n])return;
+      var p=tpl.p[n];
+      if(!p||!isFree(p[0],p[1])||ghosts[p[0]+'-'+p[1]])return;
+      ghosts[p[0]+'-'+p[1]]=n;ghostBudget--;
+    });
   }
-  if(over){
-    var benchNames=Object.keys(benchIds).map(function(id){return champById(id).name;});
-    html+='<div style="font-size:12px;color:var(--red);margin-top:8px;">⚠️ '+effectiveUsed+' Feld-Plätze gebraucht (inkl. Mech-Doppelbelegung), aber nur '+slots+' auf Lv '+state.plvl+'. <b style="color:#eef0ff;">'+benchNames.join(', ')+'</b> würde'+(benchNames.length>1?'n':'')+' auf der Bank bleiben.</div>';
+
+  // 5) Spiegeln: komplettes Feld an der Mittelachse klappen
+  if(state.mirror){
+    var flip=function(map){
+      var out={};
+      Object.keys(map).forEach(function(k){
+        var rc=k.split('-');
+        out[rc[0]+'-'+(8-parseInt(rc[1],10))]=map[k];
+      });
+      return out;
+    };
+    cells=flip(cells);ghosts=flip(ghosts);reserved=flip(reserved);
   }
-  if(zones.back.length){
-    html+='<div style="font-size:12px;color:var(--gold);margin-top:8px;">💡 Hauptschaden in eine Ecke, nicht in die Mitte — Assassinen &amp; Blitzcrank-Hooks brauchen so länger.</div>';
+
+  return {cells:cells,ghosts:ghosts,reserved:reserved,bench:bench,onBoard:onBoard,
+          carry:carry,tpl:tpl,used:used,slots:slots};
+}
+
+// Begruendungen je gerendertem Board — fuer den Tap auf einen Legenden-Chip.
+// Nach Board-Schluessel getrennt, weil im 2v2-Modus zwei Boards gleichzeitig stehen
+// (sonst wuerde das Partner-Board die Begruendungen des eigenen ueberschreiben).
+var LU_WHY={};
+function luWhy(key,id){
+  var el=document.getElementById('lu-why-'+key);if(!el)return;
+  var w=(LU_WHY[key]||{})[id];
+  if(!w){el.innerHTML='';return;}
+  el.innerHTML='<b style="color:#eef0ff;">'+w.name+'</b> — '+w.why;
+}
+function toggleMirror(){
+  state.mirror=!state.mirror;
+  try{localStorage.setItem('tft_mirror',state.mirror?'1':'0');}catch(e){}
+  renderCoach();
+}
+
+function renderLineupBoard(sel,hits,key){
+  key=key||'solo';
+  var L=buildLineup(sel,hits);
+  LU_WHY[key]={};
+  var legend=[];
+  var h='<div class="board-frame">'
+    +'<div class="board-axis"><span class="front">▲ Richtung Gegner</span><span>'
+      +L.used+'/'+L.slots+' Plätze'+(L.bench.length?' · '+L.bench.length+' auf der Bank':'')+'</span></div>'
+    +'<div class="hexboard">';
+  for(var r=1;r<=4;r++){
+    h+='<div class="hex-row'+(r%2===0?' off':'')+'">';
+    for(var c=1;c<=7;c++){
+      var k=r+'-'+c;
+      var cell=L.cells[k];
+      if(cell){
+        var ch=cell.ch;
+        var isC=!!(L.carry&&ch.id===L.carry.id);
+        var col=costColor(ch.cost);
+        var src=champImg(ch.id);
+        LU_WHY[key][ch.id]={name:ch.name,why:cell.why};
+        legend.push({ch:ch,isC:isC,col:col});
+        h+='<div class="hex '+(isC?'carry':'filled')+'" style="--hc:'+col+';" title="'+ch.name+'">'
+          +'<div class="hex-in">'+inits(ch.name)
+          +(src?'<img src="'+src+'" loading="lazy" alt="" onerror="this.remove()">':'')
+          +'</div>'+(isC?'<div class="star">⭐</div>':'')+'</div>';
+      }else if(L.reserved[k]){
+        h+='<div class="hex mech2" title="Für den transformierten Mech freihalten"><div class="hex-in">🤖</div></div>';
+      }else if(L.ghosts[k]){
+        h+='<div class="hex ghost" title="'+L.ghosts[k]+' fehlt dir noch"><div class="hex-in">'+inits(L.ghosts[k])+'</div></div>';
+      }else{
+        h+='<div class="hex"></div>';
+      }
+    }
+    h+='</div>';
   }
-  if(zones.flex.length){
-    html+='<div style="font-size:12px;color:var(--muted);margin-top:5px;">Assassinen springen selbst ins Ziel — Startposition ist zweitrangig.</div>';
+  h+='</div>';
+
+  // Legende: antippbar, zeigt die Begründung für genau diese Einheit
+  h+='<div class="board-legend">'
+    +legend.map(function(o){
+      return '<button onclick="luWhy(\''+key+'\',\''+o.ch.id+'\')" class="bl-item'+(o.isC?' carry':'')+'" style="font:inherit;--hc:'+o.col+';">'
+        +ROLE_ICON[o.ch.r]+' '+o.ch.name+(o.isC?' ⭐':'')+'</button>';
+    }).join('')
+    +Object.keys(L.ghosts).map(function(k){
+      return '<span class="bl-item ghost">＋ '+L.ghosts[k]+'</span>';
+    }).join('')
+    +L.bench.map(function(ch){
+      return '<span class="bl-item bench">'+ch.name+'</span>';
+    }).join('')
+    +'</div>';
+
+  h+='<div class="lu-tools"><button onclick="toggleMirror()" class="lu-mirror'+(state.mirror?' on':'')+'">⇄ Seite spiegeln'+(state.mirror?' ✓':'')+'</button>'
+    +'<span class="lu-hint">Tippe oben eine Einheit an — dann steht hier, warum sie dort hingehört.</span></div>';
+  h+='<div class="lu-why" id="lu-why-'+key+'">'
+    +(L.carry&&LU_WHY[key][L.carry.id]
+      ?'<b style="color:#eef0ff;">'+L.carry.name+'</b> — '+LU_WHY[key][L.carry.id].why
+      :'Wähle Einheiten, dann berechnet sich die Aufstellung.')+'</div>';
+
+  if(L.tpl){
+    h+='<div class="lu-note" style="color:var(--muted);">📐 Vorlage: <b style="color:var(--gold);">'+L.tpl.comp.name+'</b> — '+L.tpl.note+'</div>';
   }
-  return html;
+  if(Object.keys(L.ghosts).length){
+    h+='<div class="lu-note" style="color:var(--muted2);">Die hellen Felder sind die Plätze der Einheiten, die dir noch fehlen — dort kommen sie hin, sobald du sie hast.</div>';
+  }
+  var mechs=L.onBoard.filter(function(ch){return MECH_IDS[ch.id];});
+  if(mechs.length){
+    h+='<div class="lu-note" style="color:#c9a8f0;">🤖 <b style="color:#eef0ff;">'+mechs.map(function(ch){return ch.name;}).join(', ')+'</b>: transformiert '+(mechs.length>1?'brauchen sie':'braucht er')+' je 2 Hexes — das 🤖-Feld daneben bleibt frei.</div>';
+  }
+  if(L.bench.length){
+    h+='<div class="lu-note" style="color:var(--red);">⚠️ Lv '+state.plvl+' hat nur '+L.slots+' Plätze. <b style="color:#eef0ff;">'+L.bench.map(function(ch){return ch.name;}).join(', ')+'</b> '+(L.bench.length>1?'bleiben':'bleibt')+' auf der Bank — leveln oder tauschen.</div>';
+  }
+  h+='</div>';
+  return h;
 }
 
 function renderCoach(){
@@ -1687,41 +2046,22 @@ function renderCoach(){
   var sel=state.sel.map(champById).filter(Boolean);
   if(!sel.length){
     box.innerHTML='<div class="section-label">Coach</div>'
-      +'<div class="empty-hint"><div class="big">👈</div>Wähle Einheiten — der Coach zeigt dir die beste Kombination, Kauf-Prioritäten und Items.</div>';
+      +'<div class="empty-hint"><div class="big">👆</div>Wähle Einheiten — der Coach zeigt dir deine Aufstellung, Kauf-Prioritäten und Items.</div>';
     return;
   }
-  var html='<div class="section-label">Coach</div>';
-
-  // Gewählte Einheiten
-  html+='<div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px;">';
-  sel.forEach(function(ch){
-    html+='<button onclick="rdTap(\''+ch.id+'\')" class="chip sel" style="font:inherit;font-size:12px;font-weight:600;">'
-      +'<span class="cst" style="color:'+costColor(ch.cost)+';">'+ch.cost+'★</span>'+ch.name+' ✕</button>';
-  });
-  html+='</div>';
-
-  // Traits mit Breakpoints
+  // Reihenfolge seit v3.2: Aufstellung zuerst. Am Handy sieht man nur den ersten
+  // Bildschirm — dort muss stehen, was man mitten in der Runde wirklich braucht.
   var tmap={};
   sel.forEach(function(ch){ch.t.forEach(function(t){tmap[t]=(tmap[t]||0)+1;});});
   var tArr=Object.entries(tmap).sort(function(a,b){return b[1]-a[1];});
-  if(tArr.length){
-    html+='<div class="mini-label">✨ Traits</div><div style="margin-bottom:12px;">';
-    tArr.forEach(function(e){
-      var tr=traitByName(e[0]);var n=e[1];
-      var bp=tr?tr.bp:[2];
-      var act=null,next=null;
-      bp.forEach(function(b){if(n>=b)act=b;else if(next===null)next=b;});
-      var lbl=e[0]+' '+n+(next?'/'+next:act?' ✓':'');
-      html+='<span class="trait-chip'+(act?' act':'')+'">'+lbl+'</span>';
-    });
-    html+='</div>';
-  }
-
   var selNames=sel.map(function(c){return c.name;});
   var hits=scoreComps(selNames);
   var goodHit=hits.length && hits[0].m.length>=2; // mind. 2 echte Kern-Treffer, sonst zu schwach um "die beste Kombination" zu heißen
 
-  // 🛒 Als Nächstes kaufen — WICHTIGSTE Sektion, direkt nach den Traits, mit Items pro Vorschlag
+  // 🧭 Deine Aufstellung — berechnet aus genau dieser Auswahl
+  var html='<div class="mini-label">🧭 Deine Aufstellung</div>'+renderLineupBoard(sel,hits);
+
+  // 🛒 Als Nächstes kaufen
   var prios=buyPriorities(sel,selNames,tmap,hits);
   if(prios.length){
     var medals=['🥇','🥈','🥉'];
@@ -1739,8 +2079,19 @@ function renderCoach(){
     });
   }
 
-  // 🧭 Positionierung — grafisches Board
-  html+='<div class="mini-label">🧭 Positionierung</div>'+renderPositionBoard(sel);
+  // ✨ Traits mit Breakpoints
+  if(tArr.length){
+    html+='<div class="mini-label">✨ Traits</div><div style="margin-bottom:12px;">';
+    tArr.forEach(function(e){
+      var tr=traitByName(e[0]);var n=e[1];
+      var bp=tr?tr.bp:[2];
+      var act=null,next=null;
+      bp.forEach(function(b){if(n>=b)act=b;else if(next===null)next=b;});
+      var lbl=e[0]+' '+n+(next?'/'+next:act?' ✓':'');
+      html+='<span class="trait-chip'+(act?' act':'')+'">'+lbl+'</span>';
+    });
+    html+='</div>';
+  }
 
   // ⚔ Beste Kombination(en) — nur wenn wirklich ein kuratiertes Comp gut passt
   var maxComps=Math.max(3,state.level==='a'?3:state.level==='f'?4:5);
@@ -1768,8 +2119,10 @@ function renderCoach(){
             return '<span class="chip"><span class="cst" style="color:'+(ch?costColor(ch.cost):'#888')+';">'+(ch?ch.cost+'★':'')+'</span>'+n+'</span>';}).join('')
           +'</div>'
           :'<div style="color:var(--green);font-size:12px;">✓ Alle Kern-Einheiten dabei!</div>')
-        +'</button>'
-        +(xi===0?'<div style="font-size:12px;color:var(--muted);margin:8px 0 -4px;">🎯 So sieht die fertige Aufstellung aus:</div>'+renderBoard(c.id):'');
+        +'</button>';
+      // Die fertige Aufstellung dieser Comp steckt seit v3.2 schon oben im Board:
+      // die Einheiten, die man hat, stehen auf ihren Hexes, die fehlenden als Geisterfeld.
+      // Ein zweites Hex-Board hier wäre nur Scrollhöhe. Volle Ansicht: Tab „Comps".
     });
   } else {
     // ── Generischer Trait-Fallback ──────────────────────────────
@@ -1784,21 +2137,9 @@ function renderCoach(){
     }
   }
 
-  // 🎯 Feld-Status: wie viele Slots hat dieses Level, sind schon alle belegt?
-  var slots=boardSizeFor(state.plvl);
-  var free=slots-sel.length;
-  html+='<div class="mini-label">🎯 Feld · Lv '+state.plvl+'</div>';
-  html+='<div class="coach-box" style="padding:9px 11px;display:flex;align-items:center;gap:8px;">'
-    +'<span style="font-size:13px;font-weight:700;">'+sel.length+' / '+slots+' Plätze belegt</span>'
-    +'<div class="prog" style="flex:1;margin:0;"><i style="width:'+Math.min(100,Math.round(100*sel.length/slots))+'%;background:'+(free<0?'var(--red)':free===0?'var(--gold)':'var(--green)')+';"></i></div>'
-    +'</div>';
-  if(free<0){
-    html+='<div style="font-size:12px;color:var(--red);margin:5px 0 10px;">⚠️ '+(-free)+' zu viel für Lv '+state.plvl+'.</div>';
-  }else if(free===0){
-    html+='<div style="font-size:12px;color:var(--gold);margin:5px 0 10px;">Feld ist voll — für jeden neuen Champ musst du erst leveln oder tauschen.</div>';
-  }else{
-    html+='<div style="font-size:12px;color:var(--muted);margin:5px 0 10px;">Noch '+free+' freie'+(free>1?'':''+'r')+' Platz'+(free>1?'plätze':'')+' bis Level '+state.plvl+' voll ist.</div>';
-  }
+  // (Der frühere Block "🎯 Feld · Lv X" ist entfallen: Kader-Block und Board-Kopf zeigen
+  //  die belegten Plätze bereits, die Bank-Warnung steht am Board. Nebenbei verschwand
+  //  damit die kaputte Mehrzahl-Ausgabe "Noch 2 freie Platzplätze".)
 
   // ⭐ 3★-Reihenfolge
   var stars=starPriorities(sel);
