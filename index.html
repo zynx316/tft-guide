@@ -69,18 +69,18 @@ input{font-family:inherit;-webkit-appearance:none;appearance:none}
 .nav-btn.active .icon{filter:drop-shadow(0 0 6px rgba(240,194,90,.5))}
 
 /* ── Views ───────────────────────────────────────────────────── */
-.view{display:none;padding:12px 14px 90px}
+.view{display:none;padding:10px 12px 88px}
 .view.active{display:block}
-.view-title{font-size:22px;font-weight:700;margin-bottom:4px}
-.view-sub{font-size:13px;color:var(--muted);margin-bottom:16px}
+.view-title{font-size:20px;font-weight:700;margin-bottom:2px}
+.view-sub{font-size:13px;color:var(--muted);margin-bottom:10px}
 
 /* ── Cards / Labels / Pills ──────────────────────────────────── */
-.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px}
-.card+.card{margin-top:10px}
-.section-label{font-size:13px;font-weight:700;letter-spacing:.04em;color:var(--gold);margin-bottom:10px}
-.mini-label{font-size:13px;font-weight:700;letter-spacing:.02em;color:var(--gold);margin-bottom:8px;margin-top:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px}
+.card+.card{margin-top:8px}
+.section-label{font-size:13px;font-weight:700;letter-spacing:.04em;color:var(--gold);margin-bottom:7px}
+.mini-label{font-size:13px;font-weight:700;letter-spacing:.02em;color:var(--gold);margin-bottom:6px;margin-top:12px}
 .pill-btn{
-  flex-shrink:0;border-radius:999px;padding:8px 15px;font-size:14px;font-weight:600;
+  flex-shrink:0;border-radius:999px;padding:8px 13px;font-size:14px;font-weight:600;
   border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--muted);
 }
 .pill-btn.on{border-color:var(--gold);background:rgba(240,194,90,.15);color:var(--gold)}
@@ -109,14 +109,14 @@ input{font-family:inherit;-webkit-appearance:none;appearance:none}
 
 /* ── Chips ───────────────────────────────────────────────────── */
 .chip{
-  display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:5px 9px;
+  display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:4px 8px;
   font-size:11px;font-weight:600;border:1px solid rgba(255,255,255,.12);
   background:rgba(255,255,255,.05);color:#eef0ff;white-space:nowrap;
 }
 .chip.sel{border-color:rgba(79,209,138,.35);background:rgba(79,209,138,.1);color:#9af1be}
-.chip .cst{font-size:9px;font-weight:700}
+.chip .cst{font-size:11px;font-weight:800}
 .trait-chip{
-  border-radius:999px;padding:4px 9px;font-size:11px;font-weight:600;
+  border-radius:999px;padding:3px 8px;font-size:11px;font-weight:600;
   border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:var(--muted);
   display:inline-block;margin:0 4px 4px 0;
 }
@@ -153,8 +153,8 @@ input{font-family:inherit;-webkit-appearance:none;appearance:none}
 
 /* Kader-Block: was gerade auf dem Brett steht + Einstieg in den Picker */
 #rd-kader{
-  border:1px solid var(--line);border-radius:14px;padding:10px 11px;
-  background:rgba(255,255,255,.04);margin-bottom:14px;
+  border:1px solid var(--line);border-radius:14px;padding:9px 10px;
+  background:rgba(255,255,255,.04);margin-bottom:10px;
 }
 .kd-head{display:flex;align-items:baseline;gap:8px;margin-bottom:8px}
 .kd-head .kd-t{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
@@ -198,13 +198,8 @@ input{font-family:inherit;-webkit-appearance:none;appearance:none}
   flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;
   padding:2px 14px calc(20px + env(safe-area-inset-bottom));
 }
-.coach-box{border-radius:12px;background:rgba(255,255,255,.05);border:1px solid var(--line);padding:11px;margin-bottom:8px}
-.tipbox{background:rgba(240,194,90,.08);border:1px solid rgba(240,194,90,.25);border-radius:12px;padding:10px 12px;font-size:13px;line-height:1.55;margin-bottom:10px}
-.item-row{
-  display:flex;align-items:center;gap:8px;padding:7px 10px;
-  border-radius:10px;background:rgba(255,255,255,.05);border:1px solid var(--line);
-  margin-bottom:5px;font-size:12px;font-weight:600;
-}
+.coach-box{border-radius:12px;background:rgba(255,255,255,.05);border:1px solid var(--line);padding:9px 10px;margin-bottom:6px}
+.tipbox{background:rgba(240,194,90,.08);border:1px solid rgba(240,194,90,.25);border-radius:12px;padding:9px 11px;font-size:13px;line-height:1.5;margin-bottom:8px}
 .prog{height:5px;border-radius:3px;background:rgba(255,255,255,.08);overflow:hidden;margin:6px 0}
 .prog i{display:block;height:100%;background:var(--green);border-radius:3px}
 .empty-hint{text-align:center;padding:28px 0;color:var(--muted2);font-size:13px;line-height:1.7}
@@ -238,10 +233,14 @@ input{font-family:inherit;-webkit-appearance:none;appearance:none}
 .lu-note{font-size:12.5px;line-height:1.5;margin-top:8px}
 
 /* ── Comps ───────────────────────────────────────────────────── */
-.comp-card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:15px;margin-bottom:12px}
+.comp-card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 12px 13px;margin-bottom:9px}
 .comp-card.rec{border-color:rgba(240,194,90,.45)}
-.comp-head{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap}
-.comp-head h3{font-size:16px;font-weight:700;flex:1;min-width:0}
+/* Titel und Abzeichen in getrennten Zeilen: standen sie zusammen in einer
+   flex-wrap-Zeile, brach ein langer Name ("Gnar-Druckerei") mitten zwischen die
+   Abzeichen und die Karte begann mit einem Wortsalat. */
+.comp-head{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.comp-head h3{font-size:16px;font-weight:700;flex:1;min-width:0;line-height:1.25}
+.comp-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:7px}
 .tier-badge{font-size:11px;font-weight:800;width:24px;height:24px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
 .tier-S{background:rgba(240,194,90,.2);border:1px solid rgba(240,194,90,.5);color:var(--gold)}
 .tier-A{background:rgba(91,168,255,.15);border:1px solid rgba(91,168,255,.4);color:var(--blue)}
@@ -252,16 +251,16 @@ input{font-family:inherit;-webkit-appearance:none;appearance:none}
 .diff-h{background:rgba(255,122,122,.12);border:1px solid rgba(255,122,122,.35);color:var(--red)}
 .style-badge{font-size:11px;font-weight:600;padding:3px 10px;border-radius:999px;background:rgba(139,124,246,.12);border:1px solid rgba(139,124,246,.35);color:#c4baff;white-space:nowrap}
 .rec-badge{font-size:10px;font-weight:700;padding:3px 9px;border-radius:999px;background:rgba(240,194,90,.16);border:1px solid rgba(240,194,90,.45);color:var(--gold);white-space:nowrap}
-.comp-champs{display:flex;flex-wrap:wrap;gap:6px;margin:9px 0}
+.comp-champs{display:flex;flex-wrap:wrap;gap:5px;margin:7px 0}
 .unit-chip{
   display:inline-flex;align-items:center;gap:5px;
-  border-radius:999px;padding:5px 11px;font-size:12px;font-weight:600;
+  border-radius:999px;padding:4px 9px;font-size:12px;font-weight:600;
   background:rgba(255,255,255,.06);border:1px solid var(--line);
   border-left:3px solid var(--cc,var(--line));
 }
 .unit-chip.carry{background:rgba(240,194,90,.12);border-color:rgba(240,194,90,.4);color:var(--gold)}
 .itemfocus{background:rgba(240,194,90,.08);border:1px solid rgba(240,194,90,.2);border-radius:10px;padding:9px 11px;margin:4px 0;font-size:13px}
-.comp-tip{font-size:13px;color:var(--muted);margin-top:8px;line-height:1.5}
+.comp-tip{font-size:13px;color:var(--muted);margin-top:7px;line-height:1.45}
 
 /* ── Champions ───────────────────────────────────────────────── */
 .champ-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px}
@@ -276,17 +275,17 @@ input{font-family:inherit;-webkit-appearance:none;appearance:none}
   display:none;position:fixed;inset:0;z-index:150;
   background:rgba(4,7,20,.8);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
   overflow-y:auto;-webkit-overflow-scrolling:touch;
-  padding:20px 14px 40px;
+  padding:16px 12px 36px;
 }
 #champModal .modal-box{
   max-width:500px;margin:0 auto;
   background:linear-gradient(160deg,#1a2255,#0f1535);
-  border:1px solid rgba(139,124,246,.3);border-radius:20px;padding:20px;
+  border:1px solid rgba(139,124,246,.3);border-radius:20px;padding:16px;
 }
 .modal-close{float:right;background:rgba(255,255,255,.08);border:1px solid var(--line);color:var(--muted);border-radius:9px;width:34px;height:34px;font-size:18px;line-height:34px;text-align:center}
 
 /* ── Traits-View ─────────────────────────────────────────────── */
-.trait-row{padding:13px 0;border-bottom:1px solid var(--line)}
+.trait-row{padding:10px 0;border-bottom:1px solid var(--line)}
 .trait-row:last-child{border-bottom:none}
 .trait-row h4{font-size:14px;font-weight:700;margin-bottom:3px}
 .trait-row h4 .en{font-size:11px;font-weight:400;color:var(--muted2)}
@@ -294,14 +293,14 @@ input{font-family:inherit;-webkit-appearance:none;appearance:none}
 .trait-row .bp{font-size:12px;font-weight:700;color:var(--gold)}
 
 /* ── Guide ───────────────────────────────────────────────────── */
-.guide-item{border-bottom:1px solid var(--line);padding:13px 0}
+.guide-item{border-bottom:1px solid var(--line);padding:10px 0}
 .guide-item:last-child{border-bottom:none}
 .guide-item h4{font-size:15px;font-weight:700;margin-bottom:4px}
 .guide-item p{font-size:13px;color:var(--muted);line-height:1.6}
-.god-card{border-radius:12px;background:rgba(255,255,255,.05);border:1px solid var(--line);padding:10px 12px;margin-bottom:7px}
+.god-card{border-radius:12px;background:rgba(255,255,255,.05);border:1px solid var(--line);padding:9px 11px;margin-bottom:5px}
 .god-card b{font-size:13px}
 .god-card p{font-size:12px;color:var(--muted);line-height:1.5;margin-top:2px}
-.recipe-row{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid var(--line);margin-bottom:5px;font-size:12px}
+.recipe-row{display:flex;align-items:center;gap:8px;padding:6px 9px;border-radius:9px;background:rgba(255,255,255,.04);border:1px solid var(--line);margin-bottom:4px;font-size:12px}
 .recipe-row b{flex:1}
 .recipe-row .rc{color:var(--muted);white-space:nowrap}
 
@@ -326,7 +325,7 @@ input{font-family:inherit;-webkit-appearance:none;appearance:none}
 /* ── Hex-Board (4 Reihen × 7 Hexes) ──────────────────────────── */
 .board-frame{
   background:linear-gradient(180deg,rgba(139,124,246,.10),rgba(0,0,0,.28));
-  border:1px solid var(--line);border-radius:14px;padding:9px 9px 11px;margin:10px 0;
+  border:1px solid var(--line);border-radius:14px;padding:7px 7px 9px;margin:8px 0;
 }
 .board-axis{display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:600;color:var(--muted2);margin-bottom:5px}
 .board-axis .front{color:#ffb0b0}
@@ -350,14 +349,14 @@ input{font-family:inherit;-webkit-appearance:none;appearance:none}
 }
 .hex-in img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .hex .star{position:absolute;bottom:12%;left:0;right:0;text-align:center;font-size:10px;z-index:2;text-shadow:0 1px 2px #000}
-.board-legend{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px}
+.board-legend{display:flex;flex-wrap:wrap;gap:4px;margin-top:7px}
 .bl-item{
-  display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:4px 10px;
+  display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 8px;
   font-size:12px;font-weight:600;background:rgba(255,255,255,.06);
   border:1px solid var(--line);border-left:3px solid var(--hc,var(--line));
 }
 .bl-item.carry{background:rgba(240,194,90,.13);border-color:rgba(240,194,90,.45);color:var(--gold)}
-.board-note{font-size:13px;color:var(--muted);line-height:1.5;margin-top:8px}
+.board-note{font-size:12.5px;color:var(--muted);line-height:1.45;margin-top:7px}
 
 /* ── Jetzt / Fahrplan ────────────────────────────────────────── */
 #jz-steps{display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:9px;scrollbar-width:none}
@@ -371,18 +370,18 @@ input{font-family:inherit;-webkit-appearance:none;appearance:none}
 .jz-phase{font-size:14px;color:var(--muted)}
 .jz-do{
   background:rgba(79,209,138,.11);border:1px solid rgba(79,209,138,.34);
-  border-radius:13px;padding:13px 14px;margin:11px 0 10px;
+  border-radius:13px;padding:11px 12px;margin:9px 0 8px;
 }
 .jz-do .lbl{font-size:12px;font-weight:800;color:var(--green);letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px}
 .jz-do .txt{font-size:17px;font-weight:600;line-height:1.4}
-.jz-kpi{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.jz-kpi{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:start}
 .jz-box{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
 .jz-box .lbl{font-size:11px;font-weight:700;color:var(--muted2);letter-spacing:.06em;text-transform:uppercase}
 .jz-box .val{font-size:19px;font-weight:800;margin-top:2px}
 .jz-box.gold .val{color:var(--gold)}
 .jz-box.lvl .val{color:var(--blue)}
 .jz-box .sub{font-size:12px;color:var(--muted);margin-top:2px;line-height:1.35}
-.jz-tip{display:flex;gap:9px;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px;line-height:1.5}
+.jz-tip{display:flex;gap:9px;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px;line-height:1.45}
 .jz-tip:last-child{border-bottom:none}
 .jz-tip .ic{flex-shrink:0;font-size:16px;width:20px;text-align:center}
 .jz-nav{display:flex;gap:8px;margin-top:12px}
@@ -392,15 +391,58 @@ input{font-family:inherit;-webkit-appearance:none;appearance:none}
 }
 .jz-nav button:disabled{opacity:.35}
 
-/* ── Item-Plan-Zeilen (Comps) ────────────────────────────────── */
-.ip-block{border-radius:12px;padding:10px 11px;margin:7px 0;border:1px solid var(--line)}
-.ip-block.carry{background:rgba(240,194,90,.07);border-color:rgba(240,194,90,.28)}
-.ip-block.tank{background:rgba(91,168,255,.06);border-color:rgba(91,168,255,.25)}
-.ip-head{display:flex;align-items:center;gap:7px;margin-bottom:7px;font-size:14px}
-.ip-row{display:flex;align-items:center;gap:8px;padding:6px 9px;border-radius:9px;background:rgba(255,255,255,.05);margin-bottom:4px;font-size:13px}
-.ip-row .no{font-size:12px;font-weight:800;width:15px;flex-shrink:0}
-.ip-row .nm{flex:1;font-weight:600}
-.ip-row .rc{font-size:12px;color:var(--muted2);white-space:nowrap}
+/* ── Sprungleiste im Comps-Tab ───────────────────────────────── */
+/* Klebt oben fest. Statisch war sie ab dem ersten Wisch aus dem Bild — also genau
+   dann weg, wenn man sie braucht (bei Comp 8 zu Comp 12 wären es sonst rund zehn
+   Bildschirme hoch, seitlich suchen, springen). */
+#comps-jump{
+  position:sticky;top:0;z-index:8;
+  display:flex;gap:5px;overflow-x:auto;-webkit-overflow-scrolling:touch;
+  padding:6px 0 8px;margin-bottom:6px;scrollbar-width:none;
+  background:var(--bg);box-shadow:0 7px 10px -8px rgba(0,0,0,.95);
+}
+.jump-pill{
+  flex-shrink:0;display:inline-flex;align-items:center;gap:4px;white-space:nowrap;
+  border-radius:999px;padding:6px 11px;font:inherit;font-size:12.5px;font-weight:700;
+  border:1px solid var(--line);background:rgba(255,255,255,.05);color:#eef0ff;
+}
+.jump-pill.rec{border-color:rgba(240,194,90,.45);color:var(--gold)}
+.jump-pill .jt{font-size:10px;font-weight:800;opacity:.8}
+
+/* ── Kosten-Marke ────────────────────────────────────────────── */
+/* Kosten stehen als Goldmuenze da, NICHT als Stern: ★ meint im Spiel die Sternstufe.
+   Bis v3.2 hiess der Kaufpreis an 21 Stellen "2★" — genau die Verwechslung, die
+   Anfaenger am haeufigsten machen ("ich brauche 2 Sterne" statt "kostet 2 Gold"). */
+.cst-tag{display:inline-flex;align-items:center;font-size:12px;font-weight:800;white-space:nowrap;flex-shrink:0;letter-spacing:-.01em}
+
+/* ── Item-Plan je Einheit ────────────────────────────────────── */
+/* Eine Karte pro Einheit des Decks, darunter ihre Items in der Reihenfolge, in der
+   man sie baut. Bis v3.2 standen hier nur Carry und Tank — fuer die uebrigen fuenf
+   Einheiten eines Decks stand nirgends, was sie tragen sollen. */
+.ipl{border:1px solid var(--line);border-radius:11px;margin:5px 0;overflow:hidden;background:rgba(255,255,255,.035)}
+.ipl.r-carry{border-color:rgba(240,194,90,.36);background:rgba(240,194,90,.065)}
+.ipl.r-sec{border-color:rgba(240,194,90,.2)}
+.ipl.r-tank{border-color:rgba(91,168,255,.32);background:rgba(91,168,255,.055)}
+.ipl-h{display:flex;align-items:center;gap:6px;padding:6px 9px;font-size:13.5px;font-weight:700;background:rgba(255,255,255,.04);border-bottom:1px solid var(--line)}
+.ipl-h .rk{font-size:13px;line-height:1;flex-shrink:0}
+.ipl-h .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ipl-h .rl{font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);flex-shrink:0}
+.ipl-i>div{display:flex;align-items:baseline;gap:7px;padding:5px 9px;font-size:12.5px;line-height:1.3}
+.ipl-i>div+div{border-top:1px solid rgba(255,255,255,.05)}
+.ipl-i .no{font-weight:800;font-size:11.5px;width:10px;flex-shrink:0;text-align:center}
+.ipl-i .it{flex:1;min-width:0;font-weight:600}
+.ipl-i .rc{font-size:11px;color:var(--muted2);white-space:nowrap;flex-shrink:0}
+.ipl-note{padding:5px 9px;font-size:11.5px;color:var(--muted);line-height:1.4;border-top:1px solid rgba(255,255,255,.05)}
+.ipl-rest{font-size:12px;color:var(--muted);line-height:1.45;padding:7px 9px;border:1px dashed var(--line);border-radius:11px;margin:5px 0}
+.ipl-rest b{color:#eef0ff}
+/* Fehlende Einheiten NICHT nur ueber Deckkraft kennzeichnen: hat man noch gar keine
+   der Einheiten, sind alle Karten blass und es gibt nichts, wogegen sich .6 abhebt. */
+.ipl.miss{opacity:.62;border-style:dashed}
+.ipl-cut{font-size:11px;font-weight:700;letter-spacing:.03em;color:var(--muted2);text-align:center;margin:9px 0 5px}
+.ipl-komp{font-size:12px;line-height:1.45;color:var(--muted);padding:7px 9px;margin:5px 0;border-radius:11px;background:rgba(139,124,246,.1);border:1px solid rgba(139,124,246,.28)}
+.ipl-komp b{color:#c4baff}
+.ip-title{font-size:13px;font-weight:700;color:var(--gold);margin:9px 0 2px}
+.ip-sub{font-size:11.5px;color:var(--muted);line-height:1.4;margin-bottom:4px}
 
 ::-webkit-scrollbar{width:0;height:0}
 </style>
@@ -471,7 +513,10 @@ input{font-family:inherit;-webkit-appearance:none;appearance:none}
 <div id="view-comps" class="view">
   <div class="view-title">⚔ Comps</div>
   <div class="view-sub" id="comps-sub">Aktuelle Meta-Comps (Patch 17.6)</div>
-  <div id="comps-filters" style="display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:8px;margin-bottom:10px;scrollbar-width:none;"></div>
+  <div id="comps-filters" style="display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:8px;scrollbar-width:none;"></div>
+  <!-- Sprungleiste: seit jede Comp den vollen Item-Plan zeigt, ist die Liste rund
+       23 Bildschirme lang. Nichts wird versteckt — man kommt nur schneller hin. -->
+  <div id="comps-jump"></div>
   <div id="comps-list"></div>
 </div>
 
@@ -594,7 +639,7 @@ input{font-family:inherit;-webkit-appearance:none;appearance:none}
     </p>
     <div id="odds-table" style="overflow-x:auto;"></div>
     <p style="font-size:12px;color:var(--muted2);margin-top:8px;">
-      Pool (geteilt mit allen Spielern): 1★ 30 · 2★ 25 · 3★ 18 · 4★ 10 · 5★ 9 Kopien pro Champion.
+      Pool (geteilt mit allen Spielern): 🪙1 30 · 🪙2 25 · 🪙3 18 · 🪙4 10 · 🪙5 9 Kopien pro Champion.
       Kaufen andere Spieler deinen Carry, sinkt deine Trefferchance — deshalb „contested" meiden.
     </p>
   </div>
@@ -956,7 +1001,7 @@ var COMPS=[
   carry:'Twisted Fate',carryIt:['Blauer Buff','Schmuckhandschuh','Nashors Zahn'],
   sec:'Xayah',tank:'Jax',tankIt:['Gargoyle-Steinplatte','Dornenweste','Warmogs Rüstung'],
   core:['Twisted Fate','Jax','Lulu'],extras:['Talon','Nunu & Willump'],
-  tip:'Sehr guter erster Reroll-Plan: Twisted Fate kostet nur 1★, ist im Shop häufig und günstig auf 3★ zu bringen. Auf Level 6 bleiben und über 50 Gold rollen.',
+  tip:'Sehr guter erster Reroll-Plan: Twisted Fate kostet nur 1 Gold, ist im Shop häufig und günstig auf 3★ zu bringen. Auf Level 6 bleiben und über 50 Gold rollen.',
   pro:'Braucht nur 3 Kern-Einheiten, passt fast immer aufs Feld — auch schon auf niedrigem Level.'},
  {id:'leblanc',name:'Hirte LeBlanc',tier:'A',diff:'h',style:'Fast 8',styleKey:'fast8',
   carry:'LeBlanc',carryIt:['Guinsoos Wutklinge','Rabadons Todeshaube','Schmuckhandschuh'],
@@ -1168,6 +1213,13 @@ try{state.mirror=localStorage.getItem('tft_mirror')==='1';}catch(e){}
 
 // ── HELPERS ───────────────────────────────────────────────────
 function costColor(c){return CC[c]||'#6e74a3';}
+// Kaufpreis einer Einheit. Bewusst 🪙 und nicht ★: der Stern steht im Spiel fuer die
+// Sternstufe (1★/2★/3★). "Kai'Sa 3★" hiess in der App bis v3.2 "kostet 3 Gold" und
+// im Spiel "ist voll aufgewertet" — dieselbe Schreibweise fuer zwei Dinge.
+function costTag(cost,px){
+  if(cost==null)return'';
+  return '<span class="cst-tag" style="color:'+costColor(cost)+(px?';font-size:'+px+'px':'')+'">🪙'+cost+'</span>';
+}
 function champById(id){return CHAMPS.find(function(c){return c.id===id;});}
 function champByName(n){return CHAMPS.find(function(c){return c.name===n;});}
 function traitByName(n){return TRAITS.find(function(t){return t.name===n;});}
@@ -1186,7 +1238,7 @@ function unitChip(name,isCarry){
   var ch=champByName(name);
   var cc=ch?costColor(ch.cost):'var(--line)';
   return '<span class="unit-chip'+(isCarry?' carry':'')+'" style="--cc:'+cc+';">'
-    +(ch?'<span style="font-size:11px;font-weight:700;color:'+cc+';">'+ch.cost+'★</span>':'')
+    +(ch?'<span style="font-size:11px;font-weight:700;color:'+cc+';">'+'🪙'+ch.cost+'</span>':'')
     +name+(isCarry?' ⭐':'')+'</span>';
 }
 
@@ -1383,7 +1435,9 @@ function renderKader(){
   var duo=state.mode==='duo';
   var h='<div class="kd-head"><span class="kd-t">Dein Kader</span>';
   if(duo){
-    h+='<span class="kd-n"><span style="color:#9af1be;">'+state.sel.length+'</span> / <span style="color:#c4baff;">'+state.selP.length+'</span></span>';
+    // Beschriftet, weil an derselben Stelle im Solo "7 / 8" steht (Einheiten/Plätze):
+    // ein unbeschriftetes "7 / 0" las sich wie ein überfülltes Feld statt wie Du/Partner.
+    h+='<span class="kd-n" style="font-size:12px;">Du <span style="color:#9af1be;">'+state.sel.length+'</span> · Partner <span style="color:#c4baff;">'+state.selP.length+'</span></span>';
   }else{
     var over=state.sel.length>slots;
     h+='<span class="kd-n" style="color:'+(over?'var(--red)':state.sel.length===slots?'var(--gold)':'var(--green)')+';">'+state.sel.length+' / '+slots+'</span>';
@@ -1397,12 +1451,12 @@ function renderKader(){
     h+='<div class="kd-chips">';
     state.sel.map(champById).filter(Boolean).forEach(function(ch){
       h+='<button onclick="rdRemove(\''+ch.id+'\',\'me\')" class="chip sel" style="font:inherit;font-size:12px;font-weight:600;">'
-        +'<span class="cst" style="color:'+costColor(ch.cost)+';">'+ch.cost+'★</span>'+ch.name+' ✕</button>';
+        +'<span class="cst" style="color:'+costColor(ch.cost)+';">'+'🪙'+ch.cost+'</span>'+ch.name+' ✕</button>';
     });
     if(duo){
       state.selP.map(champById).filter(Boolean).forEach(function(ch){
         h+='<button onclick="rdRemove(\''+ch.id+'\',\'partner\')" class="chip" style="font:inherit;font-size:12px;font-weight:600;border-color:rgba(139,124,246,.45);background:rgba(139,124,246,.13);color:#c4baff;">'
-          +'<span class="cst" style="color:'+costColor(ch.cost)+';">'+ch.cost+'★</span>'+ch.name+' ✕</button>';
+          +'<span class="cst" style="color:'+costColor(ch.cost)+';">'+'🪙'+ch.cost+'</span>'+ch.name+' ✕</button>';
       });
     }
     h+='</div>';
@@ -1455,12 +1509,12 @@ function renderPlvl(){
   }).join('');
   var o=ODDS[state.plvl];
   document.getElementById('rd-odds').innerHTML='<b style="color:#eef0ff;">'+boardSizeFor(state.plvl)+' Feld-Plätze</b> auf Lv '+state.plvl+' · Shop-Chance pro Slot: '
-    +o.map(function(p,i){var c=i+1;return '<span style="color:'+(p?costColor(c):'var(--muted2)')+';font-weight:'+(p?'700':'400')+';">'+c+'★ '+p+'%</span>';}).join(' · ');
+    +o.map(function(p,i){var c=i+1;return '<span style="color:'+(p?costColor(c):'var(--muted2)')+';font-weight:'+(p?'700':'400')+';">'+'🪙'+c+' '+p+'%</span>';}).join(' · ');
 }
 function renderRdFilters(){
   document.getElementById('rd-filters').innerHTML=RD_COSTS.map(function(c){
     var on=state.rdCost===c;
-    return '<button onclick="rdSetCost(\''+c+'\')" class="pill-btn'+(on?' on':'')+'">'+(c==='Alle'?'Alle':c+'★')+'</button>';
+    return '<button onclick="rdSetCost(\''+c+'\')" class="pill-btn'+(on?' on':'')+'">'+(c==='Alle'?'Alle':'🪙'+c)+'</button>';
   }).join('');
 }
 function rdSetCost(c){state.rdCost=c;renderRdFilters();renderRdGrid();}
@@ -1492,7 +1546,7 @@ function renderRdGrid(){
       // 2v2: zwei eigene Tap-Zonen direkt auf der Kachel — kein globales Umschalten nötig
       return '<div class="rd-champ" style="--cc:'+cc+';'+bg+'border-color:'+bcol+' !important;cursor:default;padding-bottom:4px;">'
         +champImgTag(ch,38,bcol,'margin:0 auto 3px;')
-        +'<div style="font-size:11px;font-weight:700;color:'+cc+';line-height:1;margin-bottom:3px;">'+ch.cost+'★</div>'
+        +'<div style="font-size:11px;font-weight:700;color:'+cc+';line-height:1;margin-bottom:3px;">'+'🪙'+ch.cost+'</div>'
         +'<div style="font-size:10.5px;font-weight:600;color:#eef0ff;line-height:1.15;word-break:break-word;margin-bottom:4px;">'+ch.name+'</div>'
         +'<div style="display:flex;gap:3px;">'
           +'<button onclick="rdTapWho(\''+ch.id+'\',\'me\')" style="flex:1;border-radius:6px;padding:4px 2px;font-size:11px;font-weight:800;border:1px solid '+(inMe?'#4fd18a':'var(--line)')+';background:'+(inMe?'rgba(79,209,138,.25)':'rgba(255,255,255,.05)')+';color:'+(inMe?'#9af1be':'var(--muted)')+';">'+(inMe?'✓ DU':'DU')+'</button>'
@@ -1506,7 +1560,7 @@ function renderRdGrid(){
     return '<button onclick="rdTap(\''+ch.id+'\')" class="rd-champ'+(inMe?' sel':'')+'" style="--cc:'+cc+';border-color:'+cc+' !important;">'
       +(inMe?'<span class="rd-check">✓</span>':'')
       +champImgTag(ch,40,cc,'margin:0 auto 3px;')
-      +'<div style="font-size:11.5px;font-weight:700;color:'+cc+';line-height:1;margin-bottom:2px;">'+ch.cost+'★ '+ROLE_ICON[ch.r]+'</div>'
+      +'<div style="font-size:11.5px;font-weight:700;color:'+cc+';line-height:1;margin-bottom:2px;">'+'🪙'+ch.cost+' '+ROLE_ICON[ch.r]+'</div>'
       +'<div style="font-size:11.5px;font-weight:600;color:#eef0ff;line-height:1.2;word-break:break-word;">'+ch.name+'</div>'
       +extra
       +'</button>';
@@ -1570,6 +1624,10 @@ function scoreComps(selNames){
     var all=c.core.concat(c.extras||[]);
     var m=selNames.filter(function(n){return all.indexOf(n)>=0;});
     if(!m.length)return null;
+    // mc = nur die KERN-Treffer. `m` zaehlte auch Extras mit, dadurch behauptete die
+    // App bei Kader "Sona + Lulu" ein "Urzeitlich Psionik 2/4", obwohl davon keine
+    // einzige Kern-Einheit dabei ist. Und ein volles Brett + Extra ergab "8/7" = 114 %.
+    var mc=m.filter(function(n){return c.core.indexOf(n)>=0;});
     var miss=c.core.filter(function(n){return selNames.indexOf(n)<0;});
     // Rollbarkeit: Ø Shop-Chance der fehlenden Kern-Einheiten auf dem Spielerlevel
     var roll=1.5;
@@ -1577,8 +1635,11 @@ function scoreComps(selNames){
       var sum=0;miss.forEach(function(n){var ch=champByName(n);sum+=ch?oddsFor(state.plvl,ch.cost):0;});
       roll=Math.min(1.5,(sum/miss.length)/40*1.5);
     }
-    var score=m.length+(m.indexOf(c.carry)>=0?1.5:0)+tierBonus[c.tier]+roll;
-    return {c:c,m:m,miss:miss,roll:roll,score:score};
+    // Kern-Treffer zaehlen voll, Extras nur halb. Zaehlten beide gleich, stand bei
+    // Kader „Sona + Lulu" die Comp „Urzeitlich Psionik" ganz oben — beide sind dort
+    // nur Extras, keine einzige Kern-Einheit ist dabei.
+    var score=mc.length+0.5*(m.length-mc.length)+(m.indexOf(c.carry)>=0?1.5:0)+tierBonus[c.tier]+roll;
+    return {c:c,m:m,mc:mc,miss:miss,roll:roll,score:score};
   }).filter(Boolean).sort(function(a,b){return b.score-a.score;});
 }
 
@@ -1588,7 +1649,7 @@ function rollHint(x){
   var maxCost=0;
   x.miss.forEach(function(n){var ch=champByName(n);if(ch&&ch.cost>maxCost)maxCost=ch.cost;});
   if(oddsFor(state.plvl,maxCost)>=10)return {ok:true,txt:'🎲 gut rollbar auf Lv '+state.plvl};
-  for(var l=state.plvl+1;l<=10;l++){if(oddsFor(l,maxCost)>=10)return {ok:false,txt:'🎲 realistisch ab Lv '+l+' ('+maxCost+'★-Einheiten)'};}
+  for(var l=state.plvl+1;l<=10;l++){if(oddsFor(l,maxCost)>=10)return {ok:false,txt:'🎲 realistisch ab Lv '+l+' ('+'🪙'+maxCost+'-Einheiten)'};}
   return {ok:false,txt:'🎲 sehr schwer zu treffen'};
 }
 
@@ -1598,9 +1659,18 @@ function buyPriorities(sel,selNames,tmap,hits){
   var selIds={};sel.forEach(function(c){selIds[c.id]=1;});
   var slots=boardSizeFor(state.plvl);
   var freeSlots=Math.max(0,slots-sel.length);
+  // Steht der Plan bereits fest, kommen nur noch Einheiten AUS diesem Plan infrage.
+  // Vorher schlug die App auf einem kompletten Slow-Roll-Brett Aurelion Sol, Viktor
+  // und Mighty Mech vor — drei Einheiten einer fremden Fast-8-Comp, alle mit
+  // BANK-Marke, jede mit eigener Item-Zeile. Wer das befolgte, verbrannte genau das
+  // Gold, das der Plan zwei Zeilen tiefer zu halten befahl.
+  var plan=(hits.length&&hits[0].mc.length>=2)?hits[0].c:null;
+  var imPlan=null;
+  if(plan){imPlan={};plan.core.concat(plan.extras||[],[plan.carry,plan.sec,plan.tank]).forEach(function(n){if(n)imPlan[n]=1;});}
   var out=[];
   CHAMPS.forEach(function(ch){
     if(selIds[ch.id])return;
+    if(imPlan&&!imPlan[ch.name])return;
     var odds=oddsFor(state.plvl,ch.cost);
     var score=odds/20,reasons=[];
     // Beitrag zu den besten passenden Comps
@@ -1629,23 +1699,39 @@ function buyPriorities(sel,selNames,tmap,hits){
     else if(reasons.length&&reasons.length<3)reasons.push(odds+'% Chance auf Lv '+state.plvl);
     if(score>0.8)out.push({ch:ch,score:score,reasons:reasons,bench:freeSlots<=0});
   });
-  // Zeige ein VOLLES Team: so viele Vorschläge wie freie Feld-Plätze (mind. 3, damit auch bei vollem Feld noch
-  // ein paar Bank-Alternativen sichtbar sind), statt einer festen Zahl.
-  var count=Math.max(3,freeSlots);
+  // So viele Vorschläge wie freie Feld-Plätze. Die Untergrenze 3 ist bewusst weg:
+  // steht der Plan, gibt es manchmal nur noch eine sinnvolle Einheit — dann ist eine
+  // Empfehlung ehrlicher als drei, von denen zwei Fueller sind.
+  var count=Math.max(1,freeSlots);
   return out.sort(function(a,b){return b.score-a.score;}).slice(0,count);
 }
 
-function starPriorities(sel){
+// Reihenfolge fuers 3★-Rollen. Bekommt `hits`, weil die Empfehlung sonst der Comp
+// widerspricht, die zwei Bloecke weiter oben als Plan ausgegeben wird: auf einem
+// kompletten Gnar-Brett stand hier "1. Veigar — Carry von Meeple Veigar", weil
+// 1-Kosten-Einheiten billiger zu rollen sind. „Gnar-Druckerei" und „Meeple Veigar"
+// haben denselben Kern und unterscheiden sich NUR in der Item-Leiste (AD/AP) —
+// beide gleichzeitig zu empfehlen ist die teuerste Fehlentscheidung der Runde.
+function starPriorities(sel,hits){
+  var plan=(hits&&hits.length&&hits[0].mc.length>=2)?hits[0].c:null;
   var out=[];
   sel.forEach(function(ch){
     if(ch.cost>3)return;
+    // Supports rollt man nicht auf 3★ — es sei denn, die Comp macht sie zum Carry.
+    if(ch.r==='supp'&&!(plan&&plan.carry===ch.name))return;
     var score=ch.cost===1?2.2:ch.cost===2?1.8:0.7;
     var reasons=[];
-    var rr=COMPS.find(function(c){return c.styleKey==='reroll'&&c.carry===ch.name;});
-    if(rr){score+=3;reasons.push('Carry von „'+rr.name+'" (Reroll)');}
-    else{
-      var inRr=COMPS.find(function(c){return c.styleKey==='reroll'&&c.core.indexOf(ch.name)>=0;});
-      if(inRr){score+=1;reasons.push('Kern von „'+inRr.name+'"');}
+    if(plan&&plan.carry===ch.name){
+      score+=6;reasons.push('Carry deines Plans „'+plan.name+'"');
+    }else if(plan&&plan.core.indexOf(ch.name)>=0){
+      score+=1.5;reasons.push('Kern deines Plans „'+plan.name+'"');
+    }else{
+      var rr=COMPS.find(function(c){return c.styleKey==='reroll'&&c.carry===ch.name;});
+      if(rr){score+=(plan?0.5:3);reasons.push('Carry von „'+rr.name+'" (Reroll)');}
+      else{
+        var inRr=COMPS.find(function(c){return c.styleKey==='reroll'&&c.core.indexOf(ch.name)>=0;});
+        if(inRr){score+=1;reasons.push('Kern von „'+inRr.name+'"');}
+      }
     }
     var odds=oddsFor(state.plvl,ch.cost);
     score+=odds/40;
@@ -1656,45 +1742,179 @@ function starPriorities(sel){
 }
 
 // Item-Plan: bestimmt Carry- und Tank-Champ + deren Item-Reihenfolge (Prio 1/2/3)
-function itemPlan(sel,selNames,hits){
-  var plan={carry:null,tank:null};
-  var dmgRoles={ad:1,ap:1,fight:1,assa:1,flex:1};
-  function pickSel(pred){
-    return sel.filter(pred).sort(function(a,b){return b.cost-a.cost;})[0]||null;
-  }
-  if(hits.length){
-    var best=hits[0].c;
-    var carryCh=champByName(best.carry),tankCh=champByName(best.tank);
-    plan.carry={name:best.carry,cost:carryCh?carryCh.cost:null,items:best.carryIt.slice(0,3),have:selNames.indexOf(best.carry)>=0,src:'„'+best.name+'"'};
-    plan.tank ={name:best.tank, cost:tankCh?tankCh.cost:null, items:best.tankIt.slice(0,3), have:selNames.indexOf(best.tank)>=0, src:'„'+best.name+'"'};
-  }else{
-    var c=pickSel(function(x){return dmgRoles[x.r];});
-    var t=pickSel(function(x){return x.r==='tank';});
-    // Fallback: keine Schadens-/Tank-Rolle gewählt (z. B. nur ein Support) → teuerste Einheit als Item-Träger
-    if(!c&&!t)c=pickSel(function(){return true;});
-    if(c)plan.carry={name:c.name,cost:c.cost,items:c.it.slice(0,3),have:true,src:'deine Auswahl'};
-    if(t)plan.tank ={name:t.name,cost:t.cost,items:t.it.slice(0,3),have:true,src:'deine Auswahl'};
-  }
-  return plan;
-}
-function renderItemBlock(label,color,p){
-  if(!p||!p.items.length)return '';
-  var h='<div class="coach-box" style="padding:10px 11px;'+(p.have?'':'opacity:.92;')+'">'
-    +'<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">'
-    +'<span style="font-size:12px;font-weight:700;color:'+color+';">'+label+':</span>'
-    +'<b style="font-size:13px;">'+p.name+'</b>'
-    +(p.cost!=null?'<span class="cst" style="font-size:11px;font-weight:700;color:'+costColor(p.cost)+';">'+p.cost+'★</span>':'')
-    +(p.have?'<span style="font-size:12px;color:var(--green);margin-left:auto;">✓ dabei</span>':'<span style="font-size:12px;color:var(--muted2);margin-left:auto;">⏳ noch holen</span>')
-    +'</div>';
-  p.items.forEach(function(item,i){
-    var rec=RECIPES.find(function(r){return r[0]===item.replace(' ×2','');});
-    h+='<div class="item-row" style="margin-bottom:4px;">'
-      +'<span style="font-size:12px;font-weight:800;color:'+(i===0?'var(--gold)':i===1?'#c8cee6':'#c9956a')+';width:16px;">'+(i+1)+'.</span>'
-      +'<span style="flex:1;">'+item+'</span>'
-      +(rec?'<span style="color:var(--muted2);font-size:12px;font-weight:400;">'+rec[1]+'</span>':'')+'</div>';
+// ── ITEM-PLAN JE EINHEIT ──────────────────────────────────────
+// Die Frage, die die App bis v3.2 nicht beantwortet hat: „und was tragen die anderen?"
+// Es standen nur Carry- und Tank-Items da; fuer die restlichen Einheiten eines Decks
+// gab es keine Empfehlung. Jetzt bekommt jede Einheit eine — in Baureihenfolge.
+//
+// Die Reihenfolge ist keine Deko: TFT belohnt gebuendelte Items. Wer oben steht,
+// bekommt seine drei Items zuerst und vollstaendig, bevor die naechste Einheit dran ist.
+// n = wie viele Items diese Rolle bekommt, gezaehlt in ITEMS und nicht in Zeilen:
+// „Nashors Zahn ×2" sind zwei. Vorher zaehlte das als eins, dadurch hatte eine
+// „wenn übrig"-Einheit real drei Items und der Zweit-Carry nur zwei.
+var IRANG={
+  carry:{o:0,ic:'🥇',lbl:'Carry',       n:3,note:'Deine Hauptschadens-Einheit. Alle drei Items hierauf — nicht auf mehrere verteilen.'},
+  sec:  {o:1,ic:'🥈',lbl:'Zweit-Carry', n:2,note:'Bekommt erst etwas, wenn der Carry seine drei zusammen hat.'},
+  tank: {o:2,ic:'🛡',lbl:'Haupttank',   n:3,note:'Deine Frontline. Alle Verteidigungs-Items hierauf.'},
+  tank2:{o:3,ic:'🧱',lbl:'Zweit-Tank',  n:2,note:''},
+  dmg:  {o:4,ic:'⚔',lbl:'nur bei Rest', n:1,note:''},
+  supp: {o:5,ic:'💚',lbl:'Trait-Bot',   n:1,note:''}
+};
+// „Nashors Zahn ×2" zu zwei Zeilen aufloesen. Erstens stimmt die Zaehlung dann,
+// zweitens sieht man am Handy sofort, dass man das Rezept zweimal bauen muss —
+// „×2 · Bogen + Gürtel" liess offen, ob zwei oder vier Komponenten gemeint sind.
+function spreadItems(list){
+  var out=[];
+  (list||[]).forEach(function(it){
+    var m=/^(.*) ×(\d+)$/.exec(it);
+    if(m){for(var i=0;i<parseInt(m[2],10);i++)out.push(m[1]);}
+    else out.push(it);
   });
-  h+='</div>';
+  return out;
+}
+// Welche Items eine einzelne Einheit bekommt. Steht sie in einer Comp als Carry oder
+// Tank, gilt die Item-Leiste DIESER Comp (z. B. Veigar traegt in „Meeple Veigar"
+// AP-Items, in der Gnar-Druckerei ist er nur Trait-Traeger). Sonst die allgemeine
+// Empfehlung am Champion selbst.
+function itemsOfUnit(comp,name){
+  var ch=champByName(name);if(!ch)return null;
+  var rang,items;
+  if(comp&&name===comp.carry){rang='carry';items=comp.carryIt;}
+  else if(comp&&name===comp.tank){rang='tank';items=comp.tankIt;}
+  // `sec` ist in den Comp-Daten die zweitwichtigste Einheit — das ist nicht immer ein
+  // zweiter Schadenstraeger. In „Mech Aurelion Sol" steht dort Bard, ein Support.
+  // Ihn als Zweit-Carry auszuweisen hiesse: gib ihm Items, die er nie braucht.
+  else if(comp&&name===comp.sec&&ch.r!=='supp'){rang='sec';items=ch.it;}
+  else if(ch.r==='supp'){rang='supp';items=ch.it;}
+  else if(ch.r==='tank'){rang='tank2';items=ch.it;}
+  else{rang='dmg';items=ch.it;}
+  return {ch:ch,rang:rang,items:spreadItems(items).slice(0,IRANG[rang].n)};
+}
+// Welche Komponenten die genannten Items zusammen kosten. Der Spieler haelt
+// Komponenten in der Hand, keine fertigen Items — ohne diese Summe ist der Plan
+// eine Wunschliste. Reihenfolge: haeufigste zuerst.
+function componentsOf(items){
+  var z={};
+  items.forEach(function(it){
+    var rec=RECIPES.find(function(r){return r[0]===it;});
+    if(!rec)return;
+    rec[1].split('+').forEach(function(k){k=k.trim();if(k)z[k]=(z[k]||0)+1;});
+  });
+  return Object.entries(z).sort(function(a,b){return b[1]-a[1]||a[0].localeCompare(b[0]);});
+}
+// Vollstaendiger Plan einer Comp: Kern zuerst, danach Extras/Nachzuegler als „optional".
+// carry/sec/tank werden ergaenzt, falls sie nicht im Kern stehen (kommt bei „Hirte
+// LeBlanc" vor: Karma und Nunu sind dort Zweit-Carry bzw. Tank, aber keine Kern-Einheit).
+function compItemPlan(comp){
+  var kern={};comp.core.forEach(function(n){kern[n]=1;});
+  var namen=comp.core.slice();
+  (comp.extras||[]).concat([comp.carry,comp.sec,comp.tank]).forEach(function(n){
+    if(n&&namen.indexOf(n)<0)namen.push(n);
+  });
+  // Sortiert wird NUR nach Rang. Bis zum 10.08. stand `opt` davor — dadurch rutschte
+  // in „Hirte LeBlanc" der Haupttank (Nunu, steht nicht im Kern) ans ENDE der Liste,
+  // hinter drei „nur bei Rest"-Einheiten, und trug statt „Haupttank" das Wort
+  // „optional". Wer der Anweisung „von oben nach unten bauen" folgte, packte seine
+  // Verteidigungs-Items auf Illaoi, bevor der eigentliche Tank überhaupt vorkam.
+  return namen.map(function(n){
+    var e=itemsOfUnit(comp,n);if(e)e.opt=!kern[n];
+    return e;
+  }).filter(Boolean).sort(function(a,b){
+    return IRANG[a.rang].o-IRANG[b.rang].o||(a.opt?1:0)-(b.opt?1:0)||b.ch.cost-a.ch.cost;
+  });
+}
+// Item-Zeilen (1./2./3. + Rezept) — von Comp-Karte, Coach und Champion-Detail geteilt.
+function itemRowsHtml(items){
+  return '<div class="ipl-i">'+items.map(function(it,i){
+    var rec=RECIPES.find(function(r){return r[0]===it.replace(' ×2','');});
+    return '<div><span class="no" style="color:'+(i===0?'var(--gold)':i===1?'#c8cee6':'#c9956a')+';">'+(i+1)+'</span>'
+      +'<span class="it">'+it+'</span>'
+      +(rec?'<span class="rc">'+rec[1]+'</span>':'')+'</div>';
+  }).join('')+'</div>';
+}
+// opts.have  — Namen, die der Spieler wirklich hat; alles andere wird ausgegraut.
+// opts.notes — Merksatz unter Carry und Tank ausgeben (im Coach ja, in der Comp-Liste
+//              nur einmal, sonst steht derselbe Satz 15-mal auf der Seite).
+function renderItemPlan(plan,opts){
+  opts=opts||{};
+  var rest=plan.filter(function(e){return e.rang==='supp';});
+  var haupt=plan.filter(function(e){return e.rang!=='supp';});
+  // Ab hier ist der Item-Vorrat eines normalen Spiels erschoepft. Ein Spiel liefert
+  // grob 18–24 Komponenten; der volle Plan einer Comp verlangt bis zu 34. Ohne diese
+  // Grenze liest sich alles wie gleichwertige Bauauftraege — und man verteilt.
+  var grenze=haupt.findIndex(function(e){return e.rang==='tank2'||e.rang==='dmg';});
+  var karte=function(e){
+    var R=IRANG[e.rang];
+    var fehlt=!!(opts.have&&!opts.have[e.ch.name]);
+    return '<div class="ipl r-'+e.rang+(fehlt?' miss':'')+'">'
+      +'<div class="ipl-h">'
+      +'<span class="rk">'+R.ic+'</span>'
+      +'<span class="nm">'+e.ch.name+'</span>'
+      +costTag(e.ch.cost)
+      // Rolle UND Besitz nebeneinander. Stand hier nur "fehlt noch", verschwand genau
+      // die Auskunft, weswegen man die Einheit ueberhaupt kaufen soll. Und "optional"
+      // ersetzte frueher die Rolle — jetzt steht es daneben.
+      +(fehlt?'<span class="rl" style="color:var(--muted2);">hast du nicht</span>':'')
+      +(e.opt?'<span class="rl" style="color:var(--muted2);">nicht im Kern</span>':'')
+      +'<span class="rl">'+R.lbl+'</span>'
+      +'</div>'
+      +(e.items.length?itemRowsHtml(e.items):'<div class="ipl-note">Keine feste Empfehlung — gib ihr, was übrig bleibt.</div>')
+      // Die Rangregel ist die AUSSAGE des Plans, keine Anfaengerhilfe: ohne sie sehen
+      // sechs gleich grosse Kaesten wie sechs gleichwertige Auftraege aus.
+      +(R.note?'<div class="ipl-note">'+R.note+'</div>':'')
+      +'</div>';
+  };
+  var bis=grenze>0?grenze:haupt.length;
+  var h=haupt.slice(0,bis).map(karte).join('');
+  // Komponenten-Summe direkt hinter den Pflicht-Einheiten und VOR der Trennlinie:
+  // der Spieler haelt Komponenten in der Hand, keine fertigen Items. Ohne diese
+  // Zeile ist der Plan eine Wunschliste, die er nicht gegen sein Inventar prüfen kann.
+  var komp=componentsOf(haupt.slice(0,bis).reduce(function(a,e){return a.concat(e.items);},[]));
+  if(komp.length){
+    h+='<div class="ipl-komp"><b>Dafür brauchst du:</b> '
+      +komp.map(function(k){return k[1]+'× '+k[0];}).join(' · ')+'</div>';
+  }
+  if(bis<haupt.length){
+    h+='<div class="ipl-cut">— ab hier nur, wenn wirklich Items übrig sind —</div>'
+      +haupt.slice(bis).map(karte).join('');
+  }
+  if(rest.length){
+    h+='<div class="ipl-rest">💚 <b>Brauchen keine Items:</b> '+rest.map(function(e){return e.ch.name;}).join(' · ')
+      +' — sie stehen nur für die Traits auf dem Feld. Wenn wirklich etwas übrig bleibt: ein Mana-Item (Blauer Buff).</div>';
+  }
   return h;
+}
+// Derselbe Plan, aber fuer die Einheiten, die der Spieler GERADE hat. Carry, Zweit-Carry
+// und Tank der passenden Comp bleiben auch dann in der Liste, wenn er sie noch nicht
+// gekauft hat — sonst weiss er nicht, worauf er hinbaut.
+function ownItemPlan(sel,hits){
+  var comp=(hits.length&&hits[0].mc.length>=2)?hits[0].c:null;
+  var have={};sel.forEach(function(c){have[c.name]=1;});
+  var liste;
+  if(comp){
+    liste=compItemPlan(comp).filter(function(e){
+      return have[e.ch.name]||e.rang==='carry'||e.rang==='sec'||e.rang==='tank';
+    });
+    // „optional" gilt nur fuer Einheiten, die man noch nicht hat. Steht sie schon auf
+    // dem Feld, ist ihre echte Rolle die nuetzlichere Auskunft.
+    liste.forEach(function(e){ if(have[e.ch.name])e.opt=false; });
+    var drin={};liste.forEach(function(e){drin[e.ch.name]=1;});
+    sel.forEach(function(c){
+      if(drin[c.name])return;
+      var e=itemsOfUnit(null,c.name);if(e)liste.push(e);
+    });
+  }else{
+    // Kein Comp-Treffer: Carry und Tank aus der Auswahl selbst bestimmen.
+    var carry=pickCarry(sel,hits);
+    var tank=sel.filter(function(c){return c.r==='tank';}).sort(function(a,b){return b.cost-a.cost;})[0];
+    liste=sel.map(function(c){
+      if(carry&&c.id===carry.id)return {ch:c,rang:'carry',items:c.it.slice(0,3)};
+      if(tank&&c.id===tank.id)return {ch:c,rang:'tank',items:c.it.slice(0,3)};
+      return itemsOfUnit(null,c.name);
+    }).filter(Boolean);
+  }
+  liste.sort(function(a,b){return IRANG[a.rang].o-IRANG[b.rang].o||b.ch.cost-a.ch.cost;});
+  return {liste:liste,have:have,comp:comp};
 }
 
 // ── Team-Build-Analyse (für Solo & Duo wiederverwendbar) ──────
@@ -1719,23 +1939,29 @@ function duoPlayerCard(icon,label,which,A){
   }
   h+='<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px;">';
   A.sel.forEach(function(ch){
-    h+='<button onclick="rdRemove(\''+ch.id+'\',\''+which+'\')" class="chip" style="font:inherit;font-size:12px;font-weight:600;"><span class="cst" style="color:'+costColor(ch.cost)+';">'+ch.cost+'★</span>'+ch.name+' ✕</button>';
+    h+='<button onclick="rdRemove(\''+ch.id+'\',\''+which+'\')" class="chip" style="font:inherit;font-size:12px;font-weight:600;"><span class="cst" style="color:'+costColor(ch.cost)+';">'+'🪙'+ch.cost+'</span>'+ch.name+' ✕</button>';
   });
   h+='</div>';
   if(A.sel.length){
     h+='<div style="font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:6px;">🧭 Aufstellung</div>'+renderLineupBoard(A.sel,A.hits,which);
   }
-  var goodHit=A.best&&A.best.m.length>=2;
+  var goodHit=A.best&&A.best.mc.length>=2;
   if(goodHit){
-    var c=A.best.c,pct=Math.round(100*A.best.m.length/c.core.length),rh=rollHint(A.best);
+    var c=A.best.c,pct=Math.min(100,Math.round(100*A.best.mc.length/c.core.length)),rh=rollHint(A.best);
     h+='<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">'
       +'<span class="tier-badge tier-'+c.tier+'">'+c.tier+'</span>'
       +'<b style="font-size:13px;flex:1;">'+c.name+'</b>'
       +'<span class="diff-badge diff-'+c.diff+'">'+diffLabel(c.diff)+'</span></div>'
-      +'<div style="font-size:12px;color:var(--muted);">'+c.style+' · Carry: <b style="color:#eef0ff;">'+c.carry+'</b> · '+A.best.m.length+'/'+c.core.length+' Kern</div>'
+      +'<div style="font-size:12px;color:var(--muted);">'+c.style+' · Carry: <b style="color:#eef0ff;">'+c.carry+'</b> · '+A.best.mc.length+'/'+c.core.length+' Kern</div>'
       +'<div class="prog"><i style="width:'+pct+'%;"></i></div>'
-      +'<div style="font-size:12px;color:'+(rh.ok?'var(--green)':'var(--red)')+';margin-bottom:6px;">'+rh.txt+'</div>'
-      +'<div style="font-size:12px;color:var(--gold);margin-bottom:4px;">🗡 '+c.carry+': '+c.carryIt.map(function(it,i){return (i+1)+'. '+it;}).join(' · ')+'</div>';
+      +'<div style="font-size:12px;color:'+(rh.ok?'var(--green)':'var(--red)')+';margin-bottom:6px;">'+rh.txt+'</div>';
+    // Bis v3.2 stand hier nur eine Zeile mit den Carry-Items. Im Duo gilt dasselbe wie
+    // solo: jede Einheit dieses Builds braucht ihre eigene Item-Auskunft.
+    var ipD=ownItemPlan(A.sel,A.hits);
+    if(ipD.liste.length){
+      h+='<div class="ip-title" style="margin-top:6px;">🎒 Wer bekommt welche Items</div>'
+        +renderItemPlan(ipD.liste,{have:ipD.have});
+    }
     var pr=buyPriorities(A.sel,A.selNames,A.tmap,A.hits);
     if(pr.length){
       h+='<div style="font-size:12px;color:var(--muted);margin-bottom:2px;">🛒 Als Nächstes:</div>';
@@ -1998,7 +2224,9 @@ function renderLineupBoard(sel,hits,key){
       }else if(L.reserved[k]){
         h+='<div class="hex mech2" title="Für den transformierten Mech freihalten"><div class="hex-in">🤖</div></div>';
       }else if(L.ghosts[k]){
-        h+='<div class="hex ghost" title="'+L.ghosts[k]+' fehlt dir noch"><div class="hex-in">'+inits(L.ghosts[k])+'</div></div>';
+        // Kuerzel wie "MO"/"JH" sind nicht ratbar, und die Erklaerung dazu stand
+        // erst weit unter dem Brett. Das ＋ macht ohne Text klar: hier fehlt jemand.
+        h+='<div class="hex ghost" title="'+L.ghosts[k]+' fehlt dir noch"><div class="hex-in">＋'+inits(L.ghosts[k])+'</div></div>';
       }else{
         h+='<div class="hex"></div>';
       }
@@ -2061,25 +2289,59 @@ function renderCoach(){
   var tArr=Object.entries(tmap).sort(function(a,b){return b[1]-a[1];});
   var selNames=sel.map(function(c){return c.name;});
   var hits=scoreComps(selNames);
-  var goodHit=hits.length && hits[0].m.length>=2; // mind. 2 echte Kern-Treffer, sonst zu schwach um "die beste Kombination" zu heißen
+  var goodHit=hits.length && hits[0].mc.length>=2; // mind. 2 echte KERN-Treffer (nicht Extras)
+
+  // 💡 Der Plan in einem Satz — ganz nach oben. Er stand bis zum 10.08. als
+  // allerletzter Block, rund 3.000 px tief; er ist aber der einzige Text, der in
+  // einem Stück sagt, was zu tun ist. Bis man dort war, war die Kaufphase vorbei.
+  var html='';
+  if(goodHit){
+    var bestP=hits[0].c,tipP='';
+    if(state.level==='a'){
+      tipP=bestP.styleKey==='reroll'
+        ?'<b>Dein Plan:</b> '+bestP.style+' — auf diesem Level bleiben, über 50 Gold sparen, dann jede Runde das Gold darüber in Rerolls stecken, bis <b>'+bestP.carry+'</b> 3★ ist. Alle Schadens-Items auf '+bestP.carry+'.'
+        :'<b>Dein Plan:</b> '+bestP.style+' — zügig auf Level 8 kommen (XP kaufen), dann nach <b>'+bestP.carry+'</b> suchen. Tank-Items auf '+bestP.tank+'.';
+    }else if(state.level==='f'){
+      tipP='<b>Plan:</b> '+bestP.style+'. '+bestP.tip;
+    }else{
+      tipP='<b>Plan:</b> '+bestP.style+'. '+bestP.tip+(bestP.pro?' <span style="color:var(--muted);">— '+bestP.pro+'</span>':'');
+    }
+    html+='<div class="tipbox" style="margin-top:2px;">💡 '+tipP+'</div>';
+  }
 
   // 🧭 Deine Aufstellung — berechnet aus genau dieser Auswahl
-  var html='<div class="mini-label">🧭 Deine Aufstellung</div>'+renderLineupBoard(sel,hits);
+  html+='<div class="mini-label" style="margin-top:4px;">🧭 Deine Aufstellung</div>'+renderLineupBoard(sel,hits);
+
+  // 🎒 Items — jede Einheit einzeln, in Baureihenfolge.
+  // Steht bewusst direkt hinter der Aufstellung: mitten in der Runde sind „wo stelle
+  // ich hin" und „worauf baue ich" die beiden Fragen, die man SOFORT beantwortet
+  // haben will. Bis v3.2 stand der Item-Block ganz unten, vier Bildschirme tiefer.
+  var ip=ownItemPlan(sel,hits);
+  if(ip.liste.length){
+    html+='<div class="mini-label">🎒 Wer bekommt welche Items</div>'
+      +'<div class="ip-sub">Von oben nach unten bauen'+(ip.comp?' — Plan von „'+ip.comp.name+'"':'')+'. Blass und gestrichelt = diese <b>Einheit</b> fehlt dir noch (nicht das Item).</div>'
+      +renderItemPlan(ip.liste,{have:ip.have,notes:state.level==='a'});
+  }
 
   // 🛒 Als Nächstes kaufen
   var prios=buyPriorities(sel,selNames,tmap,hits);
   if(prios.length){
     var medals=['🥇','🥈','🥉'];
     html+='<div class="mini-label">🛒 Als Nächstes kaufen</div>';
+    // Ab Platz 4 gab es keine Medaille mehr — dort stand woertlich "undefined".
+    // Auf Lv 9 mit drei Einheiten waren das drei Kaesten am Stueck.
     prios.forEach(function(p,i){
       html+='<div class="coach-box" style="padding:9px 11px;'+(p.bench?'opacity:.85;':'')+'">'
         +'<div style="display:flex;align-items:center;gap:7px;">'
-        +'<span style="font-size:13px;">'+medals[i]+'</span>'
-        +'<span class="cst" style="font-size:12px;font-weight:700;color:'+costColor(p.ch.cost)+';">'+p.ch.cost+'★</span>'
+        +'<span style="font-size:13px;font-weight:800;color:var(--gold);">'+(medals[i]||(i+1)+'.')+'</span>'
+        +costTag(p.ch.cost,12)
         +'<b style="font-size:13px;flex:1;">'+p.ch.name+'</b>'
         +(p.bench?'<span style="font-size:11px;font-weight:700;color:var(--muted2);background:rgba(255,255,255,.08);border-radius:5px;padding:2px 6px;">BANK</span>':'')
         +'</div>'
-        +(p.ch.it&&p.ch.it.length?'<div style="font-size:12px;color:var(--gold);margin-top:4px;">🏆 '+p.ch.it.slice(0,3).join(' + ')+'</div>':'')
+        // Die Begruendung wurde in buyPriorities berechnet und nie ausgegeben. Ohne
+        // sie ist "kauf Aurora" nicht bewertbar. Die Item-Zeile faellt dafuer weg —
+        // sie widersprach dem Item-Plan direkt darueber.
+        +(p.reasons&&p.reasons.length?'<div style="font-size:12px;color:var(--muted);margin-top:3px;">'+p.reasons.slice(0,2).join(' · ')+'</div>':'')
         +'</div>';
     });
   }
@@ -2104,7 +2366,7 @@ function renderCoach(){
     html+='<div class="mini-label">⚔ Beste Kombination'+(hits.length>1?'en':'')+'</div>';
     hits.slice(0,maxComps).forEach(function(x,xi){
       var c=x.c;
-      var pct=Math.round(100*x.m.length/c.core.length);
+      var pct=Math.min(100,Math.round(100*x.mc.length/c.core.length));
       var miss=x.miss.slice().sort(function(a,b){var ca=champByName(a),cb=champByName(b);return (ca?ca.cost:9)-(cb?cb.cost:9);});
       var rh=rollHint(x);
       var slotsHere=boardSizeFor(state.plvl);
@@ -2115,13 +2377,14 @@ function renderCoach(){
         +'<b style="font-size:13px;flex:1;">'+(xi===0?'👉 ':'')+c.name+'</b>'
         +'<span class="diff-badge diff-'+c.diff+'">'+diffLabel(c.diff)+'</span>'
         +'</div>'
-        +'<div style="font-size:12px;color:var(--muted);">Carry: <b style="color:#eef0ff;">'+c.carry+'</b> · '+x.m.length+'/'+c.core.length+'</div>'
+        +'<div style="font-size:12px;color:var(--muted);">Carry: <b style="color:#eef0ff;">'+c.carry+'</b> · '+x.mc.length+'/'+c.core.length+' Kern'
+        +(x.m.length>x.mc.length?' <span style="color:var(--muted2);">(+'+(x.m.length-x.mc.length)+' Extra)</span>':'')+'</div>'
         +'<div class="prog"><i style="width:'+pct+'%;"></i></div>'
         +(fitsBoard?'':'<div style="font-size:12px;color:var(--red);">⚠️ Braucht '+c.core.length+' Plätze, du hast '+slotsHere+'.</div>')
         +'<div style="font-size:12px;color:'+(rh.ok?'var(--green)':'var(--red)')+';">'+rh.txt+'</div>'
         +(miss.length?'<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;">'
           +miss.slice(0,6).map(function(n){var ch=champByName(n);
-            return '<span class="chip"><span class="cst" style="color:'+(ch?costColor(ch.cost):'#888')+';">'+(ch?ch.cost+'★':'')+'</span>'+n+'</span>';}).join('')
+            return '<span class="chip"><span class="cst" style="color:'+(ch?costColor(ch.cost):'#888')+';">'+(ch?'🪙'+ch.cost:'')+'</span>'+n+'</span>';}).join('')
           +'</div>'
           :'<div style="color:var(--green);font-size:12px;">✓ Alle Kern-Einheiten dabei!</div>')
         +'</button>';
@@ -2147,14 +2410,16 @@ function renderCoach(){
   //  damit die kaputte Mehrzahl-Ausgabe "Noch 2 freie Platzplätze".)
 
   // ⭐ 3★-Reihenfolge
-  var stars=starPriorities(sel);
+  var stars=starPriorities(sel,hits);
   if(stars.length){
-    html+='<div class="mini-label">⭐ Zuerst auf 3★ rollen</div>';
+    html+='<div class="mini-label">⭐ Zuerst auf 3★ rollen</div>'
+      // Eine 3★-Empfehlung ohne Gold- und Level-Bedingung ist ein Wunsch, keine Anweisung.
+      +'<div class="ip-sub">Erst ab rund 50 Gold anfangen und nur auf dem Level deines Plans — sonst kostet Rollen mehr, als es bringt.</div>';
     stars.forEach(function(s,i){
       html+='<div class="coach-box" style="padding:8px 11px;">'
         +'<div style="display:flex;align-items:center;gap:7px;">'
         +'<span style="font-size:12px;font-weight:800;color:var(--gold);">'+(i+1)+'.</span>'
-        +'<span class="cst" style="font-size:12px;font-weight:700;color:'+costColor(s.ch.cost)+';">'+s.ch.cost+'★</span>'
+        +costTag(s.ch.cost,12)
         +'<b style="font-size:13px;flex:1;">'+s.ch.name+'</b>'
         +'</div>'
         +'<div style="font-size:12px;color:var(--muted);margin-top:2px;">'+s.reasons.join(' · ')+'</div>'
@@ -2165,57 +2430,19 @@ function renderCoach(){
       +'<div style="font-size:12px;color:var(--muted);margin-bottom:10px;">4- und 5-Kosten-Einheiten rollt man nicht auf 3★ — Ziel ist dort 2★. Wähle 1–3-Kosten-Einheiten für einen Reroll-Plan.</div>';
   }
 
-  // 🏆 Items — Prio 1/2/3 pro Carry & Tank, mit Champ-Zuordnung
-  var plan=itemPlan(sel,selNames,hits);
-  if(plan.carry||plan.tank){
-    html+='<div class="mini-label">🏆 Items bauen (in dieser Reihenfolge)</div>';
-    html+=renderItemBlock('🗡 Carry-Items','var(--gold)',plan.carry);
-    html+=renderItemBlock('🛡 Tank-Items','var(--blue)',plan.tank);
-    if(state.level==='a'){
-      html+='<div style="font-size:12px;color:var(--muted);margin:2px 0 8px;line-height:1.5;">👉 Alle 3 Carry-Items auf <b style="color:#eef0ff;">'+(plan.carry?plan.carry.name:'deinen Carry')+'</b>, die Tank-Items auf <b style="color:#eef0ff;">'+(plan.tank?plan.tank.name:'deinen Tank')+'</b>. Verteil sie NICHT auf mehrere Einheiten.</div>';
-    }
-  }
-
-  // 💡 Spielplan-Tipp
-  if(hits.length){
-    var best=hits[0].c,tip='';
-    if(state.level==='a'){
-      tip=best.styleKey==='reroll'
-        ?'<b>Dein Plan:</b> '+best.style+' — auf diesem Level bleiben, über 50 Gold sparen, dann jede Runde das Gold darüber in Rerolls stecken, bis <b>'+best.carry+'</b> 3★ ist. Alle Schadens-Items auf '+best.carry+'.'
-        :'<b>Dein Plan:</b> '+best.style+' — zügig auf Level 8 kommen (XP kaufen), dann nach <b>'+best.carry+'</b> suchen. Tank-Items auf '+best.tank+'.';
-    }else if(state.level==='f'){
-      tip='<b>Plan:</b> '+best.style+'. '+best.tip;
-    }else{
-      tip='<b>Plan:</b> '+best.style+'. '+best.tip+(best.pro?' <span style="color:var(--muted);">— '+best.pro+'</span>':'');
-    }
-    html+='<div class="tipbox">💡 '+tip+'</div>';
-  }
+  // (Der Spielplan-Tipp steht seit dem 10.08. ganz OBEN in dieser Funktion — hier
+  //  unten hat ihn mitten in der Runde niemand mehr gelesen.)
 
   box.innerHTML=html;
 }
 
 // ── VIEW: COMPS ───────────────────────────────────────────────
-// Item-Block einer Comp: wer trägt was, in welcher Reihenfolge, aus welchen Komponenten.
-function compItemBlock(kind,label,who,items){
-  if(!items||!items.length)return'';
-  var ch=champByName(who),col=kind==='carry'?'var(--gold)':'var(--blue)';
-  return '<div class="ip-block '+kind+'">'
-    +'<div class="ip-head"><span style="font-weight:700;color:'+col+';">'+label+'</span>'
-    +'<b>'+who+'</b>'
-    +(ch?'<span style="font-size:12px;font-weight:700;color:'+costColor(ch.cost)+';">'+ch.cost+'★</span>':'')
-    +'</div>'
-    +items.slice(0,3).map(function(it,i){
-      var rec=RECIPES.find(function(r){return r[0]===it.replace(' ×2','');});
-      return '<div class="ip-row">'
-        +'<span class="no" style="color:'+(i===0?'var(--gold)':i===1?'#c8cee6':'#c9956a')+';">'+(i+1)+'.</span>'
-        +'<span class="nm">'+it+'</span>'
-        +(rec?'<span class="rc">'+rec[1]+'</span>':'')+'</div>';
-    }).join('')
-    +'</div>';
-}
-
 var COMP_FILTERS=['Alle','Einfach','Mittel','Schwer','S-Tier'];
 function compSetFilter(f){state.compFilter=f;renderComps();}
+function compJump(id){
+  var el=document.getElementById('comp-'+id);
+  if(el)el.scrollIntoView({behavior:'smooth',block:'start'});
+}
 function renderComps(){
   document.getElementById('comps-filters').innerHTML=COMP_FILTERS.map(function(f){
     return '<button onclick="compSetFilter(\''+f+'\')" class="pill-btn'+(state.compFilter===f?' on':'')+'">'+f+'</button>';
@@ -2235,12 +2462,21 @@ function renderComps(){
     var ra=recForLevel(a)?0:1,rb=recForLevel(b)?0:1;
     return ra-rb||tierOrd[a.tier]-tierOrd[b.tier];
   });
+  document.getElementById('comps-jump').innerHTML=list.map(function(c){
+    // Beschriftet mit dem CARRY, nicht mit dem Comp-Namen: „Sternenschauer-
+    // Scharfschützen" allein fraß 300 px, über alle 15 waren es 5,7 Bildschirmbreiten
+    // seitlich. Über den Carry redet man ohnehin („ich spiele Gnar").
+    return '<button onclick="compJump(\''+c.id+'\')" class="jump-pill'+(recForLevel(c)?' rec':'')+'" title="'+c.name+'">'
+      +(recForLevel(c)?'⭐':'<span class="jt tier-'+c.tier+'">'+c.tier+'</span>')+c.carry+'</button>';
+  }).join('');
   document.getElementById('comps-list').innerHTML=list.map(function(c){
     var rec=recForLevel(c);
-    return '<div class="comp-card'+(rec?' rec':'')+'">'
+    return '<div class="comp-card'+(rec?' rec':'')+'" id="comp-'+c.id+'">'
       +'<div class="comp-head">'
       +'<span class="tier-badge tier-'+c.tier+'">'+c.tier+'</span>'
       +'<h3>'+c.name+'</h3>'
+      +'</div>'
+      +'<div class="comp-tags">'
       +(rec?'<span class="rec-badge">⭐ Für dich</span>':'')
       +'<span class="diff-badge diff-'+c.diff+'">'+diffLabel(c.diff)+'</span>'
       +'<span class="style-badge">'+c.style+'</span>'
@@ -2250,8 +2486,9 @@ function renderComps(){
       +((c.extras||[]).length?'<span style="color:var(--muted2);font-size:12px;align-self:center;">+ '+c.extras.join(', ')+'</span>':'')
       +'</div>'
       +renderBoard(c.id)
-      +compItemBlock('carry','🗡 Carry-Items',c.carry,c.carryIt)
-      +compItemBlock('tank','🛡 Tank-Items',c.tank,c.tankIt)
+      +'<div class="ip-title">🎒 Wer bekommt welche Items</div>'
+      +'<div class="ip-sub">Von oben nach unten bauen — die obere Einheit bekommt ihre Items zuerst und vollständig.</div>'
+      +renderItemPlan(compItemPlan(c),{})
       +'<div class="comp-tip">💡 '+c.tip+'</div>'
       +(state.level==='p'&&c.pro?'<div class="comp-tip" style="color:#c4baff;">👑 '+c.pro+'</div>':'')
       +'</div>';
@@ -2383,7 +2620,7 @@ function initChoncc(){
 function ccSetCost(c){state.ccCost=c;renderCcFilters();renderCcGrid();}
 function renderCcFilters(){
   document.getElementById('cc-filters').innerHTML=CC_COSTS.map(function(c){
-    return '<button onclick="ccSetCost(\''+c+'\')" class="pill-btn'+(state.ccCost===c?' on':'')+'">'+(c==='Alle'?'Alle':c+'★')+'</button>';
+    return '<button onclick="ccSetCost(\''+c+'\')" class="pill-btn'+(state.ccCost===c?' on':'')+'">'+(c==='Alle'?'Alle':'🪙'+c)+'</button>';
   }).join('');
 }
 function renderCcGrid(){
@@ -2397,7 +2634,7 @@ function renderCcGrid(){
     var cc=costColor(Math.min(ch.cost,5)); // Farbskala hat nur 1-5, 7-Kosten nutzt 5er-Farbe
     return '<div class="champ-btn" style="--cc:'+cc+';cursor:default;">'
       +'<div style="width:46px;height:46px;border-radius:8px;border:2px solid '+cc+';background:var(--panel);display:flex;align-items:center;justify-content:center;font-size:18px;margin:0 auto;">🐾</div>'
-      +'<div style="font-size:11px;font-weight:700;color:'+cc+';line-height:1;margin-top:3px;">'+ch.cost+'★</div>'
+      +'<div style="font-size:11px;font-weight:700;color:'+cc+';line-height:1;margin-top:3px;">'+'🪙'+ch.cost+'</div>'
       +'<div style="font-size:12px;font-weight:600;color:#eef0ff;line-height:1.25;word-break:break-word;">'+ch.name+'</div>'
       +'<div style="display:flex;flex-wrap:wrap;gap:2px;justify-content:center;margin-top:2px;">'
       +ch.t.map(function(t){return '<span style="font-size:11px;background:rgba(255,255,255,.07);border-radius:4px;padding:1px 5px;color:var(--muted);">'+t+'</span>';}).join('')
@@ -2414,7 +2651,7 @@ function initChamps(){
 function chSetCost(c){state.chCost=c;renderChFilters();renderChGrid();}
 function renderChFilters(){
   document.getElementById('ch-filters').innerHTML=CH_COSTS.map(function(c){
-    return '<button onclick="chSetCost(\''+c+'\')" class="pill-btn'+(state.chCost===c?' on':'')+'">'+(c==='Alle'?'Alle':c+'★')+'</button>';
+    return '<button onclick="chSetCost(\''+c+'\')" class="pill-btn'+(state.chCost===c?' on':'')+'">'+(c==='Alle'?'Alle':'🪙'+c)+'</button>';
   }).join('');
 }
 function renderChGrid(){
@@ -2428,7 +2665,7 @@ function renderChGrid(){
     var cc=costColor(ch.cost);
     return '<button onclick="openChamp(\''+ch.id+'\')" class="champ-btn" style="--cc:'+cc+';">'
       +champImgTag(ch,46,cc,'')
-      +'<div style="font-size:11px;font-weight:700;color:'+cc+';line-height:1;">'+ch.cost+'★ '+ROLE_ICON[ch.r]+'</div>'
+      +'<div style="font-size:11px;font-weight:700;color:'+cc+';line-height:1;">'+'🪙'+ch.cost+' '+ROLE_ICON[ch.r]+'</div>'
       +'<div style="font-size:12px;font-weight:600;color:#eef0ff;line-height:1.25;word-break:break-word;">'+ch.name+'</div>'
       +'<div style="display:flex;flex-wrap:wrap;gap:2px;justify-content:center;margin-top:2px;">'
       +ch.t.map(function(t){return '<span style="font-size:11px;background:rgba(255,255,255,.07);border-radius:4px;padding:1px 5px;color:var(--muted);">'+t+'</span>';}).join('')
@@ -2444,20 +2681,42 @@ function openChamp(id){
     +champImgTag(ch,56,cc,'')
     +'<div><h2 style="font-size:20px;font-weight:700;">'+ch.name+'</h2>'
     +'<div style="color:var(--muted);font-size:13px;">'+ROLE_ICON[ch.r]+' '+ROLE_NAME[ch.r]+'</div>'
-    +'<div style="margin-top:4px;"><span style="font-size:12px;font-weight:700;color:var(--bg);background:'+cc+';border-radius:6px;padding:2px 8px;">'+ch.cost+'★ Kosten</span></div>'
+    +'<div style="margin-top:4px;"><span style="font-size:12px;font-weight:700;color:var(--bg);background:'+cc+';border-radius:6px;padding:2px 8px;">'+ch.cost+' Gold Kaufpreis</span></div>'
     +'</div></div>'
     +'<div class="section-label">Traits</div>'
     +'<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;">'
     +ch.t.map(function(t){var tr=traitByName(t);
       return '<span style="border-radius:999px;padding:5px 11px;font-size:12px;font-weight:600;background:rgba(139,124,246,.15);border:1px solid rgba(139,124,246,.3);color:#c4baff;">'+t+(tr?' <span style="opacity:.6;font-weight:400;">('+tr.bp.join('/')+')</span>':'')+'</span>';}).join('')
     +'</div>'
-    +'<div class="section-label">Beste Items</div>'
-    +'<div style="margin-bottom:14px;">'
-    +ch.it.map(function(item,i){
-      var rec=RECIPES.find(function(r){return r[0]===item.replace(' ×2','');});
-      return '<div class="item-row"><span>'+(i===0?'🥇':i===1?'🥈':'🥉')+'</span><span style="flex:1;font-size:13px;">'+item+'</span>'
-      +(rec?'<span style="color:var(--muted2);font-size:12px;font-weight:400;">'+rec[1]+'</span>':'')+'</div>';}).join('')
-    +'</div>'
+    // Die Comp-Leiste steht ZUERST und die allgemeine darunter, ausdruecklich als
+    // „ohne Comp-Bezug" beschriftet. Vorher standen beide gleichrangig untereinander,
+    // beide mit „in dieser Reihenfolge" — bei Jax nannten sie zwei verschiedene erste
+    // Items (Titanentrotz vs. Gargoyle-Steinplatte), ohne zu sagen, welches gilt.
+    +(function(){
+      var eigen=spreadItems(ch.it).slice(0,3).join('|');
+      var roll=comps.filter(function(c){return c.carry===ch.name||c.tank===ch.name;});
+      var anders=roll.filter(function(c){
+        var it=(c.carry===ch.name?c.carryIt:c.tankIt)||[];
+        return spreadItems(it).slice(0,3).join('|')!==eigen;
+      });
+      if(!anders.length)return'';
+      return '<div class="section-label">Beste Items — in dieser Comp</div>'
+        +anders.map(function(c){
+          var carry=c.carry===ch.name;
+          return '<div class="ipl r-'+(carry?'carry':'tank')+'">'
+            +'<div class="ipl-h"><span class="rk">'+(carry?'🥇':'🛡')+'</span>'
+            +'<span class="nm">'+c.name+'</span>'
+            +'<span class="rl">'+(carry?'Carry':'Haupttank')+'</span></div>'
+            +itemRowsHtml(spreadItems(carry?c.carryIt:c.tankIt).slice(0,3))+'</div>';
+        }).join('')
+        +'<div style="font-size:12px;color:var(--muted);margin:2px 0 10px;line-height:1.45;">'
+        +'👆 <b style="color:#eef0ff;">Das gilt, wenn du diese Comp spielst.</b> Die Liste darunter ist die allgemeine Empfehlung ohne Comp-Bezug.</div>';
+    })()
+    +'<div class="section-label">'
+    +(compsOfChamp(ch.name).some(function(c){return c.carry===ch.name||c.tank===ch.name;})
+      ?'Sonst — ohne feste Comp':'Beste Items — in dieser Reihenfolge')+'</div>'
+    +'<div class="ipl">'+itemRowsHtml(spreadItems(ch.it).slice(0,3))+'</div>'
+    +'<div style="height:12px;"></div>'
     +(comps.length?'<div class="section-label">Spielt in</div><div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px;">'
       +comps.map(function(c){return '<span class="chip"><span class="tier-badge tier-'+c.tier+'" style="width:18px;height:18px;font-size:11px;">'+c.tier+'</span>'+c.name+(c.carry===ch.name?' ⭐':'')+'</span>';}).join('')+'</div>':'')
     +(ch.note?'<div class="tipbox" style="margin:0;">💡 '+ch.note+'</div>':'');
@@ -2480,7 +2739,7 @@ function renderTraits(){
       +'<h4>'+t.name+' <span class="en">('+t.en+')</span> <span class="bp">'+t.bp.join(' / ')+'</span></h4>'
       +'<p>'+t.desc+'</p>'
       +'<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;">'
-      +members.map(function(c){return '<button onclick="openChamp(\''+c.id+'\')" class="chip" style="font:inherit;font-size:12px;font-weight:600;"><span class="cst" style="color:'+costColor(c.cost)+';">'+c.cost+'★</span>'+c.name+'</button>';}).join('')
+      +members.map(function(c){return '<button onclick="openChamp(\''+c.id+'\')" class="chip" style="font:inherit;font-size:12px;font-weight:600;"><span class="cst" style="color:'+costColor(c.cost)+';">'+'🪙'+c.cost+'</span>'+c.name+'</button>';}).join('')
       +'</div></div>';
   }
   document.getElementById('trait-origins').innerHTML=TRAITS.filter(function(t){return t.kind==='o';}).map(row).join('');
@@ -2513,7 +2772,7 @@ function renderOddsTable(){
   var lvls=[4,5,6,7,8,9,10];
   var html='<table style="width:100%;border-collapse:collapse;font-size:12px;min-width:320px;">'
     +'<tr><th style="text-align:left;padding:5px 6px;color:var(--muted);font-size:12px;">Level</th>'
-    +[1,2,3,4,5].map(function(c){return '<th style="padding:5px 6px;color:'+costColor(c)+';font-size:12px;">'+c+'★</th>';}).join('')+'</tr>'
+    +[1,2,3,4,5].map(function(c){return '<th style="padding:5px 6px;color:'+costColor(c)+';font-size:12px;">'+'🪙'+c+'</th>';}).join('')+'</tr>'
     +lvls.map(function(l){
       return '<tr style="border-top:1px solid var(--line);">'
         +'<td style="padding:5px 6px;font-weight:700;">Lv '+l+'</td>'
