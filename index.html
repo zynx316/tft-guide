@@ -168,16 +168,16 @@ input{font-family:inherit;-webkit-appearance:none;appearance:none}
 }
 .kd-add:active{background:rgba(240,194,90,.22)}
 
-/* ── Picker-Sheet (Vollbild-Auswahl) ─────────────────────────── */
+/* ── Sheet (Vollbild-Overlay: Picker + Item-Katalog teilen sich das) ─── */
 .pk-back{position:fixed;inset:0;z-index:119;background:rgba(4,6,18,.7);display:none}
 .pk-back.on{display:block}
-#picker{
+.pk-sheet{
   position:fixed;inset:0;z-index:120;background:var(--bg);
   display:none;flex-direction:column;
 }
-#picker.on{display:flex}
+.pk-sheet.on{display:flex}
 @media(min-width:700px){
-  #picker{
+  .pk-sheet{
     top:4vh;bottom:4vh;left:50%;transform:translateX(-50%);
     width:min(720px,94vw);border:1px solid var(--line);border-radius:18px;overflow:hidden;
   }
@@ -391,16 +391,36 @@ input{font-family:inherit;-webkit-appearance:none;appearance:none}
 }
 .jz-nav button:disabled{opacity:.35}
 
-/* ── Sprungleiste im Comps-Tab ───────────────────────────────── */
+/* ── Sprungleiste (Comps-Tab + Coach) ─────────────────────────── */
 /* Klebt oben fest. Statisch war sie ab dem ersten Wisch aus dem Bild — also genau
    dann weg, wenn man sie braucht (bei Comp 8 zu Comp 12 wären es sonst rund zehn
-   Bildschirme hoch, seitlich suchen, springen). */
-#comps-jump{
+   Bildschirme hoch, seitlich suchen, springen). Dieselbe Klasse trägt seit v3.4
+   auch die Sprungleiste im Coach — derselbe Grund, derselbe Effekt. */
+.jump-bar{
   position:sticky;top:0;z-index:8;
   display:flex;gap:5px;overflow-x:auto;-webkit-overflow-scrolling:touch;
   padding:6px 0 8px;margin-bottom:6px;scrollbar-width:none;
   background:var(--bg);box-shadow:0 7px 10px -8px rgba(0,0,0,.95);
 }
+/* Rechter Rand-Schatten: ohne ihn ist unsichtbar, dass weitere Pillen ausserhalb
+   des Bildschirms liegen (Rollen-Review 16.08.: bei 6 Pillen im Coach passten nur
+   4 auf den Screen, "⚔ Comps"/"⭐ 3★" fielen ohne jeden Hinweis weg). ::after statt
+   ein echtes Kind-Element: bleibt am Rand stehen, statt mit dem Inhalt mitzuscrollen. */
+.jump-bar::after{
+  content:'';position:absolute;top:0;right:0;bottom:8px;width:26px;
+  background:linear-gradient(to right,transparent,var(--bg) 75%);
+  pointer-events:none;
+}
+/* Sprungziele unter einer klebenden Leiste: ohne Versatz frisst sie die eigene
+   Ueberschrift des Zielabschnitts weg (Rollen-Review 16.08. am Coach gefunden —
+   jumpTo() landet geometrisch exakt auf y=0, aber die Leiste liegt selbst dort).
+   Gilt exakt genauso fuer die Comp-Sprungleiste (`#comp-<id>`), war dort nur nie
+   aufgefallen, weil niemand gezielt danach gesucht hat. Ueber das ID-Praefix statt
+   einer eigenen Klasse: trifft alle Ziele, ohne HTML/JS anzufassen. 64px statt der
+   gemessenen ~47px Leistenhoehe: exakt die Leistenhoehe liess nur ~0,2px Luft —
+   technisch nicht verdeckt, aber optisch nicht von "verdeckt" zu unterscheiden und
+   je nach Rundung/Messzeitpunkt mal so, mal so ausgefallen. */
+[id^="coach-"],[id^="comp-"]{scroll-margin-top:64px}
 .jump-pill{
   flex-shrink:0;display:inline-flex;align-items:center;gap:4px;white-space:nowrap;
   border-radius:999px;padding:6px 11px;font:inherit;font-size:12.5px;font-weight:700;
@@ -444,6 +464,29 @@ input{font-family:inherit;-webkit-appearance:none;appearance:none}
 .ip-title{font-size:13px;font-weight:700;color:var(--gold);margin:9px 0 2px}
 .ip-sub{font-size:11.5px;color:var(--muted);line-height:1.4;margin-bottom:4px}
 
+/* ── Item-Katalog (alle Champions auf einen Blick) ────────────── */
+/* Kjells Wunsch (15.08.): eine einzige durchsuchbare Liste "Champion → bis zu 3
+   Items", ohne jeden der 63 Champions einzeln aufklappen zu müssen. Bewusst ein
+   eigenes Sheet statt Karten wie im Comps-Tab: dort sind Items ein Bauplan für
+   EIN Deck, hier ein Nachschlagewerk für ALLE — Zeilen statt Karten halten 63
+   Einträge scrollbar, statt vier Bildschirme pro Champion zu verlangen. */
+.ik-open{
+  display:block;width:100%;border-radius:12px;padding:12px 10px;margin-bottom:10px;
+  font:inherit;font-size:14px;font-weight:800;text-align:center;
+  border:1px solid rgba(139,124,246,.45);background:rgba(139,124,246,.13);color:#c4baff;
+}
+.ik-open:active{background:rgba(139,124,246,.22)}
+.ik-row{
+  display:block;width:100%;text-align:left;font:inherit;
+  border:1px solid var(--line);border-radius:12px;padding:8px 10px;margin-bottom:6px;
+  background:rgba(255,255,255,.035);
+}
+.ik-who{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+.ik-who .ik-role{font-size:13px}
+.ik-who .ik-nm{font-size:13.5px;font-weight:700;color:#eef0ff;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ik-items{display:flex;flex-wrap:wrap;gap:3px 10px;font-size:12px;color:var(--muted);line-height:1.4}
+.ik-items b{font-weight:800;margin-right:2px}
+
 ::-webkit-scrollbar{width:0;height:0}
 </style>
 </head>
@@ -472,6 +515,10 @@ input{font-family:inherit;-webkit-appearance:none;appearance:none}
     <button onclick="resetRound()" class="pill-btn" style="border-color:rgba(255,122,122,.4);color:var(--red);">🔄 Reset</button>
   </div>
 
+  <!-- Ganz oben, noch vor Level/Kader: mitten im laufenden Spiel soll man nicht erst
+       scrollen müssen, um nachzuschlagen, was ein Champion braucht. -->
+  <button onclick="openItemSheet()" class="ik-open">📋 Item-Katalog — alle Champions nachschlagen</button>
+
   <div id="rd-mode" style="display:flex;gap:6px;margin-bottom:8px;"></div>
   <div id="rd-buildsw" style="display:none;gap:6px;margin-bottom:8px;flex-wrap:wrap;"></div>
 
@@ -491,7 +538,7 @@ input{font-family:inherit;-webkit-appearance:none;appearance:none}
 <!-- Liegt bewusst ausserhalb von #view-runde: es deckt auch die Bottom-Nav ab,
      damit man beim Tippen nicht versehentlich die View wechselt. -->
 <div id="pk-back" class="pk-back" onclick="closePicker()"></div>
-<div id="picker" role="dialog" aria-modal="true" aria-label="Einheiten wählen">
+<div id="picker" class="pk-sheet" role="dialog" aria-modal="true" aria-label="Einheiten wählen">
   <div class="pk-head">
     <div style="flex:1;min-width:0;">
       <div class="pk-title">Einheiten wählen</div>
@@ -509,6 +556,30 @@ input{font-family:inherit;-webkit-appearance:none;appearance:none}
   <div class="pk-body"><div id="rd-grid"></div></div>
 </div>
 
+<!-- ═══ ITEM-KATALOG: alle Champions × Items als Vollbild-Overlay ═ -->
+<!-- Eigenes Sheet statt Erweiterung des Pickers oben: der Picker wählt Einheiten
+     aus (Häkchen, "Fertig"-Knopf mit Auswahl-Bedeutung), das hier ist reines
+     Nachschlagen ohne Auswahl-Zustand — beides im selben Bauteil zu vermengen
+     hätte den gut getesteten Picker unnötig riskiert. -->
+<div id="ik-back" class="pk-back" onclick="closeItemSheet()"></div>
+<div id="itemsheet" class="pk-sheet" role="dialog" aria-modal="true" aria-label="Item-Katalog">
+  <div class="pk-head">
+    <div style="flex:1;min-width:0;">
+      <div class="pk-title">📋 Item-Katalog</div>
+      <div class="pk-status" id="ik-status"></div>
+    </div>
+    <button onclick="closeItemSheet()" class="pk-done">Fertig ✓</button>
+  </div>
+  <div class="pk-tools">
+    <div class="search-wrap" style="margin-bottom:8px;">
+      <span class="ico">🔎</span>
+      <input id="ik-search" type="search" placeholder="Champion oder Trait suchen…" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false">
+    </div>
+    <div id="ik-filters" style="display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:8px;scrollbar-width:none;"></div>
+  </div>
+  <div class="pk-body"><div id="ik-list"></div></div>
+</div>
+
 <!-- ═══ VIEW: COMPS ════════════════════════════════════════════ -->
 <div id="view-comps" class="view">
   <div class="view-title">⚔ Comps</div>
@@ -516,7 +587,7 @@ input{font-family:inherit;-webkit-appearance:none;appearance:none}
   <div id="comps-filters" style="display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:8px;scrollbar-width:none;"></div>
   <!-- Sprungleiste: seit jede Comp den vollen Item-Plan zeigt, ist die Liste rund
        23 Bildschirme lang. Nichts wird versteckt — man kommt nur schneller hin. -->
-  <div id="comps-jump"></div>
+  <div id="comps-jump" class="jump-bar"></div>
   <div id="comps-list"></div>
 </div>
 
@@ -1202,7 +1273,7 @@ var GUIDE={
 };
 
 // ── STATE ─────────────────────────────────────────────────────
-var state={level:null,sel:[],selP:[],mode:'solo',activeBuild:'me',rdCost:'Alle',rdQ:'',chCost:'Alle',chQ:'',compFilter:'Alle',guideTab:null,plvl:6,ccCost:'Alle',ccQ:'',jz:0,unitsTab:'c',mirror:false};
+var state={level:null,sel:[],selP:[],mode:'solo',activeBuild:'me',rdCost:'Alle',rdQ:'',chCost:'Alle',chQ:'',compFilter:'Alle',guideTab:null,plvl:6,ccCost:'Alle',ccQ:'',jz:0,unitsTab:'c',mirror:false,ikCost:'Alle',ikQ:''};
 try{var j=parseInt(localStorage.getItem('tft_jz'),10);if(j>=0&&j<=6)state.jz=j;}catch(e){}
 try{state.level=localStorage.getItem('tft17_level')||null;}catch(e){}
 try{var s=localStorage.getItem('tft17_sel');if(s)state.sel=JSON.parse(s);}catch(e){}
@@ -1426,6 +1497,53 @@ function renderPkStatus(){
     if(act.length)txt+=' · <span style="color:#9af1be;">'+act.map(function(e){return e[0]+' '+e[1];}).join(', ')+'</span>';
   }
   el.innerHTML=txt;
+}
+
+// ── VIEW: ITEM-KATALOG (alle Champions, unabhängig vom Kader) ──
+// Nutzt dieselbe Datenquelle wie die Champion-Detailkarte (openChamp): ch.it,
+// gespreizt und auf 3 gekappt. Bewusst NICHT itemsOfUnit(): das kappt Support-/
+// Tank-Rollen ohne Comp-Kontext auf 1–2 Items (IRANG-Obergrenze je Rolle) — richtig
+// für den Bauplan EINES Decks, falsch für "was baut man an sich auf diesen Champion".
+function openItemSheet(){
+  document.getElementById('itemsheet').classList.add('on');
+  document.getElementById('ik-back').classList.add('on');
+  document.body.style.overflow='hidden';
+  renderIkFilters();renderIkList();
+}
+function closeItemSheet(){
+  document.getElementById('itemsheet').classList.remove('on');
+  document.getElementById('ik-back').classList.remove('on');
+  document.body.style.overflow='';
+}
+function initItemSheet(){
+  document.getElementById('ik-search').addEventListener('input',function(e){
+    state.ikQ=e.target.value;renderIkList();
+  });
+}
+function ikSetCost(c){state.ikCost=c;renderIkFilters();renderIkList();}
+function renderIkFilters(){
+  document.getElementById('ik-filters').innerHTML=RD_COSTS.map(function(c){
+    return '<button onclick="ikSetCost(\''+c+'\')" class="pill-btn'+(state.ikCost===c?' on':'')+'">'+(c==='Alle'?'Alle':'🪙'+c)+'</button>';
+  }).join('');
+}
+function renderIkList(){
+  var q=state.ikQ.toLowerCase().trim();
+  var list=CHAMPS.filter(function(ch){
+    if(state.ikCost!=='Alle'&&String(ch.cost)!==state.ikCost)return false;
+    if(q&&!(ch.name+' '+ch.t.join(' ')).toLowerCase().includes(q))return false;
+    return true;
+  }).sort(function(a,b){return a.cost-b.cost||a.name.localeCompare(b.name,'de');});
+  document.getElementById('ik-status').innerHTML=list.length+' von '+CHAMPS.length+' Champions · antippen für Rezepte &amp; Comp-Abweichungen';
+  document.getElementById('ik-list').innerHTML=list.map(function(ch){
+    var items=spreadItems(ch.it).slice(0,3);
+    return '<button onclick="openChamp(\''+ch.id+'\')" class="ik-row">'
+      +'<div class="ik-who">'+costTag(ch.cost,12)+'<span class="ik-role">'+ROLE_ICON[ch.r]+'</span>'
+      +'<span class="ik-nm">'+ch.name+'</span></div>'
+      +'<div class="ik-items">'+(items.length?items.map(function(it,i){
+        return '<span><b style="color:'+(i===0?'var(--gold)':i===1?'#c8cee6':'#c9956a')+';">'+(i+1)+'</b>'+it+'</span>';
+      }).join(''):'<span style="color:var(--muted2);">nur Traits — keine feste Item-Empfehlung</span>')+'</div>'
+      +'</button>';
+  }).join('')||'<div style="color:var(--muted);font-size:13px;padding:16px 0;">Nichts gefunden.</div>';
 }
 
 // ── Kader-Block: was steht gerade auf dem Brett ───────────────
@@ -2291,10 +2409,30 @@ function renderCoach(){
   var hits=scoreComps(selNames);
   var goodHit=hits.length && hits[0].mc.length>=2; // mind. 2 echte KERN-Treffer (nicht Extras)
 
-  // 💡 Der Plan in einem Satz — ganz nach oben. Er stand bis zum 10.08. als
-  // allerletzter Block, rund 3.000 px tief; er ist aber der einzige Text, der in
-  // einem Stück sagt, was zu tun ist. Bis man dort war, war die Kaufphase vorbei.
-  var html='';
+  // Vorgezogen (v3.4): ip/prios/stars braucht schon die Sprungleiste weiter unten,
+  // um zu wissen, welche Abschnitte diese Runde überhaupt gerendert werden.
+  var ip=ownItemPlan(sel,hits);
+  var prios=buyPriorities(sel,selNames,tmap,hits);
+  var stars=starPriorities(sel,hits);
+
+  // 🧭 Sprungleiste — mitten in der Runde soll man den richtigen Abschnitt treffen,
+  // ohne jedes Mal an Aufstellung, Items und Kaufempfehlung vorbeizuscrollen. Dieselbe
+  // Idee wie die Sprungleiste im Comps-Tab, hier über den tatsächlich vorhandenen
+  // Abschnitten dieser Auswahl statt über allen Comps.
+  var jump=[['coach-board','🧭','Aufstellung']];
+  if(ip.liste.length)jump.push(['coach-items','🎒','Items']);
+  if(prios.length)jump.push(['coach-buy','🛒','Kaufen']);
+  if(tArr.length)jump.push(['coach-traits','✨','Traits']);
+  jump.push(['coach-comps','⚔','Comps']);
+  jump.push(['coach-stars','⭐','3★']);
+
+  // 💡 Der Plan in einem Satz — ganz nach oben (nur die Sprungleiste steht noch davor).
+  // Er stand bis zum 10.08. als allerletzter Block, rund 3.000 px tief; er ist aber der
+  // einzige Text, der in einem Stück sagt, was zu tun ist. Bis man dort war, war die
+  // Kaufphase vorbei.
+  var html='<div class="jump-bar">'+jump.map(function(j){
+    return '<button onclick="jumpTo(\''+j[0]+'\')" class="jump-pill">'+j[1]+' '+j[2]+'</button>';
+  }).join('')+'</div>';
   if(goodHit){
     var bestP=hits[0].c,tipP='';
     if(state.level==='a'){
@@ -2310,24 +2448,22 @@ function renderCoach(){
   }
 
   // 🧭 Deine Aufstellung — berechnet aus genau dieser Auswahl
-  html+='<div class="mini-label" style="margin-top:4px;">🧭 Deine Aufstellung</div>'+renderLineupBoard(sel,hits);
+  html+='<div class="mini-label" id="coach-board" style="margin-top:4px;">🧭 Deine Aufstellung</div>'+renderLineupBoard(sel,hits);
 
   // 🎒 Items — jede Einheit einzeln, in Baureihenfolge.
   // Steht bewusst direkt hinter der Aufstellung: mitten in der Runde sind „wo stelle
   // ich hin" und „worauf baue ich" die beiden Fragen, die man SOFORT beantwortet
   // haben will. Bis v3.2 stand der Item-Block ganz unten, vier Bildschirme tiefer.
-  var ip=ownItemPlan(sel,hits);
   if(ip.liste.length){
-    html+='<div class="mini-label">🎒 Wer bekommt welche Items</div>'
+    html+='<div class="mini-label" id="coach-items">🎒 Wer bekommt welche Items</div>'
       +'<div class="ip-sub">Von oben nach unten bauen'+(ip.comp?' — Plan von „'+ip.comp.name+'"':'')+'. Blass und gestrichelt = diese <b>Einheit</b> fehlt dir noch (nicht das Item).</div>'
       +renderItemPlan(ip.liste,{have:ip.have,notes:state.level==='a'});
   }
 
   // 🛒 Als Nächstes kaufen
-  var prios=buyPriorities(sel,selNames,tmap,hits);
   if(prios.length){
     var medals=['🥇','🥈','🥉'];
-    html+='<div class="mini-label">🛒 Als Nächstes kaufen</div>';
+    html+='<div class="mini-label" id="coach-buy">🛒 Als Nächstes kaufen</div>';
     // Ab Platz 4 gab es keine Medaille mehr — dort stand woertlich "undefined".
     // Auf Lv 9 mit drei Einheiten waren das drei Kaesten am Stueck.
     prios.forEach(function(p,i){
@@ -2348,7 +2484,7 @@ function renderCoach(){
 
   // ✨ Traits mit Breakpoints
   if(tArr.length){
-    html+='<div class="mini-label">✨ Traits</div><div style="margin-bottom:12px;">';
+    html+='<div class="mini-label" id="coach-traits">✨ Traits</div><div style="margin-bottom:12px;">';
     tArr.forEach(function(e){
       var tr=traitByName(e[0]);var n=e[1];
       var bp=tr?tr.bp:[2];
@@ -2361,9 +2497,15 @@ function renderCoach(){
   }
 
   // ⚔ Beste Kombination(en) — nur wenn wirklich ein kuratiertes Comp gut passt
+  // In einer lokalen Variable statt direkt in html: goodHit und der Trait-Fallback
+  // schliessen sich gegenseitig aus, brauchen aber trotzdem dieselbe Sprungmarke
+  // "coach-comps" — als ein einziges Literal im Quelltext, sonst meldet check-merge.js
+  // (das den Quelltext nach doppelten IDs durchsucht, nicht das gerenderte DOM) einen
+  // Fund, der zur Laufzeit gar nicht auftreten kann.
   var maxComps=Math.max(3,state.level==='a'?3:state.level==='f'?4:5);
+  var compsHtml='';
   if(goodHit){
-    html+='<div class="mini-label">⚔ Beste Kombination'+(hits.length>1?'en':'')+'</div>';
+    compsHtml+='<div class="mini-label">⚔ Beste Kombination'+(hits.length>1?'en':'')+'</div>';
     hits.slice(0,maxComps).forEach(function(x,xi){
       var c=x.c;
       var pct=Math.min(100,Math.round(100*x.mc.length/c.core.length));
@@ -2371,7 +2513,7 @@ function renderCoach(){
       var rh=rollHint(x);
       var slotsHere=boardSizeFor(state.plvl);
       var fitsBoard=c.core.length<=slotsHere;
-      html+='<button onclick="applyComp(\''+c.name.replace(/'/g,"\\'")+'\')" class="coach-box" style="display:block;width:100%;text-align:left;cursor:pointer;'+(xi===0?'border-color:rgba(240,194,90,.4);':'')+'">'
+      compsHtml+='<button onclick="applyComp(\''+c.name.replace(/'/g,"\\'")+'\')" class="coach-box" style="display:block;width:100%;text-align:left;cursor:pointer;'+(xi===0?'border-color:rgba(240,194,90,.4);':'')+'">'
         +'<div style="display:flex;align-items:center;gap:7px;margin-bottom:4px;">'
         +'<span class="tier-badge tier-'+c.tier+'">'+c.tier+'</span>'
         +'<b style="font-size:13px;flex:1;">'+(xi===0?'👉 ':'')+c.name+'</b>'
@@ -2400,23 +2542,25 @@ function renderCoach(){
       var have=mainTrait[1];
       var nextBp=null;
       if(tr){ tr.bp.forEach(function(b){ if(nextBp===null && b>have) nextBp=b; }); }
-      html+='<div class="mini-label">⚔ Richtung: '+mainTrait[0]+'</div>';
-      html+='<div class="coach-box"><div style="font-size:12px;color:var(--muted);">'+have+(nextBp?'/'+nextBp:'')+' aktiv'+(tr?' — '+tr.desc:'')+'</div></div>';
+      compsHtml+='<div class="mini-label">⚔ Richtung: '+mainTrait[0]+'</div>';
+      compsHtml+='<div class="coach-box"><div style="font-size:12px;color:var(--muted);">'+have+(nextBp?'/'+nextBp:'')+' aktiv'+(tr?' — '+tr.desc:'')+'</div></div>';
     }
   }
+  if(compsHtml)html+='<div id="coach-comps">'+compsHtml+'</div>';
 
   // (Der frühere Block "🎯 Feld · Lv X" ist entfallen: Kader-Block und Board-Kopf zeigen
   //  die belegten Plätze bereits, die Bank-Warnung steht am Board. Nebenbei verschwand
   //  damit die kaputte Mehrzahl-Ausgabe "Noch 2 freie Platzplätze".)
 
-  // ⭐ 3★-Reihenfolge
-  var stars=starPriorities(sel,hits);
+  // ⭐ 3★-Reihenfolge — gleiche Begruendung wie bei compsHtml oben: ein Literal
+  // fuer beide sich ausschliessenden Zweige.
+  var starsHtml='';
   if(stars.length){
-    html+='<div class="mini-label">⭐ Zuerst auf 3★ rollen</div>'
+    starsHtml+='<div class="mini-label">⭐ Zuerst auf 3★ rollen</div>'
       // Eine 3★-Empfehlung ohne Gold- und Level-Bedingung ist ein Wunsch, keine Anweisung.
       +'<div class="ip-sub">Erst ab rund 50 Gold anfangen und nur auf dem Level deines Plans — sonst kostet Rollen mehr, als es bringt.</div>';
     stars.forEach(function(s,i){
-      html+='<div class="coach-box" style="padding:8px 11px;">'
+      starsHtml+='<div class="coach-box" style="padding:8px 11px;">'
         +'<div style="display:flex;align-items:center;gap:7px;">'
         +'<span style="font-size:12px;font-weight:800;color:var(--gold);">'+(i+1)+'.</span>'
         +costTag(s.ch.cost,12)
@@ -2426,9 +2570,10 @@ function renderCoach(){
         +'</div>';
     });
   }else if(sel.length){
-    html+='<div class="mini-label">⭐ Zuerst auf 3★ rollen</div>'
+    starsHtml+='<div class="mini-label">⭐ Zuerst auf 3★ rollen</div>'
       +'<div style="font-size:12px;color:var(--muted);margin-bottom:10px;">4- und 5-Kosten-Einheiten rollt man nicht auf 3★ — Ziel ist dort 2★. Wähle 1–3-Kosten-Einheiten für einen Reroll-Plan.</div>';
   }
+  if(starsHtml)html+='<div id="coach-stars">'+starsHtml+'</div>';
 
   // (Der Spielplan-Tipp steht seit dem 10.08. ganz OBEN in dieser Funktion — hier
   //  unten hat ihn mitten in der Runde niemand mehr gelesen.)
@@ -2439,10 +2584,11 @@ function renderCoach(){
 // ── VIEW: COMPS ───────────────────────────────────────────────
 var COMP_FILTERS=['Alle','Einfach','Mittel','Schwer','S-Tier'];
 function compSetFilter(f){state.compFilter=f;renderComps();}
-function compJump(id){
-  var el=document.getElementById('comp-'+id);
+function jumpTo(id){
+  var el=document.getElementById(id);
   if(el)el.scrollIntoView({behavior:'smooth',block:'start'});
 }
+function compJump(id){ jumpTo('comp-'+id); }
 function renderComps(){
   document.getElementById('comps-filters').innerHTML=COMP_FILTERS.map(function(f){
     return '<button onclick="compSetFilter(\''+f+'\')" class="pill-btn'+(state.compFilter===f?' on':'')+'">'+f+'</button>';
@@ -2785,7 +2931,7 @@ function renderOddsTable(){
 }
 
 // ── INIT ──────────────────────────────────────────────────────
-initRunde();initChamps();renderTraits();initChoncc();renderJetzt();
+initRunde();initChamps();initItemSheet();renderTraits();initChoncc();renderJetzt();
 if(!state.level){
   state.level='a';renderComps();renderGuide();renderCoach();renderJetzt();
   openOnboard();
