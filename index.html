@@ -487,15 +487,50 @@ input{font-family:inherit;-webkit-appearance:none;appearance:none}
 .ik-items{display:flex;flex-wrap:wrap;gap:3px 10px;font-size:12px;color:var(--muted);line-height:1.4}
 .ik-items b{font-weight:800;margin-right:2px}
 
+/* ── Fenstermodus (Document Picture-in-Picture) ───────────────── */
+/* Nur Chrome/Edge/Firefox am Desktop unterstuetzen das (Stand 08/2026) — kein
+   Handy-Browser. #pip-btn bleibt deshalb per Default versteckt und wird nur
+   per JS sichtbar gemacht, wenn die API wirklich da ist (kein totes UI). */
+#pip-btn{
+  display:none;align-items:center;justify-content:center;flex-shrink:0;
+  width:34px;height:34px;border-radius:10px;font-size:16px;line-height:1;
+  border:1px solid rgba(139,124,246,.4);background:rgba(139,124,246,.12);color:#c4baff;
+}
+/* Ersetzt #pip-root im Haupttab, solange die App im kleinen Fenster laeuft —
+   sonst stuende dort nur eine leere Seite (die Knoten sind physisch umgezogen,
+   nicht kopiert). */
+#pip-placeholder{
+  display:none;min-height:70vh;flex-direction:column;align-items:center;
+  justify-content:center;text-align:center;padding:24px;gap:10px;
+}
+#pip-placeholder .big{font-size:40px}
+#pip-placeholder .t{font-size:16px;font-weight:700}
+#pip-placeholder .s{font-size:13px;color:var(--muted);max-width:280px;line-height:1.5}
+
 ::-webkit-scrollbar{width:0;height:0}
 </style>
 </head>
 <body>
 
+<!-- ═══ FENSTERMODUS: Platzhalter im Haupttab, solange #pip-root im
+     kleinen Fenster laeuft ═══════════════════════════════════════ -->
+<div id="pip-placeholder">
+  <div class="big">🪟</div>
+  <div class="t">Läuft im Fenstermodus</div>
+  <div class="s">Schließe das kleine Fenster (oder tippe darin auf 🪟), um die App wieder hier zu sehen.</div>
+</div>
+
+<!-- ═══ Alles Sichtbare in einem Knoten, damit es als Ganzes ins
+     Fenstermodus-Fenster umziehen kann (siehe togglePip()) ══════ -->
+<div id="pip-root">
+
 <!-- ═══ HEADER ═════════════════════════════════════════════════ -->
 <div id="topbar">
   <div class="brand">TFT COACH <span>· Set 17 Space Gods</span></div>
-  <button id="lvl-chip" onclick="openOnboard()">🐣 Anfänger ▾</button>
+  <div style="display:flex;align-items:center;gap:6px;">
+    <button id="pip-btn" onclick="togglePip()" title="Fenstermodus — als kleines, frei verschiebbares Fenster öffnen">🪟</button>
+    <button id="lvl-chip" onclick="openOnboard()">🐣 Anfänger ▾</button>
+  </div>
 </div>
 
 <div id="app">
@@ -783,8 +818,18 @@ input{font-family:inherit;-webkit-appearance:none;appearance:none}
   </div>
 </div>
 
+</div><!-- /pip-root -->
+
 <!-- ═══ SCRIPT ═════════════════════════════════════════════════ -->
 <script>
+// ── FENSTERMODUS: umschaltbare Dokument-Referenz ────────────────
+// Fast der gesamte Code unten spricht `document.` direkt an. Fuer den
+// Fenstermodus (Document Picture-in-Picture) wandert #pip-root in ein
+// zweites, echtes Fenster mit eigenem `document` — DOC zeigt danach auf das
+// jeweils AKTIVE Fenster. So musste keine der ~75 bestehenden Stellen
+// einzeln angefasst werden (globales `document` selbst ist nicht neu
+// zuweisbar — nicht-konfigurierbarer Getter ohne Setter).
+var DOC=document;
 // ── KONSTANTEN ────────────────────────────────────────────────
 /* ══════════════════════════════════════════════════════════════
    SET-WECHSEL — was ausgetauscht werden muss
@@ -1328,28 +1373,72 @@ function unitChip(name,isCarry){
 }
 
 // ── NAV ───────────────────────────────────────────────────────
-document.getElementById('nav').addEventListener('click',function(e){
+DOC.getElementById('nav').addEventListener('click',function(e){
   var btn=e.target.closest('.nav-btn');if(!btn)return;
-  document.querySelectorAll('.nav-btn').forEach(function(b){b.classList.remove('active');});
+  DOC.querySelectorAll('.nav-btn').forEach(function(b){b.classList.remove('active');});
   btn.classList.add('active');
-  document.querySelectorAll('.view').forEach(function(v){v.classList.remove('active');});
-  document.getElementById('view-'+btn.dataset.view).classList.add('active');
+  DOC.querySelectorAll('.view').forEach(function(v){v.classList.remove('active');});
+  DOC.getElementById('view-'+btn.dataset.view).classList.add('active');
   window.scrollTo(0,0);
 });
 
+// ── FENSTERMODUS (Document Picture-in-Picture) ──────────────────
+// Verschiebt #pip-root (die GESAMTE App, nicht eine Miniaturansicht) in ein
+// zweites, echtes, frei verschieb- und grössenveränderbares Fenster — kein
+// Video, kein Screenshot: dieselben Knoten, derselbe State, echte Bedienung.
+// Ein zweites Mal rendern (statt umzuziehen) hätte den Zustand sofort
+// auseinanderlaufen lassen (Kader/Auswahl/Level nur auf einer Seite aktuell).
+function pipSupported(){ return 'documentPictureInPicture' in window; }
+async function togglePip(){
+  if(!pipSupported())return;
+  // Zweiter Tipp waehrend das Fenster schon offen ist = schliessen statt
+  // ein zweites zu oeffnen (Chrome erlaubt ohnehin nur eines gleichzeitig).
+  if(window.documentPictureInPicture.window){
+    window.documentPictureInPicture.window.close();
+    return;
+  }
+  var root=DOC.getElementById('pip-root');
+  var placeholder=DOC.getElementById('pip-placeholder');
+  var pipWin;
+  try{
+    pipWin=await window.documentPictureInPicture.requestWindow({width:400,height:720});
+  }catch(e){ return; } // z.B. Nutzer hat den Berechtigungsdialog abgebrochen
+  // Eigenes, leeres <head> im neuen Fenster — ohne das hier waere die App
+  // dort unformatiertes HTML.
+  Array.from(DOC.styleSheets).forEach(function(sheet){
+    try{
+      var css=Array.from(sheet.cssRules).map(function(r){return r.cssText;}).join('\n');
+      var style=pipWin.document.createElement('style');
+      style.textContent=css;
+      pipWin.document.head.appendChild(style);
+    }catch(e){}
+  });
+  pipWin.document.title='TFT Coach';
+  placeholder.style.display='flex';
+  pipWin.document.body.appendChild(root);
+  DOC=pipWin.document;
+  // Feuert sowohl beim Schliessen ueber die Fenster-eigene Titelleiste als
+  // auch bei .close() oben — EIN Rueckweg statt zwei separaten.
+  pipWin.addEventListener('pagehide',function(){
+    DOC=document;
+    placeholder.style.display='none';
+    document.body.appendChild(root);
+  },{once:true});
+}
+
 // ── LEVEL / ONBOARDING ────────────────────────────────────────
-function openOnboard(){document.getElementById('onboard').style.display='block';document.body.style.overflow='hidden';}
+function openOnboard(){DOC.getElementById('onboard').style.display='block';DOC.body.style.overflow='hidden';}
 function setLevel(l){
   state.level=l;
   try{localStorage.setItem('tft17_level',l);}catch(e){}
-  document.getElementById('onboard').style.display='none';
-  document.body.style.overflow='';
+  DOC.getElementById('onboard').style.display='none';
+  DOC.body.style.overflow='';
   state.guideTab=l;
   applyLevel();
 }
 function applyLevel(){
   var L=LEVELS[state.level]||LEVELS.a;
-  document.getElementById('lvl-chip').innerHTML=L.icon+' '+L.name+' ▾';
+  DOC.getElementById('lvl-chip').innerHTML=L.icon+' '+L.name+' ▾';
   renderComps();renderGuide();renderCoach();renderJetzt();
 }
 
@@ -1421,7 +1510,7 @@ function renderRoleBoard(){
     +'<span class="bl-item" style="--hc:#8b7cf6;">🔮 Magier</span>'
     +'<span class="bl-item carry">🏹 Carry ⭐</span>'
     +'</div></div>';
-  var el=document.getElementById('role-board');
+  var el=DOC.getElementById('role-board');
   if(el)el.innerHTML=h;
 }
 
@@ -1433,11 +1522,11 @@ function setJz(i){
   renderJetzt();window.scrollTo(0,0);
 }
 function renderJetzt(){
-  document.getElementById('jz-steps').innerHTML=PLAN.map(function(p,i){
+  DOC.getElementById('jz-steps').innerHTML=PLAN.map(function(p,i){
     return '<button onclick="setJz('+i+')" class="jz-step'+(state.jz===i?' on':'')+'">'+p.when+'</button>';
   }).join('');
   var p=PLAN[state.jz],adv=state.level!=='a';
-  document.getElementById('jz-card').innerHTML='<div class="card">'
+  DOC.getElementById('jz-card').innerHTML='<div class="card">'
     +'<div class="jz-head"><span class="jz-when">'+p.when+'</span><span class="jz-phase">'+p.phase+'</span></div>'
     +'<div class="jz-do"><div class="lbl">Was du jetzt tust</div><div class="txt">'+(adv?p.doF:p.doA)+'</div></div>'
     +'<div class="jz-kpi">'
@@ -1456,10 +1545,10 @@ function renderJetzt(){
 // ── VIEW: UNITS (Champions / Traits) ──────────────────────────
 function setUnitsTab(t){
   state.unitsTab=t;
-  document.getElementById('units-champs').style.display=t==='c'?'block':'none';
-  document.getElementById('units-traits').style.display=t==='t'?'block':'none';
-  document.getElementById('ut-c').classList.toggle('on',t==='c');
-  document.getElementById('ut-t').classList.toggle('on',t==='t');
+  DOC.getElementById('units-champs').style.display=t==='c'?'block':'none';
+  DOC.getElementById('units-traits').style.display=t==='t'?'block':'none';
+  DOC.getElementById('ut-c').classList.toggle('on',t==='c');
+  DOC.getElementById('ut-t').classList.toggle('on',t==='t');
   window.scrollTo(0,0);
 }
 
@@ -1467,7 +1556,7 @@ function setUnitsTab(t){
 var RD_COSTS=['Alle','1','2','3','4','5'];
 function initRunde(){
   renderMode();renderPlvl();renderRdFilters();renderRdGrid();renderKader();
-  document.getElementById('rd-search').addEventListener('input',function(e){
+  DOC.getElementById('rd-search').addEventListener('input',function(e){
     state.rdQ=e.target.value;renderRdGrid();
   });
 }
@@ -1476,25 +1565,25 @@ function initRunde(){
 // Bis v3.1 stand das 63-Kacheln-Grid direkt in der Seite, der Coach erst darunter —
 // am Handy rund zwei Bildschirmhoehen Scrollen zwischen Antippen und Ergebnis.
 function openPicker(){
-  document.getElementById('picker').classList.add('on');
-  document.getElementById('pk-back').classList.add('on');
-  document.body.style.overflow='hidden';
+  DOC.getElementById('picker').classList.add('on');
+  DOC.getElementById('pk-back').classList.add('on');
+  DOC.body.style.overflow='hidden';
   renderRdGrid();renderPkStatus();
   // Kein Autofokus aufs Suchfeld: am Handy wuerde die Tastatur das halbe Grid verdecken.
 }
 function closePicker(){
-  document.getElementById('picker').classList.remove('on');
-  document.getElementById('pk-back').classList.remove('on');
-  document.body.style.overflow='';
+  DOC.getElementById('picker').classList.remove('on');
+  DOC.getElementById('pk-back').classList.remove('on');
+  DOC.body.style.overflow='';
   renderKader();renderCoach();
 }
 function pickerOpen(){
-  var el=document.getElementById('picker');
+  var el=DOC.getElementById('picker');
   return !!(el&&el.classList&&el.classList.contains&&el.classList.contains('on'));
 }
 // Live-Rueckmeldung im Sheet-Kopf, damit man zum Zaehlen nicht schliessen muss.
 function renderPkStatus(){
-  var el=document.getElementById('pk-status');if(!el)return;
+  var el=DOC.getElementById('pk-status');if(!el)return;
   var slots=boardSizeFor(state.plvl);
   var txt;
   if(state.mode==='duo'){
@@ -1519,24 +1608,24 @@ function renderPkStatus(){
 // Tank-Rollen ohne Comp-Kontext auf 1–2 Items (IRANG-Obergrenze je Rolle) — richtig
 // für den Bauplan EINES Decks, falsch für "was baut man an sich auf diesen Champion".
 function openItemSheet(){
-  document.getElementById('itemsheet').classList.add('on');
-  document.getElementById('ik-back').classList.add('on');
-  document.body.style.overflow='hidden';
+  DOC.getElementById('itemsheet').classList.add('on');
+  DOC.getElementById('ik-back').classList.add('on');
+  DOC.body.style.overflow='hidden';
   renderIkFilters();renderIkList();
 }
 function closeItemSheet(){
-  document.getElementById('itemsheet').classList.remove('on');
-  document.getElementById('ik-back').classList.remove('on');
-  document.body.style.overflow='';
+  DOC.getElementById('itemsheet').classList.remove('on');
+  DOC.getElementById('ik-back').classList.remove('on');
+  DOC.body.style.overflow='';
 }
 function initItemSheet(){
-  document.getElementById('ik-search').addEventListener('input',function(e){
+  DOC.getElementById('ik-search').addEventListener('input',function(e){
     state.ikQ=e.target.value;renderIkList();
   });
 }
 function ikSetCost(c){state.ikCost=c;renderIkFilters();renderIkList();}
 function renderIkFilters(){
-  document.getElementById('ik-filters').innerHTML=RD_COSTS.map(function(c){
+  DOC.getElementById('ik-filters').innerHTML=RD_COSTS.map(function(c){
     return '<button onclick="ikSetCost(\''+c+'\')" class="pill-btn'+(state.ikCost===c?' on':'')+'">'+(c==='Alle'?'Alle':'🪙'+c)+'</button>';
   }).join('');
 }
@@ -1547,8 +1636,8 @@ function renderIkList(){
     if(q&&!(ch.name+' '+ch.t.join(' ')).toLowerCase().includes(q))return false;
     return true;
   }).sort(function(a,b){return a.cost-b.cost||a.name.localeCompare(b.name,'de');});
-  document.getElementById('ik-status').innerHTML=list.length+' von '+CHAMPS.length+' Champions · antippen für Rezepte &amp; Comp-Abweichungen';
-  document.getElementById('ik-list').innerHTML=list.map(function(ch){
+  DOC.getElementById('ik-status').innerHTML=list.length+' von '+CHAMPS.length+' Champions · antippen für Rezepte &amp; Comp-Abweichungen';
+  DOC.getElementById('ik-list').innerHTML=list.map(function(ch){
     var items=spreadItems(ch.it).slice(0,3);
     return '<button onclick="openChamp(\''+ch.id+'\')" class="ik-row">'
       +'<div class="ik-who">'+costTag(ch.cost,12)+'<span class="ik-role">'+ROLE_ICON[ch.r]+'</span>'
@@ -1562,7 +1651,7 @@ function renderIkList(){
 
 // ── Kader-Block: was steht gerade auf dem Brett ───────────────
 function renderKader(){
-  var box=document.getElementById('rd-kader');if(!box)return;
+  var box=DOC.getElementById('rd-kader');if(!box)return;
   var slots=boardSizeFor(state.plvl);
   var duo=state.mode==='duo';
   var h='<div class="kd-head"><span class="kd-t">Dein Kader</span>';
@@ -1599,10 +1688,10 @@ function renderKader(){
 // ── Modus Solo / 2v2 Double Up ────────────────────────────────
 function renderMode(){
   var modes=[['solo','🧍 Solo'],['duo','🤝 2v2 Double Up']];
-  document.getElementById('rd-mode').innerHTML=modes.map(function(m){
+  DOC.getElementById('rd-mode').innerHTML=modes.map(function(m){
     return '<button onclick="setMode(\''+m[0]+'\')" class="pill-btn'+(state.mode===m[0]?' on':'')+'" style="flex:1;">'+m[1]+'</button>';
   }).join('');
-  document.getElementById('rd-buildsw').style.display=state.mode==='duo'?'flex':'none';
+  DOC.getElementById('rd-buildsw').style.display=state.mode==='duo'?'flex':'none';
   renderBuildSwitch();
 }
 // Ein Aufruf nach jeder Aenderung an Auswahl/Level. Der Coach wird bewusst NICHT
@@ -1615,7 +1704,7 @@ function refreshRound(){
 function setMode(m){state.mode=m;saveSel();renderMode();refreshRound();}
 function renderBuildSwitch(){
   if(state.mode!=='duo')return;
-  document.getElementById('rd-buildsw').innerHTML=
+  DOC.getElementById('rd-buildsw').innerHTML=
     '<div style="font-size:12px;color:var(--muted);line-height:1.4;">👉 In der Auswahl tippst du auf einer Einheit direkt <b style="color:#9af1be;">DU</b> oder <b style="color:#c4baff;">P</b> — kein Umschalten nötig. '
     +'<b style="color:#9af1be;">Du: '+state.sel.length+'</b> · <b style="color:#c4baff;">Partner: '+state.selP.length+'</b></div>';
 }
@@ -1636,15 +1725,15 @@ function setPlvl(l){
 }
 function renderPlvl(){
   var lvls=[4,5,6,7,8,9,10];
-  document.getElementById('rd-plvl').innerHTML=lvls.map(function(l){
+  DOC.getElementById('rd-plvl').innerHTML=lvls.map(function(l){
     return '<button onclick="setPlvl('+l+')" class="lvl-tile'+(state.plvl===l?' on':'')+'">'+l+'<span class="slots">'+boardSizeFor(l)+'⛊</span></button>';
   }).join('');
   var o=ODDS[state.plvl];
-  document.getElementById('rd-odds').innerHTML='<b style="color:#eef0ff;">'+boardSizeFor(state.plvl)+' Feld-Plätze</b> auf Lv '+state.plvl+' · Shop-Chance pro Slot: '
+  DOC.getElementById('rd-odds').innerHTML='<b style="color:#eef0ff;">'+boardSizeFor(state.plvl)+' Feld-Plätze</b> auf Lv '+state.plvl+' · Shop-Chance pro Slot: '
     +o.map(function(p,i){var c=i+1;return '<span style="color:'+(p?costColor(c):'var(--muted2)')+';font-weight:'+(p?'700':'400')+';">'+'🪙'+c+' '+p+'%</span>';}).join(' · ');
 }
 function renderRdFilters(){
-  document.getElementById('rd-filters').innerHTML=RD_COSTS.map(function(c){
+  DOC.getElementById('rd-filters').innerHTML=RD_COSTS.map(function(c){
     var on=state.rdCost===c;
     return '<button onclick="rdSetCost(\''+c+'\')" class="pill-btn'+(on?' on':'')+'">'+(c==='Alle'?'Alle':'🪙'+c)+'</button>';
   }).join('');
@@ -1668,7 +1757,7 @@ function renderRdGrid(){
   var meMap={};state.sel.forEach(function(id){meMap[id]=1;});
   var pMap={};state.selP.forEach(function(id){pMap[id]=1;});
   renderPkStatus();
-  document.getElementById('rd-grid').innerHTML=list.map(function(ch){
+  DOC.getElementById('rd-grid').innerHTML=list.map(function(ch){
     var cc=costColor(ch.cost);
     var inMe=meMap[ch.id],inP=duo&&pMap[ch.id];
     var selAny=inMe||inP;
@@ -1728,14 +1817,14 @@ function applyComp(compName){
     arr.push(ch.id);have[ch.id]=1;added++;
   });
   saveSel();renderMode();refreshRound();
-  var box=document.getElementById('rd-coach');
+  var box=DOC.getElementById('rd-coach');
   if(box)box.scrollIntoView({behavior:'smooth',block:'start'});
   // Sichtbares Feedback, auch wenn nichts hinzugefügt wurde
-  var msg=document.getElementById('rd-toast');
+  var msg=DOC.getElementById('rd-toast');
   if(!msg){
-    msg=document.createElement('div');msg.id='rd-toast';
+    msg=DOC.createElement('div');msg.id='rd-toast';
     msg.style.cssText='position:fixed;left:50%;bottom:90px;transform:translateX(-50%);z-index:999;background:#1a2040;border:1px solid rgba(240,194,90,.4);color:#eef0ff;padding:9px 16px;border-radius:999px;font-size:13px;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.4);pointer-events:none;opacity:0;transition:opacity .2s;';
-    document.body.appendChild(msg);
+    DOC.body.appendChild(msg);
   }
   var text=added>0?('✅ '+added+' Einheit'+(added>1?'en':'')+' hinzugefügt')
     :blockedByBoard>0?('⚠️ Feld voll (Lv '+state.plvl+', '+slots+' Plätze) — erst leveln oder Einheit entfernen')
@@ -2124,7 +2213,7 @@ function duoPlayerCard(icon,label,which,A){
   return h;
 }
 function renderCoachDuo(){
-  var box=document.getElementById('rd-coach');
+  var box=DOC.getElementById('rd-coach');
   var meA=analyzeBuild(state.sel),pA=analyzeBuild(state.selP);
   var html='<div class="section-label">🤝 Team-Coach (2v2 Double Up)</div>';
   if(!state.sel.length&&!state.selP.length){
@@ -2317,7 +2406,7 @@ function buildLineup(sel,hits){
 // (sonst wuerde das Partner-Board die Begruendungen des eigenen ueberschreiben).
 var LU_WHY={};
 function luWhy(key,id){
-  var el=document.getElementById('lu-why-'+key);if(!el)return;
+  var el=DOC.getElementById('lu-why-'+key);if(!el)return;
   var w=(LU_WHY[key]||{})[id];
   if(!w){el.innerHTML='';return;}
   el.innerHTML='<b style="color:#eef0ff;">'+w.name+'</b> — '+w.why;
@@ -2407,7 +2496,7 @@ function renderLineupBoard(sel,hits,key){
 
 function renderCoach(){
   if(state.mode==='duo')return renderCoachDuo();
-  var box=document.getElementById('rd-coach');
+  var box=DOC.getElementById('rd-coach');
   var sel=state.sel.map(champById).filter(Boolean);
   if(!sel.length){
     box.innerHTML='<div class="section-label">Coach</div>'
@@ -2599,16 +2688,16 @@ function renderCoach(){
 var COMP_FILTERS=['Alle','Einfach','Mittel','Schwer','S-Tier'];
 function compSetFilter(f){state.compFilter=f;renderComps();}
 function jumpTo(id){
-  var el=document.getElementById(id);
+  var el=DOC.getElementById(id);
   if(el)el.scrollIntoView({behavior:'smooth',block:'start'});
 }
 function compJump(id){ jumpTo('comp-'+id); }
 function renderComps(){
-  document.getElementById('comps-filters').innerHTML=COMP_FILTERS.map(function(f){
+  DOC.getElementById('comps-filters').innerHTML=COMP_FILTERS.map(function(f){
     return '<button onclick="compSetFilter(\''+f+'\')" class="pill-btn'+(state.compFilter===f?' on':'')+'">'+f+'</button>';
   }).join('');
   var L=LEVELS[state.level]||LEVELS.a;
-  document.getElementById('comps-sub').innerHTML='Aktuelle Meta-Comps (Patch 17.6) · <b style="color:var(--gold);">⭐ = empfohlen für '+L.name+'</b>';
+  DOC.getElementById('comps-sub').innerHTML='Aktuelle Meta-Comps (Patch 17.6) · <b style="color:var(--gold);">⭐ = empfohlen für '+L.name+'</b>';
   var list=COMPS.filter(function(c){
     if(state.compFilter==='Einfach')return c.diff==='e';
     if(state.compFilter==='Mittel')return c.diff==='m';
@@ -2622,14 +2711,14 @@ function renderComps(){
     var ra=recForLevel(a)?0:1,rb=recForLevel(b)?0:1;
     return ra-rb||tierOrd[a.tier]-tierOrd[b.tier];
   });
-  document.getElementById('comps-jump').innerHTML=list.map(function(c){
+  DOC.getElementById('comps-jump').innerHTML=list.map(function(c){
     // Beschriftet mit dem CARRY, nicht mit dem Comp-Namen: „Sternenschauer-
     // Scharfschützen" allein fraß 300 px, über alle 15 waren es 5,7 Bildschirmbreiten
     // seitlich. Über den Carry redet man ohnehin („ich spiele Gnar").
     return '<button onclick="compJump(\''+c.id+'\')" class="jump-pill'+(recForLevel(c)?' rec':'')+'" title="'+c.name+'">'
       +(recForLevel(c)?'⭐':'<span class="jt tier-'+c.tier+'">'+c.tier+'</span>')+c.carry+'</button>';
   }).join('');
-  document.getElementById('comps-list').innerHTML=list.map(function(c){
+  DOC.getElementById('comps-list').innerHTML=list.map(function(c){
     var rec=recForLevel(c);
     return '<div class="comp-card'+(rec?' rec':'')+'" id="comp-'+c.id+'">'
       +'<div class="comp-head">'
@@ -2773,13 +2862,13 @@ var CHONCC=[
 var CC_COSTS=['Alle','1','2','3','4','5','7'];
 function initChoncc(){
   renderCcFilters();renderCcGrid();
-  document.getElementById('cc-search').addEventListener('input',function(e){
+  DOC.getElementById('cc-search').addEventListener('input',function(e){
     state.ccQ=e.target.value;renderCcGrid();
   });
 }
 function ccSetCost(c){state.ccCost=c;renderCcFilters();renderCcGrid();}
 function renderCcFilters(){
-  document.getElementById('cc-filters').innerHTML=CC_COSTS.map(function(c){
+  DOC.getElementById('cc-filters').innerHTML=CC_COSTS.map(function(c){
     return '<button onclick="ccSetCost(\''+c+'\')" class="pill-btn'+(state.ccCost===c?' on':'')+'">'+(c==='Alle'?'Alle':'🪙'+c)+'</button>';
   }).join('');
 }
@@ -2790,7 +2879,7 @@ function renderCcGrid(){
     if(q&&!(ch.name+' '+ch.t.join(' ')).toLowerCase().includes(q))return false;
     return true;
   }).sort(function(a,b){return a.cost-b.cost||a.name.localeCompare(b.name,'de');});
-  document.getElementById('cc-grid').innerHTML=list.map(function(ch){
+  DOC.getElementById('cc-grid').innerHTML=list.map(function(ch){
     var cc=costColor(Math.min(ch.cost,5)); // Farbskala hat nur 1-5, 7-Kosten nutzt 5er-Farbe
     return '<div class="champ-btn" style="--cc:'+cc+';cursor:default;">'
       +'<div style="width:46px;height:46px;border-radius:8px;border:2px solid '+cc+';background:var(--panel);display:flex;align-items:center;justify-content:center;font-size:18px;margin:0 auto;">🐾</div>'
@@ -2804,13 +2893,13 @@ function renderCcGrid(){
 
 function initChamps(){
   renderChFilters();renderChGrid();
-  document.getElementById('ch-search').addEventListener('input',function(e){
+  DOC.getElementById('ch-search').addEventListener('input',function(e){
     state.chQ=e.target.value;renderChGrid();
   });
 }
 function chSetCost(c){state.chCost=c;renderChFilters();renderChGrid();}
 function renderChFilters(){
-  document.getElementById('ch-filters').innerHTML=CH_COSTS.map(function(c){
+  DOC.getElementById('ch-filters').innerHTML=CH_COSTS.map(function(c){
     return '<button onclick="chSetCost(\''+c+'\')" class="pill-btn'+(state.chCost===c?' on':'')+'">'+(c==='Alle'?'Alle':'🪙'+c)+'</button>';
   }).join('');
 }
@@ -2821,7 +2910,7 @@ function renderChGrid(){
     if(q&&!(ch.name+' '+ch.t.join(' ')).toLowerCase().includes(q))return false;
     return true;
   }).sort(function(a,b){return a.cost-b.cost||a.name.localeCompare(b.name,'de');});
-  document.getElementById('ch-grid').innerHTML=list.map(function(ch){
+  DOC.getElementById('ch-grid').innerHTML=list.map(function(ch){
     var cc=costColor(ch.cost);
     return '<button onclick="openChamp(\''+ch.id+'\')" class="champ-btn" style="--cc:'+cc+';">'
       +champImgTag(ch,46,cc,'')
@@ -2836,7 +2925,7 @@ function openChamp(id){
   var ch=champById(id);if(!ch)return;
   var cc=costColor(ch.cost);
   var comps=compsOfChamp(ch.name);
-  document.getElementById('champDetail').innerHTML=
+  DOC.getElementById('champDetail').innerHTML=
     '<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;padding-right:40px;">'
     +champImgTag(ch,56,cc,'')
     +'<div><h2 style="font-size:20px;font-weight:700;">'+ch.name+'</h2>'
@@ -2880,14 +2969,14 @@ function openChamp(id){
     +(comps.length?'<div class="section-label">Spielt in</div><div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px;">'
       +comps.map(function(c){return '<span class="chip"><span class="tier-badge tier-'+c.tier+'" style="width:18px;height:18px;font-size:11px;">'+c.tier+'</span>'+c.name+(c.carry===ch.name?' ⭐':'')+'</span>';}).join('')+'</div>':'')
     +(ch.note?'<div class="tipbox" style="margin:0;">💡 '+ch.note+'</div>':'');
-  document.getElementById('champModal').style.display='block';
-  document.body.style.overflow='hidden';
+  DOC.getElementById('champModal').style.display='block';
+  DOC.body.style.overflow='hidden';
 }
-document.getElementById('champClose').addEventListener('click',function(){
-  document.getElementById('champModal').style.display='none';document.body.style.overflow='';
+DOC.getElementById('champClose').addEventListener('click',function(){
+  DOC.getElementById('champModal').style.display='none';DOC.body.style.overflow='';
 });
-document.getElementById('champModal').addEventListener('click',function(e){
-  if(e.target===this){this.style.display='none';document.body.style.overflow='';}
+DOC.getElementById('champModal').addEventListener('click',function(e){
+  if(e.target===this){this.style.display='none';DOC.body.style.overflow='';}
 });
 
 // ── VIEW: TRAITS ──────────────────────────────────────────────
@@ -2902,28 +2991,28 @@ function renderTraits(){
       +members.map(function(c){return '<button onclick="openChamp(\''+c.id+'\')" class="chip" style="font:inherit;font-size:12px;font-weight:600;"><span class="cst" style="color:'+costColor(c.cost)+';">'+'🪙'+c.cost+'</span>'+c.name+'</button>';}).join('')
       +'</div></div>';
   }
-  document.getElementById('trait-origins').innerHTML=TRAITS.filter(function(t){return t.kind==='o';}).map(row).join('');
-  document.getElementById('trait-classes').innerHTML=TRAITS.filter(function(t){return t.kind==='c';}).map(row).join('');
+  DOC.getElementById('trait-origins').innerHTML=TRAITS.filter(function(t){return t.kind==='o';}).map(row).join('');
+  DOC.getElementById('trait-classes').innerHTML=TRAITS.filter(function(t){return t.kind==='c';}).map(row).join('');
 }
 
 // ── VIEW: GUIDE ───────────────────────────────────────────────
 function setGuideTab(l){state.guideTab=l;renderGuide();}
 function renderGuide(){
   var tab=state.guideTab||state.level||'a';
-  document.getElementById('guide-tabs').innerHTML=['a','f','p'].map(function(l){
+  DOC.getElementById('guide-tabs').innerHTML=['a','f','p'].map(function(l){
     var L=LEVELS[l];var on=tab===l;
     return '<button onclick="setGuideTab(\''+l+'\')" class="pill-btn'+(on?' on':'')+'" style="flex:1;">'+L.icon+' '+L.name+'</button>';
   }).join('');
   var g=GUIDE[tab];
-  document.getElementById('guide-content').innerHTML=
+  DOC.getElementById('guide-content').innerHTML=
     '<p style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:6px;">'+g.intro+'</p>'
     +g.items.map(function(it){
       return '<div class="guide-item"><h4>'+it.i+' '+it.t+'</h4><p>'+it.x+'</p></div>';
     }).join('');
-  document.getElementById('gods-list').innerHTML=GODS.map(function(gd){
+  DOC.getElementById('gods-list').innerHTML=GODS.map(function(gd){
     return '<div class="god-card"><b>'+gd.g+'</b><p>'+gd.d+'</p></div>';
   }).join('');
-  document.getElementById('recipes-list').innerHTML=RECIPES.map(function(r){
+  DOC.getElementById('recipes-list').innerHTML=RECIPES.map(function(r){
     return '<div class="recipe-row"><b>'+r[0]+'</b><span class="rc">'+r[1]+'</span></div>';
   }).join('');
   renderOddsTable();renderRoleBoard();
@@ -2941,10 +3030,11 @@ function renderOddsTable(){
           return '<td style="padding:5px 6px;text-align:center;color:'+(p?(strong?costColor(i+1):'#eef0ff'):'var(--muted2)')+';font-weight:'+(strong?'700':'400')+';">'+(p?p+'%':'–')+'</td>';
         }).join('')+'</tr>';
     }).join('')+'</table>';
-  document.getElementById('odds-table').innerHTML=html;
+  DOC.getElementById('odds-table').innerHTML=html;
 }
 
 // ── INIT ──────────────────────────────────────────────────────
+if(pipSupported())DOC.getElementById('pip-btn').style.display='flex';
 initRunde();initChamps();initItemSheet();renderTraits();initChoncc();renderJetzt();
 if(!state.level){
   state.level='a';renderComps();renderGuide();renderCoach();renderJetzt();
