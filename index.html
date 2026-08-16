@@ -1413,6 +1413,25 @@ async function togglePip(){
       pipWin.document.head.appendChild(style);
     }catch(e){}
   });
+  // KERNPROBLEM, empirisch gefunden (16.08.): ein inline-onclick-Attribut
+  // wird erst beim ERSTEN Klick zu einer echten Funktion kompiliert — und zwar
+  // gegen das globale Objekt des Fensters, dem der Knopf GENAU IN DIESEM
+  // MOMENT gehoert. Fuer jeden Knopf, der noch nie angeklickt wurde, bevor er
+  // hierher umzieht (praktisch fast alle — schon "➕ Einheiten wählen" selbst),
+  // heisst das: Kompilierung gegen das leere neue Fenster, in dem "openPicker"
+  // etc. nie definiert wurden. Der Klick tut dann still gar nichts (ein
+  // verschluckter ReferenceError) — genau das gemeldete Verhalten. Fix: JEDEN
+  // Funktionsnamen, der irgendwo im Code per onclick aufgerufen wird — auch in
+  // noch nicht gerenderten Vorlagen, die Regex laeuft ueber den kompletten
+  // Seitenquelltext inkl. Skripttext, nicht nur das aktuelle DOM — zusaetzlich
+  // auf das neue Fenster kopieren. Reine Referenz, keine Kopie des Funktions-
+  // koerpers: der bleibt an UNSEREN Scope gebunden und benutzt weiterhin
+  // DOC/state/CHAMPS/etc. wie gehabt, egal von wo er aufgerufen wird.
+  (function(){
+    var namen=new Set(),re=/onclick=["']([a-zA-Z0-9_]+)\(/g,m;
+    while((m=re.exec(document.documentElement.outerHTML)))namen.add(m[1]);
+    namen.forEach(function(fn){ if(typeof window[fn]==='function')pipWin[fn]=window[fn]; });
+  })();
   pipWin.document.title='TFT Coach';
   placeholder.style.display='flex';
   pipWin.document.body.appendChild(root);
