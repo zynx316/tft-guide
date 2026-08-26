@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>TFT Coach – Set 17 Space Gods</title>
+<title>TFT Coach – Set 18 Enchanted Wilds</title>
 <!-- Eingebettetes Icon: ohne dieses <link> fragt der Browser automatisch /favicon.ico an
      und bekommt von GitHub Pages 404 (bei file:// faellt das nicht auf). Als data:-URI,
      damit die Datei selbststaendig bleibt. Gibt der Startbildschirm-Verknuepfung ein Symbol. -->
@@ -297,9 +297,9 @@ input{font-family:inherit;-webkit-appearance:none;appearance:none}
 .guide-item:last-child{border-bottom:none}
 .guide-item h4{font-size:15px;font-weight:700;margin-bottom:4px}
 .guide-item p{font-size:13px;color:var(--muted);line-height:1.6}
-.god-card{border-radius:12px;background:rgba(255,255,255,.05);border:1px solid var(--line);padding:9px 11px;margin-bottom:5px}
-.god-card b{font-size:13px}
-.god-card p{font-size:12px;color:var(--muted);line-height:1.5;margin-top:2px}
+.wisp-card{border-radius:12px;background:rgba(255,255,255,.05);border:1px solid var(--line);padding:9px 11px;margin-bottom:5px}
+.wisp-card b{font-size:13px}
+.wisp-card p{font-size:12px;color:var(--muted);line-height:1.5;margin-top:2px}
 .recipe-row{display:flex;align-items:center;gap:8px;padding:6px 9px;border-radius:9px;background:rgba(255,255,255,.04);border:1px solid var(--line);margin-bottom:4px;font-size:12px}
 .recipe-row b{flex:1}
 .recipe-row .rc{color:var(--muted);white-space:nowrap}
@@ -526,7 +526,7 @@ input{font-family:inherit;-webkit-appearance:none;appearance:none}
 
 <!-- ═══ HEADER ═════════════════════════════════════════════════ -->
 <div id="topbar">
-  <div class="brand">TFT COACH <span>· Set 17 Space Gods</span></div>
+  <div class="brand">TFT COACH <span>· Set 18 Enchanted Wilds</span></div>
   <div style="display:flex;align-items:center;gap:6px;">
     <button id="pip-btn" onclick="togglePip()" title="Fenstermodus — als kleines, frei verschiebbares Fenster öffnen">🪟</button>
     <button id="lvl-chip" onclick="openOnboard()">🐣 Anfänger ▾</button>
@@ -618,7 +618,7 @@ input{font-family:inherit;-webkit-appearance:none;appearance:none}
 <!-- ═══ VIEW: COMPS ════════════════════════════════════════════ -->
 <div id="view-comps" class="view">
   <div class="view-title">⚔ Comps</div>
-  <div class="view-sub" id="comps-sub">Aktuelle Meta-Comps (Patch 17.6)</div>
+  <div class="view-sub" id="comps-sub">Aktuelle Meta-Comps (Patch 18.1)</div>
   <div id="comps-filters" style="display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:8px;scrollbar-width:none;"></div>
   <!-- Sprungleiste: seit jede Comp den vollen Item-Plan zeigt, ist die Liste rund
        23 Bildschirme lang. Nichts wird versteckt — man kommt nur schneller hin. -->
@@ -664,10 +664,10 @@ input{font-family:inherit;-webkit-appearance:none;appearance:none}
   <div class="card" style="border-color:rgba(240,194,90,.3);">
     <div class="section-label">🗓 Datenstand</div>
     <p style="font-size:14px;color:var(--muted);line-height:1.6;">
-      Champions, Traits, Comps und Aufstellungen sind <b style="color:#eef0ff;">Set 17 „Space Gods"</b>
-      (Choncc's Legenden: Set 16) — aktuell weiterhin gültig. <b style="color:#eef0ff;">Set 18 „Enchanted
-      Wilds"</b> startet voraussichtlich am <b style="color:#eef0ff;">25./26.08.2026</b>; Space Gods bleibt
-      laut Ankündigung danach übergangsweise weiter spielbar, nur ohne große Balance-Patches mehr.
+      Champions, Traits, Comps und Aufstellungen sind <b style="color:#eef0ff;">Set 18 „Enchanted Wilds"</b>,
+      Patch 18.1 (live seit 25./26.08.2026) — (Choncc's Legenden bleibt Set 16). Die Meta-Comps sind
+      Tag-1/2-Stand: Tierlisten schwanken in den ersten Tagen noch stark, die Champion- und Trait-Daten
+      sind dagegen fest.
       <br><br>
       Alles andere bleibt gültig: der <b style="color:#eef0ff;">Fahrplan</b> im Tab „Jetzt", die
       <b style="color:#eef0ff;">Aufstellungs-Regeln</b> und die <b style="color:#eef0ff;">Zahlen</b> weiter unten
@@ -730,18 +730,20 @@ input{font-family:inherit;-webkit-appearance:none;appearance:none}
     </div>
   </div>
   <div class="card">
-    <div class="section-label">🌌 Die Götter (Set-Mechanik)</div>
+    <div class="section-label">👻 Geister &amp; Karussell (Set-Mechanik)</div>
     <p style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:10px;">
-      Das „Reich der Götter" ersetzt das Karussell: Bei Götter-Begegnungen wählst du zwischen den Angeboten
-      von <b style="color:#eef0ff;">zwei zufälligen Göttern</b> (plus einer neutralen Pengu-Option).
-      Gewählte Götter lassen den Rest des Spiels immer wieder Loot springen.
+      Das klassische <b style="color:#eef0ff;">Karussell</b> ist zurück und ersetzt vollständig die
+      „Reich der Götter"-Mechanik aus Set 17. Neu ist <b style="color:#eef0ff;">Geister</b> (engl. „Wisps"):
+      Alle 2 Runden erscheint im 5. Shop-Slot ein Geist statt eines Champions — ein einmalig nutzbarer Bonus
+      aus einer von sieben Kategorien. Kaufst du ihn, verzichtest du auf den Champion dahinter. Ab Etappe 5
+      ist jeder zweite Geist garantiert ein Kampf-Geist.
     </p>
-    <div id="gods-list"></div>
+    <div id="wisps-list"></div>
   </div>
   <div class="card">
     <div class="section-label">🎲 Shop-Chancen &amp; Pool</div>
     <p style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:10px;">
-      Chance pro Shop-Slot je Spielerlevel (Richtwerte Patch 17.6). Faustregel:
+      Chance pro Shop-Slot je Spielerlevel (unverändert seit mehreren Sets, web-verifiziert für Patch 18.1). Faustregel:
       <b style="color:#eef0ff;">2-Kosten auf Lv 6, 3-Kosten auf Lv 7, 4-Kosten auf Lv 8, 5-Kosten ab Lv 9</b> rollen.
     </p>
     <div id="odds-table" style="overflow-x:auto;"></div>
@@ -813,7 +815,7 @@ input{font-family:inherit;-webkit-appearance:none;appearance:none}
       <div class="ob-icon">👑</div>
       <h3>Profi</h3>
       <p>Ich will die Meta, Tempo-Lines und Feinheiten.</p>
-      <ul><li>Volle Meta-Tierlist (Patch 17.6) & Pivot-Pfade</li><li>Rolldown-Fenster, Positionierungs-Details</li><li>God-Value & Fast-9-Bedingungen</li></ul>
+      <ul><li>Volle Meta-Tierlist (Patch 18.1) & Pivot-Pfade</li><li>Rolldown-Fenster, Positionierungs-Details</li><li>Geister-Value & Fast-9-Bedingungen</li></ul>
     </button>
   </div>
 </div>
@@ -832,43 +834,23 @@ input{font-family:inherit;-webkit-appearance:none;appearance:none}
 var DOC=document;
 // ── KONSTANTEN ────────────────────────────────────────────────
 /* ══════════════════════════════════════════════════════════════
-   SET-WECHSEL — was ausgetauscht werden muss
+   SET-WECHSEL Set 17 → Set 18 — ERLEDIGT (26.08.2026)
    ══════════════════════════════════════════════════════════════
-   Set 17 „Space Gods" endet; Set 18 „Enchanted Wilds" startet voraussichtlich
-   am 25./26.08.2026. Das früher hier stehende Datum 12.08. war ein überholtes
-   Gerücht, keine offizielle Ankündigung — Stand 16.08. läuft Set 18 erst auf
-   der PBE (seit 29.07.), ist NICHT live. Space Gods bleibt danach laut
-   Ankündigung übergangsweise weiter spielbar (ohne große Balance-Patches).
-   Datenupdate deshalb bewusst erst NACH dem echten Livegang, nicht vorher —
-   PBE-Werte/Roster sind vor dem Release erfahrungsgemäß noch nicht stabil.
+   Set 18 "Enchanted Wilds" (DE: "Verzauberte Wildnis") ist seit 25./26.08.2026,
+   Patch 18.1, live. CHAMPS/IMG/TRAITS/COMPS/POS auf 65 Champions umgestellt,
+   GODS-Mechanik durch WISPS ("Geister") ersetzt — das Karussell ist vollständig
+   zurück, es gibt KEINE Koexistenz mit einer Götter-artigen Mechanik.
+   ODDS/POOL/RECIPES sind unverändert geblieben (web-verifiziert), CHONCC
+   (Set-16-Nostalgie) ist bewusst unangetastet.
 
-   Hinweis zur Mechanik (Stand 16.08., aus Vorschau-Berichten, noch nicht
-   vollständig bestätigt): GODS („Reich der Götter", ersetzt bisher das
-   Karussell) hat in Set 18 vermutlich KEIN direktes Gegenstück — offenbar
-   kehrt stattdessen das reguläre Karussell zurück, dazu ein neuer
-   Shop-Mechanismus „Wisps". Eher ein struktureller Umbau als ein reiner
-   Datentausch — beim Update gegenprüfen, nicht blind GODS-Array ersetzen.
-
-   AUSTAUSCHEN (set-spezifisch):
-     ODDS   Shop-Chancen je Level        CHAMPS  Einheiten + Traits + Items
-     IMG    DDragon-Bildnamen            TRAITS  Synergien + Stufen
-     COMPS  Meta-Comps des Patches       POS     Aufstellungen je Comp
-     GODS   Set-Mechanik                 RECIPES Item-Rezepte
-     CHONCC Nostalgie-Katalog (eigenes Set, nur bei Bedarf)
-   Ausserdem: Titel/Header („Set 17 Space Gods") und den Datenstand im Guide.
-
-   BLEIBT UNVERAENDERT (set-unabhaengig):
-     PLAN                Rundenfahrplan („Jetzt")
-     renderBoard         feste Aufstellungen (nur die POS-Daten wechseln)
-     renderPositionBoard dynamische Einsortierung nach Rolle
-     Guide-Karten        „Aufstellung" und „Zahlen, die immer gelten"
-
-   Nach dem Austausch pruefen mit 90_Pruefskripte/check-tft.js (Datenkonsistenz
-   + Render-Smoke) und board-struct.js (4x7-Boards).
+   Nächster Set-Wechsel: gleiches Schema — CHAMPS/IMG/TRAITS/COMPS/POS/WISPS
+   austauschen, ODDS/RECIPES/PLAN/CHONCC nur bei tatsächlicher Änderung anfassen,
+   danach 90_Pruefskripte/check-tft.js + board-struct.js laufen lassen.
    ══════════════════════════════════════════════════════════════ */
 
 var CC={1:'#9aa4b2',2:'#46c46a',3:'#3d8bf5',4:'#b06bf0',5:'#f0a838'};
-// Shop-Chancen pro Slot je Spielerlevel (Set 17, Richtwerte Patch 17.6) + Pool-Größen
+// Shop-Chancen pro Slot je Spielerlevel + Pool-Größen — unverändert seit mehreren Sets,
+// für Set 18/Patch 18.1 web-verifiziert (tftflow.com direkt, esportstales als Set-17-Vergleichswert identisch).
 var ODDS={3:[75,25,0,0,0],4:[55,30,15,0,0],5:[45,33,20,2,0],6:[30,40,25,5,0],7:[19,30,40,10,1],8:[17,24,32,24,3],9:[15,18,25,30,12],10:[5,10,20,40,25]};
 var POOL={1:30,2:25,3:18,4:10,5:9};
 // Brettgröße: wie viele Champions bei diesem Spielerlevel gleichzeitig aufs Feld dürfen (TFT-Standard)
@@ -906,8 +888,10 @@ function placementWhy(ch,isCarry){
   if(isCarry)return 'Trägt deine Items, ist aber '+(ROLE_NAME[ch.r]||'Nahkämpfer')+' — er gehört nicht in die Ecke. '+pi.why;
   return pi.why;
 }
-// Transformierte Mechs belegen zwei benachbarte Hexes statt einem.
-var MECH_IDS={urgot:1,asol:1,mech:1};
+// Übergroße Einheiten belegen zwei benachbarte Hexes statt einem (Set 18: Elder Dragon,
+// "belegt 2 Team-Plätze" laut Apex-Predator-Trait). Variable heißt weiter MECH_IDS —
+// historischer Name aus Set 17, die Mechanik selbst ist set-übergreifend gemeint.
+var MECH_IDS={elderdragon:1};
 // Reihen von der Wunsch-Reihe nach außen, falls die Zielreihe schon voll ist.
 function rowOrder(row){
   var out=[row];
@@ -916,100 +900,101 @@ function rowOrder(row){
 }
 var LEVELS={a:{icon:'🐣',name:'Anfänger'},f:{icon:'⚔',name:'Fortgeschritten'},p:{icon:'👑',name:'Profi'}};
 
-// ── CHAMPIONS (Set 17 "Space Gods", Patch 17.6) ───────────────
+// ── CHAMPIONS (Set 18 "Enchanted Wilds", Patch 18.1) ───────────
 // t = Traits (deutsch), r = Rolle, it = beste Items, note = Hinweis
+// Web-verifiziert über 4 unabhängige Rechercheagenten (26.08.2026, Live-Stand). 65 Champions.
 var CHAMPS=[
  // 1-Kosten
- {id:'aatrox',name:'Aatrox',cost:1,r:'tank',t:['N.O.V.A.','Bastion'],it:['Warmogs Rüstung','Dornenweste','Gargoyle-Steinplatte'],note:'Solide frühe Frontline. Sein N.O.V.A.-Surge senkt Rüstung & MR ALLER Gegner — bleibt oft bis spät im Team.'},
- {id:'briar',name:'Briar',cost:1,r:'fight',t:['Anima','Urzeitlich','Schurke'],it:['Titanentrotz','Blutdürster'],note:'3 Traits auf einer 1-Kosten-Einheit — super Opener für Anima- und Urzeitlich-Starts.'},
- {id:'caitlyn',name:'Caitlyn',cost:1,r:'ad',t:['N.O.V.A.','Fateweaver'],it:['Unendlichkeitsklinge','Guinsoos Wutklinge'],note:'Ihr N.O.V.A.-Surge gibt dem ganzen Team Angriffstempo.'},
- {id:'chogath',name:"Cho'Gath",cost:1,r:'tank',t:['Dunkler Stern','Schläger'],it:['Warmogs Rüstung','Dornenweste','Gargoyle-Steinplatte'],note:'Kern-Frontline für Dunkler-Stern-Starts. In der Lissandra-Reroll-Comp auf 3★ rollen.'},
- {id:'ezreal',name:'Ezreal',cost:1,r:'ad',t:['Zeitbrecher','Scharfschütze'],it:['Roter Buff','Guinsoos Wutklinge'],note:'Früher Schadensträger; gibt Items später einfach weiter.'},
- {id:'leona',name:'Leona',cost:1,r:'tank',t:['Schiedsrichter','Vanguard'],it:['Warmogs Rüstung','Drachenklaue'],note:'Zäher 1-Kosten-Tank für Schiedsrichter-Openings.'},
- {id:'lissandra',name:'Lissandra',cost:1,r:'ap',t:['Dunkler Stern','Hirte','Replikator'],it:['Nashors Zahn ×2','Schmuckhandschuh'],note:'Eigene Carry in der günstigsten Reroll-Comp des Sets — auf Level 5 bleiben und 3★ rollen.'},
- {id:'nasus',name:'Nasus',cost:1,r:'tank',t:['Weltraum-Groove','Vanguard'],it:['Warmogs Rüstung','Dornenweste'],note:'Früher Groove-Tank, z. B. für Gwen Reroll.'},
- {id:'poppy',name:'Poppy',cost:1,r:'tank',t:['Meeple','Bastion'],it:['Dornenweste','Warmogs Rüstung'],note:'Meeple-Frontline — Teil der Gnar-Druckerei.'},
- {id:'reksai',name:"Rek'Sai",cost:1,r:'tank',t:['Urzeitlich','Schläger'],it:['Warmogs Rüstung','Gargoyle-Steinplatte'],note:'Günstige Urzeitlich-Frontline.'},
- {id:'talon',name:'Talon',cost:1,r:'assa',t:['Sternenschauer','Schurke'],it:['Unendlichkeitsklinge','Schmuckhandschuh'],note:'Günstiger Assassine für Sternenschauer-Starts.'},
- {id:'teemo',name:'Teemo',cost:1,r:'supp',t:['Weltraum-Groove','Hirte'],it:['Blauer Buff','Speer von Shojin'],note:'Doppel-Trait-Support — Kern im Gwen-Reroll-Opener. Braucht kaum Items, gib ihm Mana-Items oder nutze ihn nur für die Traits.'},
- {id:'twistedfate',name:'Twisted Fate',cost:1,r:'ap',t:['Sternenschauer','Fateweaver'],it:['Blauer Buff','Schmuckhandschuh','Nashors Zahn'],note:'Guter früher AP-Träger; Fateweaver macht seine Zufallskarten „Lucky".'},
- {id:'veigar',name:'Veigar',cost:1,r:'ap',t:['Meeple','Replikator'],it:['Nashors Zahn ×2','Schmuckhandschuh'],note:'Budget-Carry der Meeple-Comps; Replikator wiederholt seine Fähigkeit.'},
+ {id:'akali',name:'Akali',cost:1,r:'assa',t:['Verwüster','Feuerteufel','Anpasser'],it:['Unendlichkeitsklinge','Schmuckhandschuh','Nachtschneide'],note:'Springt auf die Backline — drei Traits machen sie zum flexiblen frühen Opener.'},
+ {id:'camille',name:'Camille',cost:1,r:'fight',t:['Verwüster','Hexenzirkel'],it:['Blutdürster','Titanentrotz'],note:'Solide Verwüster-Kämpferin, passt in fast jeden frühen Hexenzirkel-Start.'},
+ {id:'cinderling',name:'Cinderling',cost:1,r:'ad',t:['Kluftbestie','Jäger'],it:['Roter Buff','Guinsoos Wutklinge'],note:'Reine Set-18-Kreatur (kein LoL-Champion) — günstiger Kluftbestie-Opener.'},
+ {id:'karma',name:'Karma',cost:1,r:'ap',t:['Blütenpracht','Zaubermeister'],it:['Nashors Zahn','Schmuckhandschuh'],note:'Frühe Blütenpracht-Aktivierung mit ordentlichem AP-Schaden.'},
+ {id:'kobuko',name:'Kobuko',cost:1,r:'tank',t:['Flinkling','Raufbold'],it:['Warmogs Rüstung','Dornenweste'],note:'Reine Set-18-Kreatur — wiederkehrende TFT-Eigenfigur, dieses Mal Flinkling-Frontline.'},
+ {id:'leona',name:'Leona',cost:1,r:'tank',t:['Solar','Verteidiger'],it:['Warmogs Rüstung','Drachenklaue'],note:'Zähe 1-Kosten-Frontline für Solar-Openings.'},
+ {id:'ornn',name:'Ornn',cost:1,r:'tank',t:['Ahnenholz','Verteidiger'],it:['Gargoyle-Steinplatte','Dornenweste'],note:'Haupttank früher Ahnenholz-Bretter.'},
+ {id:'pebbles',name:'Pebbles',cost:1,r:'ap',t:['Kluftbestie','Anrufer'],it:['Blauer Buff','Schmuckhandschuh'],note:'Reine Set-18-Kreatur — günstiger AP-Kluftbestie.'},
+ {id:'rakan',name:'Rakan',cost:1,r:'tank',t:['Moloch','Fee','Frontkämpfer'],it:['Warmogs Rüstung','Gargoyle-Steinplatte'],note:'Drei Traits auf einer 1-Kosten-Einheit — starker Frontline-Opener für Fee.'},
+ {id:'reksai',name:"Rek'Sai",cost:1,r:'fight',t:['Raufbold','Schwarzdorn'],it:['Titanentrotz','Warmogs Rüstung'],note:'Günstiger Bruiser für Schwarzdorn-Opferketten.'},
+ {id:'varus',name:'Varus',cost:1,r:'ad',t:['Feuerteufel','Schnellfeuer'],it:['Roter Buff','Guinsoos Wutklinge'],note:'Früher Fernkampf-Schaden, zündet mit Feuerteufel Shop-Slots.'},
+ {id:'veigar',name:'Veigar',cost:1,r:'ap',t:['Schwarzdorn','Flinkling','Zaubermeister'],it:['Nashors Zahn ×2','Schmuckhandschuh'],note:'Budget-AP-Carry mit drei Traits gleichzeitig — bei Reroll auf 3★ zwei Nashors Zähne für frühe Konstanz.'},
+ {id:'xayah',name:'Xayah',cost:1,r:'ad',t:['Ahnenholz','Fee','Schnellfeuer'],it:['Guinsoos Wutklinge','Riesenschlächter','Roter Buff'],note:'S-Tier-Carry des Patches (Feen-Kämpfer) — auf Level 7-8 stabil, gehört in die hinterste Ecke.'},
+ {id:'yorick',name:'Yorick',cost:1,r:'tank',t:['Blütenpracht','Moloch','Beschwörer'],it:['Warmogs Rüstung','Sonnenfeuer-Umhang'],note:'Beschwört Wachen — zäher früher Tank mit Ausbaupotenzial.'},
  // 2-Kosten
- {id:'akali',name:'Akali',cost:2,r:'assa',t:['N.O.V.A.','Plünderer'],it:['Unendlichkeitsklinge','Schmuckhandschuh','Blutdürster'],note:'Springt auf die Backline — gut in N.O.V.A. Kindred.'},
- {id:'belveth',name:"Bel'Veth",cost:2,r:'tank',t:['Urzeitlich','Herausforderer','Plünderer'],it:['Titanentrotz','Guinsoos Wutklinge','Blutdürster'],note:'3 Traits, starke Kämpferin für Urzeitlich-Bretter. Frontline trotz Kämpfer-Spielstil.'},
- {id:'gnar',name:'Gnar',cost:2,r:'ad',t:['Meeple','Scharfschütze'],it:['Todesklinge','Guinsoos Wutklinge','Unendlichkeitsklinge'],note:'DER Reroll-Carry des Patches („Gnar-Druckerei"). Auf 3★ ist er ein Monster — aber oft umkämpft.'},
- {id:'gragas',name:'Gragas',cost:2,r:'tank',t:['Psionik','Schläger'],it:['Warmogs Rüstung','Dornenweste','Sonnenfeuer-Umhang'],note:'Dicke Frontline, aktiviert Psionik für die Gratis-Items.'},
- {id:'gwen',name:'Gwen',cost:2,r:'fight',t:['Weltraum-Groove','Schurke'],it:['Diebeshandschuhe','Standhaftes Herz','Steraks Pfand'],note:'Carry der einsteigerfreundlichsten Comp: Gwen Reroll mit Diebeshandschuhen — einfach und stark.'},
- {id:'jax',name:'Jax',cost:2,r:'tank',t:['Sternenschauer','Bastion'],it:['Titanentrotz','Warmogs Rüstung'],note:'Sternenschauer-Frontline; auf verstärkte Hexes stellen.'},
- {id:'jinx',name:'Jinx',cost:2,r:'ad',t:['Anima','Herausforderer'],it:['Blauer Buff','Guinsoos Wutklinge','Hextech-Gunblade'],note:'Carry der Anima-Lose-Streak-Comp. Früh verlieren, Tech sammeln, dann durchdrehen.'},
- {id:'meepsie',name:'Meepsie',cost:2,r:'supp',t:['Meeple','Hirte','Reisender'],it:['Blauer Buff','Speer von Shojin'],note:'3 Traits auf einmal — Klebstoff für viele Comps (Gnar, LeBlanc, Meeple). Reine Trait-Bot, braucht keine teuren Items.'},
- {id:'milio',name:'Milio',cost:2,r:'supp',t:['Zeitbrecher','Fateweaver'],it:['Blauer Buff','Speer von Shojin'],note:'Flexibler Support; Zeitbrecher gibt Gratis-Rerolls nach Niederlagen.'},
- {id:'mordekaiser',name:'Mordekaiser',cost:2,r:'tank',t:['Dunkler Stern','Konduit','Vanguard'],it:['Sonnenfeuer-Umhang','Dornenweste','Warmogs Rüstung'],note:'Haupttank der Dunkler-Stern-Comps — 3 nützliche Traits.'},
- {id:'pantheon',name:'Pantheon',cost:2,r:'tank',t:['Zeitbrecher','Schläger','Replikator'],it:['Gargoyle-Steinplatte','Dornenweste'],note:'Zäher Brückentank mit 3 Traits.'},
- {id:'pyke',name:'Pyke',cost:2,r:'assa',t:['Psionik','Reisender'],it:['Unendlichkeitsklinge','Nachtschneide'],note:'Psionik-Assassine; Reisender gibt ihm Schild oder Schadensbonus.'},
- {id:'zoe',name:'Zoe',cost:2,r:'ap',t:['Schiedsrichter','Konduit'],it:['Blauer Buff','Schmuckhandschuh'],note:'Früher AP-Schaden mit Mana-Support.'},
+ {id:'alistar',name:'Alistar',cost:2,r:'tank',t:['Ahnenholz','Raufbold'],it:['Warmogs Rüstung','Dornenweste'],note:'Dicke Ahnenholz-Frontline.'},
+ {id:'caitlyn',name:'Caitlyn',cost:2,r:'ad',t:['Hexenzirkel','Jäger'],it:['Unendlichkeitsklinge','Guinsoos Wutklinge'],note:'Klassischer Fernkampf-Schaden, passt in Hexenzirkel- und Jäger-Bretter.'},
+ {id:'elise',name:'Elise',cost:2,r:'tank',t:['Hexenzirkel','Frontkämpfer'],it:['Gargoyle-Steinplatte','Warmogs Rüstung'],note:'Frontkämpfer-Schild macht sie zur soliden Hexenzirkel-Frontline.'},
+ {id:'gromp',name:'Gromp',cost:2,r:'ap',t:['Kluftbestie','Anpasser'],it:['Blauer Buff','Rabadons Todeshaube'],note:'Reine Set-18-Kreatur (Dschungelcamp-Thema) — günstiger AP-Kluftbestie.'},
+ {id:'kayle',name:'Kayle',cost:2,r:'flex',t:['Solar','Schnellfeuer'],it:['Guinsoos Wutklinge','Riesenschlächter','Hextech-Gunblade'],note:'Hybrid-Carry der Solar-Comps — Item-Leiste je nach AD/AP-Fokus flexibel.'},
+ {id:'leblanc',name:'LeBlanc',cost:2,r:'ap',t:['Ahnenholz','Zaubermeister'],it:['Schmuckhandschuh','Rabadons Todeshaube','Guinsoos Wutklinge'],note:'AP-Carry der Ahnenholz-Bretter, kopiert im Kampf Verbündete.'},
+ {id:'murkwolf',name:'Murkwolf',cost:2,r:'assa',t:['Kluftbestie','Verwüster'],it:['Unendlichkeitsklinge','Schmuckhandschuh'],note:'Reine Set-18-Kreatur — Kluftbestie-Assassine.'},
+ {id:'scuttlecrab',name:'Scuttlecrab',cost:2,r:'tank',t:['Kluftbestie','Moloch'],it:['Warmogs Rüstung','Gargoyle-Steinplatte'],note:'Reine Set-18-Kreatur — zähe Kluftbestie-Frontline.'},
+ {id:'sejuani',name:'Sejuani',cost:2,r:'tank',t:['Solar','Moloch'],it:['Gargoyle-Steinplatte','Warmogs Rüstung','Adaptivhelm'],note:'Haupttank der Solar-Kayle-Comp.'},
+ {id:'shen',name:'Shen',cost:2,r:'tank',t:['Feuerteufel','Verteidiger'],it:['Warmogs Rüstung','Drachenklaue','Dornenweste'],note:'Einer der zähesten frühen Tanks, Kern der Feen-Kämpfer-Frontline.'},
+ {id:'teemo',name:'Teemo',cost:2,r:'supp',t:['Flinkling','Anrufer'],it:['Blauer Buff','Speer von Shojin'],note:'Doppel-Trait-Support-Carry, braucht kaum Items.'},
+ {id:'warwick',name:'Warwick',cost:2,r:'fight',t:['Schwarzdorn','Verwüster'],it:['Blutdürster','Titanentrotz'],note:'Selbstheilender Bruiser für Schwarzdorn-Opferketten.'},
+ {id:'yunara',name:'Yunara',cost:2,r:'ad',t:['Blütenpracht','Henker'],it:['Speer von Shojin','Todesklinge','Letzter Seufzer'],note:'S-Tier-Reroll-Carry (Henker) — stabile 2-Kosten-Line, weniger itemhungrig als Fast-9-Comps.'},
  // 3-Kosten
- {id:'aurora',name:'Aurora',cost:3,r:'ap',t:['Anima','Reisender'],it:['Rabadons Todeshaube','Schmuckhandschuh'],note:'Zweit-Carry in Anima Jinx.'},
- {id:'diana',name:'Diana',cost:3,r:'assa',t:['Schiedsrichter','Herausforderer'],it:['Schmuckhandschuh','Unendlichkeitsklinge'],note:'Herausforderer-Assassine — springt nach Takedowns weiter.'},
- {id:'fizz',name:'Fizz',cost:3,r:'assa',t:['Meeple','Schurke'],it:['Schmuckhandschuh','Unendlichkeitsklinge'],note:'Meeple-Assassine für die Gnar-/Veigar-Comps.'},
- {id:'illaoi',name:'Illaoi',cost:3,r:'tank',t:['Anima','Vanguard','Hirte'],it:['Gargoyle-Steinplatte','Warmogs Rüstung','Steraks Pfand'],note:'Dicker 3-Trait-Tank — Frontline in mehreren Meta-Comps.'},
- {id:'kaisa',name:"Kai'Sa",cost:3,r:'ad',t:['Dunkler Stern','Schurke'],it:['Unendlichkeitsklinge','Riesenschlächter','Speer von Shojin'],note:'S-Tier-Carry: „Dunkler Stern Kai\'Sa" ist eine der stärksten Comps des Patches. Auf Level 7 3★ rollen.'},
- {id:'lulu',name:'Lulu',cost:3,r:'supp',t:['Sternenschauer','Replikator'],it:['Blauer Buff','Speer von Shojin'],note:'Starker Support — Replikator wiederholt ihren Buff.'},
- {id:'maokai',name:'Maokai',cost:3,r:'tank',t:['N.O.V.A.','Schläger'],it:['Warmogs Rüstung','Gargoyle-Steinplatte','Dornenweste'],note:'Haupttank in N.O.V.A. Kindred.'},
- {id:'missfortune',name:'Miss Fortune',cost:3,r:'flex',t:['Waffengöttin'],it:['Schmuckhandschuh','Unendlichkeitsklinge'],note:'Beim Platzieren wählst du ihren Modus (Konduit / Herausforderer / Replikator) — Fähigkeit & Trait ändern sich.'},
- {id:'ornn',name:'Ornn',cost:3,r:'tank',t:['Weltraum-Groove','Bastion'],it:['Gargoyle-Steinplatte','Dornenweste','Warmogs Rüstung'],note:'Haupttank der Groove-Comps (Gwen, Samira, Nami).'},
- {id:'rhaast',name:'Rhaast',cost:3,r:'tank',t:['Erlöser'],it:['Titanentrotz','Blutdürster'],note:'Solo-Trait: Erlöser bufft dein Team für jeden aktiven Trait — gute Frontline in trait-lastigen Brettern.'},
- {id:'samira',name:'Samira',cost:3,r:'ad',t:['Weltraum-Groove','Scharfschütze'],it:['Letzter Seufzer','Speer von Shojin','Todesklinge'],note:'Eigene Reroll-Comp oder Zweit-Carry bei Gwen/Nami.'},
- {id:'urgot',name:'Urgot',cost:3,r:'tank',t:['Mech','Schläger','Plünderer'],it:['Gargoyle-Steinplatte','Steraks Pfand','Titanentrotz'],note:'Mech-Frontline — transformiert braucht er 2 Plätze, zählt aber doppelt für Mech.'},
- {id:'viktor',name:'Viktor',cost:3,r:'ap',t:['Psionik','Konduit'],it:['Blauer Buff','Schmuckhandschuh','Rabadons Todeshaube'],note:'Flexibler AP-Träger; Kern der Mech-Asol-Comp und Psionik-Aktivator.'},
+ {id:'azir',name:'Azir',cost:3,r:'ap',t:['Schwarzdorn','Henker','Beschwörer'],it:['Blauer Buff','Rabadons Todeshaube','Schmuckhandschuh'],note:'Beschwört Soldaten — flexibler AP-Carry mit drei Traits.'},
+ {id:'cassiopeia',name:'Cassiopeia',cost:3,r:'ap',t:['Hexenzirkel','Zaubermeister'],it:['Schmuckhandschuh','Rabadons Todeshaube'],note:'Starker AP-Schaden in Hexenzirkel-Brettern.'},
+ {id:'diana',name:'Diana',cost:3,r:'fight',t:['Lunar','Verwüster','Frontkämpfer'],it:['Titanentrotz','Blutdürster'],note:'Lunar-Kämpferin, springt selbst ins Ziel.'},
+ {id:'fiddlesticks',name:'Fiddlesticks',cost:3,r:'tank',t:['Flora Fatalis','Verteidiger','Zaubermeister'],it:['Gargoyle-Steinplatte','Warmogs Rüstung'],note:'Dreifach-Trait-Tank, ungewöhnliche Flora-Fatalis-Frontline.'},
+ {id:'hecarim',name:'Hecarim',cost:3,r:'tank',t:['Ahnenholz','Frontkämpfer'],it:['Warmogs Rüstung','Gargoyle-Steinplatte'],note:'Solide Ahnenholz-Frontline mit Frontkämpfer-Schild.'},
+ {id:'khazix',name:"Kha'Zix",cost:3,r:'assa',t:['Rivale'],it:['Unendlichkeitsklinge','Nachtschneide'],note:'Einziger Trait: Rivale mit Rengar — entwickelt sich über Takedowns dauerhaft weiter.'},
+ {id:'kogmaw',name:"Kog'Maw",cost:3,r:'ad',t:['Säurespucker','Anpasser','Anrufer'],it:['Riesenschlächter','Guinsoos Wutklinge'],note:'Fernkampf-Carry der Anpasser-Reroll-Comp, zerfrisst gegnerische Rüstung.'},
+ {id:'krug',name:'Krug',cost:3,r:'tank',t:['Kluftbestie','Raufbold'],it:['Warmogs Rüstung','Dornenweste'],note:'Reine Set-18-Kreatur — dicke Kluftbestie-Frontline.'},
+ {id:'mamabeak',name:'Mama Beak',cost:3,r:'ad',t:['Kluftbestie','Beschwörer','Schnellfeuer'],it:['Roter Buff','Riesenschlächter'],note:'Reine Set-18-Kreatur — Kluftbestie-Fernkampf-Carry mit Beschwörung.'},
+ {id:'masteryi',name:'Master Yi',cost:3,r:'fight',t:['Blütenpracht','Anpasser'],it:['Riesenschlächter','Nachtschneide','Quecksilber'],note:'Carry der Anpasser-Reroll-Comp — schneidet durch Bretter, braucht Überlebens-Items.'},
+ {id:'rammus',name:'Rammus',cost:3,r:'tank',t:['Flinkling','Verteidiger'],it:['Dornenweste','Gargoyle-Steinplatte'],note:'Haupttank für Flinkling-Bretter, bestraft Auto-Attacker.'},
+ {id:'rengar',name:'Rengar',cost:3,r:'assa',t:['Rivale'],it:['Unendlichkeitsklinge','Schmuckhandschuh'],note:'Einziger Trait: Rivale mit Kha\'Zix — sammelt Gold über Takedowns.'},
+ {id:'tristana',name:'Tristana',cost:3,r:'ad',t:['Fee','Flinkling','Jäger'],it:['Guinsoos Wutklinge','Riesenschlächter'],note:'Dreifach-Trait-Fernkämpferin, flexibel in mehreren Bretttypen.'},
+ {id:'vi',name:'Vi',cost:3,r:'tank',t:['Urjäger','Moloch'],it:['Titanentrotz','Warmogs Rüstung'],note:'Frontline der Urjäger-Comps.'},
  // 4-Kosten
- {id:'asol',name:'Aurelion Sol',cost:4,r:'ap',t:['Mech','Konduit'],it:['Schmuckhandschuh','Riesenschlächter','Rabadons Todeshaube'],note:'S-Tier-Carry der Mech-Comp. Transformiert = 2 Plätze. Auf Level 8 suchen.'},
- {id:'corki',name:'Corki',cost:4,r:'ad',t:['Meeple','Fateweaver'],it:['Todesklinge','Letzter Seufzer','Roter Buff'],note:'Zweit-Carry der Gnar-Druckerei.'},
- {id:'karma',name:'Karma',cost:4,r:'ap',t:['Dunkler Stern','Reisender'],it:['Blauer Buff','Rabadons Todeshaube','Schmuckhandschuh'],note:'Pusht Dunkler Stern Richtung 6 und trägt AP-Items gut.'},
- {id:'kindred',name:'Kindred',cost:4,r:'ad',t:['N.O.V.A.','Herausforderer'],it:['Guinsoos Wutklinge','Riesenschlächter','Krakenfurie'],note:'Carry der N.O.V.A.-Comp; ihr Surge schildet den Tank.'},
- {id:'leblanc',name:'LeBlanc',cost:4,r:'ap',t:['Schiedsrichter','Hirte'],it:['Guinsoos Wutklinge','Rabadons Todeshaube','Schmuckhandschuh'],note:'Carry der Hirten-Comp — skaliert mit Bia & Bayin.'},
- {id:'masteryi',name:'Master Yi',cost:4,r:'fight',t:['Psionik','Plünderer'],it:['Riesenschlächter','Nachtschneide','Quecksilber'],note:'Schneidet durch Bretter, braucht Überlebens-Items (Nachtschneide/QSS).'},
- {id:'morgana',name:'Morgana',cost:4,r:'tank',t:['Dunkle Lady'],it:['Adaptivhelm','Gargoyle-Steinplatte','Steraks Pfand'],note:'Seit Patch 17.3 ein 4-Kosten-Magie-Tank; gibt dem Team Zähigkeit. Top-Tank für Fast-9-Bretter.'},
- {id:'nami',name:'Nami',cost:4,r:'ap',t:['Weltraum-Groove','Replikator'],it:['Schmuckhandschuh','Morellonomicon','Leerenstab'],note:'Carry der Groove-Comp — je länger der Kampf, desto stärker.'},
- {id:'nunu',name:'Nunu & Willump',cost:4,r:'tank',t:['Sternenschauer','Vanguard'],it:['Warmogs Rüstung','Gargoyle-Steinplatte','Adaptivhelm'],note:'Sehr zäher 4-Kosten-Tank, Kern vieler Endgame-Bretter.'},
- {id:'rammus',name:'Rammus',cost:4,r:'tank',t:['Meeple','Bastion'],it:['Dornenweste','Gargoyle-Steinplatte','Warmogs Rüstung'],note:'Haupttank der Meeple-Comps — Dornenweste bestraft Auto-Attacker.'},
- {id:'riven',name:'Riven',cost:4,r:'fight',t:['Zeitbrecher','Schurke'],it:['Blutdürster','Unendlichkeitsklinge','Titanentrotz'],note:'Starke Solo-Kämpferin mit Schurken-Sprung.'},
- {id:'tahm',name:'Tahm Kench',cost:4,r:'tank',t:['Orakel','Schläger'],it:['Warmogs Rüstung','Drachenklaue','Gargoyle-Steinplatte'],note:'Orakel: gibt alle 3 Runden eine Belohnung — je früher er steht, desto mehr Value.'},
- {id:'mech',name:'Mighty Mech',cost:4,r:'tank',t:['Mech','Reisender'],it:['Gargoyle-Steinplatte','Warmogs Rüstung','Sonnenfeuer-Umhang'],note:'Der große Mech — transformiert 2 Plätze, zählt doppelt für den Mech-Trait.'},
- {id:'xayah',name:'Xayah',cost:4,r:'ad',t:['Sternenschauer','Scharfschütze'],it:['Krakenfurie','Roter Buff','Guinsoos Wutklinge'],note:'AD-Carry der Sternenschauer-Comp — ganz hinten auf verstärkte Hexes stellen.'},
+ {id:'ahri',name:'Ahri',cost:4,r:'ap',t:['Blütenpracht','Zaubermeister'],it:['Schmuckhandschuh','Blauer Buff','Nashors Zahn'],note:'S-Tier-Carry (Blütenpracht) — profitiert stark von häufigeren Geister-Käufen.'},
+ {id:'amumu',name:'Amumu',cost:4,r:'tank',t:['Moloch','Feuerteufel'],it:['Warmogs Rüstung','Gargoyle-Steinplatte'],note:'Zäher 4-Kosten-Tank für Feuerteufel-Bretter.'},
+ {id:'aphelios',name:'Aphelios',cost:4,r:'ad',t:['Lunar','Schnellfeuer'],it:['Riesenschlächter','Guinsoos Wutklinge'],note:'Fernkampf-Carry der Lunar-Comps.'},
+ {id:'brambleback',name:'Brambleback',cost:4,r:'fight',t:['Kluftbestie','Verwüster'],it:['Roter Buff','Riesenschlächter','Unendlichkeitsklinge'],note:'Reine Set-18-Kreatur — Haupt-Carry von Kluftbestie Ascension.'},
+ {id:'ezreal',name:'Ezreal',cost:4,r:'ad',t:['Ahnenholz','Henker'],it:['Riesenschlächter','Letzter Seufzer'],note:'Fernkampf-Schaden der Ahnenholz-Bretter.'},
+ {id:'lillia',name:'Lillia',cost:4,r:'tank',t:['Fee','Verteidiger'],it:['Gargoyle-Steinplatte','Warmogs Rüstung'],note:'Verteidiger-Frontline mit Fee-Anbindung.'},
+ {id:'malphite',name:'Malphite',cost:4,r:'tank',t:['Monolith','Schwarzdorn'],it:['Warmogs Rüstung','Gargoyle-Steinplatte'],note:'Wird zäher, je mehr Gegner ihn anvisieren.'},
+ {id:'morgana',name:'Morgana',cost:4,r:'fight',t:['Anrufer','Hexenzirkel'],it:['Adaptivhelm','Gargoyle-Steinplatte','Steraks Pfand'],note:'Carry der Hexenzirkel-Comp — sammelt Essenz aus Niederlagen/Kills, dann Cashout auf Level 8.'},
+ {id:'nidalee',name:'Nidalee',cost:4,r:'ap',t:['Urjäger','Anpasser'],it:['Schmuckhandschuh','Rabadons Todeshaube'],note:'AP-Carry der Urjäger-Comps, Fähigkeit passt sich AD/AP-Übergewicht an.'},
+ {id:'sentinel',name:'Sentinel',cost:4,r:'tank',t:['Kluftbestie','Anrufer','Frontkämpfer'],it:['Gargoyle-Steinplatte','Warmogs Rüstung'],note:'Reine Set-18-Kreatur — Kluftbestie-Frontline mit drei Traits.'},
+ {id:'sett',name:'Sett',cost:4,r:'tank',t:['Blütenpracht','Raufbold'],it:['Titanentrotz','Warmogs Rüstung'],note:'AD-Tank der Blütenpracht-Bretter.'},
+ {id:'sivir',name:'Sivir',cost:4,r:'ad',t:['Urjäger','Jäger'],it:['Roter Buff','Letzter Seufzer'],note:'Tempo-Carry — ihre Klinge verteilt Effekte auf mehrere Ziele.'},
+ {id:'soraka',name:'Soraka',cost:4,r:'ap',t:['Henker','Flora Fatalis'],it:['Blauer Buff','Schmuckhandschuh'],note:'Ungewöhnlicher AP-Schadenscarry trotz Support-Herkunft in LoL.'},
+ {id:'zyra',name:'Zyra',cost:4,r:'ap',t:['Beschwörer','Dornenmaid'],it:['Rabadons Todeshaube','Schmuckhandschuh'],note:'Beschwört Pflanzen, die zusätzlich angreifen.'},
  // 5-Kosten
- {id:'bard',name:'Bard',cost:5,r:'supp',t:['Meeple','Konduit'],it:['Blauer Buff','Speer von Shojin'],note:'Starker 5er-Support — Upgrade für alle Meeple-Bretter.'},
- {id:'blitzcrank',name:'Blitzcrank',cost:5,r:'tank',t:['Partytier','Weltraum-Groove','Vanguard'],it:['Warmogs Rüstung','Dornenweste','Gargoyle-Steinplatte'],note:'Hooked gegnerische Carries in deine Front. Partytier: wird unter 45% HP kurz unangreifbar und heilt sich.'},
- {id:'fiora',name:'Fiora',cost:5,r:'fight',t:['Göttlicher Duellant','Anima','Plünderer'],it:['Blutdürster','Steraks Pfand','Titanentrotz'],note:'Gewinnt jedes 1v1. Starkes Endgame-Upgrade für Anima- und Groove-Bretter.'},
- {id:'graves',name:'Graves',cost:5,r:'ad',t:['Fabrikneu'],it:['Quecksilber','Todesklinge','Unendlichkeitsklinge'],note:'Kauft nach jedem Kampf permanente Upgrades — je früher gefunden, desto stärker. Kern von Fast 9.'},
- {id:'jhin',name:'Jhin',cost:5,r:'ad',t:['Dunkler Stern','Vernichter','Scharfschütze'],it:['Unendlichkeitsklinge','Letzter Seufzer','Todesklinge'],note:'Vernichter senkt Rüstung & MR aller Gegner. Endgame-Upgrade der Kai\'Sa- und Sniper-Bretter.'},
- {id:'shen',name:'Shen',cost:5,r:'tank',t:['Bollwerk','Bastion'],it:['Warmogs Rüstung','Drachenklaue','Dornenweste'],note:'Einer der besten Tanks — sein Bollwerk-Relikt schildet angrenzende Verbündete.'},
- {id:'sona',name:'Sona',cost:5,r:'supp',t:['Kommandantin','Psionik','Hirte'],it:['Blauer Buff','Speer von Shojin'],note:'Mächtige Endgame-Unterstützung — sofort kaufen wenn sie auftaucht.'},
- {id:'vex',name:'Vex',cost:5,r:'ap',t:['Doomer'],it:['Guinsoos Wutklinge','Riesenschlächter','Hextech-Gunblade'],note:'Carry der Fast-9-Comp. Doomer markiert alle Gegner und stiehlt AD/AP.'},
- {id:'zed',name:'Zed',cost:5,r:'assa',t:['Galaxie-Jäger'],it:['Unendlichkeitsklinge','Nachtschneide'],note:'Nur über das Invader-Augment erhältlich — nicht im normalen Shop.'},
+ {id:'alune',name:'Alune',cost:5,r:'ap',t:['Lunar','Zaubermeister','Eingestimmt'],it:['Schmuckhandschuh','Rabadons Todeshaube'],note:'Reine TFT-Figur ohne echtes LoL-Champion-Portrait (Aphelios Zwillingsschwester, nur als Lore-Charakter existent) — Mondzyklus wechselt zwischen Zähigkeit und Schadensverstärkung.'},
+ {id:'ashe',name:'Ashe',cost:5,r:'ad',t:['Jäger','Blütenpracht'],it:['Riesenschlächter','Guinsoos Wutklinge'],note:'Endgame-Fernkampf-Upgrade für Jäger- und Blütenpracht-Bretter.'},
+ {id:'draven',name:'Draven',cost:5,r:'ad',t:['Kopfgeldsucher'],it:['Unendlichkeitsklinge','Riesenschlächter','Guinsoos Wutklinge'],note:'S-Tier-Carry von AD Fast 9 — wählt Kopfgeld-Ziele, die Einheiten/Komponenten/Rerolls bringen.'},
+ {id:'elderdragon',name:'Elder Dragon',cost:5,r:'fight',t:['Kluftbestie','Meisterjäger'],it:['Titanentrotz','Blutdürster'],note:'Reine Set-18-Kreatur — belegt 2 Team-Plätze wie frühere Mechs, zählt dafür doppelt für Kluftbestie.'},
+ {id:'gnar',name:'Gnar',cost:5,r:'ad',t:['Flinkling','Ahnenholz','Raufbold'],it:['Todesklinge','Guinsoos Wutklinge'],note:'Dreifach-Trait-Fernkampf-Specialist mit hohem Deckenpotenzial.'},
+ {id:'ivern',name:'Ivern',cost:5,r:'supp',t:['Hüter der Haine'],it:['Blauer Buff','Speer von Shojin'],note:'Einziger Trait: Hüter der Haine — sammelt Samen und lässt ein eigenes Feld zu einem Biom wachsen, das dort stehende Einheiten stärkt.'},
+ {id:'kennen',name:'Kennen',cost:5,r:'assa',t:['Feuerteufel','Henker'],it:['Unendlichkeitsklinge','Nachtschneide'],note:'Springende Assassine mit Feuerteufel-Brandschaden.'},
+ {id:'lux',name:'Lux',cost:5,r:'ap',t:['Avatar'],it:['Schmuckhandschuh','Rabadons Todeshaube'],note:'Einzige Avatar-Trägerin — wählt im Shop einen von 9 Ursprüngen und zählt dafür doppelt.'},
+ {id:'maokai',name:'Maokai',cost:5,r:'tank',t:['Moloch','Wachstum der Urahnen'],it:['Warmogs Rüstung','Gargoyle-Steinplatte'],note:'Wächst dauerhaft, wenn Gegner in seiner Nähe sterben.'},
+ {id:'taric',name:'Taric',cost:5,r:'tank',t:['Smaragdaspekt','Frontkämpfer'],it:['Warmogs Rüstung','Drachenklaue'],note:'Zieht einen Verbündeten zu sich und teilt starke Bonuseffekte.'},
 ];
 
 var IMG={
- aatrox:'Aatrox',briar:'Briar',caitlyn:'Caitlyn',chogath:'Chogath',ezreal:'Ezreal',
- leona:'Leona',lissandra:'Lissandra',nasus:'Nasus',poppy:'Poppy',reksai:'RekSai',
- talon:'Talon',teemo:'Teemo',twistedfate:'TwistedFate',veigar:'Veigar',
- akali:'Akali',belveth:'Belveth',gnar:'Gnar',gragas:'Gragas',gwen:'Gwen',jax:'Jax',
- jinx:'Jinx',milio:'Milio',mordekaiser:'Mordekaiser',pantheon:'Pantheon',
- pyke:'Pyke',zoe:'Zoe',
- aurora:'Aurora',diana:'Diana',fizz:'Fizz',illaoi:'Illaoi',kaisa:'Kaisa',lulu:'Lulu',
- maokai:'Maokai',missfortune:'MissFortune',ornn:'Ornn',rhaast:'Kayn',samira:'Samira',
- urgot:'Urgot',viktor:'Viktor',
- asol:'AurelionSol',corki:'Corki',karma:'Karma',kindred:'Kindred',leblanc:'Leblanc',
- masteryi:'MasterYi',morgana:'Morgana',nami:'Nami',nunu:'Nunu',rammus:'Rammus',
- riven:'Riven',tahm:'TahmKench',xayah:'Xayah',
- bard:'Bard',blitzcrank:'Blitzcrank',fiora:'Fiora',graves:'Graves',jhin:'Jhin',
- shen:'Shen',sona:'Sona',vex:'Vex',zed:'Zed',
- // meepsie & mech bewusst NICHT drin: reine TFT-Kreaturen ohne echtes LoL-Champion-Portrait.
- // Ein erfundenes Bild (z.B. Lulu oder Viktor) wäre falsch — lieber kein Bild als ein falsches.
+ akali:'Akali',camille:'Camille',karma:'Karma',leona:'Leona',ornn:'Ornn',rakan:'Rakan',
+ reksai:'RekSai',varus:'Varus',veigar:'Veigar',xayah:'Xayah',yorick:'Yorick',
+ alistar:'Alistar',caitlyn:'Caitlyn',elise:'Elise',kayle:'Kayle',leblanc:'Leblanc',
+ sejuani:'Sejuani',shen:'Shen',teemo:'Teemo',warwick:'Warwick',yunara:'Yunara',
+ azir:'Azir',cassiopeia:'Cassiopeia',diana:'Diana',fiddlesticks:'Fiddlesticks',hecarim:'Hecarim',
+ khazix:'Khazix',kogmaw:'KogMaw',masteryi:'MasterYi',rammus:'Rammus',rengar:'Rengar',
+ tristana:'Tristana',vi:'Vi',
+ ahri:'Ahri',amumu:'Amumu',aphelios:'Aphelios',ezreal:'Ezreal',lillia:'Lillia',malphite:'Malphite',
+ morgana:'Morgana',nidalee:'Nidalee',sett:'Sett',sivir:'Sivir',soraka:'Soraka',zyra:'Zyra',
+ ashe:'Ashe',draven:'Draven',gnar:'Gnar',ivern:'Ivern',kennen:'Kennen',lux:'Lux',maokai:'Maokai',taric:'Taric',
+ // Reine Set-18-Kreaturen bewusst NICHT drin (kein echtes LoL-Champion-Portrait):
+ // cinderling, kobuko, pebbles, gromp, murkwolf, scuttlecrab, krug, mamabeak, brambleback, sentinel, elderdragon.
+ // Alune ebenfalls nicht: laut Recherche kein spielbarer LoL-Champion, nur eine Lore-Figur.
+ // Ein erfundenes Bild wäre falsch — lieber kein Bild als ein falsches.
 };
-var DDRAGON='https://ddragon.leagueoflegends.com/cdn/16.13.1/img/champion/';
+var DDRAGON='https://ddragon.leagueoflegends.com/cdn/16.17.1/img/champion/';
 function champImg(id){ return IMG[id] ? DDRAGON+IMG[id]+'.png' : null; }
-// Baut ein <img> oder, falls kein echtes Portrait existiert (Meepsie, Mighty Mech),
+// Baut ein <img> oder, falls kein echtes Portrait existiert (z. B. Cinderling, Alune),
 // eine farbige Platzhalter-Kachel — NIE eine erfundene/falsche Bild-URL.
 function champImgTag(ch, size, borderColor, extraStyle){
   var img=champImg(ch.id);
@@ -1021,155 +1006,144 @@ function champImgTag(ch, size, borderColor, extraStyle){
       +'<img src="'+img+'" width="'+size+'" height="'+size+'" loading="lazy" onerror="this.style.opacity=0" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;">'
       +'</span>';
   }
-  return '<span style="'+st+'display:flex;align-items:center;justify-content:center;background:var(--panel);font-size:'+Math.round(size*0.4)+'px;">🤖</span>';
+  return '<span style="'+st+'display:flex;align-items:center;justify-content:center;background:var(--panel);font-size:'+Math.round(size*0.4)+'px;">❔</span>';
 }
 
 // ── TRAITS ────────────────────────────────────────────────────
-// bp = Stufen; kind: o=Origin, c=Klasse
+// bp = Stufen; kind: o=Origin, c=Klasse. Deutsche Namen web-verifiziert (offizielle Riot-DE-Seiten
+// bzw. zweifach unabhängig gegen deutsche Community-Tools mit echten Client-Lokalisierungsstrings).
 var TRAITS=[
- {name:'Anima',en:'Anima',kind:'o',bp:[3,6],desc:'Lose-Streak-Trait: Niederlagen geben Tech (mehr bei längerer Serie). Je 100 Tech gibt es Prototyp-Waffen. Bei 6 droppen auch Siege Loot.'},
- {name:'Schiedsrichter',en:'Arbiter',kind:'o',bp:[2,3],desc:'Du erlässt dein eigenes Gesetz: Wähle eine Bedingung und einen Effekt. Bei 3 werden die Effekte stärker.'},
- {name:'Dunkler Stern',en:'Dark Star',kind:'o',bp:[2,4,6,9],desc:'Ein schwarzes Loch verschlingt Gegner unter 10% Leben. 4: +30% AD/AP. 6: stärkster Dunkler Stern wird supermassiv. 9: alle supermassiv.'},
- {name:'Dunkle Lady',en:'Dark Lady',kind:'o',bp:[1],desc:'Team erhält 4% Zähigkeit, 10% solange Morgana in ihrer dunklen Form ist.'},
- {name:'Doomer',en:'Doomer',kind:'o',bp:[1],desc:'Vex markiert zu Kampfbeginn alle Gegner mit „Doom". Der erste Treffer verbraucht die Marke und stiehlt 8% AD/AP für Vex.'},
- {name:'Göttlicher Duellant',en:'Divine Duelist',kind:'o',bp:[1],desc:'Heilt 15% des verursachten Spielerschadens. Fiora gewinnt jedes 1-gegen-1.'},
- {name:'Vernichter',en:'Eradicator',kind:'o',bp:[1],desc:'Gegner haben 14% weniger Rüstung und Magieresistenz.'},
- {name:'Fabrikneu',en:'Factory New',kind:'o',bp:[1],desc:'Nach jedem Kampf öffnet sich eine Waffenkammer mit permanenten Graves-Upgrades.'},
- {name:'Fateweaver',en:'Fateweaver',kind:'o',bp:[2,4],desc:'Zufallseffekte der Fähigkeiten sind „Lucky" (2× würfeln, besseres Ergebnis zählt). 4: +20% Krit-Chance, Krits sind Lucky.'},
- {name:'Galaxie-Jäger',en:'Galaxy Hunter',kind:'o',bp:[1],desc:'Zed kommt nur über das Invader-Augment. Solange sein Klon lebt: +40% AD.'},
- {name:'Waffengöttin',en:'Gun Goddess',kind:'o',bp:[1],desc:'Miss Fortune wählt einen Modus (Konduit / Herausforderer / Replikator) — Fähigkeit und Trait ändern sich.'},
- {name:'Mech',en:'Mecha',kind:'o',bp:[3,4,6],desc:'Mechs transformieren in ihre Ultimate-Form: +60% HP, verbesserte Fähigkeit, brauchen 2 Plätze, zählen doppelt. 3: +20% AD/AP · 4: +35% · 6: +1 Teamgröße.'},
- {name:'Meeple',en:'Meeple',kind:'o',bp:[3,5,7,10],desc:'Stat- und HP-Bonus. Ab 7: Ein Klon-Slot druckt Gold und 1★-Kopien. Bei 10: vier Meeplords erscheinen.'},
- {name:'N.O.V.A.',en:'N.O.V.A.',kind:'o',bp:[2,5],desc:'Jede N.O.V.A.-Einheit hat einen einzigartigen Power-Surge im Kampf (z. B. Aatrox: Rüstungsbruch für alle Gegner). Bei 5 wählst du den Surge selbst.'},
- {name:'Orakel',en:'Oracle',kind:'o',bp:[1],desc:'Tahm Kench gewährt alle 3 Runden eine Belohnung.'},
- {name:'Partytier',en:'Party Animal',kind:'o',bp:[1],desc:'Unter 45% HP wird Blitzcrank unangreifbar und repariert 15% max. HP pro Sekunde. Voll geheilt feuert er 4× schneller.'},
- {name:'Urzeitlich',en:'Primordian',kind:'o',bp:[2,3],desc:'8% des erlittenen Schadens werden zu Bonusschaden; Schaden spawnt Schwärmlinge. 3: mehr Schwärmlinge + jede Runde ein gratis 1-/2-Kosten-Champ.'},
- {name:'Psionik',en:'Psionic',kind:'o',bp:[2,4],desc:'2: du erhältst Psionik-Item Stufe 1 · 4: Stufe 2. Psionik-Items haben Extra-Effekte auf Psionik-Einheiten.'},
- {name:'Erlöser',en:'Redeemer',kind:'o',bp:[1],desc:'Für jeden aktiven (nicht-einzigartigen) Trait erhält das Team Angriffstempo, Rüstung und MR.'},
- {name:'Weltraum-Groove',en:'Space Groove',kind:'o',bp:[1,3,5,7,10],desc:'Groovianer kommen im Kampf „in den Groove": Angriffstempo + HP-Regeneration, skaliert mit Anzahl. 5: stapelnd +AD/AP pro Sekunde im Groove.'},
- {name:'Sternenschauer',en:'Stargazer',kind:'o',bp:[3],desc:'Wähle zu Spielbeginn ein Sternbild — es verstärkt bestimmte Hexes mit einem Spezialbonus. Mehr Hexes pro Spielerlevel.'},
- {name:'Zeitbrecher',en:'Timebreaker',kind:'o',bp:[2,3,4],desc:'2: Niederlagen geben Gratis-Rerolls, Siege speichern XP im Zeitkern. 3: Team +15% Angriffstempo. 4: Zeitbrecher +50%.'},
- {name:'Kommandantin',en:'Commander',kind:'o',bp:[1],desc:'Sona gewährt alle 2 Runden einen zufälligen Befehls-Mod, der das Kampfverhalten der Verbündeten verändert.'},
- {name:'Bollwerk',en:'Bulwark',kind:'o',bp:[1],desc:'Shen beschwört ein platzierbares Relikt: angrenzende Verbündete erhalten 18% max.-HP-Schild und 20% Angriffstempo.'},
+ {name:'Blütenpracht',en:'Blossom',kind:'o',bp:[3,5,7,9,11],desc:'Nach Kämpfen werden Geister aufgewertet; Blütenpracht-Champions erhalten AD/AP/max. HP. 3: Geister aufgewertet. 5: Geister in jedem Shop. 7: Gold nach Geister-Kauf. 9: zwei Geister-Käufe pro Runde. 11: Geister „überlaufen vor Kraft".'},
+ {name:'Hexenzirkel',en:'Coven',kind:'o',bp:[3,4,5,7],desc:'Sammelt Essenz durch eigene Kills und verlorene Kämpfe; an jedem Breakpoint die Wahl: Essenz sofort einlösen oder weitersammeln. Hochrisiko-Vertical — je länger gesammelt wird, desto größer Belohnung und Risiko.'},
+ {name:'Ahnenholz',en:'Elderwood',kind:'o',bp:[3,5,7,9,11],desc:'Platzierbare Pflanzen: 3 Stonebark-Baum + Lifebloom, 5 zweiter Baum, 7 Deepwood-Beschützer, 9 Pflanzen bis 2 Sterne, 11 bis 3 Sterne. Pflanzen skalieren mit HP/AP nach Ahnenholz-Sternstufe.'},
+ {name:'Fee',en:'Fae',kind:'o',bp:[2,4],desc:'Team-Schaden/Heilung/Schilde ziehen Pixies an; jede Pixie gibt AD/AP, unter 50% HP heilen Fee-Champions pro Pixie. Ab 7 Pixies: goldene Pixies geben Gold.'},
+ {name:'Feuerteufel',en:'Inferno',kind:'o',bp:[2,3,5,7],desc:'Schaden verursacht Brennen (HP-Schaden über Zeit) und Wunde (weniger gegnerische Heilung). Ab Stufe 3 zündet nach dem Kampf ein Shop-Slot eine Stufe höher (5: zwei Slots, 7: vier Slots).'},
+ {name:'Schwarzdorn',en:'Blackthorn',kind:'o',bp:[2,4,6],desc:'Der Verbündete auf dem Schwarzdorn-Feld wird zu Kampfbeginn geopfert und gibt dem Team HP: 175 (2) → 300, +30% (4) → 550, +60% (6, Opfer stirbt nicht mehr). Die ersten drei Opferungen geben zusätzlich eine Ausrüstungskomponente des Geopferten.'},
+ {name:'Lunar',en:'Lunar',kind:'o',bp:[2,3,4,5],desc:'Lunar-Champions und ihre Nachbarn erhalten Angriffstempo und AP, Lunar-Champions selbst das Doppelte. Bei gleichzeitig 3 Solar-Champions aktiviert sich zusätzlich das versteckte Trait Eklipse.'},
+ {name:'Urjäger',en:'Primal',kind:'o',bp:[2,4],desc:'Wahl aus mehreren Urjäger-Segnungen beim Aktivieren — genaue Effekte je nach gewählter Segnung.'},
+ {name:'Kluftbestie',en:'Riftbeast',kind:'o',bp:[3,5,7,10],desc:'3: Alpha-Markierung gibt einer Kluftbestie einen einzigartigen Buff. 5: periodischer Shop-Überlauf mit Kluftbestien. 7: Wachstum alle 5 Sek. (AD/AP/Angriffstempo, Rüstung/MR, HP, Manaregen). 10: Team-Maximalgröße +2.'},
+ {name:'Rivale',en:'Rival',kind:'o',bp:[2],desc:'Nur Kha\'Zix und Rengar. Kha\'Zix entwickelt sich über Takedowns dauerhaft weiter (wählbarer Zusatztrait); Rengar erhält alle 8 Takedowns Gold, ab 30 Takedowns Team-weit Bonus-AD. Zusammen gespielt teilen sich beide Mana und Heilung.'},
+ {name:'Solar',en:'Solar',kind:'o',bp:[3],desc:'Ab 3 Solar-Champions: HP-Schild und Bonus-Magieschaden, zusätzlich skalierend mit eigenen 3-Sterne-Champions. Bei gleichzeitig 3 Lunar-Champions aktiviert sich zusätzlich das versteckte Trait Eklipse.'},
+ {name:'Flinkling',en:'Sprykin',kind:'o',bp:[3,5,7],desc:'Team erhält ein Reittier (Big Furry Friend); ein Flinkling-Champion wird „Rider". 3: Rider erhält HP/Angriffstempo. 5/7: wachsender Anteil der Reittier-Fähigkeit wirkt aufs Team bzw. auf Flinkling-Champions.'},
+ {name:'Flora Fatalis',en:'Flora Fatalis',kind:'o',bp:[2],desc:'Nur Fiddlesticks und Soraka. Details zur genauen Wirkung noch nicht vollständig web-verifizierbar (früher Set-Stand) — im Zweifel Champion-Detailkarte im Spiel prüfen.'},
+ {name:'Eingestimmt',en:'Attuned',kind:'o',bp:[1],desc:'Nur Alune. Nach jedem Zauber wechselt der Mondzyklus; unter Halbmond gibt es Zähigkeit fürs Team, über Halbmond Schadensverstärkung.'},
+ {name:'Avatar',en:'Avatar',kind:'o',bp:[1],desc:'Nur Lux. Nimmt im Shop einen von 9 Ursprüngen an (Schwarzdorn/Blütenpracht/Hexenzirkel/Ahnenholz/Fee/Feuerteufel/Lunar/Urjäger/Solar) und zählt dafür doppelt; ihr Laser erhält je nach gewähltem Ursprung einen Zusatzeffekt.'},
+ {name:'Meisterjäger',en:'Apex Predator',kind:'o',bp:[1],desc:'Nur Elder Dragon. Belegt 2 Team-Plätze, gibt dafür +2 auf den Kluftbestie-Trait.'},
+ {name:'Kopfgeldsucher',en:'Bounty Seeker',kind:'o',bp:[1],desc:'Nur Draven. Wählt eines von mehreren Kopfgeld-Zielen (z. B. Anzahl Angriffe/Zauber/Kills); Erfüllung bringt Einheiten-, Komponenten- oder Reroll-Belohnungen, danach neues Kopfgeld.'},
+ {name:'Säurespucker',en:'Caustic',kind:'o',bp:[1],desc:'Nur Kog\'Maw. Schaden zerfrisst Rüstung und Magieresistenz der Gegner für mehrere Sekunden.'},
+ {name:'Smaragdaspekt',en:'Emerald Aspect',kind:'o',bp:[1],desc:'Nur Taric. Ein Verbündeter wird zu ihm „gezogen"/gepaart und erhält dadurch starke Bonuseffekte aus seiner Fähigkeit.'},
+ {name:'Hüter der Haine',en:'Greenfather',kind:'o',bp:[1],desc:'Nur Ivern. Sammelt Samen durch eigene Zauber (+3 pro Kampf); bei 5 Samen wächst ein eigenes Feld zu einem Biom (Baum/Fels/Wasser/Blume/Pilz), das die dort stehende Einheit stärkt.'},
+ {name:'Monolith',en:'Monolith',kind:'o',bp:[1],desc:'Nur Malphite. Erhält Rüstung und Magieresistenz für jeden Gegner, der ihn gerade anvisiert.'},
+ {name:'Wachstum der Urahnen',en:'Old Growth',kind:'o',bp:[1],desc:'Nur Maokai. Stirbt ein Gegner in seiner Nähe, erhält er dauerhaft maximale HP — theoretisch unbegrenzt skalierend.'},
+ {name:'Dornenmaid',en:'Thornmaiden',kind:'o',bp:[1],desc:'Nur Zyra. Team erhält Zähigkeit, deutlich mehr ab 6 lebenden Zyra-Pflanzen.'},
  // Klassen
- {name:'Bastion',en:'Bastion',kind:'c',bp:[2,4,6],desc:'Team +12 Rüstung/MR, Bastione deutlich mehr (16/35/55) — in den ersten 10 Sekunden verdoppelt. 6: auch Nicht-Bastione +20.'},
- {name:'Schläger',en:'Brawler',kind:'c',bp:[2,4,6],desc:'Team +7% HP; Schläger +25/45/65% maximale HP.'},
- {name:'Herausforderer',en:'Challenger',kind:'c',bp:[2,3,4,5],desc:'Team +10% Angriffstempo; Herausforderer +15/22/30/40%. Bei Takedown: +50% für 2,5s und Sprung zum nächsten Ziel.'},
- {name:'Konduit',en:'Conduit',kind:'c',bp:[2,3,4,5],desc:'Konduits erhalten +20% Mana aus allen Quellen; Team erhält Mana-Regeneration, Konduits mehr.'},
- {name:'Plünderer',en:'Marauder',kind:'c',bp:[2,4,6],desc:'Team +5% Omnivamp; Plünderer +5/7/10% Omnivamp und +20/30/40% AD. Überheilung wird zu Schild (max. 25% HP).'},
- {name:'Replikator',en:'Replicator',kind:'c',bp:[2,4],desc:'Fähigkeiten wiederholen sich mit 25% / 50% Stärke.'},
- {name:'Schurke',en:'Rogue',kind:'c',bp:[2,3,4,5],desc:'+15/30/45/60% AD & AP. Erstmalig unter 50% HP tauchen Schurken in die Schatten und Gegner wechseln das Ziel.'},
- {name:'Hirte',en:'Shepherd',kind:'c',bp:[3,5,7],desc:'Beschwört Bia (ab 3) und Bayin (ab 5) — Mutter-Tochter-Duo. Ihre Stärke skaliert mit den Sternstufen deiner Hirten. 7: ihr Band vertieft sich.'},
- {name:'Scharfschütze',en:'Sniper',kind:'c',bp:[2,3,4,5],desc:'+18/24/28/32% Schadensverstärkung, plus +2/3/4/5% pro Hex Entfernung zum Ziel — deshalb ganz nach hinten stellen.'},
- {name:'Vanguard',en:'Vanguard',kind:'c',bp:[2,4,6],desc:'Schild zu Kampfbeginn und bei 50% HP (16/28/40% max. HP für 10s); +5% Zähigkeit solange geschildet.'},
- {name:'Reisender',en:'Voyager',kind:'c',bp:[2,3,4,5,6],desc:'Tanks/Kämpfer erhalten einen Schild (175–700), alle anderen Schadensverstärkung (9–27%). Reisende erhalten das Doppelte.'},
+ {name:'Anpasser',en:'Adaptor',kind:'c',bp:[2,3,4],desc:'Fähigkeit wechselt je nachdem ob AD oder AP höher ist; Anpasser erhalten den jeweils höheren Wert (25/35/50%).'},
+ {name:'Raufbold',en:'Brawler',kind:'c',bp:[2,4,6],desc:'Team erhält maximale HP (25/40/65%), Raufbolde selbst mehr.'},
+ {name:'Verteidiger',en:'Defender',kind:'c',bp:[2,4,6],desc:'Team erhält Rüstung/Magieresistenz, Verteidiger mehr; ab 6 zusätzlich Zähigkeit während der Schildphase.'},
+ {name:'Henker',en:'Executioner',kind:'c',bp:[2,3,4],desc:'Gewährt Präzision und kritische Trefferchance; ab 3 bluten Gegner für zusätzlichen wahren Schaden über Zeit, 4 erhöht diesen Blutungsschaden.'},
+ {name:'Jäger',en:'Hunter',kind:'c',bp:[2,3,4,5],desc:'Team erhält AD (20/30/45/65%); bleibt das Ziel 4 Sekunden gleich, gibt es zusätzlich Schadensverstärkung.'},
+ {name:'Anrufer',en:'Invoker',kind:'c',bp:[2,3,4,5],desc:'Team erhält Manaregeneration, Anrufer deutlich mehr.'},
+ {name:'Moloch',en:'Juggernaut',kind:'c',bp:[2,4,6],desc:'Team erhält Schadensreduktion, Molochs mehr.'},
+ {name:'Schnellfeuer',en:'Rapidfire',kind:'c',bp:[2,3,4,5],desc:'Team erhält Angriffstempo, Schnellfeuer-Champions bauen pro Angriff zusätzlich Stapel auf (bis zur Kappungsgrenze).'},
+ {name:'Verwüster',en:'Ravager',kind:'c',bp:[2,4,6],desc:'Omnivamp und Bonusschaden, verdoppelt gegen Gegner unter 50% HP.'},
+ {name:'Zaubermeister',en:'Spellweaver',kind:'c',bp:[2,4,6],desc:'Team erhält AP, Zaubermeister mehr, plus Extra-AP pro eigenem Zauber-Einsatz.'},
+ {name:'Beschwörer',en:'Summoner',kind:'c',bp:[2,3],desc:'Verstärkt Beschwörungen individuell je Champion (z. B. Yorick +HP, Azir +Schaden); Stufe 3 verstärkt alle Effekte zusätzlich.'},
+ {name:'Frontkämpfer',en:'Vanguard',kind:'c',bp:[2,4,6],desc:'Schild zu Kampfbeginn und beim Unterschreiten einer HP-Schwelle; ab 6 zusätzlich Zähigkeit während der Schildphase.'},
+ // Verstecktes Bonus-Trait: kein Champion "hat" es, es aktiviert sich bei gleichzeitig Solar+Lunar
+ {name:'Eklipse',en:'Eclipse',kind:'o',bp:[3],desc:'Verstecktes Bonus-Trait: Bei gleichzeitig 3 Solar- und 3 Lunar-Champions exekutiert es ab Kampfbeginn periodisch (alle 3,5 Sek.) den schwächsten Gegner. Lunar-Champions erhalten zusätzlich HP und Schadensverstärkung je einzigartigem Solar-Champion.'},
 ];
 
-// ── COMPS (Meta Patch 17.6) ───────────────────────────────────
+// ── COMPS (Meta Patch 18.1, Tag 1/2 -- Tierlisten explizit als Frühstadium markiert) ──
 var COMPS=[
- {id:'primordian',name:'Urzeitlich Psionik',tier:'A',diff:'e',style:'Slow-Roll Lv 6',styleKey:'reroll',
-  carry:'Viktor',carryIt:['Blauer Buff','Schmuckhandschuh','Rabadons Todeshaube'],
-  sec:'Master Yi',tank:'Gragas',tankIt:['Warmogs Rüstung','Dornenweste','Gargoyle-Steinplatte'],
-  core:['Gragas','Pyke','Viktor','Master Yi'],extras:["Rek'Sai",'Milio','Lulu','Sona'],
-  tip:'Der einfachste Einstieg ins Set. Auf Level 6 bleiben, Psionik-Items an Viktor oder Master Yi. Sona als 5-Kosten sofort aufwerten, wenn gefunden.',
-  pro:'Sehr verzeihend für Anfänger — Urzeitlich spawnt gratis Einheiten, Psionik gibt flexible Items für jeden Carry-Typ.'},
- {id:'gnar',name:'Gnar-Druckerei',tier:'S',diff:'m',style:'Slow-Roll Lv 6–7',styleKey:'reroll',
-  carry:'Gnar',carryIt:['Todesklinge','Guinsoos Wutklinge','Unendlichkeitsklinge'],
-  sec:'Corki',tank:'Rammus',tankIt:['Dornenweste','Gargoyle-Steinplatte','Warmogs Rüstung'],
-  core:['Poppy','Veigar','Gnar','Meepsie','Fizz','Corki','Rammus'],extras:['Bard'],
-  tip:'Meeple 7 aktivieren — der Klon-Slot druckt Gold und Einheiten. Über 50 Gold bleiben und Gnar langsam auf 3★ rollen.',
-  pro:'Stärkste Line des Patches, aber fast immer contested — bei 2+ Mitspielern auf der Line früh Richtung Veigar/anderes pivoten.'},
- {id:'kaisa',name:"Dunkler Stern Kai'Sa",tier:'S',diff:'m',style:'Reroll Lv 7',styleKey:'reroll',
-  carry:"Kai'Sa",carryIt:['Unendlichkeitsklinge','Riesenschlächter','Speer von Shojin'],
-  sec:'Jhin',tank:'Mordekaiser',tankIt:['Sonnenfeuer-Umhang','Dornenweste','Warmogs Rüstung'],
-  core:["Cho'Gath",'Lissandra','Mordekaiser',"Kai'Sa",'Illaoi','Karma','Jhin'],extras:['Shen'],
-  tip:"Auf Level 7 Kai'Sa auf 3★ rollen. Dunkler Stern exekutiert alles unter 10% HP — Karma und Jhin bringen den Trait Richtung 6.",
-  pro:'Beste Winrate im Patch (Top-4 ~64%). Jhin als Item-Zweitträger; bei 6 Dunkler Stern wird der stärkste supermassiv.'},
- {id:'asol',name:'Mech Aurelion Sol',tier:'S',diff:'h',style:'Fast 8',styleKey:'fast8',
-  carry:'Aurelion Sol',carryIt:['Schmuckhandschuh','Riesenschlächter','Rabadons Todeshaube'],
-  sec:'Bard',tank:'Tahm Kench',tankIt:['Warmogs Rüstung','Drachenklaue','Gargoyle-Steinplatte'],
-  core:['Urgot','Viktor','Aurelion Sol','Mighty Mech','Tahm Kench','Morgana','Bard'],extras:[],
-  tip:'Schnell auf Level 8, dann Asol 2★ suchen. Achtung: Transformierte Mechs brauchen 2 Plätze auf dem Brett!',
-  pro:'Mit Mech-Emblem auf 6 Mecha gehen (+1 Teamgröße). Transformations-Timing gegen Burst-Bretter einplanen.'},
- {id:'vex',name:'Doomer Fast 9 (Vex)',tier:'S',diff:'h',style:'Fast 9',styleKey:'fast9',
-  carry:'Vex',carryIt:['Guinsoos Wutklinge','Riesenschlächter','Hextech-Gunblade'],
-  sec:'Graves',tank:'Morgana',tankIt:['Adaptivhelm','Gargoyle-Steinplatte','Steraks Pfand'],
-  core:['Vex','Graves','Nunu & Willump','Morgana','Rammus','Shen','Sona'],extras:[],
-  tip:'Nur mit gutem Gold-Start spielen: HP bewusst opfern, auf Level 9 die 5-Kosten-Legendaries stapeln.',
-  pro:'Bedingungen für Fast 9: ~50+ Gold auf Stage 4 und >40 HP. Graves so früh wie möglich finden — seine Upgrades skalieren mit der Zeit.'},
- {id:'nami',name:'Weltraum-Groove Nami',tier:'S',diff:'h',style:'Fast 8',styleKey:'fast8',
-  carry:'Nami',carryIt:['Schmuckhandschuh','Morellonomicon','Leerenstab'],
-  sec:'Fiora',tank:'Ornn',tankIt:['Gargoyle-Steinplatte','Dornenweste','Warmogs Rüstung'],
-  core:['Gragas','Ornn','Samira','Nami','Blitzcrank','Fiora'],extras:['Gwen','Nasus'],
-  tip:'Je länger der Kampf dauert, desto stärker wird der Groove — auf zähe Frontline bauen und den Kampf strecken.',
-  pro:'Mit Groove-Emblem deutlich stärker (7er-Groove). Blitzcrank hooked gegnerische Carries — clever positionieren.'},
- {id:'kindred',name:'N.O.V.A. Kindred',tier:'A',diff:'m',style:'Fast 8',styleKey:'fast8',
-  carry:'Kindred',carryIt:['Guinsoos Wutklinge','Riesenschlächter','Krakenfurie'],
-  sec:'Master Yi',tank:'Maokai',tankIt:['Warmogs Rüstung','Gargoyle-Steinplatte','Dornenweste'],
-  core:['Aatrox','Akali','Maokai','Kindred','Master Yi','Tahm Kench'],extras:[],
-  tip:'Solide Allround-Comp: Kindred carried, Master Yi räumt hinten auf.',
-  pro:'Bei N.O.V.A. 5 den Surge wählen der zum Spot passt — meistens Caitlyns Team-Angriffstempo für Kindred.'},
- {id:'stargazer',name:'Sternenschauer-Scharfschützen',tier:'A',diff:'h',style:'Fast 8 → 9',styleKey:'fast8',
-  carry:'Xayah',carryIt:['Krakenfurie','Roter Buff','Guinsoos Wutklinge'],
-  sec:'Jhin',tank:'Nunu & Willump',tankIt:['Warmogs Rüstung','Gargoyle-Steinplatte','Adaptivhelm'],
-  core:['Twisted Fate','Jax','Lulu','Nunu & Willump','Xayah','Jhin'],extras:['Talon'],
-  tip:'Sternbild früh wählen und Xayah maximal weit hinten auf verstärkte Hexes stellen — Scharfschützen machen mehr Schaden pro Hex Entfernung.',
-  pro:'Constellation-abhängig: offensive Sternbilder für Xayah-Hexes priorisieren. Auf 9 kommt Jhin als zweiter Sniper dazu.'},
- {id:'samira',name:'Samira Reroll',tier:'A',diff:'m',style:'Reroll Lv 7',styleKey:'reroll',
-  carry:'Samira',carryIt:['Letzter Seufzer','Speer von Shojin','Todesklinge'],
-  sec:'Xayah',tank:'Ornn',tankIt:['Gargoyle-Steinplatte','Dornenweste','Warmogs Rüstung'],
-  core:['Nasus','Gwen','Ornn','Samira','Miss Fortune','Xayah'],extras:[],
-  tip:'Samira auf Level 7 auf 3★ rollen. Weltraum-Groove-Gerüst hält die Front, Samira schießt von hinten durch.',
-  pro:'Flexibler Pivot-Pfad: aus demselben Gerüst in Nami Fast 8 wechseln wenn Samira contested ist.'},
- {id:'gwen',name:'Gwen Reroll',tier:'A',diff:'e',style:'Slow-Roll Lv 6',styleKey:'reroll',
-  carry:'Gwen',carryIt:['Diebeshandschuhe','Standhaftes Herz','Steraks Pfand'],
-  sec:'Samira',tank:'Ornn',tankIt:['Gargoyle-Steinplatte','Dornenweste','Warmogs Rüstung'],
-  core:['Teemo','Gwen','Gragas','Ornn','Samira'],extras:['Nasus'],
-  tip:'Perfekt für den Einstieg: Auf Level 6 bleiben, über 50 Gold jede Runde rollen, Gwen auf 3★ bringen. Diebeshandschuhe = keine Item-Sorgen.',
-  pro:'Einfachste stabile Top-4-Line. Wenig contested; Übergang auf Groove-Endgame mit Blitzcrank/Fiora.'},
- {id:'tfreroll',name:'Twisted Fate Reroll',tier:'B',diff:'e',style:'Slow-Roll Lv 6',styleKey:'reroll',
-  carry:'Twisted Fate',carryIt:['Blauer Buff','Schmuckhandschuh','Nashors Zahn'],
-  sec:'Xayah',tank:'Jax',tankIt:['Gargoyle-Steinplatte','Dornenweste','Warmogs Rüstung'],
-  core:['Twisted Fate','Jax','Lulu'],extras:['Talon','Nunu & Willump'],
-  tip:'Sehr guter erster Reroll-Plan: Twisted Fate kostet nur 1 Gold, ist im Shop häufig und günstig auf 3★ zu bringen. Auf Level 6 bleiben und über 50 Gold rollen.',
-  pro:'Braucht nur 3 Kern-Einheiten, passt fast immer aufs Feld — auch schon auf niedrigem Level.'},
- {id:'leblanc',name:'Hirte LeBlanc',tier:'A',diff:'h',style:'Fast 8',styleKey:'fast8',
-  carry:'LeBlanc',carryIt:['Guinsoos Wutklinge','Rabadons Todeshaube','Schmuckhandschuh'],
-  sec:'Karma',tank:'Nunu & Willump',tankIt:['Adaptivhelm','Gargoyle-Steinplatte','Warmogs Rüstung'],
-  core:['Lissandra','Meepsie','Illaoi','Lulu','LeBlanc','Nami','Sona'],extras:[],
-  tip:'Das Hirten-Duo Bia & Bayin skaliert mit den Sternstufen deiner Hirten — Upgrades zählen doppelt.',
-  pro:'Mit Hirten-Emblem Richtung 7 Hirten. Braucht sauberes Econ-Spiel, belohnt mit sehr starkem Lategame.'},
- {id:'lissandra',name:'Dunkler Stern Lissandra',tier:'B',diff:'e',style:'Reroll Lv 5',styleKey:'reroll',
-  carry:'Lissandra',carryIt:['Nashors Zahn ×2','Schmuckhandschuh'],
-  sec:"Kai'Sa",tank:"Cho'Gath",tankIt:['Warmogs Rüstung','Dornenweste','Gargoyle-Steinplatte'],
-  core:["Cho'Gath",'Lissandra','Veigar','Mordekaiser',"Kai'Sa"],extras:[],
-  tip:"Die günstigste Comp des Sets: Auf Level 5 bleiben, Lissandra und Cho'Gath auf 3★ rollen. Später fließend in Dunkler Stern Kai'Sa übergehen.",
-  pro:'Guter Low-Roll-Plan: minimales Risiko, solide Top-6, mit Kai\'Sa-Hit Top-4-Potenzial.'},
- {id:'veigar',name:'Meeple Veigar',tier:'B',diff:'m',style:'Reroll Lv 6–7',styleKey:'reroll',
-  carry:'Veigar',carryIt:['Nashors Zahn ×2','Schmuckhandschuh'],
-  sec:'Corki',tank:'Rammus',tankIt:['Dornenweste','Gargoyle-Steinplatte','Warmogs Rüstung'],
-  core:['Poppy','Veigar','Gnar','Meepsie','Fizz','Corki','Rammus'],extras:['Bard'],
-  tip:'Budget-Version der Gnar-Druckerei — spielen wenn Gnar contested ist, gleiche Meeple-7-Engine.',
-  pro:'AP-Items statt AD: gleiche Einheiten, andere Item-Leiste. Meeple-Klonslot druckt trotzdem.'},
- {id:'jinx',name:'Anima Jinx',tier:'B',diff:'m',style:'Reroll Lv 6',styleKey:'reroll',
-  carry:'Jinx',carryIt:['Blauer Buff','Guinsoos Wutklinge','Hextech-Gunblade'],
-  sec:'Aurora',tank:'Illaoi',tankIt:['Gargoyle-Steinplatte','Warmogs Rüstung','Steraks Pfand'],
-  core:['Briar','Jinx','Aurora','Illaoi','Xayah','Fiora'],extras:[],
-  tip:'Lose-Streak-Deck: Früh bewusst verlieren, Anima-Tech und Zinsen sammeln — dann mit Jinx 3★ und Prototyp-Waffen spiken.',
-  pro:'Streak nie brechen! Jeder Anima-Takedown gibt Extra-Tech. Fiora als Endgame-Anima-Upgrade.'},
+ {id:'faestrikers',name:'Feen-Kämpfer (Xayah)',tier:'A',diff:'e',style:'Fast 8 / stabil ab Lv 7',styleKey:'fast8',
+  carry:'Xayah',carryIt:['Guinsoos Wutklinge','Riesenschlächter','Roter Buff'],
+  sec:'Tristana',tank:'Shen',tankIt:['Warmogs Rüstung','Drachenklaue','Dornenweste'],
+  core:['Rakan','Xayah','Tristana','Lillia','Shen'],extras:[],
+  tip:'Schon auf Level 7 spielbar. Xayah ganz hinten in die Ecke — Schaden skaliert mit Entfernung zum Ziel.',
+  pro:'Sehr verzeihender Fallback, wenn früh Bögen/Schwerter droppen. Bei Contest einfach auf Level 8 pushen und Legendaries dazunehmen.'},
+ {id:'draven',name:'AD Fast 9 (Draven)',tier:'S',diff:'h',style:'Fast 9',styleKey:'fast9',
+  carry:'Draven',carryIt:['Unendlichkeitsklinge','Riesenschlächter','Guinsoos Wutklinge'],
+  sec:'Elder Dragon',tank:'Maokai',tankIt:['Warmogs Rüstung','Gargoyle-Steinplatte'],
+  core:['Draven','Elder Dragon','Maokai'],extras:[],
+  tip:'Ohne Econ-Augment kaum machbar — Ziel: Level 9 am Ende von Etappe 4 oder Anfang Etappe 5.',
+  pro:'Henker-Emblem lohnt sich, weil es Draven zusätzlich buffed. Kopfgeld-Ziele so wählen, dass sie zum eigenen Rundenverlauf passen.'},
+ {id:'riftbeast',name:'Kluftbestie Ascension (Brambleback)',tier:'A',diff:'m',style:'Fast 8',styleKey:'fast8',
+  carry:'Brambleback',carryIt:['Roter Buff','Riesenschlächter','Unendlichkeitsklinge'],
+  sec:'Elder Dragon',tank:'Sentinel',tankIt:['Gargoyle-Steinplatte','Warmogs Rüstung'],
+  core:['Cinderling','Pebbles','Gromp','Murkwolf','Scuttlecrab','Krug','Sentinel','Brambleback'],extras:['Elder Dragon'],
+  tip:'Auf Etappe 3-2 mit 5 Kluftbestien auf Level 6 spielen, nach dem ersten 3-Stern-Hit auf Level 8 mit 7 Kluftbestien weiterbauen.',
+  pro:'Die Alpha-Markierung auf den Carry legen — gibt ihm ein zusätzliches Fähigkeits-Upgrade pro Kampf.'},
+ {id:'coven',name:'Hexenzirkel Cashout (Morgana)',tier:'A',diff:'h',style:'Slow-Roll Lv 8 (Economy)',styleKey:'reroll',
+  carry:'Morgana',carryIt:['Adaptivhelm','Gargoyle-Steinplatte','Steraks Pfand'],
+  sec:'Cassiopeia',tank:'Elise',tankIt:['Gargoyle-Steinplatte','Warmogs Rüstung'],
+  core:['Camille','Caitlyn','Elise','Cassiopeia','Morgana'],extras:['Sentinel','Brambleback'],
+  tip:'Bewusst in Etappe 2 Kämpfe verlieren, um Essenz zu sammeln — bei rund 250 Essenz auf Level 8 „cashen" für Morgana 2-Stern und einen Sentinel.',
+  pro:'Hochrisiko-Vertical: je länger gesammelt statt eingelöst wird, desto größer die Belohnung — aber auch das Risiko, vorher auszubluten.'},
+ {id:'elderwood',name:'Ahnenholz Reroll (LeBlanc)',tier:'A',diff:'m',style:'Reroll Lv 6-7',styleKey:'reroll',
+  carry:'LeBlanc',carryIt:['Schmuckhandschuh','Rabadons Todeshaube','Guinsoos Wutklinge'],
+  sec:'Ezreal',tank:'Ornn',tankIt:['Gargoyle-Steinplatte','Dornenweste','Warmogs Rüstung'],
+  core:['Ornn','Alistar','Hecarim','LeBlanc','Ezreal'],extras:['Xayah','Gnar'],
+  tip:'Frühe Ahnenholz-Embleme und -Items sammeln, dann auf LeBlanc oder Xayah slammen.',
+  pro:'Die Ahnenholz-Pflanze wirkt wie ein lebender Schild — Einheiten direkt daneben platzieren für Angriffstempo und Heilung.'},
+ {id:'yunara',name:'Yunara Henker-Reroll',tier:'S',diff:'e',style:'Reroll Lv 6-7 (2-Kosten)',styleKey:'reroll',
+  carry:'Yunara',carryIt:['Speer von Shojin ×2','Todesklinge'],
+  sec:'Ezreal',tank:'Shen',tankIt:['Warmogs Rüstung','Drachenklaue'],
+  core:['Yunara','Kennen','Ezreal','Shen'],extras:['Azir','Soraka'],
+  tip:'Klassischer 2-Kosten-Reroll — auf Level 6 bleiben, über 50 Gold rollen, Yunara auf 3 Sterne bringen.',
+  pro:'Weniger itemhungrig als die Fast-9-Comps — guter Einstieg mit stabilem Top-4.'},
+ {id:'blossom',name:'Blütenpracht Ahri/Karma',tier:'S',diff:'h',style:'Fast 8-9',styleKey:'fast8',
+  carry:'Ahri',carryIt:['Schmuckhandschuh','Blauer Buff','Nashors Zahn'],
+  sec:'Karma',tank:'Sett',tankIt:['Titanentrotz','Warmogs Rüstung'],
+  core:['Karma','Yorick','Yunara','Master Yi','Ahri','Sett','Ashe'],extras:[],
+  tip:'Emblem-lastiger Aufbau — je mehr Blütenpracht-Champions, desto öfter erscheinen Geister im Shop.',
+  pro:'Bei 5 Blütenpracht erscheinen Geister in JEDEM Shop, bei 9 sind zwei Geister-Käufe pro Runde möglich.'},
+ {id:'solarkayle',name:'Solar Kayle',tier:'B',diff:'m',style:'Slow-Roll Lv 6',styleKey:'reroll',
+  carry:'Kayle',carryIt:['Guinsoos Wutklinge','Riesenschlächter','Hextech-Gunblade'],
+  sec:'Varus',tank:'Sejuani',tankIt:['Gargoyle-Steinplatte','Warmogs Rüstung','Adaptivhelm'],
+  core:['Leona','Kayle','Sejuani','Varus'],extras:[],
+  tip:'NICHT in Etappe 2 leveln — ab Etappe 3 über ~52 Gold auf 1er/2er rollen.',
+  pro:'⚠ Tag-1-Einstufung schwankt zwischen Quellen stark (S+ bis C) — als Einstieg testen, nicht blind auf Top-Tier verlassen.'},
+ {id:'masteryireroll',name:'Master Yi Anpasser-Reroll',tier:'A',diff:'m',style:'Reroll Lv 7',styleKey:'reroll',
+  carry:'Master Yi',carryIt:['Riesenschlächter','Nachtschneide','Quecksilber'],
+  sec:"Kog'Maw",tank:'Amumu',tankIt:['Warmogs Rüstung','Gargoyle-Steinplatte'],
+  core:['Master Yi',"Kog'Maw",'Nidalee','Amumu'],extras:['Ahri'],
+  tip:"Auf Level 7 für Master Yi und Kog'Maw auf 2 Sterne rollen, danach Econ aufbauen und weiter auf 3 Sterne rollen.",
+  pro:"Item-Priorität: Master Yi vor Tank vor Kog'Maw vor Nidalee."},
+ {id:'sivir',name:'Sivir Jäger',tier:'S',diff:'m',style:'Fast 8 (Tempo)',styleKey:'fast8',
+  carry:'Sivir',carryIt:['Roter Buff','Letzter Seufzer'],
+  sec:'Caitlyn',tank:'Rammus',tankIt:['Dornenweste','Gargoyle-Steinplatte'],
+  core:['Cinderling','Caitlyn','Tristana','Sivir','Rammus'],extras:['Ashe'],
+  tip:'Wirtschaftlich/tempobasiert spielen, mit Fee-Emblem flexibel erweiterbar.',
+  pro:'Sivirs Klinge springt zwischen Zielen — gut gegen mehrere kleinere Gegner-Einheiten.'},
+ {id:'rival',name:"Rivalen Kha'Zix/Rengar",tier:'B',diff:'h',style:'Reroll Lv 6 (braucht Augment)',styleKey:'reroll',
+  carry:"Kha'Zix",carryIt:['Unendlichkeitsklinge','Nachtschneide'],
+  sec:'Rengar',tank:'Malphite',tankIt:['Warmogs Rüstung','Gargoyle-Steinplatte'],
+  core:["Kha'Zix",'Rengar','Malphite'],extras:[],
+  tip:'Nur mit dem Augment „Rivals to Friends" ein echter Dual-Carry — ohne das Augment gilt die Line selbst als riskant.',
+  pro:'Rengar sammelt alle 8 Takedowns Gold, ab 30 Takedowns Team-weit Bonus-AD. Zusammen gespielt teilen sich beide Mana und Heilung.'},
+ {id:'primal',name:'Urjäger-Kreuzung (Nidalee/Vi/Sivir)',tier:'B',diff:'m',style:'Flex (Fast 8)',styleKey:'fast8',
+  carry:'Nidalee',carryIt:['Schmuckhandschuh','Rabadons Todeshaube'],
+  sec:'Sivir',tank:'Vi',tankIt:['Titanentrotz','Warmogs Rüstung'],
+  core:['Vi','Nidalee','Sivir'],extras:[],
+  tip:'Nidalees Fähigkeit richtet sich nach AD/AP-Übergewicht im Team — Itemwahl frühzeitig festlegen.',
+  pro:'⚠ Tier-Einstufung noch nicht belastbar (Tag 1/2) — eher flexible Option als fester Plan.'},
+ {id:'eclipse',name:'Eklipse-Hybrid (Solar+Lunar)',tier:'B',diff:'h',style:'Slow-Roll Lv 6 (Hybrid)',styleKey:'reroll',
+  carry:'Alune',carryIt:['Schmuckhandschuh','Rabadons Todeshaube'],
+  sec:'Diana',tank:'Sejuani',tankIt:['Gargoyle-Steinplatte','Warmogs Rüstung'],
+  core:['Kayle','Sejuani','Alune','Diana','Leona'],extras:['Varus','Aphelios','Amumu'],
+  tip:'Bei gleichzeitig 3 Solar und 3 Lunar aktiviert sich das versteckte Trait Eklipse: exekutiert alle 3,5 Sekunden den schwächsten Gegner.',
+  pro:'⚠ Nischen-/Tech-Pick, noch kaum verlässlich eingestuft — eher Kuriosität als etablierter Plan.'},
 ];
 
-// ── GÖTTER ────────────────────────────────────────────────────
-var GODS=[
- {g:'Soraka — Göttin der Sterne',d:'HP-Unterstützung, zugeschnitten auf Lose-Streak-Spiel. Stark wenn du früh viel Leben verlierst.'},
- {g:'Ahri — Göttin des Wohlstands',d:'Gold und Econ, hilft bei 3★-Plänen. Gute Standard-Wahl für Reroll-Comps.'},
- {g:'Aurelion Sol — Gott der Wunder',d:'Quest-Segen: erst Aufgabe erfüllen, dann Belohnung. Value, wenn du die Quest sicher schaffst.'},
- {g:'Yasuo — Gott des Abgrunds',d:'Verstärkt Hexes über Einheiten-/Positions-Kombos. Für Spieler, die gern positionieren.'},
- {g:'Varus — Gott der Liebe',d:'Champion-Angebote inkl. erhöhter 5-Kosten-Chancen. Stark für Fast-9-Pläne.'},
- {g:'Evelynn — Göttin der Versuchung',d:'Hohes Risiko, hohe Belohnung — verlangt Opfer (HP, Shop-Zugriff). Nur nehmen wenn du vorne liegst.'},
- {g:'Thresh — Gott der Pakte',d:'Zufällige Segen anderer Götter plus Extra-Gold. Solider Allrounder.'},
- {g:'Kayle — Göttin der Ordnung',d:'Unkomplizierte Item-Angebote. Die sichere Wahl, wenn dir Items fehlen — Anfänger-Empfehlung.'},
- {g:'Ekko — Gott der Zeit',d:'Einheiten, Artefakte und temporäre Scuttle-Krabben. Gut für Tempo-Spikes und Artefakt-Builds.'},
+// ── GEISTER (Wisps) — löst „Reich der Götter" ab ───────────────
+var WISPS=[
+ {w:'🧑 Champion',d:'Zeigt einen zusätzlichen Champion aus dem Pool — wie ein normaler Shop-Slot, nur zusätzlich zum eigentlichen 5. Slot.'},
+ {w:'⚔️ Kampf',d:'Ein sofortiger Kampfvorteil für die nächste Runde (z. B. Schaden, Heilung). Ab Etappe 5 ist jeder zweite Geist garantiert ein Kampf-Geist.'},
+ {w:'💰 Gold/EP',d:'Sofort-Gold oder Erfahrungspunkte.'},
+ {w:'🛠 Item',d:'Eine Item-Komponente oder ein fertiges Item.'},
+ {w:'🎲 Sonstiges',d:'Wechselnde Sondereffekte, z. B. Reroll-Gutschriften.'},
+ {w:'⚠️ Riskant',d:'Hohe Belohnung, aber mit Nachteil oder Risiko verbunden — nur nehmen, wenn du es dir leisten kannst.'},
+ {w:'🛒 Shop',d:'Wirkt direkt auf deinen aktuellen Shop, z. B. eine Neuwürfelung.'},
 ];
 
 // ── ITEM-REZEPTE ──────────────────────────────────────────────
@@ -1194,36 +1168,32 @@ var RECIPES=[
 // Reihe 1 = vorderste (Kontakt zum Gegner) … Reihe 4 = hinterste (deine Seite).
 // Spalte 1–7 von links. Beim Set-Wechsel zusammen mit COMPS austauschen.
 var POS={
- primordian:{note:'Der einfachste Einstieg: zwei Tanks mittig, Viktor ganz hinten in die Ecke. Master Yi und Pyke gehen von selbst rein — an die Ränder stellen, damit sie die Backline nicht blockieren.',
-  p:{"Rek'Sai":[1,3],'Gragas':[1,4],'Pyke':[2,2],'Master Yi':[2,6],'Milio':[3,3],'Sona':[3,4],'Lulu':[3,5],'Viktor':[4,7]}},
- gnar:{note:'Gnar ist Scharfschütze — er macht mehr Schaden je weiter der Gegner weg ist. Deshalb hinterste Ecke, niemals mittig.',
-  p:{'Rammus':[1,4],'Poppy':[1,3],'Fizz':[1,6],'Meepsie':[3,3],'Veigar':[3,5],'Corki':[4,5],'Gnar':[4,7]}},
- kaisa:{note:"Kai'Sa ganz in die Ecke, Jhin daneben. Die drei Tanks decken die Mitte ab, damit der Gegner nicht durchläuft.",
-  p:{"Cho'Gath":[1,3],'Mordekaiser':[1,4],'Illaoi':[1,5],'Lissandra':[3,3],'Karma':[3,5],'Jhin':[4,6],"Kai'Sa":[4,7]}},
- asol:{note:'Achtung: Transformierte Mechs belegen 2 Hexes. Lass neben Mighty Mech und Urgot Platz, sonst rutscht deine Backline durcheinander.',
-  p:{'Mighty Mech':[1,3],'Urgot':[1,4],'Tahm Kench':[1,5],'Morgana':[2,4],'Viktor':[3,3],'Bard':[3,5],'Aurelion Sol':[4,6]}},
- vex:{note:'Vier Tanks als Wand, Vex und Graves dahinter. Gegen Assassinen Vex eine Reihe nach vorn in die Mitte ziehen.',
-  p:{'Rammus':[1,2],'Nunu & Willump':[1,3],'Morgana':[1,4],'Shen':[1,5],'Sona':[3,4],'Graves':[4,6],'Vex':[4,7]}},
- nami:{note:'Der Groove wird stärker je länger der Kampf dauert — baue die Front breit, damit du Zeit gewinnst. Fiora hinter der Front, sie sucht sich ihr Ziel selbst.',
-  p:{'Gragas':[1,3],'Ornn':[1,4],'Blitzcrank':[1,5],'Fiora':[2,4],'Samira':[4,6],'Nami':[4,7]}},
- kindred:{note:'Master Yi und Akali gehen von selbst rein — stell sie an den Rand, damit sie deine Backline nicht blockieren.',
-  p:{'Akali':[1,2],'Aatrox':[1,3],'Maokai':[1,4],'Tahm Kench':[1,5],'Master Yi':[2,6],'Kindred':[4,7]}},
- stargazer:{note:'Zwei Scharfschützen (Xayah, Jhin) — beide maximal weit weg vom nächsten Gegner. Wenn dein Sternbild bestimmte Hexes verstärkt, hat Xayah Vorrang darauf.',
-  p:{'Jax':[1,3],'Nunu & Willump':[1,4],'Lulu':[3,3],'Twisted Fate':[3,5],'Jhin':[4,6],'Xayah':[4,7]}},
- samira:{note:'Samira in die Ecke, Xayah daneben. Gwen hält als zweite Front die Mitte, wenn Ornn fällt.',
-  p:{'Nasus':[1,3],'Ornn':[1,4],'Gwen':[2,4],'Miss Fortune':[3,5],'Xayah':[4,6],'Samira':[4,7]}},
- gwen:{note:'Gwen ist Kämpferin, sie gehört nach VORNE neben den Tank — nicht in die Backline. Samira räumt von hinten auf.',
-  p:{'Gragas':[1,3],'Ornn':[1,4],'Gwen':[1,5],'Teemo':[3,3],'Samira':[4,7]}},
- tfreroll:{note:'Nur drei Kern-Einheiten — deshalb passt die Aufstellung auf jedem Level. Twisted Fate immer in die hinterste Ecke, Talon springt sowieso selbst.',
-  p:{'Jax':[1,3],'Nunu & Willump':[1,4],'Talon':[2,6],'Lulu':[3,4],'Twisted Fate':[4,7]}},
- leblanc:{note:'Bia & Bayin (Hirten-Duo) erscheinen zusätzlich — halte die Mitte der hinteren Reihen frei, damit sie nicht deine Carry verdrängen.',
-  p:{'Illaoi':[1,3],'Nunu & Willump':[1,4],'Meepsie':[3,2],'Lissandra':[3,3],'Lulu':[3,5],'Sona':[3,6],'Nami':[4,6],'LeBlanc':[4,7]}},
- lissandra:{note:'Günstigste Aufstellung des Sets: zwei Tanks vorne, Lissandra ganz hinten. Sobald du auf 8 Einheiten gehst, wandert Kai\'Sa in die andere Ecke.',
-  p:{'Mordekaiser':[1,3],"Cho'Gath":[1,4],'Veigar':[3,5],"Kai'Sa":[4,6],'Lissandra':[4,7]}},
- veigar:{note:'Gleiche Einheiten wie die Gnar-Druckerei, aber Veigar trägt die Items und bekommt die Ecke — Gnar rückt eine Reihe vor.',
-  p:{'Poppy':[1,3],'Rammus':[1,4],'Fizz':[1,6],'Meepsie':[3,3],'Corki':[3,5],'Gnar':[4,5],'Veigar':[4,7]}},
- jinx:{note:'Jinx braucht Zeit zum Hochlaufen — Illaoi, Briar und Fiora müssen den Kampf lange halten. Jinx immer maximal weit vom Gegner weg.',
-  p:{'Briar':[1,3],'Illaoi':[1,4],'Fiora':[1,5],'Aurora':[3,5],'Xayah':[4,6],'Jinx':[4,7]}},
+ faestrikers:{note:'Xayah ist Fernkämpferin — sie macht mehr Schaden, je weiter der Gegner entfernt ist. Deshalb hinterste Ecke, niemals mittig.',
+  p:{'Rakan':[1,3],'Shen':[1,4],'Lillia':[1,5],'Tristana':[3,3],'Xayah':[4,7]}},
+ draven:{note:'Draven auf die dem gegnerischen Haupt-Carry gegenüberliegende Seite stellen — er und Elder Dragon räumen so die Backline auf, bevor die eigene Front fällt.',
+  p:{'Maokai':[1,4],'Elder Dragon':[2,6],'Draven':[4,7]}},
+ riftbeast:{note:'Viele kleine Kluftbestie-Kreaturen vorne als Wand, Sentinel hält die Mitte, Brambleback ganz hinten in der Ecke.',
+  p:{'Cinderling':[1,2],'Pebbles':[1,3],'Gromp':[1,4],'Murkwolf':[1,5],'Scuttlecrab':[1,6],'Krug':[2,4],'Sentinel':[3,4],'Brambleback':[4,7]}},
+ coven:{note:'Elise und Camille halten die Front, Morgana sammelt hinten in Ruhe Essenz-Kills, ohne selbst angreifbar zu sein.',
+  p:{'Camille':[1,3],'Elise':[1,4],'Cassiopeia':[3,3],'Caitlyn':[3,5],'Morgana':[4,6]}},
+ elderwood:{note:'Ornn und Alistar vorne, LeBlanc ganz hinten in der Ecke — sie kopiert ohnehin Verbündete und braucht selbst kaum Deckung durch Positionierung.',
+  p:{'Ornn':[1,3],'Alistar':[1,4],'Hecarim':[1,5],'Ezreal':[3,5],'LeBlanc':[4,7]}},
+ yunara:{note:'Shen hält allein die Front, Kennen springt sowieso selbst rein. Yunara maximal weit hinten in der Ecke.',
+  p:{'Shen':[1,4],'Kennen':[2,6],'Ezreal':[3,5],'Yunara':[4,7]}},
+ blossom:{note:'Sett vorne als einziger echter Tank — Yorick und Karma stützen mit ihren Beschwörungen die Mitte. Ahri ganz hinten.',
+  p:{'Sett':[1,4],'Yorick':[1,3],'Karma':[3,3],'Master Yi':[3,5],'Yunara':[2,6],'Ahri':[4,7],'Ashe':[4,6]}},
+ solarkayle:{note:'Sejuani allein vorne, Leona daneben als zweiter Stoßdämpfer. Kayle hinten — ihre Fernkampfreichweite verzeiht eine nicht ganz perfekte Ecke.',
+  p:{'Sejuani':[1,4],'Leona':[1,3],'Varus':[3,5],'Kayle':[4,7]}},
+ masteryireroll:{note:'Amumu allein als Tank — Master Yi und Kog\'Maw springen bzw. schießen von selbst rein, deshalb an den Rand statt in die Mitte.',
+  p:{'Amumu':[1,4],"Kog'Maw":[3,3],'Nidalee':[3,5],'Master Yi':[2,6]}},
+ sivir:{note:'Rammus als einziger Tank vorne, Cinderling und Caitlyn dahinter. Sivir hinten — ihre Klinge findet ihre Ziele auch quer über das Feld.',
+  p:{'Rammus':[1,4],'Cinderling':[1,3],'Caitlyn':[3,5],'Tristana':[3,3],'Sivir':[4,7]}},
+ rival:{note:'Malphite allein als Tank — beide Rivalen springen selbst ins Ziel und gehören an die Ränder, damit sie die eigene Backline nicht blockieren.',
+  p:{'Malphite':[1,4],"Kha'Zix":[2,2],'Rengar':[2,6]}},
+ primal:{note:'Vi hält vorne allein die Front. Nidalee und Sivir hinten — je nach AD/AP-Fokus tauschen sie faktisch die Rolle, die Position bleibt gleich.',
+  p:{'Vi':[1,4],'Nidalee':[4,6],'Sivir':[4,5]}},
+ eclipse:{note:'Sejuani und Leona vorne als Doppel-Frontline, Diana springt selbst rein. Alune ganz hinten — Eklipse braucht vor allem Zeit, also eine Front, die lange steht.',
+  p:{'Sejuani':[1,4],'Leona':[1,3],'Diana':[2,6],'Alune':[4,7],'Kayle':[4,6]}},
 };
 
 // ── FAHRPLAN („Jetzt") ────────────────────────────────────────
@@ -1297,37 +1267,37 @@ var PLAN=[
 var GUIDE={
  a:{intro:'Dein Ziel: <b>Top 4</b> — das zählt als Sieg. Du musst nicht Erster werden. Lern erstmal EINE einfache Comp und diese Grundregeln:',
   items:[
-   {i:'🎯',t:'Lern zuerst EINE Comp',x:'Empfohlen: <b>Gwen Reroll</b> (im Comps-Tab, „Einfach"). Immer dieselbe Comp spielen, bis die Abläufe sitzen. Zweite Wahl: Dunkler Stern Lissandra — noch günstiger.'},
+   {i:'🎯',t:'Lern zuerst EINE Comp',x:'Empfohlen: <b>Yunara Henker-Reroll</b> (im Comps-Tab, „Einfach"). Immer dieselbe Comp spielen, bis die Abläufe sitzen. Zweite Wahl: Feen-Kämpfer (Xayah) — noch weniger Kern-Einheiten.'},
    {i:'💰',t:'Gold & Zinsen',x:'Für je 10 Gold gibt es 1 Gold Zinsen pro Runde (max. 5 bei 50 Gold). Faustregel: <b>bis 50 Gold sparen</b>, erst dann Gold ausgeben — außer du verlierst zu viel Leben.'},
    {i:'⭐',t:'3 Sterne = viel stärker',x:'3 gleiche Einheiten = 2★, drei 2★ = 3★. Eine 3★-Einheit ist 2–3× stärker. Bei Reroll-Comps ist das dein Hauptziel für den Carry.'},
    {i:'🗡',t:'Alle Items auf EINEN Carry',x:'Verteil Items nicht! 3 Schadens-Items auf deinen Carry, 2–3 Tank-Items auf deinen Haupttank. Der Champions-Tab zeigt dir für jede Einheit die besten Items.'},
-   {i:'🧭',t:'Aufstellung',x:'Tanks in die vorderste Reihe, Schaden ganz nach hinten. Scharfschützen (Gnar, Xayah, Jhin) in die hinterste Ecke — sie machen mehr Schaden aus der Distanz.'},
+   {i:'🧭',t:'Aufstellung',x:'Tanks in die vorderste Reihe, Schaden ganz nach hinten. Fernkampf-Carries (Xayah, Sivir, Kayle) in die hinterste Ecke — sie sind dort am sichersten vor Assassinen.'},
    {i:'📈',t:'Level oder Rollen?',x:'Als Anfänger: <b>bleib auf Level 6</b> (bzw. dem Level deiner Comp), sammle 50 Gold und rolle dann jede Runde das Gold ÜBER 50 weg, bis dein Carry 3★ ist.'},
    {i:'🎲',t:'Augments einfach wählen',x:'3× im Spiel wählst du einen Verstärker. Nimm was zu deiner Comp passt — im Zweifel Gold, XP oder Items. Nichts Kompliziertes.'},
-   {i:'🌌',t:'Götter: nimm das Einfache',x:'Bei Götter-Begegnungen als Anfänger: <b>Kayle (Items)</b> oder <b>Ahri (Gold)</b> nehmen. Finger weg von Evelynn (Risiko-Angebote).'},
+   {i:'👻',t:'Geister: nimm das Einfache',x:'Erscheint ein Geist im Shop (alle 2 Runden), als Anfänger am liebsten <b>Item</b>- oder <b>Gold/EP</b>-Geister nehmen. Finger weg von „Riskant", solange du nicht klar vorne liegst.'},
    {i:'✅',t:'Jede Runde: Mini-Checkliste',x:'1) Shop anschauen: Paare kaufen. 2) Gold-Ziel checken (50). 3) Items auf Carry/Tank. 4) Aufstellung kurz prüfen. Mehr brauchst du am Anfang nicht.'},
   ]},
  f:{intro:'Du kennst die Basics — jetzt geht es um <b>Konstanz</b>: richtiges Econ-Management, Level-Timings und Anpassung an die Lobby.',
   items:[
    {i:'📈',t:'Standard-Level-Timings',x:'Kein Reroll-Plan? Dann: Level 7 auf Stage 4-1, Level 8 auf 4-5/5-1 mit Rolldown auf deine 4-Kosten-Carries. Reroll-Comps: auf 6/7 bleiben (siehe Comp-Karte „Spielstil").'},
-   {i:'📉',t:'Streaks aktiv steuern',x:'Win- und Lose-Streaks geben Bonus-Gold. Entscheide dich auf Stage 2 für eine Richtung und bleib dabei. Halbherzige Mitte = kein Streak-Gold + HP-Verlust. Anima ist DER Lose-Streak-Trait des Sets.'},
+   {i:'📉',t:'Streaks aktiv steuern',x:'Win- und Lose-Streaks geben Bonus-Gold. Entscheide dich auf Stage 2 für eine Richtung und bleib dabei. Halbherzige Mitte = kein Streak-Gold + HP-Verlust. Hexenzirkel (Coven) belohnt gezieltes Verlieren zusätzlich mit Essenz.'},
    {i:'🔭',t:'Scouting',x:'Schau dir jede Stage die Gegner an: Wer spielt was? Wenn 2+ Spieler deine Comp spielen („contested"), pivotiere — dieselben Einheiten sind schneller leer gekauft.'},
    {i:'🔨',t:'Items slammen vs. horten',x:'Verlierst du HP: Items sofort bauen („slammen") — ein fertiges Item jetzt gewinnt mehr Kämpfe als das perfekte Item später. Bist du stabil: Komponenten für Best-in-Slot aufheben.'},
    {i:'🗺',t:'Stage-Plan',x:'Stage 1: Paare & Komponenten sammeln · Stage 2: Streak-Richtung festlegen, erstes Augment · Stage 3: Econ aufbauen, Board stabilisieren · Stage 4: Level 8 + Rolldown · Stage 5+: Legendaries & Positionierung feintunen.'},
    {i:'✨',t:'Trait-Breakpoints nutzen',x:'Plane Bretter um Breakpoints (2/4/6): Eine Einheit mehr kann +30% AD/AP für alle bedeuten. Der Runde-Tab zeigt dir live, wie weit du vom nächsten Breakpoint bist.'},
-   {i:'🌌',t:'Götter strategisch wählen',x:'Soraka bei Lose-Streak (HP zurück), Varus wenn du auf 5-Koster gehst, Ahri für Reroll-Gold, Aurelion Sol wenn die Quest zu deinem Plan passt. Evelynn nur mit HP-Polster.'},
+   {i:'👻',t:'Geister strategisch wählen',x:'Gold/EP-Geister bei knapper Econ, Item-Geister wenn dir Komponenten für deinen Plan fehlen, Kampf-Geister kurz vor einem schweren Fight einsetzen. „Riskant" nur mit HP-Polster nehmen.'},
    {i:'🔄',t:'Flexibel bleiben',x:'Forciere nicht jede Runde dieselbe Comp: Spiele was der Shop und die Items dir geben. Die stärksten Spieler entscheiden auf Stage 2–3 anhand ihrer Drops, nicht vorher.'},
   ]},
- p:{intro:'Meta-Stand Patch 17.6 (flat Meta, kein Auto-Win-Deck): <b>Gnar-Druckerei</b>, <b>Dunkler Stern Kai\'Sa</b> und <b>Mech Asol</b> führen, Doomer Fast 9 ist die beste High-Roll-Line. Feinheiten:',
+ p:{intro:'Meta-Stand Patch 18.1, Tag 1/2 nach dem Live-Start (26.08.2026) — Tierlisten sind entsprechend noch früh und schwanken zwischen Quellen. Aktuell vorne: <b>Draven Fast 9</b>, <b>Yunara Henker-Reroll</b> und <b>Blütenpracht Ahri/Karma</b>. Feinheiten:',
   items:[
    {i:'⏱',t:'Tempo vs. Value',x:'Die Lobby bestimmt dein Tempo: Aggressive Lobbys (viel Slam, frühe 2★-Boards) → mitslammen und Streak sichern. Passive Lobbys → greeden, Econ-Vorsprung mitnehmen. Rolldown-Fenster hart begrenzen: geplantes Gold rein, Rest Econ.'},
-   {i:'🚀',t:'Fast-9-Bedingungen (Vex/Graves)',x:'Nur mit ~50+ Gold auf Stage 4 UND >40 HP. Graves-Value skaliert mit Kampfanzahl — je früher gefunden, desto besser. Sonst die Lv-8-Top-4-Line nehmen statt Platz 8 zu riskieren.'},
-   {i:'🧭',t:'Positionierungs-Details',x:'Gegen Blitzcrank: Carry in die Ecke, Köder-Einheit gegenüber. Mechs brauchen transformiert 2 Hexes — Backline nicht einquetschen. Dunkler Stern 6: supermassives Loch auf die gegnerische Carry-Seite lenken. Scharfschützen maximal weit weg vom nächsten Gegner.'},
-   {i:'🔀',t:'Pivot-Pfade',x:'Groove-Gerüst (Nasus/Gragas/Ornn/Samira) → Gwen Reroll, Samira Reroll ODER Nami Fast 8 je nach Hits. Dunkler-Stern-Opener → Lissandra Reroll (low) oder Kai\'Sa (Standard) → Jhin-Endgame. Meeple-Opener → Gnar (AD) oder Veigar (AP) je nach Komponenten.'},
-   {i:'🌌',t:'God-Value nach Spot',x:'Evelynn = höchster Ceiling, nur mit HP/Board-Vorsprung. Soraka-Squeeze bei geplantem Lose-Streak (Anima!). Varus vor Fast-9-Rolldowns. Ekko für Artefakt-abhängige Builds (Jinx: Battle-Bunny-Armbrust). Thresh wenn beide Alternativen schwach sind.'},
-   {i:'🧪',t:'Set-spezifische Feinheiten',x:'Anima: Tech skaliert mit Streak-Länge UND Anima-Takedowns — verlier „gewinnbringend". N.O.V.A. 5: Surge aktiv wählen (meist Caitlyn-AS). Zeitbrecher 2 macht Verlust-Runden zu Gratis-Rerolls — stark in Reroll-Openern. Meeple-7-Klonslot: teuerste Einheit reinstellen (Klonzeit = Kosten, Value = Kosten).'},
-   {i:'🛡',t:'Item-Prio 17.6',x:'AD: Wutklinge/IE/Riesenschlächter sind universell. AP: Schmuckhandschuh + Riesenschlächter auf Burst-Carries (Asol). Tank: Adaptivhelm & Gargoyle > HP-Stacking in dieser Meta. Steraks auf Kampf-Carries (Gwen, Fiora). Diebeshandschuhe = Tempo-Slam auf Interims-Carries.'},
-   {i:'📊',t:'Contested-Regel',x:'Gnar ist der meist-contestete Carry des Patches. Regel: 3+ Spieler auf einer 2-Kosten-Reroll-Line = maximal einer hittet. Beim Scouting auf Stage 2–3 zählen — notfalls sofort auf Kai\'Sa/Kindred umsteigen.'},
+   {i:'🚀',t:'Fast-9-Bedingungen (Draven)',x:'Ohne Econ-Augment kaum machbar. Ziel: Level 9 am Ende von Stage 4 oder Anfang Stage 5. Sonst die Lv-8-Top-4-Line nehmen statt Platz 8 zu riskieren.'},
+   {i:'🧭',t:'Positionierungs-Details',x:'Ahnenholz-Pflanze wirkt wie ein lebender Schild — Einheiten direkt daneben stellen für Angriffstempo/Heilung. Kluftbestie-Alpha-Markierung auf den Carry legen. Eklipse (Solar+Lunar) braucht eine Front, die lange steht — auf Kampfdauer statt Burst bauen.'},
+   {i:'🔀',t:'Pivot-Pfade',x:'Ahnenholz-Opener → LeBlanc Reroll ODER Feen-Kämpfer (Xayah) je nach Hits. Kluftbestie-Opener → Ascension (Brambleback). Hexenzirkel-Kern → Cashout (Morgana) bei genug Econ-Puffer.'},
+   {i:'👻',t:'Geister-Value nach Situation',x:'Item-Geister priorisieren, wenn dir für deinen Plan noch Komponenten fehlen. Gold/EP-Geister vor einem geplanten Level-Kauf. Kampf-Geister direkt vor einem Scouting-erkannten schweren Gegner einsetzen, nicht auf Vorrat horten.'},
+   {i:'🧪',t:'Set-spezifische Feinheiten',x:'Blütenpracht 5/7/9: Geister erscheinen häufiger und geben zusätzlich Gold/Extra-Käufe — Emblem-Stacking lohnt sich hier besonders. Schwarzdorn: die ersten drei Opferungen geben zusätzlich eine Ausrüstungskomponente. Hexenzirkel-Essenz erst ab ca. 250 auf Level 8 einlösen, nicht früher.'},
+   {i:'🛡',t:'Item-Prio 18.1',x:'AD: Wutklinge/Riesenschlächter/Unendlichkeitsklinge sind universell. AP: Schmuckhandschuh + Rabadons auf Burst-Carries (Ahri, Nidalee). Tank: Adaptivhelm & Gargoyle-Steinplatte gegen Magie-lastige Bretter, Warmogs/Dornenweste gegen physische. Speer von Shojin auf manalastige Reroll-Carries (Yunara).'},
+   {i:'📊',t:'Contested-Regel',x:'S-Tier-Reroll-Carries wie Yunara sind früh im Set erfahrungsgemäß am stärksten umkämpft. Regel: 3+ Spieler auf einer 2-Kosten-Reroll-Line = maximal einer hittet zuverlässig auf 3★. Beim Scouting auf Stage 2–3 zählen — notfalls früh auf eine zweite Line pivotieren.'},
   ]},
 };
 
@@ -2462,7 +2432,7 @@ function renderLineupBoard(sel,hits,key){
           +(src?'<img src="'+src+'" loading="lazy" alt="" onerror="this.remove()">':'')
           +'</div>'+(isC?'<div class="star">⭐</div>':'')+'</div>';
       }else if(L.reserved[k]){
-        h+='<div class="hex mech2" title="Für den transformierten Mech freihalten"><div class="hex-in">🤖</div></div>';
+        h+='<div class="hex mech2" title="Für die übergroße Einheit freihalten"><div class="hex-in">➕</div></div>';
       }else if(L.ghosts[k]){
         // Kuerzel wie "MO"/"JH" sind nicht ratbar, und die Erklaerung dazu stand
         // erst weit unter dem Brett. Das ＋ macht ohne Text klar: hier fehlt jemand.
@@ -2504,7 +2474,7 @@ function renderLineupBoard(sel,hits,key){
   }
   var mechs=L.onBoard.filter(function(ch){return MECH_IDS[ch.id];});
   if(mechs.length){
-    h+='<div class="lu-note" style="color:#c9a8f0;">🤖 <b style="color:#eef0ff;">'+mechs.map(function(ch){return ch.name;}).join(', ')+'</b>: transformiert '+(mechs.length>1?'brauchen sie':'braucht er')+' je 2 Hexes — das 🤖-Feld daneben bleibt frei.</div>';
+    h+='<div class="lu-note" style="color:#c9a8f0;">➕ <b style="color:#eef0ff;">'+mechs.map(function(ch){return ch.name;}).join(', ')+'</b>: '+(mechs.length>1?'brauchen sie':'braucht er')+' je 2 Hexes — das ➕-Feld daneben bleibt frei.</div>';
   }
   if(L.bench.length){
     h+='<div class="lu-note" style="color:var(--red);">⚠️ Lv '+state.plvl+' hat nur '+L.slots+' Plätze. <b style="color:#eef0ff;">'+L.bench.map(function(ch){return ch.name;}).join(', ')+'</b> '+(L.bench.length>1?'bleiben':'bleibt')+' auf der Bank — leveln oder tauschen.</div>';
@@ -2716,7 +2686,7 @@ function renderComps(){
     return '<button onclick="compSetFilter(\''+f+'\')" class="pill-btn'+(state.compFilter===f?' on':'')+'">'+f+'</button>';
   }).join('');
   var L=LEVELS[state.level]||LEVELS.a;
-  DOC.getElementById('comps-sub').innerHTML='Aktuelle Meta-Comps (Patch 17.6) · <b style="color:var(--gold);">⭐ = empfohlen für '+L.name+'</b>';
+  DOC.getElementById('comps-sub').innerHTML='Aktuelle Meta-Comps (Patch 18.1) · <b style="color:var(--gold);">⭐ = empfohlen für '+L.name+'</b>';
   var list=COMPS.filter(function(c){
     if(state.compFilter==='Einfach')return c.diff==='e';
     if(state.compFilter==='Mittel')return c.diff==='m';
@@ -3028,8 +2998,8 @@ function renderGuide(){
     +g.items.map(function(it){
       return '<div class="guide-item"><h4>'+it.i+' '+it.t+'</h4><p>'+it.x+'</p></div>';
     }).join('');
-  DOC.getElementById('gods-list').innerHTML=GODS.map(function(gd){
-    return '<div class="god-card"><b>'+gd.g+'</b><p>'+gd.d+'</p></div>';
+  DOC.getElementById('wisps-list').innerHTML=WISPS.map(function(gd){
+    return '<div class="wisp-card"><b>'+gd.w+'</b><p>'+gd.d+'</p></div>';
   }).join('');
   DOC.getElementById('recipes-list').innerHTML=RECIPES.map(function(r){
     return '<div class="recipe-row"><b>'+r[0]+'</b><span class="rc">'+r[1]+'</span></div>';
