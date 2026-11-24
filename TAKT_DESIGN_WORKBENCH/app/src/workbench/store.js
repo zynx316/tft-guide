@@ -14,6 +14,7 @@ import { applySeedPatch } from '../core/seedpatch.js';
 import { APP_QUESTIONS, PATTERN_QUESTIONS } from '../seed/catalog.js';
 import { getComponent, defaultProps } from '../library/registry.js';
 import { DEFAULT_DIRECTIONS } from '../core/directions.js';
+import { apiFetch } from '../lib/api.js';
 
 let state = null;
 const listeners = new Set();
@@ -34,7 +35,7 @@ export const subscribe = (fn) => { listeners.add(fn); return () => listeners.del
 // ------------------------------------------------------------ Persistenz ---
 async function fetchJson(url, opts = {}, timeout = 2500) {
   const ctrl = new AbortController(); const t = setTimeout(() => ctrl.abort(), timeout);
-  try { return await fetch(url, { ...opts, signal: ctrl.signal, cache: 'no-store' }); } finally { clearTimeout(t); }
+  try { return await apiFetch(url, { ...opts, signal: ctrl.signal, cache: 'no-store' }); } finally { clearTimeout(t); }
 }
 
 export async function initStore() {

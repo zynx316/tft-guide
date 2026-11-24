@@ -19,6 +19,7 @@ import { uid, cx } from '../lib/util.js';
 import { SCENARIOS } from '../core/world.js';
 import { SHELLS } from '../preview/launchpad.js';
 import qrcode from '../../vendor/qrcode.module.js';
+import { apiFetch, lanPin } from '../lib/api.js';
 
 const LOCAL = ['localhost', '127.0.0.1', '[::1]', ''].includes(location.hostname);
 const PREFS_KEY = 'takt-launcher-prefs';
@@ -33,14 +34,15 @@ let fbCtx = {}; // Kontext jedes Feedback-Eintrags (Szenario, Stand-Revision)
 async function flushQueue() {
   const q = ls.get(QUEUE_KEY, []); if (!q.length) return;
   const rest = [];
-  for (const e of q) { try { const r = await fetch('/api/feedback', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(e) }); if (!r.ok) rest.push(e); } catch { rest.push(e); } }
+  for (const e of q) { try { const r = await apiFetch('/api/feedback', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(e) }); if (!r.ok) rest.push(e); } catch { rest.push(e); } }
   ls.set(QUEUE_KEY, rest);
 }
 async function sendFeedback(entry) {
   const e = { id: uid('fb'), device: deviceLabel(), ...fbCtx, ...entry };
   if (store) store.actions.importFeedback([{ ...e, ts: new Date().toISOString() }]);
   try {
-    const r = await fetch('/api/feedback', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(e) });
+    const r = await apiFetch('/api/feedback', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(e) });
+    if (r.status === 401) toast(lanPin() ? 'WLAN-PIN ist nicht mehr gültig – QR-Code am Rechner neu scannen. Die Bewertung wird nachgesendet.' : 'WLAN-PIN fehlt – bitte über den QR-Code im Launcher am Rechner öffnen. Die Bewertung wird nachgesendet.');
     if (!r.ok) throw new Error(r.status);
   } catch { ls.set(QUEUE_KEY, [...ls.get(QUEUE_KEY, []), e]); }
   return e;
@@ -181,13 +183,13 @@ function QrCode({ text, size = 180 }) {
   return html`<div class="ln-qr" style=${`width:${size}px;height:${size}px`} dangerouslySetInnerHTML=${{ __html: svg }} role="img" aria-label=${`QR-Code für ${text}`}></div>`;
 }
 async function qrDialog() {
-  let info = null; try { info = await (await fetch('/api/network')).json(); } catch { /* ohne Server */ }
+  let info = null; try { info = await (await apiFetch('/api/network')).json(); } catch { /* ohne Server */ }
   const lanBound = info && info.boundTo && !/^(127\.|::1|::ffff:127\.)/.test(info.boundTo);
   openDialog({ title: 'Auf dem Handy öffnen', size: 'wide', body: () => html`<div class="wb-col" style="gap:14px">
     ${!info ? html`<p class="wb-muted">Kein Server erreichbar. Starte die Workbench mit <span class="wb-mono">npm run lan</span>.</p>`
       : !lanBound ? html`<div class="wb-banner wb-banner--warn"><${Icon} name="alert-triangle" size=${16} /><span>Der Server ist nur auf diesem Rechner erreichbar. Für das Handy mit <span class="wb-mono">npm run lan</span> neu starten (gleiches WLAN, ggf. Windows-Firewall für Node erlauben).</span></div>` : null}
-    ${info?.lan?.length ? html`<div class="wb-row wb-wrap" style="gap:24px;align-items:flex-start">${info.lan.map((u) => html`<div class="wb-col" style="align-items:center;gap:8px"><${QrCode} text=${`${u}/launcher.html`} /><span class="wb-mono wb-small">${u}/launcher.html</span></div>`)}</div>` : info ? html`<p class="wb-muted">Keine WLAN-Adresse gefunden.</p>` : null}
-    <p class="wb-small wb-muted">Auf dem Handy: QR-Code scannen → Launcher öffnet im Vollbild. Über das Browser-Menü „Zum Startbildschirm hinzufügen“ wirkt er wie eine App. Bewertungen und Kommentare vom Handy landen in der Workbench (Demo & Entscheidung › Feedback). Das Handy kann nichts anderes verändern.</p></div>` });
+    ${info?.lan?.length ? html`<div class="wb-row wb-wrap" style="gap:24px;align-items:flex-start">${info.lan.map((u) => { const link = `${u}/launcher.html${info.pin ? `?k=${info.pin}` : ''}`; return html`<div class="wb-col" style="align-items:center;gap:8px"><${QrCode} text=${link} /><span class="wb-mono wb-small">${link}</span></div>`; })}</div>` : info ? html`<p class="wb-muted">Keine WLAN-Adresse gefunden.</p>` : null}
+    <p class="wb-small wb-muted">Auf dem Handy: QR-Code scannen → Launcher öffnet im Vollbild. Über das Browser-Menü „Zum Startbildschirm hinzufügen“ wirkt er wie eine App. Bewertungen und Kommentare vom Handy landen in der Workbench (Demo & Entscheidung › Feedback). Das Handy kann nichts anderes verändern.${info?.pin ? ` Der Link enthält die WLAN-PIN ${info.pin} – ohne sie nimmt der Server von anderen Geräten nichts an (neue PIN bei jedem Start von npm run lan).` : ''}</p></div>` });
 }
 
 // ------------------------------------------------------------- Launcher ---

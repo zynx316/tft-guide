@@ -42,7 +42,8 @@ npm start                       # Workbench → http://127.0.0.1:4317 · Launche
 npm run check; npm test; npm run qa                                     # erzeugt Baselines für diesen Rechner
 ```
 Danach **Claude Code im selben Ordner starten** (`claude`) und **`/takt-start`** aufrufen.
-Handy: `npm run lan`, im Launcher „Aufs Handy“ → QR-Code (gleiches WLAN, Windows-Firewall für Node erlauben).
+Handy: `npm run lan`, im Launcher „Aufs Handy“ → QR-Code (gleiches WLAN, Windows-Firewall für Node erlauben). Der QR-Link enthält
+eine WLAN-PIN (neu bei jedem Start, in der Konsole angezeigt); andere Geräte im Netz kommen ohne sie nicht an die Daten.
 
 ## 3. Empfohlener Ablauf zuhause
 1. **`/takt-phase1`** – echtes TAKT-Projekt nur lesend abgleichen, Seed/Persona/Theme-Farben angleichen, Annahmen-Register

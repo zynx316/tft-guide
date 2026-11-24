@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 // ============================================================================
 // TAKT Design Workbench – lokaler Server (Node >= 18, KEINE Abhaengigkeiten)
-//   node server.mjs [--port 4317] [--host 127.0.0.1] [--data ./data] [--open]
+//   node server.mjs [--port 4317] [--host 127.0.0.1] [--data ./data] [--open] [--pin 123456 | --no-pin]
+// * WLAN-Modus (--host 0.0.0.0): /api/* von anderen Geräten nur mit PIN (Header X-Takt-Pin oder ?k=); die PIN wird
+//   beim Start erzeugt und angezeigt und steht im QR-Link des Launchers. Der eigene Rechner braucht keine PIN.
 // * liefert app/ statisch aus
 // * GET/PUT /api/state         -> data/workbench.json (atomar geschrieben)
 // * automatische Backups       -> data/backups/ (max. 1 je 10 Min., 40 behalten)
@@ -21,11 +23,12 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { exec } from 'node:child_process';
 import os from 'node:os';
+import crypto from 'node:crypto';
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
 const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8', '.png': 'image/png', '.svg': 'image/svg+xml', '.ico': 'image/x-icon', '.md': 'text/markdown; charset=utf-8', '.txt': 'text/plain; charset=utf-8', '.webp': 'image/webp', '.webmanifest': 'application/manifest+json; charset=utf-8', '.woff2': 'font/woff2' };
 
-export function createServer({ dataDir = path.join(ROOT, 'data'), quiet = false } = {}) {
+export function createServer({ dataDir = path.join(ROOT, 'data'), quiet = false, pin = null } = {}) {
   const STATE = path.join(dataDir, 'workbench.json');
   const FEEDBACK = path.join(dataDir, 'feedback.jsonl');
   const rate = new Map(); let seenFeedback = null;
@@ -60,6 +63,13 @@ export function createServer({ dataDir = path.join(ROOT, 'data'), quiet = false 
     try {
       const url = new URL(req.url, 'http://localhost');
       const p = decodeURIComponent(url.pathname);
+      const isLocal = /^(::1|127\.|::ffff:127\.)/.test(req.socket.remoteAddress || '');
+      // WLAN-PIN: andere Geräte brauchen sie für alle API-Aufrufe außer /api/ping (Erreichbarkeits-Probe)
+      if (pin && !isLocal && p.startsWith('/api/') && p !== '/api/ping') {
+        const given = String(req.headers['x-takt-pin'] || url.searchParams.get('k') || '');
+        const ok = given.length === pin.length && crypto.timingSafeEqual(Buffer.from(given), Buffer.from(pin));
+        if (!ok) return send(res, 401, { error: 'PIN fehlt oder ist falsch – QR-Code im Launcher erneut scannen', needPin: true });
+      }
       // Feedback aus dem Demo-Launcher: einzige Schreib-Ausnahme für das LAN (append-only, Same-Origin, klein)
       if (p === '/api/feedback' && req.method === 'POST') {
         const origin = req.headers.origin; const host = req.headers.host || '';
@@ -99,7 +109,7 @@ export function createServer({ dataDir = path.join(ROOT, 'data'), quiet = false 
       if (p === '/api/network') {
         const addrs = Object.values(os.networkInterfaces()).flat().filter((a) => a && a.family === 'IPv4' && !a.internal).map((a) => a.address);
         const port = req.socket.localPort;
-        return send(res, 200, { port, lan: addrs.map((a) => `http://${a}:${port}`), boundTo: req.socket.localAddress });
+        return send(res, 200, { port, lan: addrs.map((a) => `http://${a}:${port}`), boundTo: req.socket.server?.address?.()?.address || req.socket.localAddress, ...(pin && isLocal ? { pin } : {}), pinRequired: !!pin });
       }
       // Schreibschutz: nur JSON, nur vom eigenen Rechner, kein fremder Origin (CSRF/DNS-Rebinding)
       if (req.method !== 'GET' && req.method !== 'HEAD') {
@@ -167,10 +177,12 @@ if (isMain) {
   const port = Number(arg('port', process.env.PORT || 4317));
   const host = arg('host', '127.0.0.1');
   const dataDir = path.resolve(arg('data', path.join(ROOT, 'data')));
-  createServer({ dataDir }).listen(port, host, () => {
+  const lanMode = !/^(127\.|localhost$|::1$)/.test(host);
+  const pin = process.argv.includes('--no-pin') || !lanMode ? null : String(arg('pin', '') || crypto.randomInt(100000, 1000000));
+  createServer({ dataDir, pin }).listen(port, host, () => {
     const url = `http://${host === '0.0.0.0' ? 'localhost' : host}:${port}/`;
     console.log(`\n  TAKT Design Workbench laeuft:  ${url}\n  Daten: ${dataDir}\n  Beenden: Strg+C\n`);
-    if (host === '0.0.0.0') console.log('  Hinweis: Im WLAN erreichbar – fuer Tests auf dem echten Smartphone http://<PC-IP>:' + port + '/preview.html?feature=…\n');
+    if (lanMode) console.log(`  Im WLAN erreichbar. Launcher → „Aufs Handy“ zeigt den QR-Code.${pin ? `  WLAN-PIN: ${pin} (steht im QR-Link)` : '  Ohne PIN (--no-pin).'}\n`);
     if (process.argv.includes('--open')) exec(`${process.platform === 'win32' ? 'start ""' : process.platform === 'darwin' ? 'open' : 'xdg-open'} ${url}`);
   });
 }

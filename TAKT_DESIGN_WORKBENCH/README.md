@@ -11,7 +11,7 @@ Voraussetzung: **Node.js ≥ 18** (Windows, macOS, Linux).
 cd G:\Projekte\97_Uebernahme\TAKT_DESIGN_WORKBENCH
 npm start                  # Workbench → http://127.0.0.1:4317
 #   Demo-Launcher:           http://127.0.0.1:4317/launcher.html
-npm run lan                # zusätzlich im WLAN erreichbar (Handy per QR-Code im Launcher, „Aufs Handy“)
+npm run lan                # zusätzlich im WLAN erreichbar (Handy per QR-Code im Launcher, „Aufs Handy“; der Link enthält eine WLAN-PIN)
 ```
 - Stand in `data/workbench.json` (+ Backups). Beim ersten Start lädt der Seed (Module, Features, Varianten: `docs/FEATURE_IDS.md`).
 - Für Tests einmalig: `npm install` und `npx playwright install chromium`.

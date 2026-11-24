@@ -23,12 +23,12 @@ Nach einem **Mangel** wird nur der betroffene Punkt wiederholt, nicht die ganze 
 
 | Weg | Befehle und Schritte | Wann |
 |---|---|---|
-| **A. LAN mit QR-Code** (Standard) | 1. Am PC `npm run lan` starten. 2. PC und Handy im **selben WLAN**, Windows-Firewall „Privates Netzwerk“ erlauben, VPN und Gastnetz aus. 3. Im Launcher auf dem Laptop **„Aufs Handy“** öffnen, QR-Code scannen (zeigt `http://<PC-IP>:4317/launcher.html`). 4. Zeigt der Dialog „Der Server ist nur auf diesem Rechner erreichbar“, wurde nicht mit `npm run lan` gestartet. | Aussehen, Bedienung, Daumenzone, Tastatur, Scrollen |
+| **A. LAN mit QR-Code** (Standard) | 1. Am PC `npm run lan` starten. 2. PC und Handy im **selben WLAN**, Windows-Firewall „Privates Netzwerk“ erlauben, VPN und Gastnetz aus. 3. Im Launcher auf dem Laptop **„Aufs Handy“** öffnen, QR-Code scannen (zeigt `http://<PC-IP>:4317/launcher.html?k=<PIN>`). 4. Zeigt der Dialog „Der Server ist nur auf diesem Rechner erreichbar“, wurde nicht mit `npm run lan` gestartet. | Aussehen, Bedienung, Daumenzone, Tastatur, Scrollen |
 | **B. `adb reverse`** | 1. USB-Debugging am Handy einschalten, per USB verbinden. 2. `adb devices` (Gerät sichtbar). 3. `adb reverse tcp:4317 tcp:4317`. 4. Am PC `npm start` (oder `npm run serve`). 5. Am Handy `http://localhost:4317/launcher.html` öffnen. Danach `adb reverse --remove tcp:4317`. | wenn **Secure Context** nötig ist (Service Worker, Installation, Offline). Achtung: Das Handy gilt hier als **lokal** und kann Entscheidungen direkt schreiben (`ADR-001-demo-launcher.md` Abschnitt 5.3). |
 
-Direktlinks für einzelne Features (LAN): `http://<PC-IP>:4317/preview.html?feature=<id>&variant=<v>&theme=<t>`; ganze App einer Richtung: `preview.html?app=1&version=dir:fokus`. Der QR-Dialog liefert den Startlink.
+Direktlinks für einzelne Features (LAN): `http://<PC-IP>:4317/preview.html?feature=<id>&variant=<v>&theme=<t>` – beim ersten Aufruf ohne QR-Code `&k=<PIN>` anhängen, danach merkt sich das Handy die PIN; ganze App einer Richtung: `preview.html?app=1&version=dir:fokus`. Der QR-Dialog liefert den Startlink.
 
-Der LAN-Modus öffnet den PC im WLAN. **Nur in einem vertrauenswürdigen Netz**, danach den Server beenden (Strg+C). Es gibt im Ist-Stand **keine PIN**; Schreiben auf die Workbench ist im LAN gesperrt, nur Feedback wird angenommen. Die Daten sind fiktiv.
+Der LAN-Modus öffnet den PC im WLAN. **Nur in einem vertrauenswürdigen Netz**, danach den Server beenden (Strg+C). `npm run lan` erzeugt bei jedem Start eine **WLAN-PIN** (Konsole, QR-Link `?k=…`); ohne sie beantwortet der Server von anderen Geräten keine API-Anfrage (nur `/api/ping`). Fester Wert: `node server.mjs --host 0.0.0.0 --pin 123456`, ohne PIN: `--no-pin`. Schreiben auf die Workbench ist im LAN zusätzlich gesperrt, nur Feedback wird angenommen. Die Daten sind fiktiv.
 
 ### 2.2 Gerät vorbereiten
 

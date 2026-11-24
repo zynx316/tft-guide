@@ -11,7 +11,7 @@ gestaltet und entschieden wird. Kern ist der **Demo-Launcher**: die ganze App be
 (Kompakt · Visuell · Fokus · Meine Auswahl), auf dem Laptop nebeneinander oder auf dem Handy.
 
 - Workbench: `app/index.html` · Demo-Launcher: `app/launcher.html` · Vorschau (Iframe/Direktlink): `app/preview.html`
-- Start: `npm start` (http://127.0.0.1:4317) · Handy im WLAN: `npm run lan` (QR-Code im Launcher)
+- Start: `npm start` (http://127.0.0.1:4317) · Handy im WLAN: `npm run lan` (QR-Code im Launcher, Link enthält die WLAN-PIN)
 - Live-Stand: `data/workbench.json` (+ Backups `data/backups/`, Feedback vom Handy `data/feedback.jsonl`)
 
 ## Harte Regeln (nicht verhandelbar)

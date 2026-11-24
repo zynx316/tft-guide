@@ -4,6 +4,7 @@ import { migrate } from './schema.js';
 import { resolveVariant, moduleHome, navigationRules, versionById, areaOf, shellOf } from './directions.js';
 import { isWorldRef, worldKey } from '../seed/world/index.js';
 import { getWorld } from './world.js';
+import { apiFetch } from '../lib/api.js';
 
 /** Nur die Welt-Schlüssel, die die Demo-Daten referenzieren (im gewählten Szenario). */
 export function worldFor(state, demoData, scenario = 'alltag') {
@@ -50,7 +51,7 @@ export function buildComponentPayload(componentId, opts = {}) {
 /** Zustand ohne Workbench laden: Server-Datei -> Browser-Speicher -> Seed. */
 export async function loadStateStandalone() {
   try {
-    const r = await fetch('/api/state', { cache: 'no-store' });
+    const r = await apiFetch('/api/state', { cache: 'no-store' });
     if (r.ok) return migrate(await r.json());
   } catch { /* kein Server */ }
   try { const raw = localStorage.getItem(STORAGE_KEY); if (raw) return migrate(JSON.parse(raw)); } catch { /* noop */ }
