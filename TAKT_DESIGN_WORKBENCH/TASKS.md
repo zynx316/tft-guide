@@ -31,6 +31,9 @@
 - [ ] Offene Gestaltungsfragen der neuen Varianten (je eine Entscheidung mit Empfehlung im Manifest, z. B. Fächer vs. Tasten im
       Aufgaben-Eingang, Pinnwand, Kapitelkarten, Beleg-Kategorien als Kacheln, Modulsperre Dokumente, Vorlage-Verweis aus
       Finanzen, Fitness-Plan im Erststart) – erscheinen in der Entscheidungs-Inbox
+- [ ] Freigegebenes Demo-Feature `calendar.month`: seit der Freigabe (Session 1) durch Basisregeln und den Vorschau-Rahmen leicht
+      verändert (0,23–0,36 % gegenüber den Session-1-Bildern, siehe `QA_REPORT.md`; `weather.current` ist pixelgleich).
+      Entscheiden: Freigabe so belassen oder per „Neue Arbeitsversion“ neu freigeben
 
 ## 3. Inhalte und Module (P2)
 - [ ] Skelett-Features (Status „Nicht untersucht“) je Modul mit Varianten füllen – erst nach der Richtungswahl, damit nur die
