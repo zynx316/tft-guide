@@ -27,7 +27,7 @@ export const calorieBudget = {
   css: `${NU_CSS}
   .tk-cb { display:flex; flex-direction:column; gap:var(--tk-space-4); min-width:0; }
   .tk-cb--ring { align-items:center; }
-  .tk-cb__stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:var(--tk-space-3); width:100%; text-align:center; }
+  .tk-cb__stats { display:flex; flex-wrap:wrap; gap:var(--tk-space-3); width:100%; text-align:center; } .tk-cb__stats > .tk-cb__stat { flex:1 1 0; min-width:min-content; }
   .tk-cb__stat strong { display:block; font-size:var(--tk-nfs-xl); font-variant-numeric:tabular-nums; } .tk-cb__stat span { font-size:var(--tk-nfs-xs); color:var(--tk-c-text-subtle); text-transform:uppercase; letter-spacing:var(--tk-ls-wide); font-weight:var(--tk-fw-semibold); }
   .tk-cb__msg { margin:0; text-align:center; color:var(--tk-c-text-muted); font-size:var(--tk-nfs-sm); display:flex; gap:6px; align-items:center; justify-content:center; }
   .tk-cb__open { border:0; background:transparent; color:inherit; font:inherit; cursor:pointer; padding:0; border-radius:var(--tk-radius-md); }

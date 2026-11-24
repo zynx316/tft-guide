@@ -31,6 +31,7 @@ export const undoToast = {
   css: `
   .tk-undo-wrap { display: flex; flex-direction: column; gap: var(--tk-space-3); min-width: 0; }
   .tk-undo-wrap--sticky .tk-undo { position: sticky; bottom: var(--tk-space-3); z-index: 2; }
+  .tk-undo-wrap--idle { min-height: 8px; }
   .tk-undo { position: relative; overflow: hidden; display: flex; align-items: center; gap: var(--tk-space-3); padding: var(--tk-space-3) var(--tk-space-4) calc(var(--tk-space-3) + 4px); border-radius: var(--tk-radius-md); background: var(--tk-c-text); color: var(--tk-c-bg); box-shadow: var(--tk-shadow-md); min-width: 0; }
   .tk-undo__text { flex: 1 1 auto; min-width: 0; font-size: var(--tk-fs-md); font-weight: var(--tk-fw-medium); line-height: var(--tk-lh-snug); }
   .tk-undo__btn { flex: none; display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 14px; border-radius: var(--tk-radius-pill); border: 1.5px solid currentColor; background: transparent; color: inherit; font: inherit; font-size: var(--tk-fs-sm); font-weight: var(--tk-fw-semibold); cursor: pointer; }
@@ -80,6 +81,7 @@ export const undoToast = {
       <button type="button" class="tk-undo__btn" onClick=${undo}><${Icon} name="undo-2" size=${15} />${props.label || 'Rückgängig'}</button>
       <button type="button" class="tk-undo__x" aria-label="Hinweis schließen" onClick=${() => { ctx.emit('undo.dismiss', { text: entry.text }); close(); }}><${Icon} name="x" size=${15} /></button>
       <div class="tk-undo__bar" role="progressbar" aria-label="Verbleibende Zeit" aria-valuemin="0" aria-valuemax="100" aria-valuenow=${Math.round(left * 100)}><i style=${`width:${left * 100}%`}></i></div></div>`;
+    if (!props.demo && !entry) return html`<div class="tk-undo-wrap tk-undo-wrap--idle" role="status" aria-live="polite" data-qa="undo-idle"></div>`;
     return html`<div class=${`tk-undo-wrap tk-undo-wrap--${props.placement}`}>
       ${props.demo && (items.length
         ? html`<ul class="tk-undo-demo" aria-label="Beispiel-Einträge">${items.map((it) => html`<li key=${it.id}><span class="tk-grow tk-truncate">${it.title}</span>

@@ -91,7 +91,7 @@ export default {
       '## Offene Fragen',
       '- Welcher Wetterdienst liefert Radar, Pollen und Luftqualität lizenzrechtlich sauber? (Entscheidung offen)',
       '- Radar: echte Kartenkacheln (Lizenz, Datenmenge) oder schematische Rasterkarte?',
-      '- Training laut Persona Mo/Mi/Fr; die Kalender-Serie „Krafttraining“ liegt auf Donnerstag – bitte gegen das Fitness-Modul abgleichen.',
+      '- Trainingstage kommen aus der Fitness-Welt (Mo Unterkörper, Mi Oberkörper A, Fr Ganzkörper, Sa lockerer Lauf, FitX Bielefeld). Die Kalender-Serie „Krafttraining Oberkörper“ liegt auf Donnerstag im Studio Kraftwerk – Abweichung zwischen Kalender und Fitness, im Kalender-Modul klären.',
       '',
       '## Hinweise',
       '- Gesundheitshinweise (Pollen, UV, Luft) sind Richtwerte, kein medizinischer Rat.',
@@ -101,7 +101,7 @@ export default {
   features: [
     // ======================================================================= Übersicht (Modul-Startseite)
     {
-      id: 'weather.home', name: 'Übersicht', group: 'Übersicht', status: 'review',
+      id: 'weather.home', name: 'Übersicht', group: 'Übersicht', status: 'review', tier: 1, usage: 'täglich, mehrmals',
       purpose: 'Einstieg ins Wetter: Wie ist es jetzt, was kommt in den nächsten Minuten und Stunden – und was heißt das für heute? Von hier geht es zu Radar, Stunden, 10 Tagen, Warnungen, Kleidung, Umwelt und Orten.',
       requirements: [
         { text: 'Jetzt: Temperatur, Zustand, gefühlte Temperatur, Hoch/Tief, Ort und Datenstand', type: 'info', priority: 'must' },
@@ -253,7 +253,7 @@ export default {
     },
     // ======================================================================= Regenradar
     {
-      id: 'weather.radar', name: 'Regenradar', group: 'Vorhersage', status: 'design',
+      id: 'weather.radar', name: 'Regenradar', group: 'Vorhersage', status: 'design', tier: 1, usage: 'täglich',
       purpose: 'Sehen, ob und wann Regen kommt: animierte Niederschlagskarte mit Zeitleiste und die 2-Stunden-Kurve für den eigenen Ort.',
       requirements: [
         { text: 'Karte mit Ortsmarke, Niederschlagsstufen (Niesel bis Starkregen) und Legende', type: 'info', priority: 'must' },
@@ -288,7 +288,7 @@ export default {
           blocks: [
             hdr({ eyebrow: 'Wetter', title: 'Regenradar', subtitle: 'Niederschlag von −2 bis +2 Stunden', primaryLabel: '' }),
             B('radar', 'wx-radar', 'main', { layout: 'full', title: 'Niederschlag' }),
-            B('nc', 'wx-nowcast', 'main', { layout: 'bars', title: 'Regen in den nächsten 2 Stunden', linkRadar: false }),
+            B('nc', 'wx-nowcast', 'main', { layout: 'bars', title: 'Regen in 2 Stunden', linkRadar: false }),
             B('al', 'wx-alerts', 'main', { mode: 'banner' }),
             B('src', 'wx-source', 'main', { variant: 'footnote', settingsLink: false }),
           ],
@@ -310,7 +310,7 @@ export default {
     },
     // ======================================================================= Stündlich
     {
-      id: 'weather.hourly', name: 'Stündlich', group: 'Vorhersage', status: 'design',
+      id: 'weather.hourly', name: 'Stündlich', group: 'Vorhersage', status: 'design', tier: 2, usage: 'täglich',
       purpose: 'Den Tag planen: wann wird es kälter, wann regnet es, wie böig wird es? 48 Stunden, jeder Tag wählbar.',
       requirements: [
         { text: 'Temperatur, Symbol, Regenrisiko und Wind je Stunde; Niederschlagsmenge', type: 'info', priority: 'must' },
@@ -345,7 +345,7 @@ export default {
           layout: { type: 'split' },
           blocks: [
             hdr({ eyebrow: 'Wetter', title: 'Stündlich', subtitle: '48 Stunden ab jetzt', primaryLabel: '' }),
-            B('table', 'wx-hourly-strip', 'main', { layout: 'table', count: 48, title: 'Alle Stunden', linkLabel: '' }),
+            B('table', 'wx-hourly-strip', 'main', { layout: 'table', count: 48, title: 'Alle Stunden', linkLabel: '', followDay: true }),
             B('nc', 'wx-nowcast', 'aside', { layout: 'strip' }),
             B('al', 'wx-alerts', 'aside', { mode: 'compact', title: 'Warnungen', limit: 3 }),
             B('src', 'wx-source', 'aside', { variant: 'footnote', settingsLink: false }),
@@ -356,7 +356,7 @@ export default {
     },
     // ======================================================================= 10 Tage
     {
-      id: 'weather.daily', name: '10 Tage', group: 'Vorhersage', status: 'review',
+      id: 'weather.daily', name: '10 Tage', group: 'Vorhersage', status: 'review', tier: 2, usage: 'mehrmals pro Woche',
       purpose: 'Die nächsten Tage überblicken: mild, nass oder frostig? Einen Tag antippen und seine Stunden sehen.',
       requirements: [
         { text: 'Zehn Tage mit Symbol, Min/Max, Regenrisiko und Hinweis auf Frost oder Sturm', type: 'info', priority: 'must' },
@@ -402,7 +402,7 @@ export default {
     },
     // ======================================================================= Warnungen
     {
-      id: 'weather.alerts', name: 'Warnungen', group: 'Warnungen', status: 'design',
+      id: 'weather.alerts', name: 'Warnungen', group: 'Warnungen', status: 'design', tier: 1, usage: 'bei Warnlage',
       purpose: 'Rechtzeitig und klar über amtliche Warnungen informiert werden: Stufe, Zeitraum, was zu tun ist, was es für Termine bedeutet.',
       requirements: [
         { text: 'Stufen 1–4 nach DWD-Schema (Gelb, Orange, Rot, Violett) mit Symbol und Stufenanzeige, nicht nur Farbe', type: 'rule', priority: 'must' },
@@ -449,7 +449,7 @@ export default {
     },
     // ======================================================================= Kleidung & Aktivität
     {
-      id: 'weather.advice', name: 'Kleidung & Aktivität', group: 'Alltag', status: 'design',
+      id: 'weather.advice', name: 'Kleidung & Aktivität', group: 'Alltag', status: 'design', tier: 2, usage: 'täglich',
       purpose: 'Das Wetter in Entscheidungen übersetzen: was anziehen, wann laufen oder Rad fahren, wie komme ich zu Terminen und zum Training?',
       requirements: [
         { text: 'Kleidungstipp aus gefühlter Temperatur, Wind, Regen und UV, nach Tageszeit aufgeschlüsselt', type: 'info', priority: 'must' },
@@ -512,7 +512,7 @@ export default {
     },
     // ======================================================================= Pollen, UV & Luft
     {
-      id: 'weather.environment', name: 'Pollen, UV & Luft', group: 'Umwelt', status: 'design',
+      id: 'weather.environment', name: 'Pollen, UV & Luft', group: 'Umwelt', status: 'design', tier: 3, usage: 'saisonal',
       purpose: 'Für Allergiker und Outdoor-Aktive: Pollenflug, UV-Index und Luftqualität verständlich – mit Stufen, Verlauf und Empfehlung.',
       requirements: [
         { text: 'Pollen für heute bis übermorgen auf Stufen 0–3, „Meine Allergene“ wählbar, Mitteilung ab Stufe 2', type: 'info', priority: 'must' },
@@ -562,7 +562,7 @@ export default {
     },
     // ======================================================================= Orte
     {
-      id: 'weather.locations', name: 'Orte', group: 'Orte', status: 'design',
+      id: 'weather.locations', name: 'Orte', group: 'Orte', status: 'design', tier: 3, usage: 'selten',
       purpose: 'Orte finden, merken und vergleichen: aktueller Standort, Favoriten, Reiseziele. Auswahl eines Ortes zeigt sein Wetter.',
       requirements: [
         { text: 'Suche mit Vorschlägen (Name, Region, aktuelle Temperatur) und „Hinzufügen“', type: 'action', priority: 'must' },
@@ -598,7 +598,7 @@ export default {
     },
     // ======================================================================= Einstellungen
     {
-      id: 'weather.settings', name: 'Einheiten & Benachrichtigungen', group: 'Einstellungen', status: 'design',
+      id: 'weather.settings', name: 'Einheiten & Benachrichtigungen', group: 'Einstellungen', status: 'design', tier: 3, usage: 'selten',
       purpose: 'Einheiten und Hinweise so einstellen, dass das Wetter zu einem passt: °C/°F, km/h oder Beaufort, Regen-Hinweis, Tageszusammenfassung, Warnstufe, Ruhezeiten, Quelle.',
       requirements: [
         { text: 'Einheiten für Temperatur, Wind, Niederschlag und Druck mit Live-Vorschau', type: 'action', priority: 'must' },

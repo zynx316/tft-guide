@@ -22,6 +22,7 @@ export const quickKcal = {
   events: ['quickkcal.submit', 'portion.confirm'],
   states: ['empty'],
   css: `${NU_CSS}
+  .tk-qk__more { white-space:normal; height:auto; min-height:var(--tk-size-touch); text-align:left; }
   .tk-qk { display:flex; flex-direction:column; gap:var(--tk-space-4); min-width:0; }
   .tk-qk__macros { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; } .tk-qk__macros .tk-nu-step { width:100%; } .tk-qk__macros .tk-nu-step__field { min-width:0; flex:1; padding:0 4px; } .tk-qk__macros input { width:100% !important; } .tk-qk__macros .tk-nu-step > button { width:32px; }
   .bp-mobile .tk-qk__macros { grid-template-columns:1fr; } .bp-mobile .tk-qk__macros .tk-nu-step > button { width:var(--tk-size-touch); }`,
@@ -36,7 +37,7 @@ export const quickKcal = {
       <${Stepper} value=${kcal} onChange=${setKcal} step=${50} min=${10} max=${5000} unit="kcal" label="Kalorien" />
       <${Field} label="Name (optional)"><${Input} value=${name} onInput=${setName} placeholder="z. B. Kantine, Pizza-Stück" maxlength="60" /><//>
       <${MealChips} value=${meal} onChange=${setMeal} />
-      ${props.showMacros && html`<div><${Button} variant="ghost" size="sm" iconRight=${open ? 'chevron-up' : 'chevron-down'} onClick=${() => setOpen(!open)} aria-expanded=${String(open)}>Makros ergänzen (optional)<//>
+      ${props.showMacros && html`<div><${Button} variant="ghost" size="sm" class="tk-qk__more" iconRight=${open ? 'chevron-up' : 'chevron-down'} onClick=${() => setOpen(!open)} aria-expanded=${String(open)}>Makros ergänzen (optional)<//>
         ${open && html`<div class="tk-qk__macros" style="margin-top:8px"><div><div class="tk-nu-meta">Eiweiß</div><${Stepper} value=${p} onChange=${setP} step=${5} unit="g" label="Eiweiß" /></div><div><div class="tk-nu-meta">Kohlenhydrate</div><${Stepper} value=${c} onChange=${setC} step=${5} unit="g" label="Kohlenhydrate" /></div><div><div class="tk-nu-meta">Fett</div><${Stepper} value=${f} onChange=${setF} step=${5} unit="g" label="Fett" /></div></div>`}</div>`}
       <${Button} variant="primary" icon="plus" onClick=${submit} style="justify-content:center">Erfassen · ${num(kcal)} kcal<//></div>`;
     return props.framed ? html`<${Card} title=${props.title} icon="zap">${body}<//>` : body;

@@ -29,7 +29,7 @@ export const foodList = {
   .tk-fl { display:flex; flex-direction:column; gap:var(--tk-space-3); min-width:0; }
   .tk-fl__bar { display:flex; gap:8px; flex-wrap:wrap; align-items:center; } .tk-fl__bar .tk-search { flex:1 1 220px; }
   .tk-fl__tbl { width:100%; border-collapse:collapse; font-size:var(--tk-nfs-md); font-variant-numeric:tabular-nums; }
-  .tk-fl__tbl th { text-align:right; font-size:var(--tk-nfs-xs); text-transform:uppercase; letter-spacing:var(--tk-ls-wide); color:var(--tk-c-text-subtle); font-weight:var(--tk-fw-semibold); padding:8px 10px; border-bottom:1px solid var(--tk-c-border); white-space:nowrap; } .tk-fl__tbl th:first-child { text-align:left; }
+  .tk-fl__tbl th { text-align:right; font-size:var(--tk-nfs-xs); letter-spacing:0; color:var(--tk-c-text-subtle); font-weight:var(--tk-fw-semibold); padding:8px 10px; border-bottom:1px solid var(--tk-c-border); white-space:nowrap; } .tk-fl__tbl th:first-child { text-align:left; }
   .tk-fl__tbl td { padding:9px 10px; border-bottom:1px solid var(--tk-c-border); text-align:right; } .tk-fl__tbl td:first-child { text-align:left; }
   .tk-fl--dense .tk-fl__tbl td { padding:5px 10px; }
   .tk-fl__tbl tbody tr { cursor:pointer; } .tk-fl__tbl tbody tr:hover, .tk-fl__tbl tbody tr[aria-selected="true"] { background:var(--tk-c-surface2); } .tk-fl__tbl tbody tr[aria-selected="true"] td:first-child { box-shadow:inset 3px 0 var(--tk-c-accent); }

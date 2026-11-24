@@ -30,7 +30,7 @@ export const wxAlerts = {
   name: 'Warnungen (DWD-Stufen)',
   category: 'Wetter',
   description: 'Amtliche Warnungen mit Stufe 1–4, Zeitraum und Zeitleiste, Status („beginnt in …“), Verhaltenstipps, betroffenen Terminen und Quelle. Modi: voll, kompakt (Zeilen) oder Banner (wichtigste Warnung). Optional Warnungen aller gemerkten Orte.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'mode', label: 'Modus', type: 'select', options: ['full', 'compact', 'banner'], default: 'full' },
     { name: 'title', label: 'Titel', type: 'text', default: 'Warnungen' },
@@ -45,6 +45,7 @@ export const wxAlerts = {
   states: ['empty'],
   css: `
   .tk-wxa { display:flex; flex-direction:column; gap:var(--tk-space-3); min-width:0; }
+  .tk-wxa__item .tk-badge, .tk-wxa__banner .tk-badge { white-space:normal; max-width:100%; text-align:left; height:auto; }
   .tk-wxa__item { border-radius:var(--tk-radius-lg); border:1px solid var(--tk-c-border); border-left:5px solid var(--wx-lv); background:var(--wx-soft); overflow:hidden; }
   .tk-wxa__head { display:flex; align-items:flex-start; gap:var(--tk-space-3); width:100%; padding:var(--tk-space-3) var(--tk-space-4); min-height:60px; border:0; background:transparent; color:var(--tk-c-text); font:inherit; text-align:left; cursor:pointer; }
   .tk-wxa__ic { flex:none; display:grid; place-items:center; width:40px; height:40px; border-radius:12px; color:var(--wx-lv); background:color-mix(in srgb, var(--wx-lv) 16%, transparent); }

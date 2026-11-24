@@ -7,9 +7,9 @@ import { XC_CSS } from './_xc-css.js';
 const CSS = `
   .tk-xc-mod { display: flex; flex-direction: column; gap: var(--tk-space-3); min-width: 0; }
   .tk-xc-mod__bar { display: flex; align-items: stretch; justify-content: space-around; gap: 2px; padding: var(--tk-space-2); border-radius: var(--tk-radius-xl); border: 1px solid var(--tk-c-border-strong); background: var(--tk-c-nav-bg); min-width: 0; }
-  .tk-xc-mod__bar span { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 2px; border-radius: var(--tk-radius-md); font-size: var(--tk-fs-xs); color: var(--tk-c-text-muted); }
-  .tk-xc-mod__bar span > span { padding: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .tk-xc-mod__bar span:first-child { background: var(--tk-c-nav-active); color: var(--tk-c-accent); font-weight: var(--tk-fw-semibold); }
+  .tk-xc-mod__bar > span { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 2px; border-radius: var(--tk-radius-md); font-size: var(--tk-fs-xs); color: var(--tk-c-text-muted); }
+  .tk-xc-mod__bar > span > span { padding: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tk-xc-mod__bar > span:first-child { background: var(--tk-c-nav-active); color: var(--tk-c-accent); font-weight: var(--tk-fw-semibold); }
   .tk-xc-mod__empty { border-style: dashed; color: var(--tk-c-text-subtle); }
   .tk-xc-mod__star[aria-pressed="true"] { color: var(--tk-c-warning); }
   .tk-xc-mod__row { display: flex; align-items: center; gap: var(--tk-space-2); min-height: 56px; padding: var(--tk-space-2) var(--tk-space-3); border-bottom: 1px solid var(--tk-c-border); min-width: 0; }

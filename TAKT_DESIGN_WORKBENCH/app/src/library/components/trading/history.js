@@ -10,7 +10,7 @@ import { buildLedger, kindLabel, arr, byId, known, sum } from './_calc.js';
 import { slots, Tile, Stat, Note, Px, TRD_CSS, openSecurity } from './_trd.js';
 import { ex } from './_example.js';
 
-const ICON = { buy: 'trending-up', sell: 'trending-down', plan: 'repeat', dividend: 'coins', sim: 'flask-conical' };
+const ICON = { buy: 'trending-up', sell: 'trending-down', plan: 'repeat', dividend: 'coins', sim: 'circle-dashed' };
 const TONE = { buy: 'accent', sell: 'warning', plan: 'info', dividend: 'success', sim: 'neutral' };
 const FILTERS = [['all', 'Alle'], ['buy', 'Käufe'], ['sell', 'Verkäufe'], ['plan', 'Sparplan'], ['dividend', 'Dividenden'], ['sim', 'Simulation']];
 

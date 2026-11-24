@@ -133,3 +133,6 @@ export function marketState(now) {
   if (open) next = null; else { if (wd > 5 || mins >= 1050) next = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1, 9, 0); while (isoWeekday(next) > 5) next = new Date(next.getFullYear(), next.getMonth(), next.getDate() + 1, 9, 0); }
   return { open, closesAt: '17:30', next };
 }
+
+/** Lokaler Zeitstempel 'YYYY-MM-DDTHH:mm:00' (nicht UTC). */
+export const isoLocalOf = (d) => { const x = toDate(d), p = (n) => String(n).padStart(2, '0'); return `${x.getFullYear()}-${p(x.getMonth() + 1)}-${p(x.getDate())}T${p(x.getHours())}:${p(x.getMinutes())}:00`; };

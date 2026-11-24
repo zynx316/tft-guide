@@ -30,6 +30,7 @@ export const wxClothing = {
   .tk-wxcl__parts { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:var(--tk-space-2); margin-top:var(--tk-space-4); }
   .tk-wxcl__part { display:flex; flex-direction:column; gap:2px; padding:var(--tk-space-3); border-radius:var(--tk-radius-md); background:var(--tk-c-surface2); font-size:var(--tk-fs-sm); color:var(--tk-c-text-muted); min-width:0; } .tk-wxcl__part strong { color:var(--tk-c-text); font-size:var(--tk-fs-lg); }
   .tk-wxbf__item { display:flex; gap:var(--tk-space-3); align-items:flex-start; padding:var(--tk-space-3) var(--tk-space-4); border-top:1px solid var(--tk-c-border); }
+  .tk-wxbf__item { flex-wrap:wrap; } .tk-wxbf__item > .tk-grow { flex:1 1 150px; min-width:0; overflow-wrap:anywhere; } .tk-wxbf__item > .tk-row { margin-left:auto; }
   .tk-wxbf__item:first-child { border-top:0; } .tk-wxbf__n { flex:none; width:28px; height:28px; border-radius:50%; display:grid; place-items:center; font-weight:var(--tk-fw-bold); font-size:var(--tk-fs-sm); }
   .tk-wxbf__title { font-weight:var(--tk-fw-semibold); line-height:1.3; } .tk-wxbf__text { font-size:var(--tk-fs-sm); color:var(--tk-c-text-muted); margin-top:2px; line-height:1.45; }
   .tk-wxbf__item[data-done="true"] { opacity:.55; } .tk-wxbf__item[data-done="true"] .tk-wxbf__title { text-decoration:line-through; }`,
@@ -57,7 +58,7 @@ export const wxBriefing = {
   name: 'Wetter-Briefing (priorisiert)',
   category: 'Wetter',
   description: 'Was ist heute wichtig? Priorisierte Hinweise aus Warnungen, Nowcast, Terminen mit Weg, Kleidung, Lauffenster und Pollen – jeweils mit einer passenden Aktion. Erledigte Hinweise lassen sich abhaken.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Heute wichtig' },
     { name: 'limit', label: 'Max. Hinweise', type: 'number', default: 5 },

@@ -602,7 +602,7 @@ export default {
         { text: 'Unterbrochene Serie: „Neustart – deine Wochen bleiben im Verlauf“ statt „verloren“', type: 'rule', priority: 'must' },
         { text: 'Meilensteine mit Fortschritt; Erreichtes einmalig und ruhig gewürdigt', type: 'info', priority: 'should' },
         { text: 'Wochenrückblick: geschafft, gelernt, Vorschlag für die nächste Woche', type: 'info', priority: 'should' },
-        { text: 'Nach 3 verfehlten Wochen Vorschlag, das Ziel zu senken (Folgeversion)', type: 'rule', priority: 'could' },
+        { text: 'Nach 3 Wochen unter dem Ziel Vorschlag, das Ziel zu senken (Folgeversion)', type: 'rule', priority: 'could' },
         { text: 'Ziele hinzufügen mit Vorschlägen', type: 'action', priority: 'should' },
       ],
       interactions: [{ trigger: 'Joker einsetzen', result: 'Serie bleibt bestehen, Joker −1', event: 'joker.use' }, { trigger: 'Ziel antippen', result: 'Details (Folgeversion)', event: 'goal.open' }, { trigger: 'Meilenstein antippen', result: 'Details (Folgeversion)', event: 'milestone.open' }, { trigger: 'Vorschlag übernehmen', result: 'Rückblick-Vorschlag in den Plan', event: 'recap.apply' }],

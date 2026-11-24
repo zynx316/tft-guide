@@ -9,7 +9,8 @@
 //   wxSettings       Einheiten, Empfindlichkeit, Allergene, Benachrichtigungen
 //   wxAlertLevels    Warnstufen 1–4 (DWD-Schema) mit Bedeutung
 //   wxVenues         Orte aus dem Kalender -> Verkehrsmittel, Wegzeit (für Termin- und Pendelfenster)
-//   wxTraining       geplante Trainingseinheiten (Bezug zu Fitness: Mo/Mi/Fr Kraft, am Wochenende Laufen/Wandern)
+//   wxTraining       geplante Trainingseinheiten der nächsten 7 Tage (aus der Fitness-Welt: Mo/Mi/Fr Kraft, Sa Lauf; So Wanderung aus dem Kalender)
+import { trainingProgram, fitnessProfile } from './fitness.js';
 const p2 = (n) => String(n).padStart(2, '0');
 const NOW = '2026-11-24T09:30:00';
 const DAY0 = '2026-11-24';
@@ -295,12 +296,19 @@ export const wxSettings = {
 };
 export const wxVenues = {
   'Café Moll': { mode: 'Fuß', min: 8, outdoor: true }, 'Trattoria Bella': { mode: 'Fuß', min: 10, outdoor: true }, 'Markt am Dom': { mode: 'Fuß', min: 10, outdoor: true, stayOutdoor: true },
-  'Praxis Lindner': { mode: 'Rad', min: 15, outdoor: true }, 'Praxis Dr. Weber': { mode: 'Rad', min: 12, outdoor: true }, 'Studio Kraftwerk': { mode: 'Rad', min: 12, outdoor: true },
+  'Praxis Lindner': { mode: 'Rad', min: 15, outdoor: true }, 'Praxis Dr. Weber': { mode: 'Rad', min: 12, outdoor: true }, 'Studio Kraftwerk': { mode: 'Rad', min: 12, outdoor: true }, 'FitX Bielefeld': { mode: 'Rad', min: 12, outdoor: true },
   'Studio Ehrenfeld': { mode: 'Auto', min: 25, outdoor: false }, 'Kanzlei Brandt': { mode: 'Auto', min: 18, outdoor: false }, Brauhaus: { mode: 'Fuß', min: 12, outdoor: true },
 };
+// Trainingstage kommen aus der Fitness-Welt (Eigentümer: Fitness): Mo Unterkörper, Mi Oberkörper A, Fr Ganzkörper, Sa lockerer Lauf.
+// Die Wanderung am Sonntag steht im Kalender (e20, Feldberg) und liegt außerhalb der gemerkten Orte.
+const dowOfIso = (iso) => (new Date(`${iso}T12:00:00`).getDay() + 6) % 7; // 0 = Montag
+const endOf = (start, min) => hhmm(toMin(start) + min);
 export const wxTraining = [
-  { id: 'tr1', date: '2026-11-25', start: '18:30', end: '19:30', title: 'Krafttraining Unterkörper', where: 'Studio Kraftwerk', outdoor: false, kind: 'Kraft' },
-  { id: 'tr2', date: '2026-11-27', start: '18:30', end: '19:30', title: 'Krafttraining Oberkörper', where: 'Studio Kraftwerk', outdoor: false, kind: 'Kraft' },
-  { id: 'tr3', date: '2026-11-28', start: null, end: null, title: 'Lauf 8 km', where: 'Johannisberg', outdoor: true, kind: 'Laufen', durationMin: 50 },
-  { id: 'tr4', date: '2026-11-29', start: '11:00', end: '15:00', title: 'Wanderung Taunus', where: 'Feldberg', outdoor: true, kind: 'Wandern', externalPlace: true },
+  ...Array.from({ length: 7 }, (_, k) => addDay(DAY0, k)).flatMap((date) => {
+    const dow = dowOfIso(date), day = trainingProgram.days.find((d) => d.dow === dow);
+    if (day) return [{ id: `tr-${day.id}`, date, start: day.time, end: endOf(day.time, day.durationMin), title: `Krafttraining ${day.name}`, where: fitnessProfile.gym, outdoor: false, kind: 'Kraft' }];
+    if (dow === 5) return [{ id: 'tr-run', date, start: null, end: null, title: 'Lockerer Lauf', where: 'Johannisberg', outdoor: true, kind: 'Laufen', durationMin: 50 }];
+    if (dow === 6) return [{ id: 'tr-hike', date, start: '11:00', end: '15:00', title: 'Wanderung Taunus', where: 'Feldberg', outdoor: true, kind: 'Wandern', externalPlace: true }];
+    return [];
+  }),
 ];

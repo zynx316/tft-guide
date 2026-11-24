@@ -17,7 +17,7 @@ export const trdMarketStatus = {
   events: [],
   states: ['empty', 'loading', 'error'],
   css: `${TRD_CSS}
-  .tk-trd-ms { display:flex; align-items:center; gap:8px 14px; flex-wrap:wrap; font-size:var(--tk-fs-sm); color:var(--tk-c-text-muted); } .tk-trd-ms i { width:8px; height:8px; border-radius:50%; display:inline-block; margin-right:6px; }`,
+  .tk-trd-ms { display:flex; align-items:center; gap:8px 14px; flex-wrap:wrap; font-size:var(--tk-fs-sm); color:var(--tk-c-text-muted); } .tk-trd-ms > span { display:inline-flex; align-items:center; gap:6px; } .tk-trd-ms i { width:8px; height:8px; border-radius:50%; display:inline-block; margin-right:6px; }`,
   example: { props: {} },
   render: function TrdMarketStatus({ props, ctx }) {
     const m = marketState(ctx.now ? ctx.now() : ctx.today), off = !!ctx.env?.offline;

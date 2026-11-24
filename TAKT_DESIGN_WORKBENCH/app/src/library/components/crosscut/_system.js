@@ -19,6 +19,7 @@ export const MODULES = [
   { id: 'nutrition', name: 'Ernährung', icon: 'salad', area: 'Gesundheit', home: 'nutrition.home', desc: 'Mahlzeiten, Rezepte, Wasser' },
   { id: 'weather', name: 'Wetter', icon: 'cloud-sun', area: 'Umgebung', home: 'weather.home', desc: 'Jetzt, Radar, Warnungen' },
   { id: 'sales', name: 'Sales', icon: 'store', area: 'Business', home: 'sales.overview', desc: 'Shop-Kanäle und Bestellungen' },
+  { id: 'system', name: 'TAKT Kern', icon: 'sparkles', area: 'System', home: 'system.notifications', locked: true, desc: 'Suche, Mitteilungen, Erfassen' },
   { id: 'settings', name: 'Einstellungen', icon: 'settings', area: 'System', home: 'settings.home', locked: true, desc: 'Darstellung, Daten, Sicherheit' },
 ];
 export const moduleMeta = (id) => MODULES.find((m) => m.id === id) || { id, name: id, icon: 'link-2', area: 'Weitere', home: null };

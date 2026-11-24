@@ -8,12 +8,13 @@ export const wxHourlyStrip = {
   name: 'Nächste Stunden (kompakt)',
   category: 'Wetter',
   description: 'Die nächsten Stunden auf einen Blick: wischbare Karten (Zeit, Symbol, Temperatur, Regenrisiko) oder dichte Tabelle mit gefühlter Temperatur, Regen und Wind. Antippen öffnet den vollständigen Stundenverlauf.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'layout', label: 'Darstellung', type: 'select', options: ['cards', 'table'], default: 'cards' },
     { name: 'count', label: 'Anzahl Stunden', type: 'number', default: 12 },
     { name: 'title', label: 'Titel', type: 'text', default: 'Nächste Stunden' },
     { name: 'linkLabel', label: 'Link-Text (leer = kein Link)', type: 'text', default: 'Stündlich' },
+    { name: 'followDay', label: 'Tag aus 10 Tage übernehmen (nur Tabelle)', type: 'boolean', default: false },
   ],
   data: [SLOT_PLACE, SLOT_SETTINGS],
   events: ['weather.hourly.open'],
@@ -27,21 +28,28 @@ export const wxHourlyStrip = {
   .tk-wxhs__row { display:grid; grid-template-columns:52px 28px 54px minmax(0,1fr) minmax(0,1.1fr); align-items:center; gap:var(--tk-space-3); width:100%; min-height:44px; padding:4px var(--tk-space-4); border:0; border-bottom:1px solid var(--tk-c-border); background:transparent; color:var(--tk-c-text); font:inherit; text-align:left; cursor:pointer; font-variant-numeric:tabular-nums; }
   .tk-wxhs__row:hover { background:var(--tk-c-surface2); } .tk-wxhs__row:last-child { border-bottom:0; }
   .tk-wxhs__day { padding:6px var(--tk-space-4); font-size:var(--tk-fs-xs); font-weight:var(--tk-fw-semibold); letter-spacing:var(--tk-ls-wide); text-transform:uppercase; color:var(--tk-c-text-subtle); background:var(--tk-c-surface2); border-bottom:1px solid var(--tk-c-border); }
+  .tk-wxhs__chips { display:flex; gap:6px; overflow-x:auto; padding:var(--tk-space-3) var(--tk-space-4); border-bottom:1px solid var(--tk-c-border); scrollbar-width:thin; }
   .tk-wxhs__w { display:inline-flex; align-items:center; gap:5px; color:var(--tk-c-text-muted); font-size:var(--tk-fs-sm); }
   .bp-mobile .tk-wxhs__row { grid-template-columns:44px 26px 44px minmax(0,1fr) minmax(0,1fr); gap:var(--tk-space-2); padding:4px var(--tk-space-3); min-height:48px; }`,
   example: { props: { layout: 'table' }, data: { place: EX.place, settings: EX.settings } },
   render: ({ props, data, ctx }) => {
     const place = placeOf(data);
     if (!place) return html`<${NoPlace} />`;
-    const U = unitsOf(settingsOf(data)), hrs = hoursFrom(place, ctx.today, props.count);
+    const U = unitsOf(settingsOf(data));
+    const picked = props.followDay && props.layout === 'table' ? [ctx.ui.selectedDate, ctx.ui.selectedId].find((v) => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}/.test(v)) : null;
+    const dayHours = picked ? place.hours.filter((h) => dkey(h.time) === dkey(picked)) : [];
+    const byDay = dayHours.length >= 12 && dkey(picked) !== dkey(ctx.today);
+    const hrs = byDay ? dayHours : hoursFrom(place, ctx.today, props.count);
+    const chips = props.followDay && props.layout === 'table' && html`<div class="tk-wxhs__chips" data-scroll-x role="group" aria-label="Tag wählen"><button type="button" class="tk-chip" aria-pressed=${byDay ? 'false' : 'true'} onClick=${() => ctx.setUi('selectedDate', null)}>Ab jetzt</button>
+      ${place.daily.filter((d) => place.hours.some((h) => dkey(h.time) === d.date)).slice(1).map((d) => html`<button type="button" class="tk-chip" aria-pressed=${byDay && dkey(picked) === d.date ? 'true' : 'false'} onClick=${() => { ctx.setUi('selectedDate', d.date); ctx.emit('weather.hourly.day', { date: d.date }); }}>${dayName(d.date, ctx.today)}</button>`)}</div>`;
     const open = (h) => ctx.emit('weather.hourly.open', { time: h?.time, id: h ? dkey(h.time) : undefined });
     const link = props.linkLabel && html`<${Button} size="sm" variant="ghost" iconRight="chevron-right" onClick=${() => open(hrs[0])}>${props.linkLabel}<//>`;
     if (!hrs.length) return html`<${NoPlace} icon="clock" title="Keine Stundenwerte" text="Für diesen Zeitraum liegen keine Stundenwerte vor." />`;
     if (props.layout === 'table') {
       let last = '';
-      return html`<${Card} flush title=${props.title} icon="clock" actions=${link}>${hrs.map((h, i) => { const d = dkey(h.time), head = d !== last && (i > 0 || false) ? html`<div class="tk-wxhs__day">${dayName(h.time, ctx.today, true)}</div>` : null; last = d; const w = cond(h.code, h.night);
+      return html`<${Card} flush title=${byDay ? `${dayName(dayHours[0].time, ctx.today, true)}, ${dkey(dayHours[0].time).slice(8)}.${dkey(dayHours[0].time).slice(5, 7)}.` : props.title} icon="clock" actions=${link}>${chips}${hrs.map((h, i) => { const d = dkey(h.time), head = d !== last && (i > 0 || false) ? html`<div class="tk-wxhs__day">${dayName(h.time, ctx.today, true)}</div>` : null; last = d; const w = cond(h.code, h.night);
         return html`${head}<button type="button" class="tk-wxhs__row" aria-label=${`${hm(h.time)} Uhr, ${w.label}, ${U.t(h.temp)}`} onClick=${() => open(h)}>
-          <span class="tk-muted">${i === 0 ? 'Jetzt' : hm(h.time)}</span><${CondIcon} code=${h.code} night=${h.night} size=${20} />
+          <span class="tk-muted">${i === 0 && !byDay ? 'Jetzt' : hm(h.time)}</span><${CondIcon} code=${h.code} night=${h.night} size=${20} />
           <span><strong>${U.t(h.temp)}</strong> <span class="tk-subtle" style="font-size:var(--tk-fs-xs)">${U.t(h.feels)}</span></span>
           <span class="tk-wxhs__w" style=${h.pop >= 20 ? 'color:var(--tk-c-info)' : ''}>${h.pop >= 20 ? html`<${Icon} name="droplets" size=${13} />${h.pop} %${ctx.bp === 'mobile' ? '' : ` · ${U.p(h.precip)}`}` : '–'}</span>
           <span class="tk-wxhs__w"><${WindArrow} deg=${DIR_DEG[h.windDir] ?? 225} size=${13} />${U.wn(h.wind)} <span class="tk-subtle">(${U.wn(h.gust)})</span></span></button>`; })}<//>`;

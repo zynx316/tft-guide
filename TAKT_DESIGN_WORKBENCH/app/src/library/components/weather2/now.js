@@ -9,7 +9,7 @@ export const wxNow = {
   name: 'Jetzt (Ort & Zustand)',
   category: 'Wetter',
   description: 'Aktuelles Wetter des gewählten Ortes: Temperatur, Zustand, gefühlte Temperatur, Hoch/Tief und Kurztext. Als große Karte, kompakte Zeile oder einzeilige Leiste. Zeigt Offline-/Veraltet-Hinweis mit Stand und folgt den Einheiten.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'layout', label: 'Darstellung', type: 'select', options: ['hero', 'compact', 'line'], default: 'hero' },
     { name: 'showSummary', label: 'Kurztext', type: 'boolean', default: true },
@@ -34,6 +34,7 @@ export const wxNow = {
   .tk-wxnow--compact { flex-direction:row; align-items:center; gap:var(--tk-space-4); }
   .tk-wxnow--compact .tk-wxnow__temp { font-size:var(--tk-fs-4xl); line-height:1; }
   .tk-wxnow__line { display:flex; align-items:center; gap:var(--tk-space-3); flex-wrap:wrap; min-width:0; }
+  .tk-wxnow__where { display:inline-flex; align-items:center; gap:5px; font-size:var(--tk-fs-sm); font-weight:var(--tk-fw-semibold); color:var(--tk-c-text-muted); min-width:0; }
   .tk-wxnow__stale { animation:none; }
   .bp-mobile .tk-wxnow--hero { padding:var(--tk-space-4); }
   .bp-mobile .tk-wxnow__temp { font-size:64px; }
@@ -50,11 +51,11 @@ export const wxNow = {
     const refresh = () => { setSpin(spin + 1); ctx.emit('weather.refresh', { place: place.id }); ctx.toast(S.offline ? 'Offline – letzter Stand wird angezeigt' : 'Wetter aktualisiert'); };
     const stat = fr.state !== 'ok' ? html`<${Badge} tone="warning" icon=${fr.icon}>${fr.label}<//>` : html`<span class="tk-subtle" style="font-size:var(--tk-fs-xs)">${fr.label}</span>`;
     if (props.layout === 'line') return html`<${Card}><div class="tk-wxnow__line" style=${`--wx-tone:${tone}`}><${CondIcon} code=${c.code} night=${c.night} size=${22} box=${40} />
-      <strong class="tk-num" style="font-size:var(--tk-fs-2xl)">${U.t(c.temp)}</strong><span>${w.label}</span><span class="tk-muted">Gefühlt ${U.t(c.feels)} · ${U.t(c.high)} / ${U.t(c.low)}</span>${fr.state !== 'ok' && stat}</div><//>`;
+      ${props.showLocation && html`<span class="tk-wxnow__where"><${Icon} name="map-pin" size=${13} />${loc}</span>`}<strong class="tk-num" style="font-size:var(--tk-fs-2xl)">${U.t(c.temp)}</strong><span>${w.label}</span><span class="tk-muted">Gefühlt ${U.t(c.feels)} · ${U.t(c.high)} / ${U.t(c.low)}</span>${fr.state !== 'ok' && stat}</div><//>`;
     const loca = props.showLocation && html`<button type="button" class="tk-wxnow__loc" aria-label=${`Ort wählen, aktuell ${loc}`} onClick=${() => ctx.emit('weather.locations.open', { id: place.id })}><span style="color:var(--tk-c-accent);display:inline-flex"><${Icon} name=${place.isCurrentLocation ? 'map-pin' : 'map'} size=${17} /></span><span class="tk-truncate">${loc}</span><${Icon} name="chevron-down" size=${14} /></button>`;
     const top = html`<div class="tk-wxnow__top">${loca}<span class="tk-grow"></span>${stat}<${Button} size="sm" variant="ghost" icon="refresh-cw" class=${spin ? 'tk-wxnow__spin' : ''} key=${spin} aria-label="Aktualisieren" onClick=${refresh} /></div>`;
     if (props.layout === 'compact') return html`<${Card}><div class="tk-wxnow tk-wxnow--compact" style=${`--wx-tone:${tone}`}>
-      <${CondIcon} code=${c.code} night=${c.night} size=${32} box=${64} /><div class="tk-grow"><div class="tk-wxnow__temp">${U.t(c.temp)}</div><div class="tk-muted" style="font-size:var(--tk-fs-sm)">${w.label} · Gefühlt ${U.t(c.feels)}</div></div>
+      <${CondIcon} code=${c.code} night=${c.night} size=${32} box=${64} /><div class="tk-grow">${props.showLocation && html`<div class="tk-wxnow__where"><${Icon} name="map-pin" size=${13} />${loc}</div>`}<div class="tk-wxnow__temp">${U.t(c.temp)}</div><div class="tk-muted" style="font-size:var(--tk-fs-sm)">${w.label} · Gefühlt ${U.t(c.feels)}</div></div>
       <div style="text-align:right"><div class="tk-num"><strong>${U.t(c.high)}</strong> <span class="tk-muted">${U.t(c.low)}</span></div>${stat}</div></div><//>`;
     return html`<div class="tk-wxnow tk-wxnow--hero" style=${`--wx-tone:${tone}`}>${top}
       <div class="tk-wxnow__main"><div><div class="tk-wxnow__temp">${U.t(c.temp)}</div><div class="tk-wxnow__cond">${w.label}</div>
@@ -81,7 +82,7 @@ export const wxStats = {
   name: 'Messwerte',
   category: 'Wetter',
   description: 'Detailwerte des aktuellen Wetters (Wind mit Richtung, Böen, Niederschlag, Luftfeuchte, Druck, Taupunkt, Sicht) plus UV, Luft und Pollen. Als Kacheln oder dichte Zeilen. UV/Luft/Pollen öffnen den Bereich „Pollen, UV & Luft“.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'metrics', label: 'Werte (Reihenfolge)', type: 'list', default: ['wind', 'rain', 'humidity', 'pressure', 'uv', 'air'] },
     { name: 'layout', label: 'Darstellung', type: 'select', options: ['tiles', 'rows'], default: 'tiles' },
@@ -94,6 +95,7 @@ export const wxStats = {
   .tk-wxs { display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:var(--tk-space-3); }
   .tk-wxs__tile { display:flex; flex-direction:column; gap:4px; padding:var(--tk-space-3) var(--tk-space-4); border-radius:var(--tk-radius-lg); background:var(--tk-c-surface); border:1px solid var(--tk-c-border); color:var(--tk-c-text); font:inherit; text-align:left; cursor:pointer; min-width:0; min-height:92px; }
   .tk-wxs__tile:hover { border-color:var(--tk-c-border-strong); }
+  .tk-wxs__tile { min-width:0; overflow-wrap:anywhere; text-align:left; } .tk-wxs__l { min-width:0; overflow-wrap:anywhere; }
   .tk-wxs__l { display:flex; align-items:center; gap:6px; font-size:var(--tk-fs-xs); font-weight:var(--tk-fw-semibold); letter-spacing:var(--tk-ls-wide); text-transform:uppercase; color:var(--tk-c-text-muted); }
   .tk-wxs__v { font-size:var(--tk-fs-xl); font-weight:var(--tk-fw-semibold); font-variant-numeric:tabular-nums; display:flex; align-items:center; gap:8px; }
   .tk-wxs__s { font-size:var(--tk-fs-sm); color:var(--tk-c-text-muted); }

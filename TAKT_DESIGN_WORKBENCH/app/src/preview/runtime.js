@@ -18,6 +18,7 @@ import { runProbe } from './qa-probe.js';
 import { clone } from '../lib/util.js';
 import * as FMT from '../lib/format.js';
 import { Launchpad, CaptureSheet, LAUNCHPAD } from './launchpad.js';
+import { DEFAULT_PREFS } from '../library/components/crosscut/_system.js';
 import { isWorldRef, worldKey } from '../seed/world/index.js';
 
 const styleEl = document.createElement('style');
@@ -179,7 +180,10 @@ function Screen({ variant, demoData, cacheKey, cache, theme, today, forcedState,
     },
   };
   const ctx = {
-    bp, width, theme, today: new Date(today || DEFAULT_TODAY), now: () => (live ? new Date(new Date(today || DEFAULT_TODAY).getTime() + (Date.now() - LIVE_T0)) : new Date(today || DEFAULT_TODAY)), live: !!live, mode, fmt: FMT, newId, world: worldApi(world), emit, ui, privacy: !!privacy, env: env || {},
+    bp, width, theme, today: new Date(today || DEFAULT_TODAY), now: () => (live ? new Date(new Date(today || DEFAULT_TODAY).getTime() + (Date.now() - LIVE_T0)) : new Date(today || DEFAULT_TODAY)), live: !!live, mode, fmt: FMT, newId, world: worldApi(world),
+    setPrefs: (patch) => world && world.setData('prefs', (p) => deepMerge(p && !Array.isArray(p) ? p : {}, patch)),
+    setTheme: (id) => world && world.setData('prefs', (p) => deepMerge(p && !Array.isArray(p) ? p : {}, { theme: id })),
+    setPrivacy: (on) => world && world.setData('prefs', (p) => deepMerge(p && !Array.isArray(p) ? p : {}, { privacy: { hideAmounts: !!on } })), emit, ui, privacy: !!privacy, env: env || {},
     setUi: (k, v) => setUiState((u) => ({ ...u, [k]: v })),
     openDialog: overlays.openDialog, toast: overlays.toast,
   };
@@ -206,6 +210,8 @@ const worldApi = (world) => (world ? {
   add: (key, item) => world.setData(key, (list) => [item, ...(Array.isArray(list) ? list : [])]),
   reset: () => world.reset(),
 } : null);
+const isObj = (v) => v && typeof v === 'object' && !Array.isArray(v);
+const deepMerge = (a, b) => { const out = { ...a }; for (const [k, v] of Object.entries(b || {})) out[k] = isObj(v) && isObj(a?.[k]) ? deepMerge(a[k], v) : v; return out; };
 // Deterministische IDs für neu angelegte Objekte (ctx.newId): Zähler je Vorschau-Sitzung, kein Zufall.
 let idSeq = 0;
 const newId = (prefix = 'neu') => `${prefix}-${++idSeq}`;
@@ -311,18 +317,31 @@ function AppPlayer({ payload }) {
     const onKey = (e) => { if ((e.key === 'Backspace' && !/input|textarea/i.test(document.activeElement?.tagName)) || (e.altKey && e.key === 'ArrowLeft')) back(); };
     window.addEventListener('keydown', onKey); return () => window.removeEventListener('keydown', onKey);
   }, []);
-  document.documentElement.setAttribute('data-tk-theme', payload.theme || 'graphite');
-  applyEnv(payload.env);
+  // Einstellungen der Demo (Welt-Schlüssel `prefs`, geschrieben von den Einstellungs-Screens) wirken auf die laufende App.
+  // Vorgaben des Launchers (Theme, Schrift, Beträge) gelten, bis in der Demo selbst etwas geändert wurde.
+  // „Geändert“ = weicht vom Startwert der Sitzung UND vom Standard (DEFAULT_PREFS) ab – Standardwerte, die Einstellungs-
+  // Screens beim ersten Speichern mitschreiben, überschreiben die Launcher-Vorgaben nicht.
+  const prefs = world.data.prefs || {}; const prefs0 = payload.world?.prefs || {};
+  const at = (o, path) => path.reduce((x, k) => x?.[k], o);
+  const changed = (path) => { const v = at(prefs, path); if (v === undefined) return false; const j = JSON.stringify(v); return j !== JSON.stringify(at(prefs0, path)) && j !== JSON.stringify(at(DEFAULT_PREFS, path)); };
+  const theme = changed(['theme']) ? prefs.theme : payload.theme || 'graphite';
+  const privacy = changed(['privacy', 'hideAmounts']) ? !!prefs.privacy.hideAmounts : !!payload.privacy;
+  const env = changed(['textScale']) ? { ...(payload.env || {}), scale: Number(prefs.textScale) || 1 } : payload.env;
+  const enabled = (m) => prefs.enabled?.[m.id] !== false || m.id === f?.moduleId;
+  const modules = (payload.modules || []).filter(enabled);
+  document.documentElement.setAttribute('data-tk-theme', theme);
+  applyEnv(env);
 
   const groups = (list) => { const m = new Map(); for (const x of list) { const g = x.group || 'Allgemein'; if (!m.has(g)) m.set(g, []); m.get(g).push(x); } return [...m.entries()]; };
   const featureSheet = () => ov.openDialog({ title: mod?.name || 'Bereiche', body: (close) => html`<div class="tk-sheetlist">${groups(moduleFeatures).map(([g, list]) => html`<div class="tk-label" style="margin:6px 0 2px">${g}</div>
       ${list.map((x) => html`<button type="button" class="tk-sheetlist__item" aria-current=${x.id === fid ? 'page' : undefined} onClick=${() => { close(); go(x.id); }}>
         <span class="tk-grow tk-truncate">${x.name}</span>${x.variant ? null : html`<span class="tk-subtle" style="font-size:var(--tk-fs-xs)">ohne Design</span>`}<${Icon} name="chevron-right" size=${15} /></button>`)}`)}</div>` });
-  const areas = [...new Set((payload.modules || []).map((m) => m.area || 'Weitere'))];
-  const moreSheet = () => ov.openDialog({ title: 'Alle Module', body: (close) => html`${areas.map((a) => html`<div class="tk-label" style="margin:4px 0 6px">${a}</div><div class="tk-modgrid" style="margin-bottom:10px">${(payload.modules || []).filter((m) => (m.area || 'Weitere') === a).map((m) => html`<button type="button" class="tk-modgrid__item" aria-current=${m.id === f?.moduleId ? 'page' : undefined} onClick=${() => { close(); goModule(m.id); }}>
+  const areas = [...new Set(modules.map((m) => m.area || 'Weitere'))];
+  const moreSheet = () => ov.openDialog({ title: 'Alle Module', body: (close) => html`${areas.map((a) => html`<div class="tk-label" style="margin:4px 0 6px">${a}</div><div class="tk-modgrid" style="margin-bottom:10px">${modules.filter((m) => (m.area || 'Weitere') === a).map((m) => html`<button type="button" class="tk-modgrid__item" aria-current=${m.id === f?.moduleId ? 'page' : undefined} onClick=${() => { close(); goModule(m.id); }}>
       <span class="tk-modgrid__icon"><${Icon} name=${m.icon} size=${22} /></span><span class="tk-truncate" style="max-width:100%">${m.name}</span></button>`)}</div>`)}` });
 
-  const navModules = payload.favorites?.length ? [...payload.favorites.map((id) => payload.modules.find((m) => m.id === id)).filter(Boolean), ...payload.modules.filter((m) => !payload.favorites.includes(m.id))] : payload.modules;
+  const favs = (changed(['favorites']) && Array.isArray(prefs.favorites) ? prefs.favorites : payload.favorites) || [];
+  const navModules = favs.length ? [...favs.map((id) => modules.find((m) => m.id === id)).filter(Boolean), ...modules.filter((m) => !favs.includes(m.id))] : modules;
   const capture = () => (features['system.capture']?.variant ? go('system.capture') : ov.openDialog({ title: 'Erfassen', body: (close) => html`<${CaptureSheet} close=${close} world=${world} today=${new Date(payload.today || DEFAULT_TODAY)} toast=${ov.toast} emit=${emit} />` }));
   const isPad = fid === LAUNCHPAD;
   return html`<${AppShell} chrome=${payload.chrome !== false} bp=${bp} modules=${navModules} activeModule=${f?.moduleId} moduleName=${isPad ? 'TAKT' : mod?.name} title=${isPad ? 'Übersicht' : f?.name}
@@ -330,8 +349,8 @@ function AppPlayer({ payload }) {
       canBack=${stack.length > 1} onBack=${back} onNavModule=${goModule} onMore=${moreSheet} onTitle=${moduleFeatures.length > 1 ? featureSheet : null}
       sideFeatures=${moduleFeatures.filter((x) => x.variant)} activeFeature=${fid} onFeature=${(id) => go(id)}
       onSearch=${() => (features['system.search'] ? go('system.search') : ov.toast('Globale Suche – noch kein Design'))} onBell=${() => (features['system.notifications'] ? go('system.notifications') : ov.toast('Mitteilungen – noch kein Design'))}>
-    ${isPad ? html`<${Launchpad} modules=${payload.modules || []} world=${world.data} today=${new Date(payload.today || DEFAULT_TODAY)} privacy=${payload.privacy} onOpen=${goModule} />`
-    : f?.variant ? html`<${Screen} key=${`${fid}|${JSON.stringify(top.params)}`} cacheKey=${`${fid}|${JSON.stringify(top.params)}`} cache=${cache} variant=${f.variant} demoData=${f.demoData} theme=${payload.theme} today=${payload.today} forcedState=${payload.state} overlays=${ov} emit=${emit} bp=${bp} width=${width} world=${world} privacy=${payload.privacy} params=${top.params} env=${payload.env} live=${payload.live} mode="app" />` : f ? html`<${SketchScreen} feature=${f} />` : html`<${NoVariant} />`}
+    ${isPad ? html`<${Launchpad} modules=${modules} world=${world.data} today=${new Date(payload.today || DEFAULT_TODAY)} privacy=${privacy} onOpen=${goModule} />`
+    : f?.variant ? html`<${Screen} key=${`${fid}|${JSON.stringify(top.params)}`} cacheKey=${`${fid}|${JSON.stringify(top.params)}`} cache=${cache} variant=${f.variant} demoData=${f.demoData} theme=${theme} today=${payload.today} forcedState=${payload.state} overlays=${ov} emit=${emit} bp=${bp} width=${width} world=${world} privacy=${privacy} params=${top.params} env=${env} live=${payload.live} mode="app" />` : f ? html`<${SketchScreen} feature=${f} />` : html`<${NoVariant} />`}
   <//><${Overlays} dialogs=${ov.dialogs} closeDialog=${ov.closeDialog} toasts=${ov.toasts} />`;
 }
 

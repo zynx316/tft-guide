@@ -57,6 +57,8 @@ export const TRD_CSS = `
   .tk-layout--grid .tk-block[data-component^="trd-"] > .tk-card { height:100%; }
   [data-component^="trd-"] .tk-btn { white-space:normal; height:auto; min-height:var(--tk-size-control); text-align:left; max-width:100%; }
   [data-component^="trd-"] .tk-btn--icon { height:var(--tk-size-control); }
+  .bp-mobile [data-component^="trd-"] .tk-btn--icon, .bp-mobile [data-component="order-ticket"] .tk-btn--icon { min-width:var(--tk-size-touch); }
+  .tk-trd-wrap { font-weight:var(--tk-fw-medium); min-width:0; overflow-wrap:anywhere; }
   .tk-trd-ico { border-radius:11px; display:grid; place-items:center; flex:none; }
   .tk-trd-row { display:flex; align-items:center; gap:12px; min-width:0; }
   .tk-trd-grow { flex:1 1 auto; min-width:0; }
@@ -67,12 +69,12 @@ export const TRD_CSS = `
   .bp-mobile .tk-trd-big--xl { font-size:var(--tk-fs-3xl); }
   .tk-trd-cap { font-size:var(--tk-fs-xs); color:var(--tk-c-text-subtle); letter-spacing:var(--tk-ls-wide); text-transform:uppercase; font-weight:var(--tk-fw-semibold); }
   .tk-trd-meta { color:var(--tk-c-text-muted); font-size:var(--tk-fs-sm); }
-  .tk-trd-sub { color:var(--tk-c-text-subtle); font-size:var(--tk-fs-xs); font-weight:var(--tk-fw-regular, 400); }
+  .tk-trd-sub { color:var(--tk-c-text-muted); font-size:var(--tk-fs-xs); font-weight:var(--tk-fw-regular, 400); }
   .tk-trd-title { font-weight:var(--tk-fw-medium); min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .tk-trd-up { color:var(--tk-c-success); } .tk-trd-down { color:var(--tk-c-danger); } .tk-trd-flat { color:var(--tk-c-text-muted); }
   .tk-trd-up, .tk-trd-down, .tk-trd-flat { font-weight:var(--tk-fw-semibold); }
-  .tk-trd-stat { display:flex; flex-direction:column; gap:2px; min-width:0; } .tk-trd-stat strong { font-size:var(--tk-fs-lg); }
-  .tk-trd-stats { display:grid; grid-template-columns:repeat(auto-fit, minmax(calc(110px * var(--tk-text-scale, 1)), 1fr)); gap:var(--tk-space-4); }
+  .tk-trd-stat { display:flex; flex-direction:column; gap:2px; min-width:0; } .tk-trd-stat .tk-trd-num { white-space:normal; } .tk-trd-stat strong { font-size:var(--tk-fs-lg); }
+  .tk-trd-stats { display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, calc(110px * var(--tk-text-scale, 1))), 1fr)); gap:var(--tk-space-4); }
   .tk-trd-tap { width:100%; border:0; background:transparent; color:inherit; font:inherit; text-align:left; cursor:pointer; padding:0; display:flex; align-items:center; gap:12px; min-width:0; border-radius:var(--tk-radius-md); }
   .tk-trd-tap:hover { background:var(--tk-c-surface2); }
   .tk-trd-tap:focus-visible, .tk-trd-btn:focus-visible { outline:2px solid var(--tk-c-focus); outline-offset:2px; }

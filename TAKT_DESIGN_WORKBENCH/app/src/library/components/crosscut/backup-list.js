@@ -27,6 +27,7 @@ export const backupList = {
   props: [
     { name: 'showStorage', label: 'Speicheranzeige', type: 'boolean', default: true },
     { name: 'showDanger', label: '„Alle Daten löschen“', type: 'boolean', default: true },
+    { name: 'showList', label: 'Sicherungen zeigen', type: 'boolean', default: true },
     { name: 'limit', label: 'Sicherungen (Anzahl)', type: 'number', default: 5 },
   ],
   data: [{ slot: 'backups', label: 'Sicherungen', default: 'backups', shape: '{id,at,size,kind}[]', required: true }],
@@ -52,13 +53,13 @@ export const backupList = {
       ${props.showStorage && html`<${Card} title="Speicher" icon="archive"><div class="tk-xc-stack"><div class="tk-row" style="justify-content:space-between"><strong class="tk-num">${fmtNumber(total, { unit: 'MB', digits: 1 })}</strong><span class="tk-xc-s">belegt auf diesem Gerät</span></div>
         <div class="tk-xc-bk__bar" role="img" aria-label=${`Speicher je Modul: ${parts.map((p) => `${p.label} ${fmtNumber(p.mb, { unit: 'MB', digits: 1 })}`).join(', ')}`}>${parts.map((p) => html`<i style=${`flex:${p.mb} 1 0;background:var(--tk-chart-${p.c})`}></i>`)}</div>
         <ul class="tk-xc-bk__leg">${parts.map((p) => html`<li><span class="tk-xc-bk__sw" style=${`background:var(--tk-chart-${p.c})`}></span><span class="tk-truncate">${p.label}</span><span>${fmtNumber(p.mb, { unit: 'MB', digits: 1 })}</span></li>`)}</ul></div><//>`}
-      <${Card} title="Sicherungen" icon="cloud-upload" actions=${html`<${Button} size="sm" icon="cloud-upload" disabled=${run != null} onClick=${() => { ctx.emit('backup.now'); setRun(0); }}>Jetzt sichern<//>`}>
+      ${props.showList !== false && html`<${Card} title="Sicherungen" icon="cloud-upload" actions=${html`<${Button} size="sm" icon="cloud-upload" disabled=${run != null} onClick=${() => { ctx.emit('backup.now'); setRun(0); }}>Jetzt sichern<//>`}>
         <div class="tk-xc-stack"><div class="tk-row" style="gap:var(--tk-space-3)"><span class="tk-xc-main"><span class="tk-xc-t">Automatisch sichern</span><span class="tk-xc-s">Jede Nacht um 03:00 Uhr, die letzten 7 bleiben</span></span><${Switch} checked=${auto} label="Automatisch sichern" onChange=${(v) => { setAuto(v); ctx.emit('backup.auto', { on: v }); }} /></div>
           ${run != null && html`<div role="status" class="tk-xc-stack"><span class="tk-xc-s">Sicherung wird erstellt … ${run} %</span><${Progress} value=${run / 100} /></div>`}</div>
         ${list.length ? html`<div style="margin:var(--tk-space-3) calc(var(--tk-space-4) * -1) calc(var(--tk-space-4) * -1);border-top:1px solid var(--tk-c-border)">${list.map((b) => html`<div class="tk-xc-bk__item" key=${b.id}><span class="tk-xc-ic ${b.kind === 'auto' ? '' : 'tk-xc-ic--success'}"><${Icon} name=${b.kind === 'auto' ? 'history' : 'save'} size=${18} /></span>
           <span class="tk-xc-main"><span class="tk-xc-t">${agoLabel(ctx, b.at)}</span><span class="tk-xc-s">${b.kind === 'auto' ? 'Automatisch' : 'Von dir'} · ${fmtNumber(b.size, { unit: 'MB', digits: 1 })}</span></span>
           <${Button} size="sm" icon="archive-restore" onClick=${() => restore(b)} aria-label=${`Sicherung ${agoLabel(ctx, b.at)} wiederherstellen`}>Wiederherstellen<//></div>`)}</div>`
-          : html`<${EmptyState} icon="cloud-upload" title="Noch keine Sicherung" text="Lege jetzt die erste Sicherung an." />`}<//>
+          : html`<${EmptyState} icon="cloud-upload" title="Noch keine Sicherung" text="Lege jetzt die erste Sicherung an." />`}<//>`}
       ${props.showDanger && html`<div class="tk-xc-bk__danger"><span class="tk-xc-main" style="flex-basis:200px"><span class="tk-xc-t" style="white-space:normal">Alle Daten löschen</span><span class="tk-xc-s" style="white-space:normal">Entfernt alles von diesem Gerät. Das lässt sich nicht rückgängig machen.</span></span><${Button} variant="danger" icon="trash-2" onClick=${wipe}>Alle Daten löschen<//></div>`}
     </div>`;
     function WipeBody() {

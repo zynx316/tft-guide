@@ -36,18 +36,18 @@ export const globalSearch = {
   css: XC_CSS + GS_CSS,
   example: { props: { initialQuery: 'm' }, data: { tasks: [{ id: 't1', title: 'Angebot Müller GmbH finalisieren', due: '2026-11-24T14:00:00', project: 'Vertrieb' }, { id: 't9', title: 'Miete prüfen', due: '2026-11-30', project: 'Privat' }], events: [{ id: 'e5', title: 'Mittag mit Jana', start: '2026-11-24T12:30:00', end: '2026-11-24T13:30:00', location: 'Café Moll' }], recents: ['Müller', 'Rewe'] } },
   render: function GlobalSearch({ props, data, setData, ctx }) {
-    const [q, setQ] = useState(props.initialQuery || '');
-    const [scope, setScope] = useState('all');
+    const [q, setQ] = useState(ctx.ui?.gsQuery ?? (props.initialQuery || ''));
+    const [scope, setScope] = useState(ctx.ui?.gsScope || 'all');
     const [open, setOpen] = useState({});
     const [active, setActive] = useState(0);
     const index = useMemo(() => buildIndex(data, ctx), [data, ctx.today]);
-    const dataCount = index.filter((e) => e.group !== 'module').length;
+    const dataCount = index.filter((e) => ['task', 'event', 'transaction', 'account', 'plan'].includes(e.group)).length;
     const sc = SCOPES.find((s) => s.id === scope) || SCOPES[0];
     const res = useMemo(() => (q.trim() ? runSearch(index, q, sc.groups) : { groups: [], total: 0 }), [index, q, scope]);
     const cmds = props.showCommands ? (scope === 'all' ? matchCommands(q) : []) : [];
     const recents = (Array.isArray(data.recents) ? data.recents : []).slice(0, 6);
     const remember = (t) => { const s = String(t || '').trim(); if (s) setData('recents', (l) => [s, ...(Array.isArray(l) ? l : []).filter((x) => x !== s)].slice(0, 8)); };
-    const input = (v) => { setQ(v); setActive(0); ctx.emit('search.input', { length: v.length }); };
+    const input = (v) => { setQ(v); setActive(0); ctx.setUi('gsQuery', v); ctx.emit('search.input', { length: v.length }); };
     const openIt = (it) => { remember(q); ctx.emit('search.open', { id: it.id, group: it.group }); if (it.to) ctx.emit(`open:${it.to}`, it.group === 'module' ? undefined : { id: it.id }); };
     const runCmd = (c) => { ctx.emit('command.run', { id: c.id }); if (c.to) ctx.emit(`open:${c.to}`); else ctx.toast(c.note || c.label); };
     const capture = () => { ctx.emit('command.capture', { text: q }); ctx.emit('open:system.capture'); };
@@ -56,7 +56,7 @@ export const globalSearch = {
       action=${html`<div class="tk-xc-wrap" style="justify-content:center">${scope !== 'all' && html`<${Button} size="sm" icon="layers" onClick=${() => setScope('all')}>In allen Modulen suchen<//>`}<${Button} size="sm" icon="plus" onClick=${capture}>Als Aufgabe erfassen<//></div>`} />`;
     const chips = props.showScopes && html`<div class="tk-xc-chips" data-scroll-x role="group" aria-label="Suchbereich">${SCOPES.map((s) => {
       const n = q.trim() ? runSearch(index, q, s.groups).total : null;
-      return html`<${Chip} active=${scope === s.id} count=${n || undefined} onClick=${() => { setScope(s.id); ctx.emit('search.scope', { scope: s.id }); }}>${s.label}<//>`; })}</div>`;
+      return html`<${Chip} active=${scope === s.id} count=${n || undefined} onClick=${() => { setScope(s.id); ctx.setUi('gsScope', s.id); ctx.emit('search.scope', { scope: s.id }); }}>${s.label}<//>`; })}</div>`;
     const recentChips = recents.length > 0 && html`<div class="tk-xc-stack"><div class="tk-xc-sec">Zuletzt gesucht<button type="button" class="tk-xc-link tk-xc-sec__n" onClick=${() => { setData('recents', []); ctx.emit('search.clear'); }}>Verlauf löschen</button></div>
       <div class="tk-xc-wrap">${recents.map((r) => html`<${Chip} icon="history" onClick=${() => { input(r); ctx.emit('search.recent', { q: r }); }}>${r}<//>`)}</div></div>`;
     const firstRun = dataCount === 0 && html`<div class="tk-xc-gs__hint"><${Icon} name="info" size=${18} /><span>Noch nichts erfasst. Sobald du Aufgaben, Termine oder Buchungen anlegst, findest du sie hier.</span><${Button} size="sm" variant="primary" icon="plus" onClick=${() => ctx.emit('open:system.capture')}>Erfassen<//></div>`;
@@ -94,7 +94,7 @@ export const globalSearch = {
         ${chips}${firstRun}
         ${!q.trim() ? html`
           ${today.length > 0 && html`<div class="tk-xc-sec">Gerade relevant</div><div class="tk-xc-gs__cards">${today.map((it) => html`<button type="button" class="tk-xc-gs__card" onClick=${() => openIt(it)} key=${it.key}><span class="tk-xc-ic"><${Icon} name=${it.icon} size=${18} /></span><span class="tk-xc-t">${it.title}</span><span class="tk-xc-s">${it.subtitle}</span></button>`)}</div>`}
-          <div class="tk-xc-sec">Direkt zu</div><div class="tk-xc-gs__tiles">${MODULES.filter((m) => m.id !== 'settings').slice(0, 12).map((m) => html`<button type="button" class="tk-xc-gs__tile" key=${m.id} onClick=${() => { ctx.emit('search.open', { id: m.id, group: 'module' }); ctx.emit(`open:${m.home}`); }}><span class="tk-xc-ic"><${Icon} name=${m.icon} size=${20} /></span><span>${m.name}</span></button>`)}</div>
+          <div class="tk-xc-sec">Direkt zu</div><div class="tk-xc-gs__tiles">${MODULES.filter((m) => m.id !== 'settings' && m.id !== 'system').slice(0, 12).map((m) => html`<button type="button" class="tk-xc-gs__tile" key=${m.id} onClick=${() => { ctx.emit('search.open', { id: m.id, group: 'module' }); ctx.emit(`open:${m.home}`); }}><span class="tk-xc-ic"><${Icon} name=${m.icon} size=${20} /></span><span>${m.name}</span></button>`)}</div>
           ${recentChips}`
         : !res.total ? empty : html`
           ${top && html`<button type="button" class="tk-xc-gs__hero" onClick=${() => openIt(top)} data-qa="top-hit"><span class="tk-xc-ic"><${Icon} name=${top.icon} size=${24} /></span><span class="tk-xc-main"><span class="tk-xc-s">Bester Treffer · ${moduleMeta(top.module).name}</span><span class="tk-xc-t">${top.title}</span><span class="tk-xc-s">${top.subtitle}</span></span><${Icon} name="arrow-right" size=${20} /></button>`}

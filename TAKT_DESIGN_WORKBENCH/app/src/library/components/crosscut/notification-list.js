@@ -18,6 +18,9 @@ const CSS = `
   .tk-xc-nl__item:last-child { border-bottom: 0; }
   .tk-xc-nl__line { display: flex; align-items: center; min-width: 0; }
   .tk-xc-nl__line .tk-xc-row { border-bottom: 0; flex: 1 1 auto; }
+  .tk-xc-nl .tk-xc-t, .tk-xc-nl .tk-xc-s { white-space: normal; overflow-wrap: anywhere; }
+  .tk-xc-nl .tk-xc-t { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .tk-xc-nl--big .tk-xc-t, .tk-xc-nl--big .tk-xc-nl__text { display: block; -webkit-line-clamp: unset; overflow: visible; }
   .tk-xc-nl__dot { width: 8px; height: 8px; border-radius: 50%; background: var(--tk-c-accent); flex: none; }
   .tk-xc-nl__dot--off { background: transparent; }
   .tk-xc-nl__text { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
@@ -104,7 +107,7 @@ export const notificationList = {
     const groups = groupNotifications(shown, props.groupBy, ctx).map((g) => ({ ...g, more: lim && g.items.length > lim ? g.items.length - lim : 0, items: lim ? g.items.slice(0, lim) : g.items }));
 
     const top = props.layout === 'focus' ? live.filter((n) => n.priority === 'wichtig' && unread(n))[0] : null;
-    const hero = top && html`<section class="tk-xc-nl__hero" aria-label="Jetzt wichtig" data-qa="notification-hero"><${Badge} tone="danger" icon="alert-circle">Jetzt wichtig<//>
+    const hero = top && html`<section class="tk-xc-nl__hero" aria-label="Jetzt wichtig" data-qa="notification-hero"><${Badge} icon="alert-circle">Jetzt wichtig<//>
       <div class="tk-row" style="align-items:flex-start;gap:var(--tk-space-3)"><span class=${`tk-xc-ic${toneIc(top.tone)}`} style="width:44px;height:44px"><${Icon} name=${top.meta.icon} size=${22} /></span><div class="tk-grow"><h3>${top.title}</h3><p>${priv(ctx, top.text)}</p></div></div>
       <div class="tk-xc-nl__acts2"><${Button} variant="primary" iconRight="arrow-right" onClick=${() => open(top)}>Öffnen<//><${Button} icon="alarm-clock" onClick=${() => snooze(top, SNOOZE[1])}>In 1 Std.<//></div></section>`;
 
@@ -113,7 +116,7 @@ export const notificationList = {
           ${g.items.slice(0, 3).map(item)}<button type="button" class="tk-xc-nl__foot" onClick=${() => { ctx.emit('notification.open', { module: m.id }); if (m.home) ctx.emit(`open:${m.home}`); }}>${m.name} öffnen</button></div><//>`; })}</div>`
       : groups.map((g) => html`<div key=${g.label}><div class="tk-xc-sec">${g.label}<span class="tk-xc-sec__n">${g.items.length + g.more}</span></div><${Card} flush>${g.items.map(item)}<//></div>`);
 
-    return html`<div class="tk-xc-nl" data-qa="notification-list">
+    return html`<div class=${`tk-xc-nl${(ctx.env?.scale || 1) > 1 ? ' tk-xc-nl--big' : ''}`} data-qa="notification-list">
       <div class="tk-xc-nl__head"><h2 class="tk-h3 tk-grow">${props.title}</h2>${nUnread > 0 && html`<${Badge} tone="accent">${nUnread} neu<//>`}
         <${Button} size="sm" variant="ghost" icon="check-check" disabled=${nUnread === 0} onClick=${readAll}>Alle gelesen<//></div>
       ${props.showFilters && html`<div class="tk-xc-chips" data-scroll-x role="group" aria-label="Filter">${[['alle', 'Alle'], ['wichtig', 'Wichtig'], ['neu', 'Ungelesen']].map(([id, l]) => html`<${Chip} active=${filter === id} onClick=${() => { setFilter(id); ctx.emit('notification.filter', { filter: id }); }}>${l}<//>`)}</div>`}

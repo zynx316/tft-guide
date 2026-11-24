@@ -12,12 +12,14 @@ const CSS = `
   .tk-xc-tr__head { display: flex; align-items: center; gap: var(--tk-space-2); flex-wrap: wrap; }
   .tk-xc-tr__item { display: flex; align-items: center; gap: var(--tk-space-3); padding: var(--tk-space-2) var(--tk-space-3); min-height: 60px; border-bottom: 1px solid var(--tk-c-border); min-width: 0; }
   .tk-xc-tr__item:last-child { border-bottom: 0; }
-  .tk-xc-tr__left { display: flex; align-items: center; gap: 4px; color: var(--tk-c-warning); }
+  .tk-xc-tr__left { display: flex; align-items: center; margin-top: 2px; }
+  .tk-xc-tr__item .tk-xc-t, .tk-xc-tr__item .tk-xc-s { white-space: normal; overflow-wrap: anywhere; }
   .tk-xc-tr__acts { display: flex; align-items: center; gap: 2px; flex: none; }
   .tk-xc-tr__info { display: flex; align-items: flex-start; gap: var(--tk-space-3); padding: var(--tk-space-3) var(--tk-space-4); border-radius: var(--tk-radius-lg); background: var(--tk-c-info-soft); font-size: var(--tk-fs-sm); color: var(--tk-c-text); }
   .tk-xc-tr__info svg { flex: none; color: var(--tk-c-info); margin-top: 2px; }
-  .bp-mobile .tk-xc-tr__item { flex-wrap: wrap; }
-  .bp-mobile .tk-xc-tr__acts { width: 100%; justify-content: flex-end; }`;
+  .bp-mobile .tk-xc-tr__item { flex-wrap: wrap; align-items: flex-start; padding-top: var(--tk-space-3); }
+  .bp-mobile .tk-xc-tr__item .tk-xc-main { flex-basis: calc(100% - 48px); }
+  .bp-mobile .tk-xc-tr__acts { width: 100%; padding-left: 48px; }`;
 
 export const trashList = {
   id: 'trash-list',
@@ -65,8 +67,8 @@ export const trashList = {
       : [{ label: 'Läuft bald ab', items: shown.filter((t) => t.left <= 7) }, { label: 'Zuletzt gelöscht', items: shown.filter((t) => t.left > 7) }].filter((g) => g.items.length);
     const row = (t) => html`<div class="tk-xc-tr__item" key=${t.id} data-trash=${t.id}>
       <span class="tk-xc-ic tk-xc-ic--neutral"><${Icon} name=${t.meta.icon} size=${18} /></span>
-      <span class="tk-xc-main"><span class="tk-xc-t">${t.title}</span><span class="tk-xc-s">${t.meta.name} · gelöscht ${agoLabel(ctx, t.deletedAt).toLowerCase()}${t.detail ? ` · ${priv(ctx, t.detail)}` : ''}</span></span>
-      ${t.left <= 7 ? html`<span class="tk-xc-tr__left"><${Badge} tone="warning" icon="hourglass">noch ${plural(t.left, 'Tag', 'Tage')}<//></span>` : html`<span class="tk-xc-end">noch ${t.left} Tage</span>`}
+      <span class="tk-xc-main"><span class="tk-xc-t">${t.title}</span><span class="tk-xc-s">${t.meta.name} · gelöscht ${agoLabel(ctx, t.deletedAt).toLowerCase()}${t.detail ? ` · ${priv(ctx, t.detail)}` : ''}</span>
+        <span class="tk-xc-tr__left">${t.left <= 7 ? html`<${Badge} tone="warning" icon="hourglass">noch ${plural(t.left, 'Tag', 'Tage')}<//>` : html`<span class="tk-xc-s">noch ${t.left} Tage</span>`}</span></span>
       <span class="tk-xc-tr__acts"><${Button} size="sm" icon="archive-restore" onClick=${() => restore(t)} aria-label=${`${t.title} wiederherstellen`}>Wiederherstellen<//>
         <button type="button" class="tk-xc-iconbtn" aria-label=${`${t.title} endgültig löschen`} onClick=${() => forever(t)}><${Icon} name="trash-2" size=${17} /></button></span></div>`;
     return html`<div class="tk-xc-tr" data-qa="trash-list">

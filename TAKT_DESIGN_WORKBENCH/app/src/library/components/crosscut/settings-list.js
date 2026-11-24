@@ -13,6 +13,7 @@ const CSS = `
   .tk-xc-set__row:last-child { border-bottom: 0; }
   button.tk-xc-set__row { width: 100%; background: none; border-left: 0; border-right: 0; border-top: 0; color: var(--tk-c-text); font: inherit; text-align: left; cursor: pointer; }
   button.tk-xc-set__row:hover { background: var(--tk-c-surface2); }
+  .tk-xc-set__row > .tk-xc-main { flex: 1 1 0; min-width: 120px; }
   .tk-xc-set__row[data-off="true"] { opacity: .5; }
   .tk-xc-set__row--danger .tk-xc-t { color: var(--tk-c-danger); }
   .tk-xc-set__val { flex: none; display: inline-flex; align-items: center; gap: var(--tk-space-2); max-width: 55%; color: var(--tk-c-text-muted); font-size: var(--tk-fs-sm); text-align: right; min-width: 0; }
@@ -21,13 +22,14 @@ const CSS = `
   .tk-xc-set__row--stack .tk-xc-set__ctl { flex: 1 1 100%; margin-left: 0; }
   .tk-xc-set__row--stack .tk-seg { display: flex; width: 100%; }
   .tk-xc-set__row--stack .tk-seg button { flex: 1 1 0; justify-content: center; }
-  .tk-xc-set__tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 210px), 1fr)); gap: var(--tk-space-3); }
+  .tk-xc-set__tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 156px), 1fr)); gap: var(--tk-space-3); }
   .tk-xc-set__tile { display: flex; flex-direction: column; align-items: flex-start; gap: var(--tk-space-3); padding: var(--tk-space-4); border-radius: var(--tk-radius-xl); border: 1px solid var(--tk-c-border); background: var(--tk-c-surface); color: var(--tk-c-text); font: inherit; text-align: left; cursor: pointer; min-width: 0; min-height: 132px; }
   .tk-xc-set__tile:hover { border-color: var(--tk-c-accent); box-shadow: var(--tk-shadow-sm); }
+  .tk-xc-set__tile .tk-xc-t { white-space: normal; overflow-wrap: anywhere; }
   .tk-xc-set__tile .tk-xc-ic { width: 44px; height: 44px; border-radius: var(--tk-radius-lg); }
   .tk-xc-set__tile .tk-xc-s { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
   .tk-xc-set__search { display: flex; align-items: center; gap: var(--tk-space-2); height: 44px; padding: 0 var(--tk-space-3); border-radius: var(--tk-radius-lg); border: 1px solid var(--tk-c-border-strong); background: var(--tk-c-surface); color: var(--tk-c-text-muted); }
-  .tk-xc-set__search input { flex: 1 1 auto; min-width: 0; border: 0; outline: 0; background: none; font-size: var(--tk-fs-md); }
+  .tk-xc-set__search input { flex: 1 1 auto; min-width: 0; height: 100%; border: 0; outline: 0; background: none; font-size: var(--tk-fs-md); }
   .bp-mobile .tk-xc-set__search input { font-size: 16px; }`;
 
 const SEG = (o) => o.length <= 3 && o.every((x) => String(x.label ?? x).length <= 12);
@@ -74,7 +76,7 @@ export const settingsList = {
 
     if (props.style === 'tiles') {
       return html`<div class="tk-xc-set" data-qa="settings-list">${search}<div class="tk-xc-set__tiles">${visible.map((g) => html`<button type="button" class="tk-xc-set__tile" key=${g.id} onClick=${() => { ctx.emit('settings.open', { id: g.id }); if (g.to) ctx.emit(`open:${g.to}`); }}>
-        <span class=${`tk-xc-ic${toneIc(g.tone)}`}><${Icon} name=${g.icon || 'settings'} size=${22} /></span><span class="tk-xc-main"><span class="tk-xc-t" style="font-size:var(--tk-fs-lg)">${g.title}</span><span class="tk-xc-s">${(g.computed && COMPUTED[g.computed]?.(prefs)) || g.summary || `${g.rows.length} Einstellungen`}</span></span></button>`)}</div>
+        <span class=${`tk-xc-ic${toneIc(g.tone)}`}><${Icon} name=${g.icon || 'settings'} size=${22} /></span><span class="tk-xc-main"><span class="tk-xc-t" style="font-size:var(--tk-fs-lg)">${g.title}</span><span class="tk-xc-s">${(g.computed && COMPUTED[g.computed]?.(prefs)) || String(g.summary || `${g.rows.length} Einstellungen`).replace(/\{(\w+)\}/g, (_, k) => COMPUTED[k]?.(prefs) ?? '')}</span></span></button>`)}</div>
         ${visible.length === 0 && html`<${EmptyState} icon="search" title=${`Keine Einstellung für „${q}“`} text="Prüfe die Schreibweise." />`}</div>`;
     }
     const row = (g, r) => {

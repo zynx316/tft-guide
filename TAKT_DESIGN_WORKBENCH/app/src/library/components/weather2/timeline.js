@@ -9,7 +9,7 @@ export const wxDayTimeline = {
   name: 'Tag mit Terminen & Wetter',
   category: 'Wetter',
   description: 'Der Tag Stunde für Stunde: Wetter (Symbol, Temperatur, Regen, Böen) neben den Terminen aus dem Kalender. Warnzeiträume sind hinterlegt, Termine mit Weg zeigen Hinweise („vor dem Sturm erledigt“). Zeigt, wann draußen was geht.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Dein Tag mit Wetter' },
     { name: 'fromHour', label: 'Von (Uhr)', type: 'number', default: 8 },
@@ -30,6 +30,7 @@ export const wxDayTimeline = {
   .tk-wxt__tip { font-size:var(--tk-fs-sm); color:var(--tk-c-text-muted); display:flex; gap:6px; align-items:flex-start; }
   .tk-wxt__now { position:absolute; left:0; right:0; height:0; border-top:2px solid var(--tk-c-accent); z-index:2; pointer-events:none; } .tk-wxt__now span { position:absolute; right:0; top:-11px; padding:2px 8px; border-radius:var(--tk-radius-pill); background:var(--tk-c-accent); color:var(--tk-c-text-on-accent); font-size:var(--tk-fs-xs); font-weight:var(--tk-fw-semibold); }
   .tk-wxt__alert { display:flex; align-items:center; gap:8px; font-size:var(--tk-fs-sm); font-weight:var(--tk-fw-semibold); }
+  .tk-wxt.tk-wxt--big .tk-wxt__row { grid-template-columns:minmax(0,1fr); gap:2px; } .tk-wxt--big .tk-wxt__time { padding-top:0; }
   .bp-mobile .tk-wxt__row { grid-template-columns:38px 92px minmax(0,1fr); gap:var(--tk-space-2); }`,
   example: { data: { place: EX.place, settings: EX.settings, events: EX.events, venues: EX.venues } },
   render: ({ props, data, ctx }) => {
@@ -46,7 +47,7 @@ export const wxDayTimeline = {
     const open = (id) => ctx.emit('weather.advice.open', { id });
     return html`<${Card} title=${props.title} icon="calendar-clock" actions=${html`<${Badge}>${evs.length} Termine<//>`}>
       ${allDay.length > 0 && html`<div class="tk-row" style="gap:6px;margin-bottom:var(--tk-space-3);flex-wrap:wrap">${allDay.map((e) => html`<${Badge} tone="accent" icon="calendar">${e.title}<//>`)}</div>`}
-      <div class="tk-wxt" role="list">${rows.map((h) => { const H = +hm(h.time).slice(0, 2), here = evs.filter((e) => +hm(e.start).slice(0, 2) === H);
+      <div class=${`tk-wxt${(ctx.env?.scale || 1) >= 1.5 ? " tk-wxt--big" : ""}`} role="list">${rows.map((h) => { const H = +hm(h.time).slice(0, 2), here = evs.filter((e) => +hm(e.start).slice(0, 2) === H);
         const rs = `${date}T${String(H).padStart(2, '0')}:00:00`, re = H >= 23 ? `${date}T23:59:59` : `${date}T${String(H + 1).padStart(2, '0')}:00:00`;
         const al = alerts.find((a) => a.from < re && a.to > rs);
         const first = al && (H === +hm(al.from).slice(0, 2) || H === props.fromHour);

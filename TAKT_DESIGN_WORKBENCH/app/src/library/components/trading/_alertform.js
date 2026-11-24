@@ -4,6 +4,7 @@ import { useState, useEffect } from 'preact/hooks';
 import { Button, Field, Input, Select, Segmented } from '../../ui.js';
 import { fmtPercent, fmtNumber } from '../../../lib/format.js';
 import { arr } from './_calc.js';
+import { Px } from './_trd.js';
 import { isoDay } from '../../../lib/util.js';
 
 const num = (s) => parseFloat(String(s).replace(/\./g, '').replace(',', '.'));
@@ -30,7 +31,7 @@ export function AlertForm({ data, setData, ctx, compact, onDone }) {
   return html`<form class=${`tk-trd-af ${compact ? 'tk-trd-af--c' : ''}`} onSubmit=${submit} novalidate>
     <${Field} label="Wertpapier"><${Select} value=${sec} onChange=${(x) => { setSec(x); setErr(''); }} options=${insts.map((i) => ({ value: i.id, label: i.short || i.name }))} aria-label="Wertpapier" /><//>
     <div class="tk-col" style="gap:6px"><span class="tk-field__label">Wenn der Kurs …</span><${Segmented} label="Richtung" value=${dir} onChange=${(x) => { setDir(x); setErr(''); }} options=${[{ value: 'below', label: 'fällt unter', icon: 'trending-down' }, { value: 'above', label: 'steigt über', icon: 'trending-up' }]} /></div>
-    <${Field} label="Kursmarke (€)" error=${err} hint=${inst ? `Aktuell ${fmtNumber(inst.price, { digits: 2 })} €${dist != null ? ` · Abstand ${fmtPercent(Math.abs(dist), { digits: 1 })}` : ''}` : ''}><${Input} type="text" inputmode="decimal" value=${val} onInput=${(x) => { setVal(x); setErr(''); }} invalid=${!!err} placeholder=${ph} aria-label="Kursmarke in Euro" /><//>
+    <${Field} label="Kursmarke (€)" error=${err} hint=${inst ? html`Aktuell <${Px} v=${inst.price} />${dist != null ? ` · Abstand ${fmtPercent(Math.abs(dist), { digits: 1 })}` : ''}` : ''}><${Input} type="text" inputmode="decimal" value=${val} onInput=${(x) => { setVal(x); setErr(''); }} invalid=${!!err} placeholder=${ph} aria-label="Kursmarke in Euro" /><//>
     <${Button} variant="primary" type="submit" icon="bell">Alarm anlegen<//></form>`;
 }
 export const AF_CSS = `.tk-trd-af { display:grid; grid-template-columns:minmax(0,1.2fr) auto minmax(0,1fr) auto; gap:var(--tk-space-3); align-items:start; } .tk-trd-af .tk-btn[type="submit"] { align-self:end; }

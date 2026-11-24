@@ -24,6 +24,7 @@ export const wxSettings = {
   .bp-mobile .tk-wxset__row .tk-seg button { min-width:44px; justify-content:center; }
   .tk-wxset__prev { display:flex; flex-wrap:wrap; gap:6px var(--tk-space-4); padding:var(--tk-space-3) var(--tk-space-4); border-radius:var(--tk-radius-md); background:var(--tk-c-accent-soft); font-variant-numeric:tabular-nums; font-size:var(--tk-fs-md); } .tk-wxset__prev span { display:inline-flex; align-items:center; gap:6px; }
   .tk-wxsrc { display:flex; align-items:center; gap:8px; flex-wrap:wrap; font-size:var(--tk-fs-xs); color:var(--tk-c-text-subtle); line-height:1.5; } .tk-wxsrc svg { flex:none; }
+  .tk-wxsrc .tk-btn, .tk-wxsrc__banner .tk-btn { white-space:normal; height:auto; min-height:36px; max-width:100%; text-align:left; }
   .tk-wxsrc__banner { display:flex; align-items:center; gap:var(--tk-space-3); padding:var(--tk-space-3) var(--tk-space-4); border-radius:var(--tk-radius-lg); background:var(--tk-c-warning-soft); border:1px solid color-mix(in srgb, var(--tk-c-warning) 35%, transparent); font-size:var(--tk-fs-sm); }`,
   example: { data: { place: EX.place, settings: EX.settings } },
   render: ({ props, data, setData, ctx }) => {
@@ -64,7 +65,7 @@ export const wxSource = {
   name: 'Quelle & Datenstand',
   category: 'Wetter',
   description: 'Fußzeile mit Datenstand, Quelle (Attribution) und Aktualisierungsintervall. Zeigt bei Offline oder veralteten Daten einen Hinweis mit „Erneut versuchen“. Optional Link zu den Einstellungen.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'variant', label: 'Darstellung', type: 'select', options: ['footnote', 'banner'], default: 'footnote' },
     { name: 'settingsLink', label: 'Link „Einstellungen“', type: 'boolean', default: true },

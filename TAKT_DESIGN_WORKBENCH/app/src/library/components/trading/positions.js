@@ -35,9 +35,11 @@ export const trdPositions = {
   .tk-trd-ps__main { display:flex; align-items:center; gap:12px; min-width:0; background:none; border:0; color:inherit; font:inherit; text-align:left; cursor:pointer; padding:0; min-height:44px; text-align:left; }
   .tk-trd-ps__main:hover .tk-trd-title { text-decoration:underline; }
   .tk-trd-ps__sum { display:grid; grid-template-columns:minmax(0,2.4fr) minmax(70px,1fr) minmax(76px,.9fr) minmax(110px,1.3fr) 62px 40px; gap:10px; padding:10px 4px 2px; font-weight:var(--tk-fw-semibold); } .tk-trd-ps__sum > :nth-child(n+2) { text-align:right; }
-  .bp-mobile .tk-trd-ps__h, .bp-mobile .tk-trd-ps__r, .bp-mobile .tk-trd-ps__sum { grid-template-columns:minmax(0,1fr) auto auto; } .bp-mobile .tk-trd-ps__x, .bp-tablet .tk-trd-ps__x2 { display:none; }
+  .bp-mobile .tk-trd-ps__r, .bp-mobile .tk-trd-ps__sum { grid-template-columns:minmax(0,1fr) auto; row-gap:0; column-gap:12px; } .bp-mobile .tk-trd-ps__h { display:flex; flex-wrap:wrap; gap:0 14px; }
+  .bp-mobile .tk-trd-ps__x, .bp-mobile .tk-trd-ps__x2, .bp-tablet .tk-trd-ps__x2 { display:none; } .bp-mobile .tk-trd-ps__r > :nth-child(1) { grid-row:1 / 3; } .bp-mobile .tk-trd-ps__r > :nth-child(4), .bp-mobile .tk-trd-ps__sum > :nth-child(4) { grid-column:2; }
+  .bp-mobile .tk-trd-ps__r > :nth-child(4) .tk-trd-num, .bp-mobile .tk-trd-ps__r > :nth-child(4) { white-space:normal; } .bp-mobile .tk-trd-ps__r > :nth-child(4) .tk-trd-sub { display:block; }
   .bp-tablet .tk-trd-ps__h, .bp-tablet .tk-trd-ps__r, .bp-tablet .tk-trd-ps__sum { grid-template-columns:minmax(0,2fr) minmax(70px,1fr) minmax(110px,1.3fr) 58px; }
-  .tk-trd-ps__cards { display:grid; grid-template-columns:repeat(auto-fill, minmax(calc(230px * var(--tk-text-scale, 1)), 1fr)); gap:var(--tk-space-3); }
+  .tk-trd-ps__cards { display:grid; grid-template-columns:repeat(auto-fill, minmax(min(100%, calc(230px * var(--tk-text-scale, 1))), 1fr)); gap:var(--tk-space-3); }
   .tk-trd-ps__card { border:1px solid var(--tk-c-border); border-radius:var(--tk-radius-lg); background:var(--tk-c-surface2); padding:var(--tk-space-4); display:flex; flex-direction:column; gap:10px; text-align:left; color:inherit; font:inherit; cursor:pointer; min-width:0; }
   .tk-trd-ps__card:hover { background:var(--tk-c-surface3); }`,
   example: { data: ex('positions', 'cash', 'plans') },
@@ -55,7 +57,7 @@ export const trdPositions = {
     if (props.style === 'cards') return html`<${Card} title=${props.title} icon="pie-chart" actions=${html`<span class="tk-trd-meta">${rows.length} Positionen</span>`}><div class="tk-trd-ps__cards">${shown.map((r) => html`<button type="button" class="tk-trd-ps__card" onClick=${() => open(r)} aria-label=${`${name(r)} öffnen`}>
       <div class="tk-trd-row"><${Tile} type=${r.type} size=${34} /><span class="tk-trd-grow"><span class="tk-trd-title" style="display:block">${name(r)}</span><span class="tk-trd-sub">${qty(r)} Stück · ${fmtPercent(r.weight, { digits: 0 })} vom Depot</span></span></div>
       <${Sparkline} values=${arr(r.spark)} width=${200} height=${40} tone=${r.dayPct >= 0 ? 'success' : 'danger'} />
-      <div class="tk-trd-row" style="justify-content:space-between;align-items:flex-end"><strong class="tk-trd-num" style="font-size:var(--tk-fs-xl)">${money(ctx, r.value)}</strong><${Gain} ctx=${ctx} v=${r.gain} pct=${r.gainPct} /></div></button>`)}</div>${more}<//>`;
+      <div class="tk-trd-row" style="justify-content:space-between;align-items:flex-end;flex-wrap:wrap"><strong class="tk-trd-num" style="font-size:var(--tk-fs-xl)">${money(ctx, r.value)}</strong><${Gain} ctx=${ctx} v=${r.gain} pct=${r.gainPct} /></div></button>`)}</div>${more}<//>`;
     if (props.style === 'rows') return html`<${Card} title=${props.title} icon="pie-chart"><div class="tk-trd-list">${shown.map((r) => html`<button type="button" class="tk-trd-tap tk-trd-item" onClick=${() => open(r)} aria-label=${`${name(r)} öffnen`}><${Tile} type=${r.type} size=${34} />
       <span class="tk-trd-grow"><span class="tk-trd-title" style="display:block">${name(r)}</span><span class="tk-trd-sub">${qty(r)} × <${Px} v=${r.price} /></span></span><span style="text-align:right"><strong class="tk-trd-num" style="display:block">${money(ctx, r.value)}</strong><${Gain} ctx=${ctx} v=${r.gain} pct=${r.gainPct} /></span></button>`)}</div>${more}<//>`;
     return html`<${Card} title=${props.title} icon="pie-chart" actions=${html`<span class="tk-trd-meta">${rows.length} Positionen</span>`}>

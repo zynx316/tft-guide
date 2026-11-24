@@ -75,7 +75,7 @@ export const onboardingSteps = {
     const favs = prefs.favorites.filter((id) => isEnabled(prefs, id));
     const single = props.flow === 'single';
     const go = (n) => { setStep(n); ctx.emit('onboarding.step', { step: STEPS[n].id }); };
-    const applyPreset = (p) => { setPreset(p.id); save({ enabled: Object.fromEntries(MODULES.filter((m) => !p.ids.includes(m.id)).map((m) => [m.id, false])), favorites: prefs.favorites.filter((id) => p.ids.includes(id)) }); ctx.emit('onboarding.preset', { preset: p.id }); };
+    const applyPreset = (p) => { setPreset(p.id); save({ enabled: Object.fromEntries(MODULES.filter((m) => !m.locked && !p.ids.includes(m.id)).map((m) => [m.id, false])), favorites: prefs.favorites.filter((id) => p.ids.includes(id)) }); ctx.emit('onboarding.preset', { preset: p.id }); };
     const toggleMod = (m) => { if (m.locked) { ctx.toast(`${m.name} bleibt immer aktiv`); return; } const on = !isEnabled(prefs, m.id); setPreset(null); save({ enabled: { ...prefs.enabled, [m.id]: on }, favorites: on ? prefs.favorites : prefs.favorites.filter((x) => x !== m.id) }); ctx.emit('onboarding.module', { id: m.id, on }); };
     const toggleFav = (id) => { const has = favs.includes(id); if (!has && favs.length >= 4) { ctx.toast('Höchstens 4 Favoriten. Entferne zuerst einen.'); return; } save({ favorites: has ? favs.filter((x) => x !== id) : [...favs, id] }); ctx.emit('onboarding.favorite', { id, on: !has }); };
     const finish = () => { ctx.emit('onboarding.done', { sample: sample === 'sample', modules: active.length }); ctx.emit('open:home.today'); };
@@ -89,7 +89,7 @@ export const onboardingSteps = {
         <div class="tk-xc-ob__grid">${MODULES.map((m) => html`<button type="button" class="tk-xc-ob__mod" key=${m.id} aria-pressed=${isEnabled(prefs, m.id) ? 'true' : 'false'} onClick=${() => toggleMod(m)}><${Icon} name=${m.icon} size=${18} /><span>${m.name}</span></button>`)}</div>
         <span class="tk-xc-s">${plural(active.length, 'Modul', 'Module')} aktiv</span></div>`,
       nav: () => html`<div class="tk-xc-ob__panel"><h3>Deine Favoriten</h3><p>Bis zu vier Module stehen in der Leiste unten, der Rest liegt unter „Mehr“.</p>
-        <div class="tk-xc-ob__grid">${active.filter((m) => m.id !== 'settings').map((m) => html`<button type="button" class="tk-xc-ob__mod" key=${m.id} aria-pressed=${favs.includes(m.id) ? 'true' : 'false'} onClick=${() => toggleFav(m.id)}><${Icon} name=${favs.includes(m.id) ? 'star' : m.icon} size=${18} /><span>${m.name}</span></button>`)}</div>
+        <div class="tk-xc-ob__grid">${active.filter((m) => !m.locked || m.id === 'home').map((m) => html`<button type="button" class="tk-xc-ob__mod" key=${m.id} aria-pressed=${favs.includes(m.id) ? 'true' : 'false'} onClick=${() => toggleFav(m.id)}><${Icon} name=${favs.includes(m.id) ? 'star' : m.icon} size=${18} /><span>${m.name}</span></button>`)}</div>
         <span class="tk-xc-s">${favs.length} von 4 gewählt${favs.length ? `: ${favs.map((id) => moduleMeta(id).name).join(', ')}` : ''}</span></div>`,
       theme: () => html`<div class="tk-xc-ob__panel"><h3>Wie soll TAKT aussehen?</h3><p>Themes ändern nur die Farben. Du kannst jederzeit wechseln.</p>
         <div class="tk-xc-ob__themes" role="radiogroup" aria-label="Theme">${THEME_IDS.map((id) => html`<button type="button" class="tk-xc-ob__theme" role="radio" aria-checked=${prefs.theme === id ? 'true' : 'false'} key=${id} onClick=${() => { save({ theme: id }); ctx.emit('onboarding.theme', { theme: id }); }}>

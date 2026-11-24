@@ -18,7 +18,7 @@ export function buildHints(data, ctx, tol = 2) {
   }
   for (const a of arr(data.alerts).filter((x) => x.status === 'ausgelöst' && ok(x) && x.triggeredAt && dayDiff(x.triggeredAt, ctx.today) <= 1)) out.push({ id: `h-hit-${a.id}`, tone: 'success', icon: 'check-circle-2', event: 'hint.alert', to: 'trading.alerts', text: html`Alarm erreicht: ${name(a.securityId)} ${a.dir === 'above' ? 'über' : 'unter'} <${Px} v=${a.price} />.` });
   const open = arr(data.orders).filter((o) => o.status === 'offen' && ok(o));
-  if (open.length) out.push({ id: 'h-orders', tone: 'info', icon: 'flask-conical', event: 'hint.order', to: 'trading.order', text: `${open.length} offene simulierte Order${open.length > 1 ? 's' : ''}: ${open.map((o) => `${o.side === 'buy' ? 'Kauf' : 'Verkauf'} ${name(o.securityId)}`).join(', ')}.` });
+  if (open.length) out.push({ id: 'h-orders', tone: 'info', icon: 'circle-dashed', event: 'hint.order', to: 'trading.order', text: `${open.length} offene simulierte Order${open.length > 1 ? 's' : ''}: ${open.map((o) => `${o.side === 'buy' ? 'Kauf' : 'Verkauf'} ${name(o.securityId)}`).join(', ')}.` });
   const ex_ = planExecutions(data.plans, data.positions, ctx.today, 6), first = ex_[0];
   if (first && dayDiff(ctx.today, first.date) <= 10) {
     const day = ex_.filter((e) => toIsoDay(e.date) === toIsoDay(first.date)), due = sum(day, (e) => e.amount), giro = arr(data.accounts).find((a) => a.type === 'giro');
@@ -34,7 +34,7 @@ export const trdHints = {
   id: 'trd-hints',
   name: 'Hinweise Trading',
   category: 'Trading',
-  description: 'Priorisierte, sachliche Hinweise: Kursalarm nah an der Marke, simulierte Orders offen, nächste Sparplan-Abbuchung mit Deckungs-Check, Abweichung vom Zielwert. Antippen führt zum passenden Bereich. Keine Kauf- oder Verkaufsempfehlungen.',
+  description: 'Priorisierte, sachliche Hinweise: Kursalarm nah an der Marke, simulierte Orders offen, nächste Sparplan-Abbuchung mit Deckungs-Check, Abweichung vom Zielwert. Antippen führt zum passenden Bereich. Ohne Handlungsempfehlungen.',
   version: '1.0',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Wichtig' },

@@ -1,104 +1,88 @@
-// Trading: Order erfassen – ausdrücklich SIMULATION (keine echte Ausführung)
+// Trading: Order erfassen – ausdrücklich SIMULATION (keine echte Ausführung). Version 2.0: Markt/Limit/Stop, Kostenvorschau, Plausibilitätsschutz.
+// Drei Bedienkonzepte: ticket (ein Formular), steps (vier Schritte), quick (Schnell-Sheet für ein gewähltes Wertpapier).
 import { html } from '../../../lib/html.js';
-import { useState, useEffect } from 'preact/hooks';
-import { Card, Button, Badge, Field, Input, Select, Segmented, Icon } from '../../ui.js';
-import { fmt } from '../../../lib/util.js';
-import { nextId } from '../../helpers.js';
+import { Card, Button, Badge, Field, Input, Select, Segmented, NumberStepper, Icon, Chip } from '../../ui.js';
+import { money } from '../../helpers.js';
+import { fmtNumber } from '../../../lib/format.js';
+import { arr } from '../trading/_calc.js';
+import { slots, Note, Px, Chg, Tile, TRD_CSS } from '../trading/_trd.js';
+import { decimalsOf, TYPES } from '../trading/_order.js';
+import { useOrderForm, Preview, Notes, review, place, OT_CSS } from '../trading/_orderui.js';
+import { ex } from '../trading/_example.js';
 
-const FEE = 1;
-const num = (s) => parseFloat(String(s).replace(',', '.'));
+const Sim = () => html`<${Note} icon="info"><strong>Simulation</strong> – keine echte Orderausführung, es fließt kein Geld. Das Depot bleibt unverändert.<//>`;
+const Sides = ({ f }) => html`<div class="tk-trd-ot__sides" role="group" aria-label="Richtung">${[['buy', 'Kaufen', 'trending-up'], ['sell', 'Verkaufen', 'trending-down']].map(([k, l, ic]) => html`<button type="button" class="tk-trd-ot__side" data-side=${k} aria-pressed=${String(f.side === k)} onClick=${() => f.setSide(k)}><${Icon} name=${ic} size=${16} />${l}</button>`)}</div>`;
+
+function secOptions(f, data) {
+  const held = new Set(arr(data.positions).map((p) => p.id)), list = f.side === 'sell' && held.size ? f.insts.filter((i) => held.has(i.id)) : f.insts;
+  return list.map((i) => ({ value: i.id, label: `${i.short || i.name}${held.has(i.id) ? ' (Depot)' : ''}` }));
+}
+const Fields = ({ f, data, ctx, showSec = true }) => {
+  const { inst, chk } = f, e = f.show ? chk.errors : {}, dp = decimalsOf(inst.type);
+  return html`<div class="tk-col" style="gap:var(--tk-space-4)">
+    ${showSec && html`<${Field} label="Wertpapier" hint=${html`Kurs <${Px} v=${inst.price} />${f.side === 'sell' ? ` · Bestand ${fmtNumber(chk.pv.held, { digits: chk.pv.held % 1 ? 3 : 0 })}` : ''}`}><${Select} value=${inst.id} onChange=${f.setSec} options=${secOptions(f, data)} aria-label="Wertpapier" /><//>`}
+    <div class="tk-trd-ot__grid"><${Field} label="Stückzahl" error=${e.qty} hint=${dp ? '' : 'ganze Stücke'}><${Input} type="text" inputmode="decimal" value=${f.qty} onInput=${f.setQty} invalid=${!!e.qty} placeholder="z. B. 5" aria-label="Stückzahl" /><//>
+      <div class="tk-col" style="gap:6px"><span class="tk-field__label">Ordertyp</span><${Segmented} label="Ordertyp" value=${f.type} onChange=${f.setType} options=${TYPES} /></div></div>
+    ${f.side === 'sell' && chk.pv.held > 0 && html`<div class="tk-trd-ot__chips">${[[0.25, '25 %'], [0.5, '50 %'], [1, 'Alles']].map(([r, l]) => html`<${Chip} onClick=${() => f.setQty(String(Math.floor(chk.pv.held * r * 10 ** dp) / 10 ** dp).replace('.', ','))}>${l}<//>`)}</div>`}
+    ${f.type === 'limit' && html`<${Field} label="Limit (€)" error=${e.limit}><${Input} type="text" inputmode="decimal" value=${f.limit} onInput=${f.setLimit} invalid=${!!e.limit} placeholder=${fmtNumber(inst.price, { digits: 2 })} aria-label="Limit in Euro" /><//>`}
+    ${f.type === 'stop' && html`<${Field} label="Stop-Kurs (€)" error=${e.stop} hint="Löst bei Erreichen eine Marktorder aus"><${Input} type="text" inputmode="decimal" value=${f.stop} onInput=${f.setStop} invalid=${!!e.stop} placeholder=${fmtNumber(inst.price * (f.side === 'sell' ? 0.95 : 1.05), { digits: 2 })} aria-label="Stop-Kurs in Euro" /><//>`}
+    ${f.type !== 'markt' && html`<${Field} label="Gültigkeit"><${Select} value=${f.validity} onChange=${f.setValidity} options=${['Tag', '30 Tage']} aria-label="Gültigkeit" /><//>`}</div>`;
+};
+
+function Steps({ f, data, setData, ctx }) {
+  const [done, order] = ctx.ui.otDone || [false, null], step = ctx.ui.otStep || 1, go = (n) => { ctx.setUi('otStep', n); ctx.emit('order.step', { step: n }); };
+  const { chk } = f, valid = [true, chk.ok, chk.ok && (!chk.warnings.length || f.ack)];
+  if (done && order) return html`<div class="tk-col" style="gap:var(--tk-space-4);text-align:center;align-items:center"><span class="tk-trd-ico" style="width:56px;height:56px;background:var(--tk-c-success-soft);color:var(--tk-c-success)"><${Icon} name="check" size=${28} /></span>
+    <div><div style="font-size:var(--tk-fs-xl);font-weight:var(--tk-fw-bold)">Simulierte Order vorgemerkt</div><div class="tk-trd-meta" style="margin-top:4px">${order.side === 'buy' ? 'Kauf' : 'Verkauf'} ${fmtNumber(order.qty, { digits: order.qty % 1 ? 3 : 0 })} × ${f.insts.find((i) => i.id === order.securityId)?.short || ''} · ${order.status === 'offen' ? 'offen, wartet auf den Kurs' : 'simuliert zum Kurs'}</div></div>
+    <${Note} icon="info">Es wurde nichts an einen Broker gesendet. Das Depot bleibt unverändert.<//>
+    <div class="tk-trd-cta" style="justify-content:center"><${Button} variant="primary" onClick=${() => { ctx.setUi('otDone', null); go(1); }}>Neue Order<//><${Button} onClick=${() => ctx.emit('order.done', { id: order.securityId, to: 'trading.detail' })}>Zum Wertpapier<//></div></div>`;
+  return html`<div class="tk-trd-ot"><div class="tk-trd-ot__steps" role="img" aria-label=${`Schritt ${step} von 3`}>${[1, 2, 3].map((n) => html`<i data-on=${String(n <= step)}></i>`)}</div>
+    <div class="tk-trd-cap">Schritt ${step} von 3 · ${['Wertpapier und Richtung', 'Menge und Ordertyp', 'Prüfen'][step - 1]}</div>
+    ${step === 1 && html`<${Sides} f=${f} /><${Field} label="Wertpapier"><${Select} value=${f.inst.id} onChange=${f.setSec} options=${secOptions(f, data)} aria-label="Wertpapier" /><//>
+      <div class="tk-trd-row" style="justify-content:space-between"><span class="tk-trd-meta">Aktueller Kurs</span><span><${Px} v=${f.inst.price} /> <${Chg} v=${f.inst.price / f.inst.prevClose - 1} /></span></div>`}
+    ${step === 2 && html`<${Fields} f=${f} data=${data} ctx=${ctx} showSec=${false} />`}
+    ${step === 3 && html`<${Preview} f=${f} ctx=${ctx} /><${Notes} f=${f} ctx=${ctx} />`}
+    <div class="tk-trd-cta" style="justify-content:space-between">${step > 1 ? html`<${Button} icon="arrow-left" onClick=${() => go(step - 1)}>Zurück<//>` : html`<span></span>`}
+      ${step < 3 ? html`<${Button} variant="primary" iconRight="arrow-right" onClick=${() => { f.setShow(true); if (valid[step - 1]) go(step + 1); }}>Weiter<//>`
+        : html`<${Button} variant="primary" icon="check" disabled=${!valid[2]} onClick=${() => place(f, ctx, setData, (o) => { ctx.setUi('otDone', [true, o]); })}>Simuliert vormerken<//>`}</div></div>`;
+}
+
+function Quick({ f, data, setData, ctx, note }) {
+  const { inst, chk } = f, dp = decimalsOf(inst.type), q = chk.qty > 0 ? chk.qty : 0, step = inst.type === 'Krypto' ? 0.01 : 1;
+  return html`<div class="tk-trd-ot"><div class="tk-trd-row"><${Tile} type=${inst.type} size=${40} /><div class="tk-trd-grow"><div class="tk-trd-title">${inst.short || inst.name}</div><div class="tk-trd-meta"><${Px} v=${inst.price} /> · <${Chg} v=${inst.price / inst.prevClose - 1} /></div></div></div>
+    <${Sides} f=${f} /><div style="display:flex;justify-content:center"><${NumberStepper} label="Stückzahl" value=${q} min=${0} step=${step} decimals=${dp ? 2 : 0} unit="Stück" onChange=${(v) => f.setQty(String(v).replace('.', ','))} /></div>
+    ${f.side === 'sell' && chk.pv.held > 0 && html`<div class="tk-trd-ot__chips" style="justify-content:center">${[[0.5, '50 %'], [1, 'Alles']].map(([r, l]) => html`<${Chip} onClick=${() => f.setQty(String(Math.floor(chk.pv.held * r * 10 ** dp) / 10 ** dp).replace('.', ','))}>${l}<//>`)}</div>`}
+    <div class="tk-trd-ot__big" aria-live="polite">${money(ctx, chk.pv.total)}</div><div class="tk-trd-meta" style="text-align:center;margin-top:-8px">${f.side === 'buy' ? 'Gesamtkosten' : 'Erlös'} inkl. ${money(ctx, chk.pv.fee)} Gebühr (Annahme) · Marktorder</div>
+    ${f.show && chk.errors.qty && html`<${Note} tone="danger" icon="alert-triangle">${chk.errors.qty}<//>`}<${Notes} f=${f} ctx=${ctx} />
+    <${Button} variant="primary" icon="check" style="width:100%;justify-content:center" onClick=${() => review(f, ctx, setData)}>Simuliert vormerken<//>${note && html`<${Sim} />`}</div>`;
+}
 
 export const orderTicket = {
   id: 'order-ticket',
   name: 'Order-Ticket (Simulation)',
   category: 'Trading',
-  description: 'Kauf/Verkauf erfassen mit Stückzahl, Markt-/Limit-Order, Validierung (Guthaben, Bestand) und Bestätigungsdialog. Immer als Simulation gekennzeichnet; neue Order landet in der Orderliste.',
-  version: '1.0',
+  description: 'Kauf oder Verkauf durchspielen: Markt-, Limit- und Stop-Order, Kostenvorschau mit Gebühr (Annahme) und Steuer-Orientierung, Plausibilitätsschutz (Tippfehler, Größe, Börsenzeiten) und Bestätigung. Als Ticket, in vier Schritten oder als Schnell-Sheet. Immer als Simulation gekennzeichnet, das Depot bleibt unverändert.',
+  version: '2.0',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Order erfassen' },
-    { name: 'cash', label: 'Verfügbares Guthaben (€)', type: 'number', default: 5000 },
+    { name: 'mode', label: 'Bedienkonzept', type: 'select', options: ['ticket', 'steps', 'quick'], default: 'ticket' },
+    { name: 'showNote', label: 'Simulations-Hinweis im Ticket', type: 'boolean', default: true },
     { name: 'defaultSide', label: 'Start-Richtung', type: 'select', options: ['buy', 'sell'], default: 'buy' },
     { name: 'followSelection', label: 'Auswahl der Liste folgen', type: 'boolean', default: true },
   ],
-  data: [
-    { slot: 'instruments', label: 'Wertpapiere', default: 'instruments', shape: '{id,symbol,name,price}[]', required: true },
-    { slot: 'positions', label: 'Bestand (für Verkauf)', default: 'positions', shape: '{id,qty}[]', required: false },
-    { slot: 'target', label: 'Orderliste (Ziel)', default: 'orders', shape: 'Array neuer Orders', required: false },
-  ],
-  events: ['order.review', 'order.confirm', 'order.invalid', 'order.cancel'],
+  data: slots('instruments', 'positions', 'cash', 'orders', 'allowance'),
+  events: ['order.review', 'order.confirm', 'order.invalid', 'order.cancel', 'order.side', 'order.type', 'order.step', 'order.done'],
   states: ['empty'],
-  css: `
-  .tk-order-ticket { display:flex; flex-direction:column; gap:var(--tk-space-4); }
-  .tk-order-ticket__sim { display:flex; gap:10px; align-items:flex-start; padding:10px 12px; border-radius:var(--tk-radius-md); background:var(--tk-c-info-soft); color:var(--tk-c-info); font-size:var(--tk-fs-sm); }
-  .tk-order-ticket__sim span { color:var(--tk-c-text-muted); }
-  .tk-order-ticket__sides { display:grid; grid-template-columns:1fr 1fr; gap:var(--tk-space-2); }
-  .tk-order-ticket__side { height:44px; border-radius:var(--tk-radius-md); border:1px solid var(--tk-c-border-strong); background:var(--tk-c-surface2); color:var(--tk-c-text-muted); font-weight:var(--tk-fw-semibold); cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; }
-  .tk-order-ticket__side[aria-pressed="true"][data-side="buy"] { background:var(--tk-c-success-soft); color:var(--tk-c-success); border-color:var(--tk-c-success); }
-  .tk-order-ticket__side[aria-pressed="true"][data-side="sell"] { background:var(--tk-c-danger-soft); color:var(--tk-c-danger); border-color:var(--tk-c-danger); }
-  .tk-order-ticket__grid { display:grid; grid-template-columns:1fr 1fr; gap:var(--tk-space-3); }
-  .bp-mobile .tk-order-ticket__grid { grid-template-columns:minmax(0,1fr); }
-  .tk-order-ticket__sum { border-radius:var(--tk-radius-md); border:1px solid var(--tk-c-border); background:var(--tk-c-surface2); padding:12px 14px; display:grid; gap:6px; font-size:var(--tk-fs-sm); font-variant-numeric:tabular-nums; }
-  .tk-order-ticket__sum div { display:flex; justify-content:space-between; gap:12px; }
-  .tk-order-ticket__sum div:last-child { font-weight:var(--tk-fw-bold); font-size:var(--tk-fs-md); padding-top:6px; border-top:1px solid var(--tk-c-border); }`,
-  example: { props: { cash: 5000 }, data: {
-    instruments: [{ id: 'msci', symbol: 'MSCW', name: 'MSCI World ETF', price: 98.42 }, { id: 'sap', symbol: 'SAPX', name: 'Softwarehaus AG', price: 164.2 }],
-    positions: [{ id: 'msci', qty: 42 }], target: [] } },
+  css: `${TRD_CSS}${OT_CSS}`,
+  example: { props: { mode: 'ticket' }, data: ex('instruments', 'positions', 'cash', 'orders', 'allowance') },
   render: function OrderTicket({ props, data, setData, ctx }) {
-    const insts = data.instruments || [];
-    const [sym, setSym] = useState(insts[0]?.id || '');
-    const [side, setSide] = useState(props.defaultSide);
-    const [type, setType] = useState('market');
-    const [qty, setQty] = useState('');
-    const [limit, setLimit] = useState('');
-    const [err, setErr] = useState({});
-    useEffect(() => { if (props.followSelection && insts.some((i) => i.id === ctx.ui.selectedId)) setSym(ctx.ui.selectedId); }, [ctx.ui.selectedId]);
-    const inst = insts.find((i) => i.id === sym) || insts[0];
-    if (!inst) return html`<${Card} title=${props.title}><div class="tk-order-ticket"><div class="tk-order-ticket__sim"><${Icon} name="info" size=${16} /><div><strong>Simulation</strong> – kein Wertpapier verfügbar.</div></div></div><//>`;
-    const held = (data.positions || []).find((p) => p.id === inst.id)?.qty || 0;
-    const q = num(qty);
-    const price = type === 'limit' && num(limit) > 0 ? num(limit) : inst.price;
-    const value = (Number.isFinite(q) ? q : 0) * price;
-    const total = side === 'buy' ? value + (value ? FEE : 0) : value - (value ? FEE : 0);
-
-    const validate = () => {
-      const e = {};
-      if (!qty.trim() || !Number.isFinite(q) || q <= 0) e.qty = 'Bitte eine Stückzahl größer 0 eingeben.';
-      else if (!Number.isInteger(q)) e.qty = 'Nur ganze Stücke möglich.';
-      else if (side === 'sell' && q > held) e.qty = held ? `Im Depot sind nur ${held} Stück vorhanden.` : 'Dieses Wertpapier ist nicht im Depot.';
-      else if (side === 'buy' && total > props.cash) e.qty = `Guthaben reicht nicht (verfügbar ${fmt.currency(props.cash)}).`;
-      if (type === 'limit' && (!limit.trim() || !(num(limit) > 0))) e.limit = 'Bitte ein Limit größer 0 eingeben.';
-      return e;
-    };
-    const submit = (ev) => {
-      ev && ev.preventDefault();
-      const e = validate(); setErr(e);
-      if (Object.keys(e).length) { ctx.emit('order.invalid', e); return; }
-      ctx.emit('order.review', { symbol: inst.symbol, side, qty: q });
-      const label = `${side === 'buy' ? 'Kauf' : 'Verkauf'} ${q} × ${inst.name}`;
-      ctx.openDialog({ title: 'Order prüfen (Simulation)',
-        body: () => html`<div class="tk-col" style="gap:12px"><div class="tk-order-ticket__sim"><${Icon} name="info" size=${16} /><div><strong>Simulation</strong><br /><span>Es wird keine echte Order an eine Börse oder einen Broker gesendet.</span></div></div>
-          <div class="tk-order-ticket__sum"><div><span>Wertpapier</span><strong>${inst.name}</strong></div><div><span>Richtung</span><strong>${side === 'buy' ? 'Kauf' : 'Verkauf'}</strong></div>
-            <div><span>Stückzahl</span><strong>${q}</strong></div><div><span>${type === 'limit' ? 'Limit' : 'Marktpreis (ca.)'}</span><strong>${fmt.currency(price)}</strong></div>
-            <div><span>Gebühr (Annahme)</span><strong>${fmt.currency(FEE)}</strong></div><div><span>${side === 'buy' ? 'Gesamtkosten' : 'Erlös'}</span><strong>${fmt.currency(total)}</strong></div></div></div>`,
-        footer: (close) => html`<${Button} onClick=${() => { ctx.emit('order.cancel'); close(); }}>Abbrechen<//><${Button} variant="primary" icon="check" onClick=${() => {
-          setData('target', (all) => [{ id: nextId(all, 'ord'), title: label, subtitle: `${type === 'limit' ? 'Limit ' + fmt.currency(price) : 'Marktorder'} · Gesamt ${fmt.currency(total)}`, meta: 'gerade eben', badge: 'Simulation', tone: 'info', icon: side === 'buy' ? 'trending-up' : 'trending-down', done: false }, ...(Array.isArray(all) ? all : [])]);
-          ctx.emit('order.confirm', { symbol: inst.symbol, side, qty: q, type }); ctx.toast('Simulierte Order platziert'); setQty(''); setLimit(''); setErr({}); close(); }}>Simuliert platzieren<//>`,
-      });
-    };
-    return html`<${Card} title=${props.title} actions=${html`<${Badge} tone="info" icon="info">Simulation<//>`}>
-      <form class="tk-order-ticket" onSubmit=${submit} novalidate>
-        <div class="tk-order-ticket__sim"><${Icon} name="info" size=${16} /><div><strong>Simulation</strong> <span>– keine echte Orderausführung, es fließt kein Geld.</span></div></div>
-        <div class="tk-order-ticket__sides" role="group" aria-label="Richtung">
-          <button type="button" class="tk-order-ticket__side" data-side="buy" aria-pressed=${String(side === 'buy')} onClick=${() => { setSide('buy'); setErr({}); }}><${Icon} name="trending-up" size=${16} />Kaufen</button>
-          <button type="button" class="tk-order-ticket__side" data-side="sell" aria-pressed=${String(side === 'sell')} onClick=${() => { setSide('sell'); setErr({}); }}><${Icon} name="trending-down" size=${16} />Verkaufen</button></div>
-        <${Field} label="Wertpapier" hint=${`Kurs ${fmt.currency(inst.price)}${side === 'sell' ? ` · Bestand ${held}` : ''}`}><${Select} value=${sym || inst.id} onChange=${(v) => { setSym(v); ctx.setUi('selectedId', v); setErr({}); }} options=${insts.map((i) => ({ value: i.id, label: `${i.name} (${i.symbol})` }))} /><//>
-        <div class="tk-order-ticket__grid">
-          <${Field} label="Stückzahl" error=${err.qty}><${Input} type="text" inputmode="numeric" value=${qty} onInput=${setQty} invalid=${!!err.qty} placeholder="z. B. 5" /><//>
-          <div class="tk-col" style="gap:6px"><span class="tk-field__label">Ordertyp</span><${Segmented} label="Ordertyp" value=${type} onChange=${(v) => { setType(v); setErr({}); }} options=${[{ value: 'market', label: 'Markt' }, { value: 'limit', label: 'Limit' }]} /></div></div>
-        ${type === 'limit' && html`<${Field} label="Limit (€)" error=${err.limit}><${Input} type="text" inputmode="decimal" value=${limit} onInput=${setLimit} invalid=${!!err.limit} placeholder=${fmt.number(inst.price, 2)} /><//>`}
-        <div class="tk-order-ticket__sum"><div><span>Geschätzter Wert</span><span>${fmt.currency(value)}</span></div><div><span>Gebühr (Annahme)</span><span>${fmt.currency(value ? FEE : 0)}</span></div><div><span>${side === 'buy' ? 'Gesamtkosten' : 'Erlös'}</span><span>${fmt.currency(Math.max(total, 0))}</span></div></div>
-        <${Button} variant="primary" type="submit" icon="check" style="width:100%">Order prüfen<//>
-      </form><//>`;
+    const f = useOrderForm(props, data, ctx);
+    if (!f.inst) return html`<${Card} title=${props.title}><${Note} icon="info"><strong>Simulation</strong> – kein Wertpapier verfügbar.<//><//>`;
+    const sim = html`<${Badge} tone="info" icon="info">Simulation<//>`;
+    if (props.mode === 'steps') return html`<${Card} title=${props.title} actions=${sim}><${Steps} f=${f} data=${data} setData=${setData} ctx=${ctx} /><//>`;
+    if (props.mode === 'quick') return html`<${Card} title=${props.title} actions=${sim}><${Quick} f=${f} data=${data} setData=${setData} ctx=${ctx} note=${props.showNote} /><//>`;
+    return html`<${Card} title=${props.title} actions=${sim}><form class="tk-trd-ot" onSubmit=${(e) => { e.preventDefault(); review(f, ctx, setData); }} novalidate>${props.showNote && html`<${Sim} />`}<${Sides} f=${f} /><${Fields} f=${f} data=${data} ctx=${ctx} /><${Preview} f=${f} ctx=${ctx} /><${Notes} f=${f} ctx=${ctx} />
+      <${Button} variant="primary" type="submit" icon="check" style="width:100%;justify-content:center">Order prüfen<//></form><//>`;
   },
 };
 

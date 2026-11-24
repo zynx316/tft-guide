@@ -29,11 +29,12 @@ export const trdWatchlist = {
   states: ['empty'],
   css: `${TRD_CSS}
   .tk-trd-wl__tools { display:flex; gap:var(--tk-space-2); flex-wrap:wrap; align-items:center; margin-bottom:var(--tk-space-3); } .tk-trd-wl__tools .tk-search { flex:1 1 180px; min-width:0; }
-  .tk-trd-wl__row { display:grid; grid-template-columns:minmax(0,1fr) auto auto auto; gap:12px; align-items:center; padding:8px 4px; min-height:56px; }
-  .tk-trd-wl__row--t { grid-template-columns:minmax(0,1fr) 92px 84px 84px auto; } .bp-mobile .tk-trd-wl__row--t { grid-template-columns:minmax(0,1fr) auto auto; } .bp-mobile .tk-trd-wl__spark { display:none; }
+  .tk-trd-wl__row { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:12px; align-items:center; padding:8px 4px; min-height:56px; }
+  .tk-trd-wl__row--t { grid-template-columns:minmax(0,1fr) 92px auto auto; } .bp-mobile .tk-trd-wl__row--t { grid-template-columns:minmax(0,1fr) auto; }
+  .tk-trd-wl__pc { display:flex; gap:14px; align-items:center; justify-content:flex-end; } .bp-mobile .tk-trd-wl__pc { flex-direction:column; align-items:flex-end; gap:2px; } .bp-mobile .tk-trd-wl__spark { display:none; }
   .tk-trd-wl__main { display:flex; align-items:center; gap:12px; min-width:0; cursor:pointer; background:none; border:0; color:inherit; font:inherit; text-align:left; padding:0; min-height:44px; border-radius:var(--tk-radius-md); }
   .tk-trd-wl__main:hover .tk-trd-title { text-decoration:underline; } .tk-trd-wl__acts { display:flex; gap:2px; } .bp-mobile .tk-trd-wl__acts { display:none; }
-  .tk-trd-wl__cards { display:grid; grid-template-columns:repeat(auto-fill, minmax(calc(210px * var(--tk-text-scale, 1)), 1fr)); gap:var(--tk-space-3); }
+  .tk-trd-wl__cards { display:grid; grid-template-columns:repeat(auto-fill, minmax(min(100%, calc(210px * var(--tk-text-scale, 1))), 1fr)); gap:var(--tk-space-3); }
   .tk-trd-wl__card { border:1px solid var(--tk-c-border); border-radius:var(--tk-radius-lg); background:var(--tk-c-surface2); padding:var(--tk-space-4); display:flex; flex-direction:column; gap:10px; text-align:left; color:inherit; font:inherit; cursor:pointer; min-width:0; }
   .tk-trd-wl__card:hover { background:var(--tk-c-surface3); } .tk-trd-wl__undo { display:flex; align-items:center; gap:8px; justify-content:space-between; padding:8px 12px; border-radius:var(--tk-radius-md); background:var(--tk-c-surface2); margin-bottom:var(--tk-space-3); font-size:var(--tk-fs-sm); }`,
   example: { data: ex('watchlist', 'instruments', 'alerts', 'positions') },
@@ -65,7 +66,7 @@ export const trdWatchlist = {
       : html`<div class="tk-trd-list">${shown.map((w) => html`<div class=${`tk-trd-wl__row ${props.style === 'table' ? 'tk-trd-wl__row--t' : ''}`}>
           <button type="button" class="tk-trd-wl__main" onClick=${() => open(w)} aria-label=${`${w.title} öffnen`}><${Tile} type=${w.type} size=${34} /><span class="tk-trd-grow"><span class="tk-trd-title" style="display:block">${w.title}</span><span class="tk-row" style="gap:6px;flex-wrap:wrap">${sub(w)}${alertPill(w)}</span></span></button>
           ${props.style === 'table' && html`<span class="tk-trd-wl__spark"><${Sparkline} values=${w.trend} width=${84} height=${28} tone=${w.change >= 0 ? 'success' : 'danger'} /></span>`}
-          <span style="text-align:right"><${Px} v=${w.price} /></span><span style="text-align:right"><${Chg} v=${w.change} /></span>
+          <span class="tk-trd-wl__pc"><${Px} v=${w.price} /><${Chg} v=${w.change} /></span>
           ${props.style === 'table' && html`<span class="tk-trd-wl__acts"><${IconButton} icon="bell" label=${`Alarm für ${w.title} anlegen`} onClick=${() => ctx.emit('alert.new', { id: w.id, to: 'trading.alerts' })} /><${IconButton} icon="x" label=${`${w.title} von der Watchlist entfernen`} onClick=${() => remove(w)} /></span>`}</div>`)}</div>`;
     return html`<${Card} title=${props.title} icon="star" actions=${addBtn}>${tools}${undoBar}${empty || body}${more}<//>`;
   },

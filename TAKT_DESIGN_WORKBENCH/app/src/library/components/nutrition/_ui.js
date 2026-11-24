@@ -63,6 +63,7 @@ export const NU_CSS = `${FILL}
   .tk-nu-row > .tk-grow { min-width:0; }
   .tk-nu-meta { color:var(--tk-c-text-subtle); font-size:var(--tk-nfs-sm); }
   .tk-nu-btnrow { display:flex; gap:8px; flex-wrap:wrap; }
+  .tk-nu-btnrow > .tk-btn, .tk-nrec__act > .tk-btn { white-space:normal; height:auto; min-height:var(--tk-size-control); padding-block:8px; text-align:left; max-width:100%; }
   .tk-nu-tap { width:100%; border:0; background:transparent; color:inherit; font:inherit; text-align:left; cursor:pointer; padding:0; display:flex; align-items:center; gap:12px; min-width:0; }
   .tk-nu-sticky { position:sticky; bottom:0; }
 `;

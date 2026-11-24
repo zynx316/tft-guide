@@ -8,8 +8,8 @@ const toM = (t) => +t.slice(0, 2) * 60 + +t.slice(3, 5);
 function Moon({ moon, size = 44 }) {
   const f = moon.illumination / 100, r = size / 2 - 2, c = size / 2, waxing = moon.age < 14.77, k = Math.abs(1 - 2 * f) * r;
   const sweepRight = waxing ? 1 : 0;
-  const lit = f >= 0.995 ? html`<circle cx=${c} cy=${c} r=${r} fill="var(--tk-c-text)" />` : f <= 0.01 ? null
-    : html`<path d=${`M${c},${c - r} A${r},${r} 0 0 ${sweepRight} ${c},${c + r} A${k},${r} 0 0 ${(f > 0.5) === waxing ? 0 : 1} ${c},${c - r} Z`} fill="var(--tk-c-text)" />`;
+  const lit = f >= 0.995 ? html`<circle cx=${c} cy=${c} r=${r} fill="color-mix(in srgb, var(--tk-c-warning) 60%, var(--tk-c-surface))" />` : f <= 0.01 ? null
+    : html`<path d=${`M${c},${c - r} A${r},${r} 0 0 ${sweepRight} ${c},${c + r} A${k},${r} 0 0 ${(f > 0.5) === waxing ? 0 : 1} ${c},${c - r} Z`} fill="color-mix(in srgb, var(--tk-c-warning) 60%, var(--tk-c-surface))" />`;
   return html`<svg width=${size} height=${size} viewBox=${`0 0 ${size} ${size}`} role="img" aria-label=${`${moon.name}, ${moon.illumination} Prozent beleuchtet`}><circle cx=${c} cy=${c} r=${r} fill="var(--tk-c-surface3)" stroke="var(--tk-c-border-strong)" />${lit}</svg>`;
 }
 
@@ -18,7 +18,7 @@ export const wxSun = {
   name: 'Sonne & Mond',
   category: 'Wetter',
   description: 'Sonnenbogen mit aktueller Position, Auf- und Untergang, Tageslänge (im Vergleich zu gestern), goldene Stunde und Dämmerung, dazu Mondphase mit Beleuchtung sowie Auf- und Untergang des Mondes.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Sonne & Mond' },
     { name: 'layout', label: 'Darstellung', type: 'select', options: ['full', 'compact'], default: 'full' },

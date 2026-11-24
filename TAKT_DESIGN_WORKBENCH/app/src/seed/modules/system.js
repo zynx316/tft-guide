@@ -19,7 +19,7 @@ const NOTIFICATIONS = [
   { id: 'n-sav', module: 'savings', tone: 'info', priority: 'normal', time: '2026-11-23T18:00:00', title: 'Sparpläne werden am 01.12. ausgeführt', text: '575 € bei deinem Broker. Das Girokonto deckt die Raten.', to: 'savings.calendar' },
   { id: 'n-habit', module: 'habits', tone: 'neutral', priority: 'leise', time: '2026-11-23T21:00:00', title: 'Abendroutine um 21:00 Uhr', text: 'Drei Schritte, etwa 10 Minuten.', to: 'habits.home' },
   { id: 'n-nut', module: 'nutrition', tone: 'neutral', priority: 'leise', time: '2026-11-24T08:30:00', title: 'Wasser: 1.000 von 2.500 ml', text: 'Mit einem Tipp trägst du ein Glas ein.', to: 'nutrition.water' },
-  { id: 'n-backup', module: 'settings', tone: 'neutral', priority: 'leise', time: '2026-11-21T20:00:00', title: 'Letzte Sicherung heute 03:00 Uhr', text: 'Die automatische Sicherung läuft jede Nacht.', to: 'settings.data' },
+  { id: 'n-backup', module: 'settings', tone: 'neutral', priority: 'leise', time: '2026-11-24T03:00:00', title: 'Sicherung erstellt', text: 'Heute 03:00 Uhr, 6,9 MB. Die automatische Sicherung läuft jede Nacht.', to: 'settings.data' },
   { id: 'n-review', module: 'home', tone: 'neutral', priority: 'leise', time: '2026-11-22T18:00:00', title: 'Wochenrückblick ist bereit', text: 'KW 47 in drei Zeilen: erledigt, gelernt, als Nächstes.', to: 'home.review' },
 ];
 /** Papierkorb: Löschzeitpunkte relativ zum Referenztag (30 Tage Aufbewahrung). */
@@ -415,7 +415,7 @@ export default {
         'Einträge mit weniger als 8 Tagen Restzeit stehen in „Läuft bald ab“ mit Text „noch 1 Tag“.',
         'Ein leerer Papierkorb zeigt „Papierkorb ist leer“ mit Erklärung, im Privatmodus ist kein Betrag lesbar.',
       ],
-      flows: [{ id: 'fl-zurueck', name: 'Aus Versehen gelöscht', steps: [{ featureId: 'system.trash', action: 'Aufgabe „Altes Angebot Schmidt prüfen“ wiederherstellen' }, { featureId: 'tasks.list', action: 'Aufgabe ist wieder in der Liste' }] }],
+      flows: [{ id: 'fl-wieder', name: 'Aus Versehen gelöscht', steps: [{ featureId: 'system.trash', action: 'Aufgabe „Altes Angebot Schmidt prüfen“ wiederherstellen' }, { featureId: 'tasks.list', action: 'Aufgabe ist wieder in der Liste' }] }],
       viewports: ALL_VP,
       demoData: { trash: TRASH, ...worldData },
       variants: [{
