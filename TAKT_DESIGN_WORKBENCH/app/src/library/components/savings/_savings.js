@@ -4,8 +4,8 @@ import { html } from '../../../lib/html.js';
 import { useState } from 'preact/hooks';
 import { Icon, toneColor } from '../../ui.js';
 import { money } from '../../helpers.js';
-import { fmtPercent, fmtNumber } from '../../../lib/format.js';
-import { dayStart } from '../../../lib/date.js';
+import { fmtPercent, fmtNumber, fmtDate, fmtRelativeDay } from '../../../lib/format.js';
+import { dayStart, dayDiff } from '../../../lib/date.js';
 
 export const arr = (v) => (Array.isArray(v) ? v : []);
 export const obj = (v) => (v && typeof v === 'object' && !Array.isArray(v) ? v : {});
@@ -14,9 +14,16 @@ export const sum = (list, f) => list.reduce((s, x) => s + (f(x) || 0), 0);
 let seq = 0;
 export const sid = (p) => `${p}${(++seq).toString(36)}${Math.random().toString(36).slice(2, 5)}`;
 
-/** Heute (Tagesbeginn) aus dem Kontext – nie new Date(). */
+/** Heute (Tagesbeginn) aus dem Kontext (ctx.today). */
 export const todayOf = (ctx) => dayStart(ctx.today);
 
+/** Termin lesbar: „heute · Di, 24.11.“, „in 7 Tagen · Di, 01.12.“, später „Mo, 04.01.2027“ (Jahr nur bei anderem Jahr). */
+export const whenLabel = (d, today, { short = false } = {}) => {
+  const n = dayDiff(today, d), base = fmtDate(d, { style: 'weekday' }), yr = d.getFullYear() !== today.getFullYear() ? d.getFullYear() : '';
+  const day = yr ? `${base.slice(0, -1)}.${yr}` : base;
+  if (n >= -1 && n <= 13) return short ? fmtRelativeDay(d, today) : `${fmtRelativeDay(d, today)} · ${day}`;
+  return day;
+};
 /** Ganze Euro (Standard für Vermögen und Raten) bzw. mit Cent. */
 export const eur = (ctx, v, o = {}) => money(ctx, v, { digits: 0, ...o });
 export const eur2 = (ctx, v, o = {}) => money(ctx, v, { digits: 2, ...o });
@@ -100,7 +107,7 @@ export const SV_CSS = `
   .tk-sv-gain__p { opacity:.9; margin-left:2px; }
   .tk-sv-row { display:flex; align-items:center; gap:var(--tk-space-3); min-width:0; }
   .tk-sv-row > .tk-grow { min-width:0; }
-  .tk-sv-meta { font-size:var(--tk-fs-sm); color:var(--tk-c-text-subtle); }
+  .tk-sv-meta { font-size:var(--tk-fs-sm); color:var(--tk-c-text-muted); }
   .tk-sv-bar { height:8px; border-radius:4px; background:var(--tk-c-surface3); overflow:hidden; display:flex; gap:2px; }
   .tk-sv-bar > i { display:block; height:100%; min-width:3px; }
   .tk-sv-btnrow { display:flex; gap:var(--tk-space-2); flex-wrap:wrap; align-items:center; }

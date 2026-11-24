@@ -2,8 +2,8 @@
 import { html } from '../../../lib/html.js';
 import { useState } from 'preact/hooks';
 import { Card, Button, Badge, Icon, EmptyState } from '../../ui.js';
-import { fmtDate, fmtRelativeDay } from '../../../lib/format.js';
-import { arr, todayOf, eur, eur2, Tile, TrackerNote, Gain, SV_CSS, sum } from './_savings.js';
+import { fmtDate } from '../../../lib/format.js';
+import { arr, todayOf, eur, eur2, Tile, TrackerNote, Gain, SV_CSS, sum, whenLabel } from './_savings.js';
 import { CHART_CSS } from './_chart.js';
 import { planTarget, planStatus, rhythmLabel, planExecutions, planStats, confirmedSet, monthlyTotal, setPlanActive, pauseUntil, perExecution } from './_plans.js';
 
@@ -42,7 +42,7 @@ export const savingsPlanList = {
   .tk-svpl__main:focus-visible { outline:2px solid var(--tk-c-focus); outline-offset:2px; border-radius:var(--tk-radius-sm); }
   .tk-svpl__name { display:flex; align-items:center; gap:12px; min-width:0; } .tk-svpl__name > div { min-width:0; }
   .tk-svpl__name strong, .tk-svpl__cell strong { display:block; font-weight:var(--tk-fw-semibold); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .tk-svpl__name span, .tk-svpl__cell span { display:block; font-size:var(--tk-fs-sm); color:var(--tk-c-text-muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .tk-svpl__name > div > span, .tk-svpl__cell > span { display:block; font-size:var(--tk-fs-sm); color:var(--tk-c-text-muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .tk-svpl__cell { min-width:0; font-variant-numeric:tabular-nums; } .tk-svpl__cell--r { text-align:right; }
   .tk-svpl__acts { display:flex; gap:4px; align-items:center; }
   .tk-svpl__sum { display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; padding:10px var(--tk-space-4); border-top:1px solid var(--tk-c-border); font-size:var(--tk-fs-sm); color:var(--tk-c-text-muted); background:var(--tk-c-surface2); }
@@ -74,7 +74,9 @@ export const savingsPlanList = {
     let plans = arr(data.plans);
     const conf = confirmedSet(data.transactions);
     if (props.respectFilter && ctx.ui.filter && !/^alle?$/i.test(ctx.ui.filter)) plans = plans.filter((p) => planStatus(p).id === String(ctx.ui.filter).toLowerCase());
+    if (props.respectFilter && ctx.ui.query) plans = plans.filter((p) => `${p.name} ${planTarget(p, data.positions, data.accounts).label}`.toLowerCase().includes(String(ctx.ui.query).toLowerCase()));
     const shown = props.limit > 0 ? plans.slice(0, props.limit) : plans;
+    const selId = ctx.ui.selectedId ?? (arr(data.plans).find((p) => p.active) || arr(data.plans)[0])?.id;
     const open = (p) => { ctx.setUi('selectedId', p.id); ctx.emit('plan.open', { id: p.id }); };
     const rows = shown.map((p) => ({ p, tgt: planTarget(p, data.positions, data.accounts), st: planStatus(p), next: planExecutions(p, today, 1, conf)[0], stats: planStats(p, { positions: data.positions, accounts: data.accounts, today }) }));
     const toggle = (p) => {
@@ -88,10 +90,11 @@ export const savingsPlanList = {
     const empty = html`<${EmptyState} icon="piggy-bank" title="Noch kein Sparplan" text="Lege deinen ersten Sparplan an. TAKT erinnert dich an jede Ausführung und rechnet mit, wie dein Vermögen wächst." action=${html`<${Button} variant="primary" icon="plus" onClick=${() => ctx.emit('plan.create')}>Sparplan anlegen<//>`} />`;
     const undoBar = last && html`<div class="tk-sv-undo" role="status"><span>${last.text}</span><${Button} size="sm" variant="ghost" icon="undo-2" onClick=${undo}>Rückgängig<//></div>`;
     const more = props.limit > 0 && plans.length > shown.length && html`<${Button} variant="ghost" iconRight="chevron-right" onClick=${() => ctx.emit('plans.open')}>Alle ${plans.length} Pläne<//>`;
-    const nextText = (r) => (r.next ? `${fmtRelativeDay(r.next.date, today)} · ${fmtDate(r.next.date, { style: 'short' })}` : r.st.id === 'pausiert' ? 'Pausiert' : '–');
+    const nextText = (r) => (r.next ? whenLabel(r.next.date, today) : r.st.id === 'pausiert' ? 'Pausiert' : '–');
     const foot = html`<div class="tk-svpl__foot">${undoBar}${props.showTracker && html`<${TrackerNote} />`}${more}</div>`;
     const act = (r) => props.showActions && html`<${Button} size="sm" variant="ghost" icon=${r.p.active ? 'pause' : 'play'} aria-label=${r.p.active ? `${r.p.name} pausieren` : `${r.p.name} fortsetzen`} onClick=${() => toggle(r.p)} />`;
     const action = html`<${Button} size="sm" icon="plus" onClick=${() => ctx.emit('plan.create')}>Neu<//>`;
+    if (!plans.length && arr(data.plans).length) return html`<${Card} title=${props.title} icon="piggy-bank"><${EmptyState} icon="search" title="Keine Treffer" text="Kein Sparplan passt zum Filter." /><//>`;
     if (!plans.length) return html`<${Card} title=${props.title} icon="piggy-bank">${empty}${props.showTracker && html`<div style="margin-top:12px"><${TrackerNote} /></div>`}<//>`;
 
     if (props.style === 'cards') {
@@ -99,7 +102,7 @@ export const savingsPlanList = {
       return html`<div class="tk-col" style="gap:var(--tk-space-4)">
         <${Card} title=${props.title} icon="piggy-bank" actions=${action}><div class="tk-svpl__share"><div class="tk-sv-bar" role="img" aria-label="Anteil der Raten am Monatsbetrag">${rows.filter((r) => r.p.active).map((r) => html`<i title=${r.p.name} style=${`flex:${r.p.monthly};background:var(--tk-chart-${r.p.tone || 1})`}></i>`)}</div>
           <span class="tk-sv-meta">Verteilung der ${eur(ctx, total)} pro Monat auf ${rows.filter((r) => r.p.active).length} aktive Pläne</span></div>
-          <div class="tk-svpl__cards">${rows.map((r) => html`<button type="button" class="tk-svpl__card" aria-selected=${props.selectable && ctx.ui.selectedId === r.p.id ? 'true' : 'false'} onClick=${() => open(r.p)}>
+          <div class="tk-svpl__cards">${rows.map((r) => html`<button type="button" class="tk-svpl__card" aria-selected=${props.selectable && selId === r.p.id ? 'true' : 'false'} onClick=${() => open(r.p)}>
             <div class="tk-sv-row"><${Tile} tone=${r.p.tone || 1} icon=${r.tgt.icon} /><div class="tk-grow"><strong class="tk-truncate" style="display:block">${r.p.name}</strong><span class="tk-sv-meta tk-truncate" style="display:block">${r.tgt.label}</span></div></div>
             <div><div class="tk-svpl__big">${eur(ctx, r.p.monthly)}</div><span class="tk-sv-meta">pro Monat · ${rhythmLabel(r.p)}</span></div>
             <div class="tk-sv-row" style="justify-content:space-between;flex-wrap:wrap;gap:6px"><${Badge} tone=${r.st.tone} icon=${r.st.icon}>${r.st.label}<//><span class="tk-sv-meta tk-num">${r.next ? `Nächste: ${fmtDate(r.next.date, { style: 'weekday' })}` : ''}</span></div>
@@ -107,13 +110,13 @@ export const savingsPlanList = {
         ${foot}<//></div>`;
     }
     if (props.style === 'compact') {
-      return html`<${Card} title=${props.title} icon="piggy-bank" actions=${action}><div class="tk-col" style="gap:2px">${rows.map((r) => html`<button type="button" class="tk-svpl__cmp" aria-selected=${props.selectable && ctx.ui.selectedId === r.p.id ? 'true' : 'false'} onClick=${() => open(r.p)}>
+      return html`<${Card} title=${props.title} icon="piggy-bank" actions=${action}><div class="tk-col" style="gap:2px">${rows.map((r) => html`<button type="button" class="tk-svpl__cmp" aria-selected=${props.selectable && selId === r.p.id ? 'true' : 'false'} onClick=${() => open(r.p)}>
         <${Tile} tone=${r.p.tone || 1} icon=${r.tgt.icon} size=${16} /><div><strong>${r.p.name}</strong><span class="tk-sv-meta tk-truncate" style="display:block">${r.st.id === 'aktiv' ? nextText(r) : r.st.label}</span></div><strong class="tk-num">${eur(ctx, r.p.monthly)}</strong></button>`)}</div>${foot}<//>`;
     }
     const totals = { monthly: monthlyTotal(plans), value: sum(rows.filter((r) => r.stats), (r) => r.stats.value), gain: sum(rows, (r) => r.stats.gain) };
     return html`<${Card} flush title=${props.title} icon="piggy-bank" actions=${action}>
-      <div class="tk-svpl__head" aria-hidden="true"><span>Plan</span><span>Rate</span><span>Nächste Ausführung</span><span style="text-align:right">Wert</span><span></span></div>
-      ${rows.map((r) => html`<div class="tk-svpl__row" aria-selected=${props.selectable && ctx.ui.selectedId === r.p.id ? 'true' : 'false'}>
+      <div class="tk-svpl__head" aria-hidden="true"><span>Plan</span><span>Rate</span><span>Nächster Termin</span><span style="text-align:right">Wert</span><span></span></div>
+      ${rows.map((r) => html`<div class="tk-svpl__row" aria-selected=${props.selectable && selId === r.p.id ? 'true' : 'false'}>
         <button type="button" class="tk-svpl__main" onClick=${() => open(r.p)} aria-label=${`${r.p.name} öffnen`}>
           <div class="tk-svpl__name"><${Tile} tone=${r.p.tone || 1} icon=${r.tgt.icon} size=${17} /><div><strong>${r.p.name}</strong><span>${r.tgt.label}${r.st.id !== 'aktiv' ? ` · ${r.st.label}` : ''}</span></div></div>
           <div class="tk-svpl__cell"><strong>${eur(ctx, r.p.monthly)}</strong><span>${rhythmLabel(r.p)}</span></div>

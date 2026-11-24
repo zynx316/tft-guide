@@ -53,7 +53,7 @@ export const holidayList = {
         : list.map((x) => html`<button type="button" class="tk-cal-hol__row" data-past=${x.n < 0} data-next=${x.id === nextId} onClick=${() => ctx.emit('event.open', { id: x.eventId || x.id })}>
           <span class="tk-cal-hol__date"><b>${x.d.getDate()}</b><small>${MON[x.d.getMonth()]}</small></span>
           <span class="tk-grow"><div class="tk-truncate" style="font-weight:var(--tk-fw-medium)">${tab === 'Feiertage' ? x.name : x.name}</div><div class="tk-subtle tk-truncate" style="font-size:var(--tk-fs-sm)">${WD[x.d.getDay()]}, ${x.d.getDate()}.${x.d.getMonth() + 1}.${x.d.getFullYear() !== ctx.today.getFullYear() ? x.d.getFullYear() : ''} · ${tab === 'Feiertage' ? (x.type === 'gesetzlich' ? 'gesetzlich' : x.type) : `${x.relation}${x.turns ? ` · wird ${x.turns}` : ''}`}</div></span>
-          ${x.n >= 0 ? html`<${Badge} tone=${x.id === nextId ? 'accent' : 'neutral'}>${inDays(x.n)}<//>` : html`<${Icon} name="check" size=${16} />`}</button>`)}
+          ${x.n >= 0 ? html`<${Badge}>${inDays(x.n)}<//>` : html`<${Icon} name="check" size=${16} />`}</button>`)}
     </div><//>`;
   },
 };

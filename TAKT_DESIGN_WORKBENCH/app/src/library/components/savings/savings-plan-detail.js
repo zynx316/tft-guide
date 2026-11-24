@@ -3,7 +3,7 @@ import { html } from '../../../lib/html.js';
 import { useState } from 'preact/hooks';
 import { Card, Button, Badge, Icon, EmptyState, Chip } from '../../ui.js';
 import { fmtDate, fmtPercent, fmtRelativeDay } from '../../../lib/format.js';
-import { arr, todayOf, eur, eur2, Tile, Stat, Gain, Stepper, Ring, SV_CSS, TrackerNote, pct } from './_savings.js';
+import { arr, todayOf, eur, eur2, Tile, Stat, Gain, Stepper, Ring, SV_CSS, TrackerNote, pct, whenLabel } from './_savings.js';
 import { planTarget, planStatus, rhythmLabel, planExecutions, planHistory, planStats, confirmedSet, patchPlan, setPlanActive, pauseUntil, nextRaise, perExecution } from './_plans.js';
 import { CALC_DEFAULT } from './_calc.js';
 
@@ -79,12 +79,12 @@ export const savingsPlanDetail = {
     const rows = [['Eingezahlt', eur(ctx, stats.invested)], ['Wert', eur(ctx, stats.value)], ['Ertrag', html`<${Gain} ctx=${ctx} value=${stats.gain} ratio=${stats.ratio} />`], ...(hist ? [[`Rendite p. a. (Modell)`, ctx.privacy ? '•• %' : fmtPercent(hist.ratePa, { digits: 1 })]] : []),
       ['Rate', `${eur(ctx, plan.monthly)} · ${rhythmLabel(plan)}`], ['Nächste Ausführung', next ? `${fmtDate(next.date, { style: 'weekday' })} · ${eur2(ctx, perExecution(plan))}` : '–'], ['Seit', fmtDate(plan.startDate)], ...(goal ? [['Ziel', goal.name]] : [])];
     const actions = props.showActions && html`<div class="tk-svd__acts">${acts.map((a) => html`<button type="button" class="tk-svd__act" onClick=${a.f}><${Tile} tone="accent" icon=${a.i} size=${16} /><div><strong>${a.t}</strong><small>${a.s}</small></div></button>`)}</div>`;
-    const raiseNote = raise && html`<div class="tk-svd__note"><${Icon} name="trending-up" size=${16} /><span>Die Rate steigt am ${fmtDate(raise.date, { style: 'weekday' })} (${fmtRelativeDay(raise.date, today)}) von ${eur(ctx, raise.from)} auf ${eur(ctx, raise.to)}.</span></div>`;
+    const raiseNote = raise && html`<div class="tk-svd__note"><${Icon} name="trending-up" size=${16} /><span>Die Rate steigt am ${whenLabel(raise.date, today)} von ${eur(ctx, raise.from)} auf ${eur(ctx, raise.to)}.</span></div>`;
     const tracker = props.showTracker && html`<${TrackerNote} />`;
     if (props.style === 'hero') {
       const share = stats.value ? Math.max(0, stats.gain) / stats.value : 0;
       return html`<${Card}><div class="tk-svd"><div class="tk-svd__id"><${Tile} tone=${plan.tone || 1} icon=${tgt.icon} /><div class="tk-grow" style="min-width:160px"><h2 style="margin:0;font-size:var(--tk-fs-xl)">${plan.name}</h2><span class="tk-sv-meta">${tgt.label}</span></div><${Badge} tone=${st.tone} icon=${st.icon}>${st.label}<//></div>
-        <div class="tk-svd__hero"><${Ring} size=${132} stroke=${14} value=${1 - share} tone="accent" label=${`Eingezahlt ${pct(1 - share)} vom Wert`}><span class="tk-sv-meta" style="font-size:var(--tk-fs-xs)">Ertrag</span><strong class="tk-num" style="font-size:var(--tk-fs-xl)">${pct(share)}</strong><//>
+        <div class="tk-svd__hero"><${Ring} size=${132} stroke=${14} value=${share} tone="accent" label=${`Ertrag ${pct(share)} vom Wert`}><span class="tk-sv-meta" style="font-size:var(--tk-fs-xs)">Ertrag</span><strong class="tk-num" style="font-size:var(--tk-fs-xl)">${pct(share)}</strong><//>
           <div><${Stat} big label="Wert heute" value=${eur(ctx, stats.value)} sub=${html`<span>eingezahlt ${eur(ctx, stats.invested)} · </span><${Gain} ctx=${ctx} value=${stats.gain} ratio=${stats.ratio} />`} />
             <span class="tk-sv-meta">${eur(ctx, plan.monthly)} · ${rhythmLabel(plan)}${next ? ` · nächste Ausführung ${fmtDate(next.date, { style: 'weekday' })}` : ''}</span></div></div>${raiseNote}${actions}${tracker}</div><//>`;
     }

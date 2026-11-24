@@ -4,11 +4,11 @@ import { useState } from 'preact/hooks';
 import { Card, Button, Badge, Icon, EmptyState } from '../../ui.js';
 import { fmtDate, fmtRelativeDay } from '../../../lib/format.js';
 import { addMonths, addDays, dayDiff, daysInMonth, isoWeekday, toIsoDay, toDate, MONTHS_LONG, WEEKDAYS_SHORT } from '../../../lib/date.js';
-import { arr, todayOf, eur, eur2, Tile, TrackerNote, SV_CSS, plural } from './_savings.js';
+import { arr, todayOf, eur, eur2, Tile, TrackerNote, SV_CSS, plural, whenLabel } from './_savings.js';
 import { allExecutions, confirmedSet, confirmExecution, planTarget, isTradingDay, holidayName } from './_plans.js';
 import { coverageCheck, DEFAULT_BUFFER, COVER_TONE, COVER_LABEL, COVER_ICON } from './_coverage.js';
 
-const dayHead = (ctx, date, today) => `${fmtDate(date, { style: 'weekday' })} · ${fmtRelativeDay(date, today)}`;
+const dayHead = (ctx, date, today) => whenLabel(date, today);
 
 export const executionCalendar = {
   id: 'execution-calendar',
@@ -33,7 +33,7 @@ export const executionCalendar = {
     { slot: 'subscriptions', label: 'Fixkosten', default: 'subscriptions', shape: '{id,name,amount,day}[]' },
     { slot: 'transactions', label: 'Buchungen', default: 'transactions', shape: '{id,category,type,date,title,planId?,execDate?}[]' },
   ],
-  events: ['execution.open', 'execution.confirm', 'execution.undo', 'calendar.day', 'plan.create'],
+  events: ['execution.open', 'execution.confirm', 'execution.undo', 'calendar.day', 'calendar.open', 'plan.create'],
   states: ['empty'],
   css: `${SV_CSS}
   .tk-sve { display:flex; flex-direction:column; gap:var(--tk-space-4); min-width:0; }
@@ -80,14 +80,14 @@ export const executionCalendar = {
       const [iso, list] = [...byDay.entries()][0] || [];
       if (!iso) return wrap(html`<${EmptyState} icon="calendar-check" title="Alles erledigt" text="Im gewählten Zeitraum steht keine Ausführung an." />`);
       const sum = list.reduce((s, e) => s + e.amount, 0), d = list[0].date;
-      return wrap(html`<div class="tk-sve__hero"><div><span class="tk-sv-meta">Als Nächstes</span><div class="tk-sve__big">${fmtDate(d, { style: 'weekday' })} · ${eur(ctx, sum)}</div><span class="tk-sv-meta">${fmtRelativeDay(d, today)} · ${plural(list.length, 'Sparplan', 'Sparpläne')}${list.some((e) => e.shifted) ? ' · auf Handelstag verschoben' : ''}</span></div>
+      return wrap(html`<div class="tk-sve__hero"><div><div class="tk-sve__big">${fmtDate(d, { style: 'weekday' })} · ${eur(ctx, sum)}</div><span class="tk-sv-meta">${fmtRelativeDay(d, today)} · ${plural(list.length, 'Sparplan', 'Sparpläne')}${list.some((e) => e.shifted) ? ' · auf Handelstag verschoben' : ''}</span></div>
         <div class="tk-sve__day">${list.map(item)}</div><div class="tk-sv-btnrow">${covBadge(iso)}<${Button} variant="primary" icon="check" onClick=${() => confirm(list)}>${list.length > 1 ? 'Alle als ausgeführt bestätigen' : 'Als ausgeführt bestätigen'}<//></div>${undo}${tracker}</div>`);
     }
     if (props.view === 'month') {
       const base = new Date(today.getFullYear(), today.getMonth() + off, 1), y = base.getFullYear(), m = base.getMonth();
       const lead = isoWeekday(base) - 1, n = daysInMonth(y, m), cells = Math.ceil((lead + n) / 7) * 7;
       const pastTx = arr(data.transactions).filter((t) => t.type === 'transfer' && t.category === 'Sparen');
-      const sel = ctx.ui.selectedDate || [...byDay.keys()][0];
+      const ym = `${y}-${String(m + 1).padStart(2, '0')}`, sel = ctx.ui.selectedDate?.startsWith(ym) ? ctx.ui.selectedDate : [...byDay.keys()].find((k) => k.startsWith(ym)) || (off === 0 ? toIsoDay(today) : null);
       const selList = byDay.get(sel) || [], selDate = sel ? toDate(sel) : null;
       const nav = html`<div class="tk-sve__mh"><${Button} size="sm" variant="ghost" icon="chevron-left" aria-label="Vorheriger Monat" disabled=${off <= 0} onClick=${() => setOff(off - 1)} /><strong>${MONTHS_LONG[m]} ${y}</strong><${Button} size="sm" variant="ghost" icon="chevron-right" aria-label="Nächster Monat" disabled=${off >= 12} onClick=${() => setOff(off + 1)} /></div>`;
       return wrap(html`<div class="tk-sve">${nav}<div class="tk-sve__grid" role="grid" aria-label=${`${MONTHS_LONG[m]} ${y}`}>${WEEKDAYS_SHORT.map((w) => html`<div class="tk-sve__wd" role="columnheader">${w}</div>`)}
@@ -99,8 +99,9 @@ export const executionCalendar = {
         <div class="tk-sve__day" aria-live="polite">${selList.length ? html`<div class="tk-sve__dh"><strong class="tk-grow">${dayHead(ctx, selDate, today)}</strong><span class="tk-sve__amt">${eur(ctx, selList.reduce((s, e) => s + e.amount, 0))}</span>${covBadge(sel)}</div>${selList.map(item)}` : html`<div class="tk-sve__it"><span class="tk-sv-meta">${selDate ? `${fmtDate(selDate, { style: 'weekday' })}: keine Ausführung${!isTradingDay(selDate) ? ` (${holidayName(selDate) || 'kein Handelstag'})` : ''}.` : 'Tag wählen, um Ausführungen zu sehen.'}</span></div>`}</div>${undo}${tracker}</div>`);
     }
     let days = [...byDay.entries()];
+    const moreDays = props.limit > 0 && days.length > props.limit;
     if (props.limit > 0) days = days.slice(0, props.limit);
-    return wrap(html`<div class="tk-sve">${undo}${days.length ? days.map(([iso, list]) => dayBlock(iso, list)) : html`<${EmptyState} icon="calendar-check" title="Keine Ausführung im Zeitraum" text="Alle Pläne sind pausiert oder die Termine liegen weiter in der Zukunft." />`}${pastBlock}${tracker}</div>`);
+    return wrap(html`<div class="tk-sve">${undo}${days.length ? days.map(([iso, list]) => dayBlock(iso, list)) : html`<${EmptyState} icon="calendar-check" title="Keine Ausführung im Zeitraum" text="Alle Pläne sind pausiert oder die Termine liegen weiter in der Zukunft." />`}${moreDays ? html`<${Button} size="sm" variant="ghost" iconRight="chevron-right" onClick=${() => ctx.emit('calendar.open')}>Alle Ausführungen<//>` : ''}${pastBlock}${tracker}</div>`);
   },
 };
 export default [executionCalendar];

@@ -1,9 +1,10 @@
 // Sparpläne: Zielrechner rückwärts – „Ich möchte X in Y Jahren“ → nötige Monatsrate (Spanne), Alternativen. Schreibt auch ui.calc.
 import { html } from '../../../lib/html.js';
-import { Card, Button, Chip, Select, Icon } from '../../ui.js';
+import { useEffect } from 'preact/hooks';
+import { Card, Button, Chip, Select } from '../../ui.js';
 import { fmtNumber, fmtDate } from '../../../lib/format.js';
 import { arr, obj, todayOf, eur, eur2, Stepper, SV_CSS, plural } from './_savings.js';
-import { CALC_DEFAULT, getCalc, neededMonthly, SPREAD } from './_calc.js';
+import { getCalc, neededMonthly, SPREAD } from './_calc.js';
 import { monthsBetween } from './_plans.js';
 import { CHART_CSS } from './_chart.js';
 
@@ -40,8 +41,9 @@ export const goalCalculator = {
       const n = { ...g, ...patch };
       ctx.setUi('goalcalc', n);
       const need = neededMonthly({ target: n.target, current: n.current, years: n.years, ratePa: n.ratePa });
-      ctx.setUi('calc', { ...getCalc(ctx), initial: n.current, monthly: Math.round(need.annahme * 100) / 100, years: n.years, ratePa: n.ratePa, dynamicPa: 0 });
+      ctx.setUi('calc', { ...getCalc(ctx), initial: n.current, monthly: Math.round(need.annahme * 100) / 100, years: n.years, ratePa: n.ratePa, dynamicPa: 0, costPa: 0 });
     };
+    useEffect(() => { if (!ctx.ui.goalcalc) apply({}); }, []);
     const fromGoal = (id) => { const gl = goals.find((x) => x.id === id); if (!gl) return; apply({ target: gl.target, current: Math.round(gl.current), years: Math.max(1, Math.ceil(monthsBetween(today, gl.due) / 12)) }); ctx.emit('goalcalc.source', { id }); };
     const set = (k) => (v) => { apply({ [k]: v }); ctx.emit('goalcalc.change', { field: k, value: v }); };
     const need = neededMonthly({ target: g.target, current: g.current, years: g.years, ratePa: g.ratePa });

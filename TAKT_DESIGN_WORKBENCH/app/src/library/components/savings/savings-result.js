@@ -31,7 +31,7 @@ export const savingsResult = {
   .tk-svr__sc { padding:var(--tk-space-3) var(--tk-space-4); border-radius:var(--tk-radius-lg); border:1px solid var(--tk-c-border); background:var(--tk-c-surface2); display:flex; flex-direction:column; gap:2px; min-width:0; }
   .tk-svr__sc--main { background:var(--tk-c-accent-soft); border-color:color-mix(in srgb, var(--tk-c-accent) 45%, transparent); }
   .tk-svr__sc b { font-size:var(--tk-fs-xl); font-variant-numeric:tabular-nums; font-weight:var(--tk-fw-bold); overflow-wrap:anywhere; line-height:1.2; }
-  .tk-svr__sc small { color:var(--tk-c-text-muted); font-size:var(--tk-fs-sm); } .tk-svr__sc em { font-style:normal; font-size:var(--tk-fs-xs); text-transform:uppercase; letter-spacing:var(--tk-ls-wide); font-weight:var(--tk-fw-semibold); color:var(--tk-c-text-subtle); }
+  .tk-svr__sc small { color:var(--tk-c-text-muted); font-size:var(--tk-fs-sm); } .tk-svr__sc em { font-style:normal; font-size:var(--tk-fs-xs); text-transform:uppercase; letter-spacing:var(--tk-ls-wide); font-weight:var(--tk-fw-semibold); color:var(--tk-c-text-muted); }
   .bp-mobile .tk-svr__trio { grid-template-columns:minmax(0,1fr); }
   .bp-mobile .tk-svr__sc { flex-direction:row; align-items:baseline; justify-content:space-between; flex-wrap:wrap; gap:2px 12px; } .bp-mobile .tk-svr__sc small { flex-basis:100%; }
   .tk-svr__split { display:flex; flex-direction:column; gap:8px; }
@@ -55,7 +55,7 @@ export const savingsResult = {
     if (props.style === 'compact') {
       return html`<${Card} title=${props.title} icon="calculator" actions=${tag.length ? html`<${Badge}>${tag[0]}<//>` : null}><table class="tk-svr__tbl"><thead><tr><th>Annahme</th><th>Wert</th><th>Ertrag</th></tr></thead><tbody>
         ${keys.map((k) => html`<tr><td>${SCENARIO_NAMES[k]} · ${pc(run.nominal[k])}</td><td><strong>${eur(ctx, val(k))}</strong></td><td>${eur(ctx, run[k].gain, { sign: true })}</td></tr>`)}</tbody></table>
-        <p class="tk-sv-meta" style="margin-top:8px">Eingezahlt ${eur(ctx, a.invested)} nach ${c.years} Jahren (davon Start ${eur(ctx, c.initial)}).</p>${note}<//>`;
+        <p class="tk-sv-meta" style="margin:8px 0">Eingezahlt ${eur(ctx, a.invested)} nach ${c.years} Jahren (davon Start ${eur(ctx, c.initial)}).</p>${actions}${note}<//>`;
     }
     return html`<${Card} title=${props.title} icon="calculator" actions=${tag.map((t) => html`<${Badge} tone="info">${t}<//>`)}><div class="tk-svr">
       <div class="tk-svr__lead"><span class="tk-sv-meta">Nach ${c.years} ${c.years === 1 ? 'Jahr' : 'Jahren'} wären es zwischen</span>

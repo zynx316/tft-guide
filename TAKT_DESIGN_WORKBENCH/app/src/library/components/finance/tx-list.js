@@ -43,11 +43,12 @@ export const finTxList = {
     { name: 'followAccount', label: 'Gewähltes Konto beachten', type: 'boolean', default: true },
     { name: 'respectFilter', label: 'Geteilte Suche/Filter beachten', type: 'boolean', default: true },
     { name: 'showDaySum', label: 'Gruppensumme', type: 'boolean', default: true },
+    { name: 'showMore', label: '„Mehr anzeigen“', type: 'boolean', default: true },
   ],
   data: [...slots('transactions', 'accounts', 'cats', 'prefs'), { slot: 'txMeta', label: 'Zusatzangaben', default: 'txMeta', shape: '{[txId]:{note?,receipt?}}', required: false }],
   events: ['tx.open', 'tx.add', 'filter.change'],
   states: ['empty'],
-  css: `${FIN_CSS}
+  css: `
   .tk-fnt__bar { display:flex; flex-direction:column; gap:var(--tk-space-2); padding:0 var(--tk-space-4) var(--tk-space-3); }
   .tk-fnt__chips { display:flex; gap:6px; overflow-x:auto; scrollbar-width:none; padding-bottom:2px; } .tk-fnt__chips > * { flex:none; }
   .tk-fnt__sum { padding:0 var(--tk-space-4) var(--tk-space-2); display:flex; flex-wrap:wrap; gap:4px 16px; font-size:var(--tk-fs-sm); color:var(--tk-c-text-muted); font-variant-numeric:tabular-nums; }
@@ -86,7 +87,7 @@ export const finTxList = {
     return html`<${Card} flush title=${props.title} icon="receipt" actions=${html`<${Badge}>${items.length}<//>`} class=${`tk-fnt--${props.density}`}>${filterBar}
       ${filtered && html`<div class="tk-fnt__sum"><span>Ausgaben ${eur(c, exp)}</span><span>Einnahmen ${eur(c, inc, { sign: true })}</span></div>`}
       ${groups.map((g) => html`<div>${props.groupBy !== 'none' && html`<div class="tk-fnt__grp"><span>${label(g)}</span>${props.showDaySum && html`<span>${eur(c, g.list.filter((t) => !isInternal(t)).reduce((s, t) => s + t.amount, 0), { sign: true })}</span>`}</div>`}${g.list.map(row)}</div>`)}
-      ${lim && items.length > shown.length ? html`<div style="padding:var(--tk-space-3) var(--tk-space-4)"><${Button} size="sm" onClick=${() => setMore(more + (props.limit || 10))}>Mehr anzeigen (${items.length - shown.length})<//></div>` : null}<//>`;
+      ${props.showMore && lim && items.length > shown.length ? html`<div style="padding:var(--tk-space-3) var(--tk-space-4)"><${Button} size="sm" onClick=${() => setMore(more + (props.limit || 10))}>Mehr anzeigen (${items.length - shown.length})<//></div>` : null}<//>`;
   },
 };
 export default [finTxList];

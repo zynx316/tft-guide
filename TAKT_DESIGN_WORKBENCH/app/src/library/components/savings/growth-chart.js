@@ -15,7 +15,7 @@ const FWD = [{ value: 0, label: 'Verlauf' }, { value: 5, label: '+5 Jahre' }, { 
 function planPoints(plan, ctx, data, years) {
   const h = planHistory(plan, { positions: data.positions, today: todayOf(ctx) });
   if (!h) return null;
-  const pts = h.series.map((p) => ({ m: p.month, invested: p.invested, value: p.value, low: p.value, high: p.value }));
+  const pts = h.series.map((p) => ({ m: p.month, invested: p.invested, value: p.value, ...(years > 0 ? { low: p.value, high: p.value } : {}) }));
   if (years > 0) {
     const run = forwardRun({ monthly: plan.monthly, initial: h.value, ratePa: plan.expectedReturnPa ?? 0.05, years, dynamicPa: plan.dynamicPa || 0 });
     const a = run.annahme.series, lo = run.vorsichtig.series, hi = run.zuversichtlich.series;

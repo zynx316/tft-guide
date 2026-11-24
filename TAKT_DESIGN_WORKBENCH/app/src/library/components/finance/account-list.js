@@ -34,7 +34,7 @@ export const finAccountList = {
   data: slots('accounts', 'prefs'),
   events: ['account.open', 'account.select', 'account.add'],
   states: ['empty'],
-  css: `${FIN_CSS}
+  css: `
   .tk-fna__grp { display:flex; justify-content:space-between; gap:8px; padding:var(--tk-space-3) 0 4px; } .tk-fna__grp:first-child { padding-top:0; }
   .tk-fna__row { padding:8px 8px; margin-inline:-8px; width:calc(100% + 16px); min-height:60px; } .tk-fna__row[aria-pressed="true"] { background:var(--tk-c-accent-soft); }
   .tk-fna__cards { display:grid; grid-template-columns:repeat(auto-fill, minmax(min(100%, 230px), 1fr)); gap:var(--tk-space-3); }

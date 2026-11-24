@@ -41,7 +41,7 @@ export const finBudgetEnvelopes = {
   .tk-fnb__line { display:flex; align-items:center; gap:4px; } .tk-fnb__line .tk-btn--icon { flex:none; }
   .tk-fnb__row { flex:1 1 auto; min-width:0; padding:10px 0; display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,1.4fr) auto; gap:4px 14px; align-items:center; cursor:pointer; background:none; border:0; color:inherit; font:inherit; text-align:left; min-height:48px; }
   .tk-fnb__row:hover { background:var(--tk-c-surface2); }
-  .bp-mobile .tk-fnb__row { grid-template-columns:minmax(0,1fr) auto; } .bp-mobile .tk-fnb__row .tk-fnb__track { grid-column:1 / -1; order:2; } .bp-mobile .tk-fnb__row .tk-fnb__stat { order:1; }
+  .bp-mobile .tk-fnb__row { display:flex; flex-wrap:wrap; gap:6px 12px; } .bp-mobile .tk-fnb__row > .tk-fn-row { flex:1 1 150px; } .bp-mobile .tk-fnb__row .tk-fnb__track { flex:1 1 100%; order:2; } .bp-mobile .tk-fnb__row .tk-fnb__stat { order:1; flex:0 0 auto; }
   .tk-fnb__track { position:relative; } .tk-fnb__track .tk-fn-bar > i { border-radius:4px; }
   .tk-fnb__tick { position:absolute; top:-3px; bottom:-3px; width:2px; background:var(--tk-c-text); opacity:.55; border-radius:1px; }
   .tk-fnb__grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(min(100%, 210px), 1fr)); gap:var(--tk-space-3); }

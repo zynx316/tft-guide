@@ -33,7 +33,7 @@ export const coverageCheckCard = {
   .tk-svc__rows { display:flex; flex-direction:column; } .tk-svc__row { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:2px 12px; align-items:center; padding:10px 0; border-bottom:1px solid var(--tk-c-border); min-width:0; }
   .tk-svc__row:last-child { border-bottom:0; } .tk-svc__row strong { font-weight:var(--tk-fw-semibold); } .tk-svc__row .tk-sv-meta { font-variant-numeric:tabular-nums; }
   .tk-svc__row > div:last-child { text-align:right; display:flex; flex-direction:column; align-items:flex-end; gap:2px; }
-  .tk-svc__dt { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:6px 16px; margin:0; font-size:var(--tk-fs-sm); font-variant-numeric:tabular-nums; } .tk-svc__dt dd { margin:0; text-align:right; } .tk-svc__dt dt { color:var(--tk-c-text-muted); }
+  .tk-svc__dt { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:6px 0; margin:0; font-size:var(--tk-fs-sm); font-variant-numeric:tabular-nums; } .tk-svc__dt dt { padding-right:16px; } .tk-svc__dt dd { margin:0; text-align:right; } .tk-svc__dt dt { color:var(--tk-c-text-muted); }
   .tk-svc__dt .sum { font-weight:var(--tk-fw-semibold); border-top:1px solid var(--tk-c-border); padding-top:6px; color:var(--tk-c-text); }
   .tk-svc__tog { border:0; background:none; color:var(--tk-c-text-muted); font:inherit; font-size:var(--tk-fs-sm); display:inline-flex; gap:6px; align-items:center; padding:8px 0; min-height:36px; cursor:pointer; align-self:flex-start; }
   .tk-svc__chips { display:flex; flex-wrap:wrap; gap:6px; align-items:center; }`,

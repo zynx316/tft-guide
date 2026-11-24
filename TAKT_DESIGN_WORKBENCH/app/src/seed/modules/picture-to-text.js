@@ -1,17 +1,20 @@
-// Modul "Picture to Text" – Text aus Bildern erkennen (OCR) (Annahme, in Phase 1 gegen Modulregister verifizieren)
+// Modul "Picture to Text" – Text, Belege, Visitenkarten und Dokumente aus Fotos erkennen (Erkennung in der Vorschau simuliert).
+// Referenztag: Di, 24.11.2026 09:30. Buchungen kommen aus der gemeinsamen Datenwelt (@world:transactions).
 const L = (...lines) => lines.join('\n');
+const ALL_VP = ['desktop', 'notebook', 'tablet', 'mobile'];
 
-const cap = (id, title, source, when, text, lang, confidence, uncertain = []) => ({
-  id, title, source, text, lang, confidence, uncertain, created: when.iso, meta: when.label,
+const cap = (id, title, source, when, text, lang, confidence, uncertain = [], extra = {}) => ({
+  id, title, source, text, lang, confidence, uncertain, created: when.iso, meta: when.label, kind: 'text',
   subtitle: text.split('\n').join(' · ').slice(0, 70),
   badge: `${Math.round(confidence * 100)} %`, tone: confidence > 0.9 ? 'success' : 'warning',
-  icon: { camera: 'camera', file: 'image', clipboard: 'clipboard' }[source], group: { camera: 'Kamera', file: 'Datei', clipboard: 'Zwischenablage' }[source],
+  icon: { camera: 'camera', file: 'image', clipboard: 'clipboard' }[source], group: { camera: 'Kamera', file: 'Datei', clipboard: 'Zwischenablage' }[source], ...extra,
 });
 
 const captures = [
-  cap('c1', 'Quittung Bäckerei Hoffmann', 'camera', { iso: '2026-11-24T08:12:00', label: 'Heute, 08:12' }, L('Bäckerei Hoffmann', 'Bahnhofstraße 12, 33602 Bielefeld', '24.11.2026 08:05 Uhr', '2 × Brötchen 1,60 €', '1 × Kaffee 2,90 €', 'Summe 4,50 €', 'Vielen Dank für Ihren Besuch!'), 'Deutsch', 0.97),
+  cap('c1', 'Quittung Bäckerei Hoffmann', 'camera', { iso: '2026-11-24T08:12:00', label: 'Heute, 08:12' }, L('Bäckerei Hoffmann', 'Bahnhofstraße 12, 33602 Bielefeld', '24.11.2026 08:05 Uhr', '2 × Brötchen 1,60 €', '1 × Kaffee 2,90 €', 'Summe 4,50 €', 'Vielen Dank für Ihren Besuch!'), 'Deutsch', 0.97, [], { kind: 'receipt', receiptId: 'r1' }),
   cap('c2', 'Whiteboard Sprint-Planung', 'camera', { iso: '2026-11-23T16:40:00', label: 'Gestern' }, L('Sprint 23 – Planung', 'Ziel: Workbench-Beta', 'Offen: Kaiender-Varianten', 'Demo am Freitag 14:00 Uhr'), 'Deutsch', 0.91, [{ word: 'Kaiender-Varianten', alt: 'Kalender-Varianten', conf: 0.58 }]),
-  cap('c3', 'Visitenkarte Dr. Müller', 'file', { iso: '2026-11-22T10:05:00', label: 'Sonntag' }, L('Dr. Anna Müiler', 'Steuerberaterin', 'Müller & Partner mbB', 'Tel. +49 521 555 0142', 'anna.mueller@mueller-partner.example'), 'Deutsch', 0.88, [{ word: 'Müiler', alt: 'Müller', conf: 0.61 }]),
+  cap('c3', 'Visitenkarte Dr. Müller', 'file', { iso: '2026-11-22T10:05:00', label: 'Sonntag' }, L('Dr. Anna Müiler', 'Steuerberaterin', 'Müller & Partner mbB', 'Tel. +49 521 555 0142', 'anna.mueller@mueller-partner.example'), 'Deutsch', 0.88, [{ word: 'Müiler', alt: 'Müller', conf: 0.61 }], { kind: 'card', cardId: 'k1' }),
+  cap('c7', 'Stromliefervertrag (3 Seiten)', 'file', { iso: '2026-11-21T17:20:00', label: 'Samstag' }, L('Stromliefervertrag', 'Vertragsnummer 7741-2209', 'Laufzeit 12 Monate ab 01.01.2027', 'Arbeitspreis 31,4 ct/kWh', 'Kündigungsfrist 4 Wochen zum Laufzeitende'), 'Deutsch', 0.93, [{ word: '31,4', alt: '31,9', conf: 0.66 }], { kind: 'document', pages: 3 }),
   cap('c4', 'Screenshot Fehlermeldung', 'clipboard', { iso: '2026-11-20T14:22:00', label: '20.11.' }, L('Error 503: Service Unavailable', 'The server is temporarily unable to handle your request.', 'Please try again later.'), 'Englisch', 0.99),
   cap('c5', 'Buchseite „Deep Work“', 'file', { iso: '2026-11-17T21:30:00', label: '17.11.' }, L('Konzentratlon ist eine Fähigkeit,', 'die man trainieren kann – wie einen Muskel.', 'Jede Ablenkunq schwächt das Training.'), 'Deutsch', 0.84, [{ word: 'Konzentratlon', alt: 'Konzentration', conf: 0.55 }, { word: 'Ablenkunq', alt: 'Ablenkung', conf: 0.52 }]),
   cap('c6', 'Handschriftliche Einkaufsliste', 'camera', { iso: '2026-11-15T09:10:00', label: '15.11.' }, L('Einkauf Samstag', 'Hafermilch', 'Tomaten (Strauch)', 'Basilikurn', 'Kaffee Bohnen'), 'Deutsch', 0.72, [{ word: 'Basilikurn', alt: 'Basilikum', conf: 0.49 }, { word: '(Strauch)', alt: '(Roma)', conf: 0.42 }]),
@@ -24,30 +27,136 @@ const samples = [
   { title: 'Notizzettel Telefonat', source: 'camera', lang: 'Deutsch', confidence: 0.79, text: L('Rückruf Herr Schmidt', 'Angebot 4182 prüfen', 'Lieferzeit bis Mitte Januar?', 'Tel. 0521 / 555 0199'), uncertain: [{ word: '4182', alt: '4132', conf: 0.57 }, { word: 'Schmidt', alt: 'Schmitt', conf: 0.63 }] },
 ];
 
-const notes = [
-  { id: 'n1', title: 'Ideen TAKT V2', body: '## Fokus\n- Modulweise Entwicklung', tags: ['Projekt'], updated: '2026-11-24T07:40:00' },
+// Belege: Summen stimmen mit den Positionen überein; darin enthaltene MwSt wird von der Komponente berechnet.
+const receipts = [
+  { id: 'r1', captureId: 'c1', merchant: 'Bäckerei Hoffmann', date: '2026-11-24', time: '08:05', total: 4.5, vatRate: 7, category: 'Lebensmittel', account: 'Girokonto', payment: 'Karte', status: 'offen', conf: { merchant: 0.98, date: 0.96, total: 0.97 }, lines: [{ name: 'Brötchen', qty: 2, total: 1.6 }, { name: 'Kaffee', qty: 1, total: 2.9 }] },
+  { id: 'r2', captureId: 'c8', merchant: 'Buchhandlung Neumann', date: '2026-11-23', time: '15:40', total: 49.8, vatRate: 7, category: 'Betriebsausgaben', account: 'Geschäftskonto', payment: 'Rechnung', status: 'offen', conf: { merchant: 0.95, date: 0.9, total: 0.96 }, lines: [{ name: 'Fachbuch Typografie', qty: 2, total: 49.8 }] },
+  { id: 'r4', captureId: 'c9', merchant: 'Karton & Pack GmbH', date: '2026-11-20', time: '11:15', total: 128.35, vatRate: 19, category: 'Betriebsausgaben', account: 'Geschäftskonto', payment: 'Überweisung', status: 'offen', conf: { merchant: 0.93, date: 0.74, total: 0.9 }, lines: [{ name: 'Versandkarton M', qty: 50, total: 62.4 }, { name: 'Polsterfolie 50 m', qty: 1, total: 24.95 }, { name: 'Packband', qty: 6, total: 21 }, { name: 'Versand', qty: 1, total: 20 }] },
+  { id: 'r3', captureId: 'c10', merchant: 'Thalia Bücher', date: '2026-11-16', time: '14:22', total: 42.5, vatRate: 7, category: 'Freizeit', account: 'Kreditkarte', payment: 'Karte', status: 'offen', conf: { merchant: 0.97, date: 0.97, total: 0.98 }, lines: [{ name: 'Buch „Deep Work“', qty: 1, total: 24 }, { name: 'Buch „Atomic Habits“', qty: 1, total: 18.5 }] },
 ];
 
+const cards = [
+  { id: 'k1', captureId: 'c3', name: 'Dr. Anna Müiler', title: 'Steuerberaterin', company: 'Müller & Partner mbB', phone: '+49 521 555 0142', email: 'anna.mueller@mueller-partner.example', web: 'mueller-partner.example', address: 'Marktstraße 4, 33602 Bielefeld', conf: { name: 0.61, phone: 0.92, email: 0.9 } },
+  { id: 'k2', captureId: 'c11', name: 'Tim Brandt', title: 'Geschäftsführer', company: 'Kanzlei Brandt', phone: '+49 521 555 0177', email: 'tim.brandt@kanzlei-brandt.example', web: 'kanzlei-brandt.example', address: 'Obernstraße 18, 33602 Bielefeld', conf: { name: 0.97, phone: 0.8, email: 0.96 } },
+];
+
+const notes = [{ id: 'n1', title: 'Ideen TAKT V2', body: '## Fokus\n- Modulweise Entwicklung', tags: ['Projekt'], updated: '2026-11-24T07:40:00' }];
+
+// Abgeleitete Werte
+const unsure = (c) => (c.uncertain || []).length;
+const toReview = captures.filter((c) => unsure(c) > 0).map((c) => ({ id: c.id, title: c.title, subtitle: c.uncertain.map((u) => u.word).join(', '), meta: c.meta, badge: `${unsure(c)} unsicher`, tone: 'warning', icon: 'alert-triangle', group: c.group }));
+const openReceipts = receipts.filter((r) => r.status === 'offen').length;
+const avgConf = Math.round((captures.reduce((s, c) => s + c.confidence, 0) / captures.length) * 100);
+const metrics = [
+  { label: 'Erfassungen', value: captures.length, icon: 'scan-text', tone: 'accent' },
+  { label: 'Zu prüfen', value: toReview.length, icon: 'alert-triangle', tone: 'warning' },
+  { label: 'Belege offen', value: openReceipts, icon: 'receipt', tone: 'info' },
+  { label: 'Ø Konfidenz', value: avgConf, unit: '%', icon: 'gauge', tone: 'success' },
+];
+const bySource = { segments: ['camera', 'file', 'clipboard'].map((s) => ({ label: { camera: 'Kamera', file: 'Datei', clipboard: 'Zwischenablage' }[s], value: captures.filter((c) => c.source === s).length })) };
+const demoAll = { captures, samples, notes, receipts, cards, toReview, metrics, bySource, transactions: '@world:transactions' };
+
 const hdr = (props) => ({ id: 'hdr', component: 'page-header', region: 'header', props });
+const SRC = ['Alle', 'Kamera', 'Datei', 'Zwischenablage'];
+const SCAN_NAV = [
+  { trigger: '„Dokument scannen“', result: 'Dokumenten-Scanner', event: 'scan.document', to: 'picture-to-text.scanner' },
+  { trigger: '„Beleg erkennen“', result: 'Beleg prüfen und buchen', event: 'scan.receipt', to: 'picture-to-text.receipt' },
+  { trigger: '„Visitenkarte“', result: 'Kontakt aus Visitenkarte', event: 'scan.card', to: 'picture-to-text.card' },
+  { trigger: '„Text erkennen“', result: 'Bild erfassen', event: 'scan.text', to: 'picture-to-text.capture' },
+];
 
 export default {
   module: {
-    id: 'picture-to-text', name: 'Picture to Text', icon: 'scan-text', status: 'concept', theme: 'graphite', designVersion: '0.1',
-    description: 'Text aus Fotos, Screenshots und Dokumenten erkennen, prüfen und weiterverwenden.',
-    source: 'Annahme der Workbench – in Phase 1 gegen das TAKT-Modulregister verifizieren',
-    infoArchitecture: 'Drei Schritte: 1) Erfassen (Kamera, Datei, Zwischenablage), 2) Erkennen mit sichtbarem Fortschritt, 3) Ergebnis prüfen (unsichere Wörter markiert) und weiterverwenden (Kopieren, Als Notiz, Teilen). Verlauf aller Erfassungen als eigene Liste.',
-    docs: L('**Annahmen**', '- Die Erkennung läuft in der App; in der Workbench wird sie mit Testergebnissen simuliert.', '- Unsichere Wörter werden nicht automatisch korrigiert, sondern mit Korrekturvorschlag markiert.', '- Ergebnisse landen als Notiz mit Tag „OCR“ im Notizen-Modul.', '', '**Offene Fragen**', '- Welche Engine nutzt TAKT bereits (lokal oder Cloud)? Datenschutz bei Quittungen und Verträgen klären.', '- Sollen mehrseitige PDFs unterstützt werden?', '- Wie lange werden Originalbilder aufbewahrt?'),
-    links: ['notes', 'knowledge', 'finance'],
+    id: 'picture-to-text', name: 'Picture to Text', icon: 'scan-text', status: 'active', theme: 'graphite', designVersion: '0.3', homeFeatureId: 'picture-to-text.home',
+    description: 'Text, Belege, Visitenkarten und Dokumente aus Fotos erkennen, prüfen und weiterverwenden.',
+    source: 'Workbench V2 (Bauplan, Brainstorm „alltag“) – in Phase 1 gegen das TAKT-Modulregister verifizieren',
+    infoArchitecture: 'Einstieg „Übersicht“ mit vier Wegen: Dokument scannen (mehrere Seiten, PDF), Beleg erkennen (Betrag/Händler/Datum, als Ausgabe in Finanzen), Visitenkarte (Kontakt), Text erkennen (Foto, Datei, Zwischenablage). Danach immer derselbe Dreischritt: Erfassen, Erkennen mit Fortschritt, Prüfen (unsichere Stellen markiert) und Weiterverwenden (Kopieren, Notiz, Buchung, Kontakt). Verlauf aller Erfassungen als eigene Liste.',
+    docs: L('## Leitidee', '- Die Erkennung läuft auf dem Gerät; in der Workbench wird sie mit Testergebnissen simuliert.', '- Unsichere Stellen werden nie still korrigiert, sondern markiert und mit Vorschlag angeboten.', '- Beträge werden nie ungeprüft gebucht: Die Buchung wird vorgeschlagen und erst nach „Als Ausgabe buchen“ angelegt.', '', '## Verbindung zu anderen Modulen', '- Finanzen: „Als Ausgabe buchen“ schreibt eine Buchung in die gemeinsame Datenwelt; Dubletten werden gegen vorhandene Buchungen geprüft.', '- Notizen: erkannter Text landet als Notiz mit Tag „OCR“ im Eingang.', '- Kamera: Berechtigung mit Alternative (Datei wählen), siehe permission-card.', '', '## Offene Fragen', '- Welche Engine nutzt TAKT bereits (lokal oder Cloud)? Datenschutz bei Quittungen und Verträgen klären.', '- Wie lange werden Originalbilder aufbewahrt?', '- Kontakte: eigenes Modul oder nur Export ins Adressbuch?', '', '## Bekannte Grenze der Vorschau', '- Erfassungen liegen im Modul (noch nicht in der gemeinsamen Datenwelt): Der Verlauf wirkt innerhalb eines Screens, nicht über Screens hinweg.'),
+    links: ['notes', 'knowledge', 'finance', 'documents'],
   },
   features: [
+    // ------------------------------------------------------------------ Übersicht (Startseite)
     {
-      id: 'picture-to-text.capture', name: 'Bild erfassen', group: 'Erkennen', status: 'design',
+      id: 'picture-to-text.home', name: 'Übersicht', group: 'Übersicht', status: 'design', tier: 2,
+      purpose: 'Der Einstieg: mit einem Tipp scannen, Belege buchen, Karten übernehmen oder Text erkennen – und sehen, was noch geprüft werden muss.',
+      requirements: [
+        { text: 'Vier Wege sind sofort erreichbar: Dokument scannen, Beleg erkennen, Visitenkarte, Text erkennen', type: 'action', priority: 'must' },
+        { text: 'Verlauf der letzten Erfassungen mit Quelle und Konfidenz; ein Tipp öffnet das Ergebnis', type: 'info', priority: 'must' },
+        { text: '„Zu prüfen“ listet Erfassungen mit unsicheren Wörtern und nennt die Anzahl', type: 'info', priority: 'must' },
+        { text: 'Offene Belege (noch nicht gebucht) mit Betrag; Prüfen und Buchen in zwei Tipps', type: 'info', priority: 'should' },
+        { text: 'Kamera ohne Berechtigung: Hinweis mit Alternative „Aus Datei wählen“', type: 'state', priority: 'should' },
+        { text: 'Leerzustand (erster Start): erklärt die vier Wege, keine leeren Listen', type: 'state', priority: 'must' },
+      ],
+      interactions: [
+        ...SCAN_NAV,
+        { trigger: 'Eintrag im Verlauf antippen', result: 'Ergebnis der Erfassung', event: 'item.open', to: 'picture-to-text.result' },
+        { trigger: 'Erfassungs-Karte antippen', result: 'Ergebnis der Erfassung', event: 'card.open', to: 'picture-to-text.result' },
+        { trigger: 'Beleg antippen', result: 'Beleg prüfen und buchen', event: 'receipt.open', to: 'picture-to-text.receipt' },
+        { trigger: '„Verlauf“', result: 'Alle Erfassungen mit Suche', event: 'header.secondary', to: 'picture-to-text.history' },
+        { trigger: 'Kennzahl antippen', result: 'Verlauf', event: 'metric.open', to: 'picture-to-text.history' },
+      ],
+      acceptance: [
+        'Jeder der vier Wege ist mit einem Tipp von der Startseite erreichbar.',
+        '„Zu prüfen“ zeigt je Erfassung die unsicheren Wörter und führt zum Ergebnis.',
+        'Ein offener Beleg zeigt Betrag und Händler; „Prüfen und buchen“ öffnet das Formular.',
+        'Auf 360 px Breite gibt es keinen horizontalen Überlauf, Hauptaktionen sind mindestens 44 px hoch.',
+      ],
+      flows: [
+        { id: 'fl-beleg', name: 'Beleg buchen', steps: [{ featureId: 'picture-to-text.home', action: 'Beleg „Bäckerei Hoffmann“ antippen' }, { featureId: 'picture-to-text.receipt', action: 'Betrag prüfen, „Als Ausgabe buchen“' }] },
+        { id: 'fl-scan', name: 'Dokument scannen', steps: [{ featureId: 'picture-to-text.home', action: '„Dokument scannen“' }, { featureId: 'picture-to-text.scanner', action: 'Zwei Seiten aufnehmen, als PDF speichern' }] },
+      ],
+      viewports: ALL_VP, demoData: demoAll,
+      variants: [
+        {
+          id: 'A', name: 'Wege & Verlauf', direction: 'kompakt', concept: 'Vier Wege als Knopfreihe, darunter der durchsuchbare Verlauf; in der Seitenspalte „Zu prüfen“ und offene Belege. Alles Wichtige ohne Seitenwechsel.',
+          description: '+ Dicht, viele Erfassungen im Blick  − Auf Mobile lang',
+          layout: { type: 'split' },
+          blocks: [
+            hdr({ eyebrow: 'Picture to Text', title: 'Übersicht', subtitle: `${captures.length} Erfassungen · ${toReview.length} zu prüfen · ${openReceipts} Belege offen`, primaryLabel: '', secondaryLabel: 'Verlauf', secondaryIcon: 'history' }),
+            { id: 'launch', component: 'capture-launcher', region: 'main', props: { style: 'row' } },
+            { id: 'flt', component: 'search-filter', region: 'main', props: { placeholder: 'Erkannten Text suchen …', filters: SRC } },
+            { id: 'hist', component: 'item-list', region: 'main', bind: { items: 'captures' }, props: { title: 'Verlauf', limit: 6, emptyTitle: 'Noch keine Erfassungen' } },
+            { id: 'rev', component: 'item-list', region: 'aside', bind: { items: 'toReview' }, props: { title: 'Zu prüfen', dense: true, emptyTitle: 'Alles geprüft' } },
+            { id: 'rcp', component: 'receipt-review', region: 'aside', props: { mode: 'list', title: 'Belege', limit: 3 } },
+          ],
+        },
+        {
+          id: 'B', name: 'Kacheln & Galerie', direction: 'visuell', concept: 'Vier große Kacheln als Einstieg, darunter Kennzahlen, die Herkunft der Erfassungen als Ring und eine Galerie der letzten Ergebnisse mit Textvorschau.',
+          description: '+ Einladend, Ergebnisse auf einen Blick  − Weniger Erfassungen ohne Scrollen',
+          layout: { type: 'grid' },
+          blocks: [
+            hdr({ eyebrow: 'Picture to Text', title: 'Übersicht', subtitle: 'Was möchtest du erkennen?', primaryLabel: '', secondaryLabel: 'Verlauf', secondaryIcon: 'history' }),
+            { id: 'launch', component: 'capture-launcher', region: 'main', span: 12, props: { style: 'tiles' } },
+            { id: 'kpi', component: 'metric-row', region: 'main', span: 8, spanTablet: 12, bind: { metrics: 'metrics' }, props: { columns: 4, showSpark: false } },
+            { id: 'src', component: 'chart', region: 'main', span: 4, spanTablet: 12, bind: { series: 'bySource' }, props: { title: 'Quellen', type: 'donut' } },
+            { id: 'gal', component: 'card-grid', region: 'main', span: 12, bind: { items: 'captures' }, props: { title: 'Zuletzt erkannt', cover: true, minWidth: 230 } },
+          ],
+        },
+        {
+          id: 'C', name: 'Scannen & Prüfen', direction: 'fokus', concept: 'Eine Hauptaktion „Dokument scannen“ mit zwei Alternativen, darunter der nächste Beleg zum Buchen und was geprüft werden muss. Danach nur noch drei Zeilen Verlauf.',
+          description: '+ Direkt handeln, wenig Ablenkung  − Kein Gesamtüberblick',
+          layout: { type: 'stack', narrow: true },
+          blocks: [
+            hdr({ title: 'Erkennen', subtitle: 'Di, 24. November', primaryLabel: '', secondaryLabel: 'Verlauf', secondaryIcon: 'history' }),
+            { id: 'launch', component: 'capture-launcher', region: 'main', props: { style: 'hero' } },
+            { id: 'next', component: 'receipt-review', region: 'main', props: { mode: 'next' } },
+            { id: 'rev', component: 'item-list', region: 'main', bind: { items: 'toReview' }, props: { title: 'Zu prüfen', dense: true, limit: 3, emptyTitle: 'Alles geprüft' } },
+            { id: 'hist', component: 'item-list', region: 'main', bind: { items: 'captures' }, props: { title: 'Zuletzt', dense: true, limit: 3, emptyTitle: 'Noch keine Erfassungen' } },
+          ],
+        },
+      ],
+      selectedVariantId: 'A',
+      links: ['picture-to-text.scanner', 'picture-to-text.receipt', 'picture-to-text.card', 'picture-to-text.capture', 'picture-to-text.result', 'picture-to-text.history', 'home.today'],
+    },
+    // ------------------------------------------------------------------ Bild erfassen
+    {
+      id: 'picture-to-text.capture', name: 'Bild erfassen', group: 'Erkennen', status: 'design', tier: 2,
       purpose: 'Ein Bild in wenigen Sekunden aufnehmen oder wählen und sehen, dass die Erkennung läuft und fertig wird.',
       requirements: [
         { text: 'Quelle wählbar: Kamera, Datei, Zwischenablage; Dropzone für Bilder per Drag & Drop', type: 'action', priority: 'must' },
         { text: 'Verarbeitung zeigt Schritte (Bild laden → Text erkennen → aufbereiten) mit Fortschritt', type: 'state', priority: 'must' },
         { text: 'Laufende Erkennung lässt sich abbrechen', type: 'action', priority: 'should' },
-        { text: 'Nach Abschluss wird das Ergebnis automatisch geöffnet', type: 'rule', priority: 'must' },
+        { text: 'Nach Abschluss wird das Ergebnis angezeigt', type: 'rule', priority: 'must' },
         { text: 'Sprache wählbar oder automatisch; Layout optional beibehalten', type: 'action', priority: 'could' },
         { text: 'Auf Mobile ist die Hauptaktion (Foto aufnehmen) ein großes Touch-Ziel ≥ 44 px', type: 'rule', priority: 'must' },
       ],
@@ -58,11 +167,12 @@ export default {
         { trigger: 'Abbrechen antippen', result: 'Verarbeitung stoppt', event: 'capture.cancel' },
         { trigger: 'Eintrag im Verlauf antippen', result: 'Ergebnis der Erfassung öffnet', event: 'item.open' },
       ],
+      acceptance: ['Während der Erkennung sind alle drei Schritte mit Fortschritt sichtbar und abbrechbar.', 'Nach „Fertig“ steht die Zahl erkannter Zeilen und unsicherer Wörter.', 'Ohne Treffer in der Quelle nutzt die Simulation die nächste Testdatei.'],
       viewports: ['desktop', 'tablet', 'mobile'],
       demoData: { captures, samples, notes },
       variants: [
         {
-          id: 'A', name: 'Arbeitsplatz', concept: 'Desktop-Arbeitsplatz: links Erfassen und direkt darunter das Ergebnis, rechts der Verlauf als schneller Zugriff auf frühere Erfassungen.',
+          id: 'A', name: 'Arbeitsplatz', direction: 'kompakt', concept: 'Desktop-Arbeitsplatz: links Erfassen und direkt darunter das Ergebnis, rechts der Verlauf als schneller Zugriff auf frühere Erfassungen.',
           description: '+ Alles in einem Blick, Ergebnis ohne Seitenwechsel  − Auf Mobile lange Seite mit Verlauf unten',
           layout: { type: 'split' },
           blocks: [
@@ -73,7 +183,7 @@ export default {
           ],
         },
         {
-          id: 'B', name: 'Schritt für Schritt', concept: 'Mobile-first Assistent in einer schmalen Spalte: erst erfassen, dann Ergebnis. Optionen und Bildvorschau entfallen, ein Tipp-Banner hilft beim ersten Mal.',
+          id: 'B', name: 'Schritt für Schritt', direction: 'fokus', concept: 'Mobile-first Assistent in einer schmalen Spalte: erst erfassen, dann Ergebnis. Optionen und Bildvorschau entfallen, ein Tipp-Banner hilft beim ersten Mal.',
           description: '+ Klarer Ablauf, sehr gut mit dem Daumen bedienbar  − Weniger Kontext (kein Verlauf neben dem Ergebnis)',
           layout: { type: 'stack', narrow: true },
           blocks: [
@@ -83,45 +193,192 @@ export default {
             { id: 'res', component: 'ocr-result', region: 'main', props: { showImage: false } },
           ],
         },
+        {
+          id: 'C', name: 'Große Dropzone & Galerie', direction: 'visuell', concept: 'Große Dropzone mit Quellenwahl, darunter die letzten Erfassungen als Karten mit Textvorschau. Ein Tipp auf eine Karte zeigt das Ergebnis.',
+          description: '+ Einladend, frühere Ergebnisse sofort sichtbar  − Ergebnis erscheint unterhalb der Galerie',
+          layout: { type: 'stack' },
+          blocks: [
+            hdr({ eyebrow: 'Picture to Text', title: 'Text aus Bildern', primaryLabel: '' }),
+            { id: 'cap', component: 'capture-panel', region: 'main', props: { title: 'Bild erfassen' } },
+            { id: 'gal', component: 'card-grid', region: 'main', bind: { items: 'captures' }, props: { title: 'Zuletzt erkannt', cover: true, minWidth: 220 } },
+            { id: 'res', component: 'ocr-result', region: 'main', props: { showImage: true } },
+          ],
+        },
       ],
       selectedVariantId: 'A',
-      links: ['picture-to-text.result'],
+      links: ['picture-to-text.result', 'picture-to-text.home'],
     },
+    // ------------------------------------------------------------------ Dokumenten-Scanner
     {
-      id: 'picture-to-text.result', name: 'Texterkennung & Ergebnis', group: 'Erkennen', status: 'review',
+      id: 'picture-to-text.scanner', name: 'Dokumenten-Scanner', group: 'Erkennen', status: 'design', tier: 2,
+      purpose: 'Mehrseitige Dokumente mit der Kamera aufnehmen, Kanten erkennen lassen, Seiten bearbeiten und als PDF speichern.',
+      requirements: [
+        { text: 'Kamera-Ansicht mit Kantenerkennung; der Auslöser wartet, bis das Dokument erkannt ist', type: 'state', priority: 'must' },
+        { text: 'Mehrere Seiten zu einem Stapel bündeln; Reihenfolge ändern, Seite entfernen', type: 'action', priority: 'must' },
+        { text: 'Je Seite drehen, zuschneiden und Filter wählen (Dokument, Foto, S/W)', type: 'action', priority: 'should' },
+        { text: 'Als PDF speichern (Name, Text durchsuchbar) oder nur Text erkennen', type: 'action', priority: 'must' },
+        { text: 'Kamera ohne Berechtigung: Erklärung und Alternative „Aus Datei wählen“', type: 'state', priority: 'must' },
+        { text: 'Leerer Stapel zeigt „Noch keine Seite“; nach dem Speichern „Neuer Scan“', type: 'state', priority: 'must' },
+      ],
+      interactions: [
+        { trigger: 'Auslöser antippen', result: 'Seite wird aufgenommen und dem Stapel angehängt', event: 'scan.capture' },
+        { trigger: 'Seite bearbeiten (Drehen, Zuschneiden, Filter, Umordnen)', result: 'Vorschau der Seite ändert sich', event: 'scan.edit' },
+        { trigger: '„Als PDF speichern“', result: 'Fortschritt, dann Erfassung „PDF“ im Verlauf', event: 'scan.export' },
+        { trigger: '„Text erkennen“', result: 'Text des Stapels als Erfassung', event: 'scan.ocr' },
+        { trigger: '„Aus Datei wählen“', result: 'Seite aus Datei statt Kamera', event: 'permission.alternative' },
+      ],
+      acceptance: ['Der Auslöser meldet „Noch keine Kanten erkannt“, solange die Kantenerkennung läuft.', 'Nach dem Speichern erscheint das PDF im Verlauf mit der Seitenzahl.', 'Ohne Kamerazugriff bleibt „Aus Datei wählen“ nutzbar.', 'Alle Bedienelemente sind auf Mobile mindestens 44 px hoch.'],
+      flows: [{ id: 'fl-vertrag', name: 'Vertrag scannen', steps: [{ featureId: 'picture-to-text.scanner', action: 'Drei Seiten aufnehmen' }, { featureId: 'picture-to-text.scanner', action: 'Filter „Dokument“, als PDF speichern' }] }],
+      viewports: ['mobile', 'tablet', 'desktop'],
+      demoData: { captures, samples },
+      variants: [
+        {
+          id: 'A', name: 'Kamera zuerst', direction: 'fokus', concept: 'Vollbild-Kamera wie in einer Scanner-App: Auslöser unten, „Fertig (n)“ führt zur Bearbeitung der Seiten. Ein Schritt nach dem anderen.',
+          description: '+ Vertraut, einhändig bedienbar  − Seiten sieht man erst nach „Fertig“',
+          layout: { type: 'stack', narrow: true },
+          blocks: [hdr({ title: 'Dokument scannen', subtitle: 'Seite für Seite, dann als PDF', primaryLabel: '' }), { id: 'scan', component: 'doc-scanner', region: 'main', props: { layout: 'smartphone' } }],
+        },
+        {
+          id: 'B', name: 'Kamera & Seiten nebeneinander', direction: 'kompakt', concept: 'Auf großen Bildschirmen steht die Kamera links, rechts der Seitenstapel mit Filter, Drehen, Zuschneiden und PDF-Export. Bereits zwei Seiten im Stapel.',
+          description: '+ Aufnehmen und Bearbeiten ohne Wechsel  − Auf Mobile identisch mit Variante A',
+          layout: { type: 'stack' },
+          blocks: [hdr({ eyebrow: 'Picture to Text', title: 'Dokument scannen', primaryLabel: '' }), { id: 'scan', component: 'doc-scanner', region: 'main', props: { title: 'Kamera und Seiten', layout: 'bench', startPages: 2 } },
+            { id: 'perm', component: 'notice-banner', region: 'main', props: { tone: 'info', title: 'Kein Zugriff auf die Kamera?', text: 'Wähle „Datei“, um Seiten aus Fotos oder PDFs zu übernehmen.', dismissible: true } }],
+        },
+        {
+          id: 'C', name: 'Ohne Kamerazugriff', direction: 'visuell', concept: 'Zustand „Kamera nicht erlaubt“: Erklärung, Weg zu den Einstellungen und die Alternative „Aus Datei wählen“, die sofort funktioniert.',
+          description: '+ Kein Sackgassen-Gefühl  − Nur als Zustand sinnvoll, nicht als Standard',
+          layout: { type: 'stack', narrow: true },
+          blocks: [hdr({ title: 'Dokument scannen', primaryLabel: '' }), { id: 'scan', component: 'doc-scanner', region: 'main', props: { layout: 'smartphone', permission: 'verweigert' } }],
+        },
+      ],
+      selectedVariantId: 'A',
+      links: ['picture-to-text.history', 'picture-to-text.home'],
+    },
+    // ------------------------------------------------------------------ Beleg erkennen
+    {
+      id: 'picture-to-text.receipt', name: 'Beleg erkennen', group: 'Erkennen', status: 'design', tier: 1,
+      purpose: 'Kassenbons und Rechnungen fotografieren, Händler, Datum und Betrag prüfen und als Ausgabe in Finanzen vorschlagen – ohne Abtippen.',
+      requirements: [
+        { text: 'Händler, Datum, Betrag, MwSt, Kategorie und Konto stehen in einem prüfbaren Formular', type: 'info', priority: 'must' },
+        { text: 'Unsichere Felder tragen den Hinweis „Bitte prüfen“ (nicht nur Farbe)', type: 'rule', priority: 'must' },
+        { text: 'Eingaben werden geprüft: Betrag größer 0, Datum nicht in der Zukunft, Händler nicht leer', type: 'rule', priority: 'must' },
+        { text: 'Dublettenprüfung: gleicher Betrag in den letzten Tagen weist auf eine vorhandene Buchung hin', type: 'rule', priority: 'should' },
+        { text: '„Als Ausgabe buchen“ legt die Buchung an (Betrag mit Privatsphäre-Maske), „In Finanzen prüfen“ öffnet Finanzen', type: 'action', priority: 'must' },
+        { text: 'Positionen und enthaltene MwSt sind einsehbar', type: 'info', priority: 'should' },
+        { text: 'Hinweis: Beträge stammen aus der Erkennung und sind mit dem Beleg zu vergleichen', type: 'rule', priority: 'must' },
+      ],
+      interactions: [
+        { trigger: '„Als Ausgabe buchen“', result: 'Buchung wird in Finanzen angelegt, Beleg gilt als gebucht', event: 'receipt.book' },
+        { trigger: '„In Finanzen prüfen“', result: 'Finanzen öffnet mit Vorschlag', event: 'receipt.finance' },
+        { trigger: 'Beleg in der Liste antippen', result: 'Beleg im Formular', event: 'receipt.open' },
+        { trigger: 'Feld ändern', result: 'Eingabe wird geprüft, MwSt aktualisiert sich', event: 'form.invalid' },
+      ],
+      acceptance: [
+        'Ein Betrag von 0 oder ein Datum in der Zukunft sperrt „Als Ausgabe buchen“ und nennt den Grund am Feld.',
+        'Der Beleg „Thalia Bücher“ zeigt „Möglicherweise schon gebucht“ mit Betrag und Datum.',
+        'Nach dem Buchen steht „Gebucht“ und die Buchung erscheint in Finanzen.',
+        'Der Hinweis zur Prüfung des Betrags ist in jeder Variante sichtbar.',
+      ],
+      flows: [{ id: 'fl-buchen', name: 'Beleg buchen', steps: [{ featureId: 'picture-to-text.receipt', action: 'Betrag und Kategorie prüfen' }, { featureId: 'picture-to-text.receipt', action: '„Als Ausgabe buchen“' }, { featureId: 'finance.home', action: 'Buchung in der Liste sehen' }] }],
+      viewports: ['mobile', 'tablet', 'desktop'],
+      demoData: { receipts, transactions: '@world:transactions' },
+      variants: [
+        {
+          id: 'A', name: 'Prüfen & Buchen', direction: 'fokus', concept: 'Ein Beleg im Fokus: Vorschau und Formular, darunter die zwei Aktionen. Seitenspalte mit weiteren offenen Belegen zum Weiterschalten.',
+          description: '+ Klarer Ablauf bis zur Buchung  − Positionen nur bei Bedarf',
+          layout: { type: 'split' },
+          blocks: [hdr({ eyebrow: 'Picture to Text', title: 'Beleg prüfen', primaryLabel: '' }), { id: 'rcp', component: 'receipt-review', region: 'main', props: { mode: 'review', title: 'Erkannte Angaben', showItems: false } },
+            { id: 'list', component: 'receipt-review', region: 'aside', props: { mode: 'list', title: 'Weitere Belege' } }],
+        },
+        {
+          id: 'B', name: 'Belegliste & Detail', direction: 'kompakt', concept: 'Liste aller Belege mit Betrag und Status, darunter Formular mit Positionen und MwSt. Für viele Belege auf einmal.',
+          description: '+ Überblick über alle Belege, Positionen sichtbar  − Mehr Fläche, auf Mobile lang',
+          layout: { type: 'stack' },
+          blocks: [hdr({ eyebrow: 'Picture to Text', title: 'Belege', subtitle: `${openReceipts} offen`, primaryLabel: '' }), { id: 'list', component: 'receipt-review', region: 'main', props: { mode: 'list', title: 'Belege' } },
+            { id: 'rcp', component: 'receipt-review', region: 'main', props: { mode: 'review', title: 'Erkannte Angaben', showItems: true, showImage: false } }],
+        },
+      ],
+      selectedVariantId: 'A',
+      links: ['picture-to-text.home', 'picture-to-text.result'],
+    },
+    // ------------------------------------------------------------------ Visitenkarte
+    {
+      id: 'picture-to-text.card', name: 'Visitenkarte', group: 'Erkennen', status: 'design', tier: 3,
+      purpose: 'Eine Visitenkarte fotografieren und Name, Firma und Kontaktdaten als Kontakt übernehmen.',
+      requirements: [
+        { text: 'Felder Name, Funktion, Firma, Telefon, E-Mail, Website, Adresse sind prüfbar und änderbar', type: 'info', priority: 'must' },
+        { text: 'Unsichere Felder tragen „Bitte prüfen“; E-Mail und Telefon werden auf Form geprüft', type: 'rule', priority: 'must' },
+        { text: 'Aktionen: Kontakt speichern, E-Mail schreiben, Anrufen, Termin vorschlagen', type: 'action', priority: 'should' },
+        { text: 'Kontakte-Modul ist offen: bis dahin wird der Kontakt in der Vorschau nur bestätigt', type: 'rule', priority: 'could' },
+      ],
+      interactions: [{ trigger: '„Kontakt speichern“', result: 'Hinweis „Kontakt gespeichert“', event: 'card.save' }, { trigger: '„E-Mail“ / „Anrufen“', result: 'Aktion der Plattform', event: 'card.mail' }, { trigger: '„Termin“', result: 'Termin mit Kontakt vorschlagen', event: 'card.event' }],
+      acceptance: ['Eine ungültige E-Mail-Adresse sperrt „Kontakt speichern“ und nennt den Grund.', 'Nach dem Speichern bleibt die Karte sichtbar mit „Kontakt gespeichert“.'],
+      viewports: ['mobile', 'tablet', 'desktop'],
+      demoData: { cards },
+      variants: [{
+        id: 'A', name: 'Kontaktkarte', direction: 'fokus', concept: 'Oben die erkannte Karte als Kontaktkarte mit Initialen, darunter prüfbare Felder und vier Aktionen. Eine Sache pro Bildschirm.',
+        description: '+ Schnell übernommen  − Kein Vergleich mit dem Originalfoto',
+        layout: { type: 'stack', narrow: true },
+        blocks: [hdr({ title: 'Visitenkarte', subtitle: 'Prüfen und als Kontakt speichern', primaryLabel: '' }), { id: 'card', component: 'business-card', region: 'main' }],
+      }],
+      selectedVariantId: 'A',
+      links: ['picture-to-text.home'],
+    },
+    // ------------------------------------------------------------------ Ergebnis
+    {
+      id: 'picture-to-text.result', name: 'Texterkennung & Ergebnis', group: 'Erkennen', status: 'review', tier: 1,
       purpose: 'Das erkannte Ergebnis prüfen, unsichere Stellen korrigieren und den Text weiterverwenden.',
       requirements: [
         { text: 'Erkannter Text mit Sprache, Konfidenz und Wortanzahl', type: 'info', priority: 'must' },
         { text: 'Unsichere Wörter sind markiert; Tippen übernimmt den Korrekturvorschlag', type: 'action', priority: 'must' },
         { text: 'Bildvorschau neben dem Text, damit Original und Ergebnis vergleichbar sind', type: 'info', priority: 'should' },
-        { text: 'Text direkt bearbeiten', type: 'action', priority: 'should' },
-        { text: 'Aktionen Kopieren, Als Notiz speichern und Teilen', type: 'action', priority: 'must' },
+        { text: 'Text direkt bearbeiten; unsichere Stellen auch Wort für Wort prüfen (Assistent)', type: 'action', priority: 'should' },
+        { text: 'Aktionen Kopieren, Als Notiz speichern (Eingang, Tag „OCR“) und Teilen', type: 'action', priority: 'must' },
+        { text: 'Belege und Visitenkarten werden erkannt und mit „Als Beleg auswerten“ weitergeführt', type: 'info', priority: 'should' },
         { text: 'Leerzustand, solange noch nichts erfasst wurde', type: 'state', priority: 'must' },
       ],
       interactions: [
         { trigger: 'Unsicheres Wort antippen', result: 'Korrekturvorschlag wird übernommen', event: 'ocr.correct' },
         { trigger: 'Bearbeiten wählen', result: 'Text wird editierbar', event: 'ocr.edit' },
         { trigger: 'Kopieren antippen', result: 'Text in der Zwischenablage, Toast', event: 'ocr.copy' },
-        { trigger: 'Als Notiz speichern antippen', result: 'Notiz mit Tag „OCR“ angelegt', event: 'ocr.save-note' },
+        { trigger: 'Als Notiz speichern antippen', result: 'Notiz mit Tag „OCR“ im Eingang angelegt', event: 'ocr.save-note' },
         { trigger: 'Teilen antippen', result: 'Dialog mit Teilen-Optionen', event: 'ocr.share' },
+        { trigger: '„Als Beleg auswerten“', result: 'Beleg prüfen und buchen', event: 'ocr.receipt', to: 'picture-to-text.receipt' },
+        { trigger: '„Als Visitenkarte“', result: 'Kontakt prüfen', event: 'ocr.card', to: 'picture-to-text.card' },
+        { trigger: '„So lassen“', result: 'Wort bleibt, Markierung verschwindet', event: 'ocr.keep' },
       ],
+      acceptance: ['Jede Korrektur ändert den Text sofort und senkt die Zahl unsicherer Stellen.', 'Der Assistent nennt „x von y“ und endet mit „Alle Stellen geprüft“.', 'Bei einem erkannten Beleg erscheint das Angebot „Als Beleg auswerten“.'],
+      flows: [{ id: 'fl-check', name: 'Unsichere Stellen prüfen', steps: [{ featureId: 'picture-to-text.result', action: 'Markiertes Wort antippen' }, { featureId: 'picture-to-text.result', action: '„Als Notiz speichern“' }] }],
       viewports: ['desktop', 'tablet', 'mobile'],
       demoData: { captures, notes },
-      variants: [{
-        id: 'A', name: 'Ergebnis im Fokus', concept: 'Bildvorschau und Text nebeneinander, darunter die Aktionen. Seitenspalte mit den letzten Erfassungen zum schnellen Wechsel.',
-        description: '+ Direkter Vergleich Bild/Text  − Auf kleinen Geräten steht die Vorschau über dem Text',
-        layout: { type: 'split' },
-        blocks: [
-          hdr({ eyebrow: 'Picture to Text', title: 'Ergebnis', primaryLabel: '' }),
-          { id: 'res', component: 'ocr-result', region: 'main', props: { showImage: true, showConfidence: true, allowEdit: true } },
-          { id: 'hist', component: 'item-list', region: 'aside', bind: { items: 'captures' }, props: { title: 'Letzte Erfassungen', limit: 5, dense: true } },
-        ],
-      }],
+      variants: [
+        {
+          id: 'A', name: 'Ergebnis im Fokus', direction: 'kompakt', concept: 'Bildvorschau und Text nebeneinander, darunter die Aktionen. Seitenspalte mit den letzten Erfassungen zum schnellen Wechsel.',
+          description: '+ Direkter Vergleich Bild/Text  − Auf kleinen Geräten steht die Vorschau über dem Text',
+          layout: { type: 'split' },
+          blocks: [hdr({ eyebrow: 'Picture to Text', title: 'Ergebnis', primaryLabel: '' }), { id: 'res', component: 'ocr-result', region: 'main', props: { showImage: true, showConfidence: true, allowEdit: true } }, { id: 'hist', component: 'item-list', region: 'aside', bind: { items: 'captures' }, props: { title: 'Letzte Erfassungen', limit: 5, dense: true } }],
+        },
+        {
+          id: 'B', name: 'Wort für Wort prüfen', direction: 'fokus', concept: 'Assistent durch alle unsicheren Stellen: ein Wort im Satz, Vorschlag übernehmen, so lassen oder selbst schreiben. Am Ende „Alle Stellen geprüft“ mit Kopieren und Notiz.',
+          description: '+ Nichts wird übersehen, einhändig bedienbar  − Langsamer als Antippen im Text',
+          layout: { type: 'stack', narrow: true },
+          blocks: [hdr({ title: 'Prüfen', subtitle: 'Unsichere Stellen nacheinander', primaryLabel: '' }), { id: 'res', component: 'ocr-result', region: 'main', props: { layout: 'review', showImage: false } }],
+        },
+        {
+          id: 'C', name: 'Großes Bild & Text', direction: 'visuell', concept: 'Bild oben groß, darunter der Text mit markierten Stellen; wenig Beiwerk. Gut zum Vergleichen auf Tablet.',
+          description: '+ Original gut sichtbar  − Weniger Verlaufskontext',
+          layout: { type: 'stack' },
+          blocks: [hdr({ eyebrow: 'Picture to Text', title: 'Ergebnis', primaryLabel: '' }), { id: 'res', component: 'ocr-result', region: 'main', props: { showImage: true, showConfidence: true, allowEdit: false } }],
+        },
+      ],
       selectedVariantId: 'A',
+      links: ['picture-to-text.receipt', 'picture-to-text.card', 'picture-to-text.history'],
       seedHistory: [{ kind: 'draft', note: 'Bild/Text-Vergleich' }, { kind: 'review', note: 'Zur Prüfung: Korrektur unsicherer Wörter' }],
     },
+    // ------------------------------------------------------------------ Verlauf
     {
-      id: 'picture-to-text.history', name: 'Verlauf', group: 'Verwalten', status: 'design',
+      id: 'picture-to-text.history', name: 'Verlauf', group: 'Verwalten', status: 'design', tier: 2,
       purpose: 'Frühere Erfassungen wiederfinden, durchsuchen und erneut verwenden.',
       requirements: [
         { text: 'Liste aller Erfassungen mit Titel, Auszug, Quelle und Konfidenz', type: 'info', priority: 'must' },
@@ -135,49 +392,72 @@ export default {
         { trigger: 'Quelle als Filter wählen', result: 'Nur Erfassungen dieser Quelle', event: 'filter.change' },
         { trigger: 'Eintrag antippen', result: 'Ergebnis öffnet', event: 'item.open' },
       ],
+      acceptance: ['Die Suche findet Wörter im erkannten Text, nicht nur im Titel.', 'Der Filter „Datei“ zeigt nur Erfassungen aus Dateien.'],
       viewports: ['desktop', 'tablet', 'mobile'],
       demoData: { captures, notes },
-      variants: [{
-        id: 'A', name: 'Liste + Ergebnis', concept: 'Seitenleiste mit Suche, Quellenfilter und Verlaufsliste; im Hauptbereich das Ergebnis der gewählten Erfassung.',
-        description: '+ Schnell durchblättern  − Auf Mobile ist die Liste einklappbar',
-        layout: { type: 'sidebar', panelLabel: 'Verlauf & Suche' },
-        blocks: [
-          { id: 'flt', component: 'search-filter', region: 'panel', props: { placeholder: 'Erkannten Text suchen …', filters: ['Alle', 'Kamera', 'Datei', 'Zwischenablage'], layout: 'stacked' } },
-          { id: 'hist', component: 'item-list', region: 'panel', bind: { items: 'captures' }, props: { title: 'Erfassungen', emptyTitle: 'Keine Erfassungen gefunden' } },
-          { id: 'res', component: 'ocr-result', region: 'main', props: { showImage: true } },
-        ],
-      }],
+      variants: [
+        {
+          id: 'A', name: 'Liste + Ergebnis', direction: 'kompakt', concept: 'Seitenleiste mit Suche, Quellenfilter und Verlaufsliste; im Hauptbereich das Ergebnis der gewählten Erfassung.',
+          description: '+ Schnell durchblättern  − Auf Mobile ist die Liste einklappbar',
+          layout: { type: 'sidebar', panelLabel: 'Verlauf & Suche' },
+          blocks: [
+            { id: 'flt', component: 'search-filter', region: 'panel', props: { placeholder: 'Erkannten Text suchen …', filters: SRC, layout: 'stacked' } },
+            { id: 'hist', component: 'item-list', region: 'panel', bind: { items: 'captures' }, props: { title: 'Erfassungen', emptyTitle: 'Keine Erfassungen gefunden' } },
+            { id: 'res', component: 'ocr-result', region: 'main', props: { showImage: true } },
+          ],
+        },
+        {
+          id: 'B', name: 'Galerie', direction: 'visuell', concept: 'Erfassungen als Karten mit Textvorschau und Konfidenz; das Ergebnis der gewählten Karte darunter.',
+          description: '+ Erkennbar am Bild, einladend  − Weniger Einträge pro Bildschirm',
+          layout: { type: 'stack' },
+          blocks: [
+            hdr({ eyebrow: 'Picture to Text', title: 'Verlauf', primaryLabel: '' }),
+            { id: 'flt', component: 'search-filter', region: 'main', props: { placeholder: 'Erkannten Text suchen …', filters: SRC } },
+            { id: 'gal', component: 'card-grid', region: 'main', bind: { items: 'captures' }, props: { cover: true, minWidth: 220 } },
+            { id: 'res', component: 'ocr-result', region: 'main', props: { showImage: true } },
+          ],
+        },
+      ],
       selectedVariantId: 'A',
+      links: ['picture-to-text.result'],
     },
+    // ------------------------------------------------------------------ Export
     {
-      id: 'picture-to-text.export', name: 'Export', group: 'Verwalten', status: 'analyzed',
+      id: 'picture-to-text.export', name: 'Export', group: 'Verwalten', status: 'analyzed', tier: 3,
       purpose: 'Erkannten Text als Notiz speichern, kopieren oder teilen.',
       requirements: [
-        { text: 'Als Notiz speichern legt eine Notiz mit Titel und Tag „OCR“ an', type: 'action', priority: 'must' },
+        { text: 'Als Notiz speichern legt eine Notiz mit Titel und Tag „OCR“ im Eingang der Notizen an', type: 'action', priority: 'must' },
         { text: 'Kopieren mit Rückmeldung', type: 'action', priority: 'must' },
-        { text: 'Teilen als Textdatei oder per E-Mail', type: 'action', priority: 'should' },
+        { text: 'Teilen als Textdatei oder per E-Mail; Dokumente als PDF', type: 'action', priority: 'should' },
       ],
       interactions: [{ trigger: 'Als Notiz speichern', result: 'Notiz angelegt', event: 'ocr.save-note' }, { trigger: 'Kopieren', result: 'Text in Zwischenablage', event: 'ocr.copy' }, { trigger: 'Teilen', result: 'Teilen-Dialog', event: 'ocr.share' }],
-      viewports: ['desktop', 'mobile'],
-      demoData: { captures, notes },
+      viewports: ['desktop', 'mobile'], demoData: { captures, notes },
     },
     {
-      id: 'picture-to-text.multipage', name: 'Mehrseitige Dokumente', group: 'Erkennen', status: 'not_analyzed',
-      purpose: 'Mehrere Seiten oder ein PDF in einem Durchgang erkennen.',
+      id: 'picture-to-text.multipage', name: 'Mehrseitige Dokumente', group: 'Erkennen', status: 'analyzed', tier: 3,
+      purpose: 'Mehrere Seiten oder ein PDF in einem Durchgang erkennen. Wird vom Dokumenten-Scanner abgedeckt (Seitenstapel, PDF).',
       requirements: [
-        { text: 'Mehrere Bilder zu einem Dokument bündeln', type: 'action', priority: 'could' },
-        { text: 'Seitenreihenfolge ändern', type: 'action', priority: 'could' },
+        { text: 'Mehrere Bilder zu einem Dokument bündeln, Seitenreihenfolge ändern (im Scanner umgesetzt)', type: 'action', priority: 'could' },
+        { text: 'Vorhandene PDFs importieren und erkennen (offen)', type: 'action', priority: 'could' },
       ],
-      interactions: [{ trigger: 'Weitere Seite hinzufügen', result: 'Seite wird angehängt', event: 'capture.start' }],
-      viewports: ['mobile', 'tablet'],
-      demoData: { captures, samples, notes },
+      interactions: [{ trigger: 'Weitere Seite hinzufügen', result: 'Seite wird angehängt', event: 'scan.capture', to: 'picture-to-text.scanner' }],
+      viewports: ['mobile', 'tablet'], demoData: { captures, samples, notes }, links: ['picture-to-text.scanner'],
+    },
+    {
+      id: 'picture-to-text.settings', name: 'Einstellungen', group: 'Verwalten', status: 'not_analyzed', tier: 3,
+      purpose: 'Erkennung lokal oder in der Cloud, Standardsprache, Aufbewahrung der Originalbilder.',
+      requirements: [{ text: 'Auswahl lokal oder Cloud mit Erklärung zum Datenschutz (Entscheidung offen)', type: 'rule', priority: 'must' }, { text: 'Originalbilder nach X Tagen löschen', type: 'rule', priority: 'could' }],
+      interactions: [], viewports: ['mobile', 'desktop'],
     },
   ],
   decisions: [
     { featureId: 'picture-to-text.result', title: 'Unsichere Wörter markieren oder automatisch korrigieren?', decision: 'Unsichere Wörter werden markiert und mit Vorschlag angeboten, nie stillschweigend geändert.',
       rationale: 'Bei Beträgen, Nummern und Namen ist eine falsche automatische Korrektur schlimmer als ein sichtbarer Zweifel. Das Antippen übernimmt den Vorschlag mit einem Klick.',
       tradeoffs: 'Etwas mehr Interaktion bei schlechten Scans; bei sehr vielen Zweifeln wirkt der Text unruhig.', status: 'decided' },
+    { featureId: 'picture-to-text.receipt', title: 'Beleg: sofort buchen oder nur vorschlagen?', decision: 'Die Buchung wird vorgeschlagen und erst nach „Als Ausgabe buchen“ angelegt; Betrag, Datum und Händler sind prüfbar, Dubletten werden gemeldet.',
+      rationale: 'Ein falsch erkannter Betrag in der Buchhaltung ist teurer als ein zusätzlicher Tipp. Die Dublettenprüfung schützt vor doppelten Ausgaben.', tradeoffs: 'Ein Tipp mehr pro Beleg; ein Schnellmodus für sichere Belege (Konfidenz ≥ 95 %) ist denkbar.', status: 'decided' },
     { featureId: 'picture-to-text.capture', title: 'Erkennung lokal auf dem Gerät oder in der Cloud?', decision: '', rationale: 'Quittungen und Verträge sind sensibel. Lokal schützt Daten, Cloud liefert oft bessere Qualität. Abhängig von der Engine des bestehenden TAKT.', status: 'open' },
-    { featureId: 'picture-to-text.multipage', title: 'Mehrseitige PDFs in der ersten Version?', decision: '', rationale: 'Nutzen hoch bei Verträgen, Aufwand deutlich größer (Seitenverwaltung, Fortschritt). Erst nach Feedback zur Einzelseite entscheiden.', status: 'open' },
+    { featureId: 'picture-to-text.home', title: 'Welche Richtung für die Startseite?', decision: '', rationale: 'Kompakt (A) für viele Erfassungen, Visuell (B) mit Kacheln einladend, Fokus (C) führt mit einer Hauptaktion. Entscheiden nach Test, wie oft Belege gegenüber Text erkannt werden.', tradeoffs: 'A: Dichte. B: Platzbedarf. C: weniger Überblick.', status: 'open' },
+    { featureId: 'picture-to-text.scanner', title: 'Eigener Scanner oder Systemscanner?', decision: '', rationale: 'Der Systemscanner (Android/iOS) liefert Kantenerkennung und Filter ohne Aufwand, ein eigener Scanner erlaubt durchgängiges Design und Offline-Kontrolle.', status: 'open' },
   ],
 };

@@ -52,13 +52,13 @@ export const savingsGoalCard = {
   events: ['goal.open', 'goal.rate', 'goal.create', 'goals.open', 'plan.create'],
   states: ['empty'],
   css: `${SV_CSS}${CHART_CSS}
-  .tk-svgl { display:flex; flex-direction:column; min-width:0; }
+  .tk-svgl { display:flex; flex-direction:column; min-width:0; container-type:inline-size; }
   .tk-svgl__row { all:unset; box-sizing:border-box; display:grid; grid-template-columns:auto minmax(0,1fr) minmax(0,1.1fr) auto; gap:var(--tk-space-3); align-items:center; padding:12px var(--tk-space-4); border-bottom:1px solid var(--tk-c-border); cursor:pointer; min-width:0; width:100%; }
   .tk-svgl__row:last-child { border-bottom:0; } .tk-svgl__row:hover { background:var(--tk-c-surface2); } .tk-svgl__row:focus-visible { outline:2px solid var(--tk-c-focus); outline-offset:-2px; }
   .tk-svgl__row strong { display:block; font-weight:var(--tk-fw-semibold); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .tk-svgl__row small, .tk-svgl__meta { font-size:var(--tk-fs-sm); color:var(--tk-c-text-muted); display:block; }
   .tk-svgl__prog { display:flex; flex-direction:column; gap:6px; min-width:0; } .tk-svgl__prog .tk-sv-meta { font-variant-numeric:tabular-nums; }
-  .bp-mobile .tk-svgl__row { grid-template-columns:auto minmax(0,1fr) auto; } .bp-mobile .tk-svgl__prog { grid-column:1 / -1; }
+  @container (max-width: 560px) { .tk-svgl__row { grid-template-columns:auto minmax(0,1fr) auto; } .tk-svgl__prog { grid-column:1 / -1; order:5; } }
   .tk-svgl__cards { display:grid; grid-template-columns:repeat(auto-fill, minmax(260px,1fr)); gap:var(--tk-space-4); }
   .tk-svgl__card { all:unset; box-sizing:border-box; display:flex; gap:var(--tk-space-4); align-items:center; padding:var(--tk-space-4); border-radius:var(--tk-radius-lg); border:1px solid var(--tk-c-border); background:var(--tk-c-surface); cursor:pointer; min-width:0; }
   .tk-svgl__card:hover { border-color:var(--tk-c-border-strong); } .tk-svgl__card:focus-visible { outline:2px solid var(--tk-c-focus); }
@@ -71,10 +71,11 @@ export const savingsGoalCard = {
   render: function SavingsGoalCard({ props, data, setData, ctx }) {
     const today = todayOf(ctx), plans = arr(data.plans);
     const wrap = (b, actions) => (props.framed ? html`<${Card} flush=${props.style === 'list'} title=${props.title} icon="target" actions=${actions}>${b}<//>` : b);
-    const add = html`<${Button} size="sm" icon="plus" onClick=${() => ctx.emit('goal.create')}>Ziel<//>`;
+    const add = html`<${Button} size="sm" icon="plus" onClick=${() => ctx.emit('goal.create', { ui: { wizardGoal: 'new' } })}>Ziel<//>`;
     const goals = arr(data.goals);
-    if (!goals.length) return wrap(html`<${EmptyState} icon="target" title="Noch kein Sparziel" text="Ein Ziel gibt deinen Sparplänen einen Zweck: Betrag, Datum, fertig. TAKT zeigt, ob du auf Kurs bist." action=${html`<${Button} variant="primary" icon="plus" onClick=${() => ctx.emit('goal.create')}>Ziel anlegen<//>`} />`);
+    if (!goals.length) return wrap(html`<${EmptyState} icon="target" title="Noch kein Sparziel" text="Ein Ziel gibt deinen Sparplänen einen Zweck: Betrag, Datum, fertig. TAKT zeigt, ob du auf Kurs bist." action=${html`<${Button} variant="primary" icon="plus" onClick=${() => ctx.emit('goal.create', { ui: { wizardGoal: 'new' } })}>Ziel anlegen<//>`} />`);
     let fc = goals.map((g) => goalForecast(g, plans, today));
+    const more = props.limit > 0 && fc.length > props.limit ? html`<div style="padding:8px var(--tk-space-4) 12px"><${Button} size="sm" variant="ghost" iconRight="chevron-right" onClick=${() => ctx.emit('goals.open')}>Alle ${fc.length} Ziele<//></div>` : null;
     if (props.limit > 0) fc = fc.slice(0, props.limit);
     const open = (f) => {
       ctx.emit('goal.open', { id: f.goal.id });
@@ -104,13 +105,13 @@ export const savingsGoalCard = {
     }
     if (props.style === 'cards') {
       return wrap(html`<div class="tk-svgl__cards">${fc.map((f) => html`<button type="button" class="tk-svgl__card" onClick=${() => open(f)} aria-label=${`${f.goal.name}: ${pct(f.progress)} erreicht`}>
-        <${Ring} size=${86} stroke=${9} value=${f.progress} tone=${f.tone === 'warning' ? 'warning' : f.goal.tone || 'success'} label=${`${pct(f.progress)} von ${eur(ctx, f.goal.target)}`}><strong class="tk-num" style="font-size:var(--tk-fs-lg)">${pct(f.progress)}</strong><${Icon} name=${f.goal.icon || 'target'} size=${14} /><//>
+        <${Ring} size=${86} stroke=${9} value=${f.progress} tone=${f.tone === 'warning' ? 'warning' : 'success'} label=${`${pct(f.progress)} von ${eur(ctx, f.goal.target)}`}><strong class="tk-num" style="font-size:var(--tk-fs-lg)">${pct(f.progress)}</strong><${Icon} name=${f.goal.icon || 'target'} size=${14} /><//>
         <div><strong class="tk-truncate">${f.goal.name}</strong><span class="tk-sv-meta tk-num">${eur(ctx, f.goal.current)} von ${eur(ctx, f.goal.target)}</span>${props.showForecast && html`<span class="tk-sv-meta">${f.status === 'erreicht' ? 'Erreicht' : f.eta ? `Voraussichtlich ${monthYear(f.eta)}` : 'Ohne Sparrate'}</span>`}<span>${badge(f)}</span></div></button>`)}</div>`, add);
     }
     return wrap(html`<div class="tk-svgl">${fc.map((f) => html`<button type="button" class="tk-svgl__row" onClick=${() => open(f)} aria-label=${`${f.goal.name} öffnen`}>
       <${Tile} tone=${f.goal.tone || 1} icon=${f.goal.icon || 'target'} size=${17} />
       <div style="min-width:0"><strong>${f.goal.name}</strong><span class="tk-svgl__meta">${f.due ? `bis ${fmtDate(f.due)}` : 'ohne Datum'}${f.monthly ? ` · ${eur(ctx, f.monthly)} pro Monat` : ''}</span></div>
-      <div class="tk-svgl__prog"><${Progress} value=${f.progress} tone=${f.tone === 'warning' ? 'warning' : 'success'} /><span class="tk-sv-meta">${eur(ctx, f.goal.current)} von ${eur(ctx, f.goal.target)} · ${pct(f.progress)}${props.showForecast && f.eta && f.status !== 'erreicht' ? ` · ca. ${monthYear(f.eta)}` : ''}</span></div>${badge(f)}</button>`)}</div>`, add);
+      <div class="tk-svgl__prog"><${Progress} value=${f.progress} tone=${f.tone === 'warning' ? 'warning' : 'success'} /><span class="tk-sv-meta">${eur(ctx, f.goal.current)} von ${eur(ctx, f.goal.target)} · ${pct(f.progress)}${props.showForecast && f.eta && f.status !== 'erreicht' ? ` · ca. ${monthYear(f.eta)}` : ''}</span></div>${badge(f)}</button>`)}${more}</div>`, add);
   },
 };
 export default [savingsGoalCard];

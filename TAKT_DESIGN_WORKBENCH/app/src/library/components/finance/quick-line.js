@@ -19,12 +19,12 @@ export const finQuickLine = {
     { name: 'title', label: 'Titel', type: 'text', default: 'Schnell erfassen' },
     { name: 'style', label: 'Darstellung', type: 'select', options: ['card', 'bar'], default: 'card' },
     { name: 'showExamples', label: 'Beispiele zeigen', type: 'boolean', default: true },
-    { name: 'placeholder', label: 'Platzhalter', type: 'text', default: 'z. B. −4,90 Café oder +120 Etsy' },
+    { name: 'placeholder', label: 'Platzhalter', type: 'text', default: 'z. B. −4,90 Café' },
   ],
   data: slots('transactions', 'accounts', 'cats', 'rules', 'prefs'),
   events: ['capture.save', 'capture.undo', 'numpad.open'],
   states: ['empty'],
-  css: `${FIN_CSS}
+  css: `
   .tk-fnq { display:flex; flex-direction:column; gap:var(--tk-space-3); min-width:0; }
   .tk-fnq__in { display:flex; gap:8px; align-items:center; } .tk-fnq__in .tk-input { flex:1 1 auto; min-width:0; font-size:max(16px, var(--tk-fs-lg)); }
   .tk-fnq__det { display:flex; flex-wrap:wrap; gap:6px; align-items:center; font-size:var(--tk-fs-sm); }

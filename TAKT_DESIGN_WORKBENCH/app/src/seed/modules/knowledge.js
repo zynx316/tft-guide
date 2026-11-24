@@ -58,7 +58,7 @@ const areaChart = { segments: areas.map((a) => ({ label: a.name, value: publishe
 const metrics = [
   { label: 'Artikel', value: published.length, icon: 'library', tone: 'accent' },
   { label: 'Lesezeichen', value: published.filter((a) => a.bookmarked).length, icon: 'bookmark', tone: 'warning' },
-  { label: 'Entwürfe', value: drafts.length, icon: 'file-pen-line', tone: 'info' },
+  { label: 'Entwürfe', value: drafts.length, icon: 'pencil', tone: 'info' },
   { label: 'Zu prüfen', value: published.filter((a) => dayDiff(a.updated) > 21).length, icon: 'clock', tone: 'danger' },
 ];
 const hdr = (props) => ({ id: 'hdr', component: 'page-header', region: 'header', props });

@@ -27,7 +27,7 @@ export const finCategoryList = {
   data: slots('cats', 'transactions', 'prefs'),
   events: ['category.open', 'category.add', 'category.edit'],
   states: ['empty'],
-  css: `${FIN_CSS}`,
+  css: ``,
   example: { data: ex('categories', 'transactions', 'prefs') },
   render: function FinCategoryList({ props, data, setData, ctx }) {
     const c = pctx(ctx, data), cats = arr(data.categories), spent = spentByCategory(data.transactions, ctx.today), cur = monthTx(data.transactions, ctx.today);

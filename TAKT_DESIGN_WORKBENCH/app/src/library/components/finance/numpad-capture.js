@@ -26,7 +26,7 @@ export const finNumpadCapture = {
   data: slots('transactions', 'accounts', 'cats', 'rules', 'budgets', 'subs', 'plans', 'events', 'prefs'),
   events: ['capture.save', 'capture.undo', 'capture.mode'],
   states: ['empty'],
-  css: `${FIN_CSS}
+  css: `
   .tk-fnp { display:flex; flex-direction:column; gap:var(--tk-space-3); min-width:0; max-width:520px; margin-inline:auto; width:100%; }
   .tk-fnp__disp { display:flex; align-items:baseline; justify-content:center; gap:8px; padding:var(--tk-space-3) 0; min-height:72px; }
   .tk-fnp__amt { font-size:var(--tk-fs-4xl); font-weight:var(--tk-fw-bold); letter-spacing:var(--tk-ls-tight); font-variant-numeric:tabular-nums; white-space:nowrap; line-height:1; } .tk-fnp__amt[data-empty="true"] { color:var(--tk-c-text-subtle); }

@@ -173,6 +173,9 @@ export const financeRules = [
   { id: 'r-netflix', match: 'netflix', category: 'Abos', active: true },
   { id: 'r-spotify', match: 'spotify', category: 'Abos', active: false },
   { id: 'r-sparplan', match: 'sparplan', category: 'Sparen', active: true },
+  { id: 'r-cafe', match: 'café', category: 'Restaurants', active: true },
+  { id: 'r-restaurant', match: 'restaurant', category: 'Restaurants', active: true },
+  { id: 'r-baecker', match: 'bäckerei', category: 'Lebensmittel', active: true },
 ].map((r) => ({ ...r, hits: transactions.filter((t) => t.title.toLowerCase().includes(r.match)).length }));
 
 // --- Zusatzangaben zu Buchungen (Notiz, Beleg) – Buchungen selbst bleiben unverändert ----------------------------

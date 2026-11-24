@@ -42,6 +42,7 @@ export const savingsHints = {
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Hinweise' },
     { name: 'limit', label: 'Max. Hinweise', type: 'number', default: 3 },
+    { name: 'skip', label: 'Hinweise auslassen (ID-Anfang: cov, goal, exec, shift, tax, pause, raise, ok)', type: 'list', default: [] },
     { name: 'style', label: 'Darstellung', type: 'select', options: ['list', 'cards'], default: 'list' },
     { name: 'framed', label: 'In Karte', type: 'boolean', default: true },
   ],
@@ -63,7 +64,8 @@ export const savingsHints = {
   .tk-svh__i > div { min-width:0; flex:1; }`,
   example: { data: { plans: [{ id: 'a', name: 'Notgroschen', monthly: 150, day: 1, intervalMonths: 1, active: true, startDate: '2024-01-01', goalId: 'g1' }], goals: [{ id: 'g1', name: 'Japan-Reise', target: 6000, current: 2150, due: '2027-09-01', monthly: 0 }], accounts: [{ id: 'acc-giro', type: 'giro', balance: 3842 }], subscriptions: [], transactions: [], allowance: { total: 1000, used: 312.4 } } },
   render: function SavingsHints({ props, data, ctx }) {
-    const list = buildHints(ctx, data).slice(0, props.limit);
+    const skip = Array.isArray(props.skip) ? props.skip : String(props.skip || '').split(',').map((x) => x.trim()).filter(Boolean);
+    const list = buildHints(ctx, data).filter((h) => !skip.some((k) => h.id.startsWith(k))).slice(0, props.limit);
     const wrap = (b) => (props.framed && props.style !== 'cards' ? html`<${Card} title=${props.title} icon="lightbulb">${b}<//>` : html`<div>${props.framed ? html`<h3 class="tk-card__title" style="margin-bottom:10px">${props.title}</h3>` : null}${b}</div>`);
     if (!list.length) return wrap(html`<${EmptyState} icon="check-circle-2" title="Nichts zu tun" text="Kein Hinweis offen. Neue erscheinen, wenn Termine, Ziele oder Deckung Aufmerksamkeit brauchen." />`);
     return wrap(html`<div class=${`tk-svh${props.style === 'cards' ? ' tk-svh--cards' : ''}`}>${list.map((h) => html`<div class="tk-svh__i"><${Tile} tone=${h.tone} icon=${h.icon} size=${16} /><div><strong>${h.title}</strong><p>${h.text}</p><${Button} size="sm" variant="ghost" iconRight="chevron-right" onClick=${() => ctx.emit(h.event, h.detail)}>${h.label}<//></div></div>`)}</div>`);

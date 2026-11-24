@@ -6,7 +6,7 @@ import { slots, pctx, eur, eur0 } from './_fin.js';
 import { fmtPercent } from '../../../lib/format.js';
 import { ex } from './_example.js';
 
-const MIN_H = 30, GAP = 6;
+const MIN_H = 36, GAP = 6;
 
 export const finCashflowSankey = {
   id: 'fin-cashflow-sankey',

@@ -1,23 +1,23 @@
 // Finanzen (Referenz): Konten mit Saldo und Gesamtvermögen
 import { html } from '../../../lib/html.js';
 import { Card, Badge, Icon, EmptyState, Sparkline, toneColor } from '../../ui.js';
-import { fmt } from '../../../lib/util.js';
+import { money } from '../../helpers.js';
 
-const ICON = { Girokonto: 'landmark', Tagesgeld: 'piggy-bank', Kreditkarte: 'credit-card', Depot: 'candlestick-chart', Bargeld: 'banknote' };
+const ICON = { Girokonto: 'landmark', Tagesgeld: 'piggy-bank', Kreditkarte: 'credit-card', Depot: 'candlestick-chart', Bargeld: 'banknote', giro: 'landmark', business: 'briefcase', savings: 'piggy-bank', credit: 'credit-card', depot: 'candlestick-chart' };
 
 export const accountCards = {
   id: 'account-cards',
   name: 'Konten-Karten',
   category: 'Finanzen',
   description: 'Konten (Giro, Tagesgeld, Kreditkarte, Depot) mit Saldo, maskierter IBAN und Mini-Verlauf plus Gesamtvermögen. Auswahl eines Kontos filtert verbundene Transaktionslisten (ctx.ui.account).',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Konten' },
     { name: 'showTotal', label: 'Gesamtvermögen zeigen', type: 'boolean', default: true },
     { name: 'layout', label: 'Anordnung', type: 'select', options: ['grid', 'scroll'], default: 'grid' },
     { name: 'minWidth', label: 'Min. Kartenbreite (px)', type: 'number', default: 230 },
   ],
-  data: [{ slot: 'accounts', label: 'Konten', default: 'accounts', shape: '{id,name,type,iban?,balance,delta?,spark?:number[],tone?}[]', required: true }],
+  data: [{ slot: 'accounts', label: 'Konten', default: 'accounts', shape: '{id,name,type,bank?,iban?,balance,icon?,delta?,spark?:number[],tone?}[]', required: true }],
   events: ['account.open'],
   states: ['empty'],
   css: `
@@ -42,15 +42,15 @@ export const accountCards = {
     const acc = data.accounts || [];
     if (!acc.length) return html`<${Card} title=${props.title}><${EmptyState} icon="wallet" title="Noch keine Konten" text="Lege ein Konto an, um Salden und Umsätze zu sehen." /><//>`;
     const total = acc.reduce((a, c) => a + c.balance, 0);
-    const pick = (a) => { ctx.setUi('account', ctx.ui.account === a.id ? null : a.id); ctx.emit('account.open', { id: a.id }); };
+    const pick = (a) => { ctx.setUi('account', ctx.ui.account === a.id ? null : a.id); ctx.emit('account.open', { id: a.id, ui: { account: a.id } }); };
     return html`<div>
-      ${props.showTotal && html`<div class="tk-accounts__total"><div><div class="tk-label">Gesamtvermögen</div><strong>${fmt.currency(total)}</strong></div>${ctx.ui.account && html`<${Badge} tone="accent" icon="filter">Filter aktiv<//>`}</div>`}
+      ${props.showTotal && html`<div class="tk-accounts__total"><div><div class="tk-label">Gesamtvermögen</div><strong>${money(ctx, total)}</strong></div>${ctx.ui.account && html`<${Badge} tone="accent" icon="filter">Filter aktiv<//>`}</div>`}
       <div class=${`tk-accounts tk-accounts--${ctx.bp === "mobile" ? "scroll" : props.layout}`} style=${`--minw:${props.minWidth}px`} data-scroll-x=${ctx.bp === "mobile" || props.layout === "scroll" ? "" : undefined}>
         ${acc.map((a, i) => { const col = toneColor(a.tone || i + 1); const neg = a.balance < 0;
           return html`<button type="button" class="tk-card tk-card--interactive tk-account" aria-pressed=${String(ctx.ui.account === a.id)} onClick=${() => pick(a)}>
-            <div class="tk-account__top"><span class="tk-account__ico" style=${`background:color-mix(in srgb, ${col} 16%, transparent);color:${col}`}><${Icon} name=${ICON[a.type] || 'wallet'} size=${17} /></span>
-              <div class="tk-grow"><div class="tk-truncate" style="font-weight:600">${a.name}</div><div class="tk-truncate tk-subtle" style="font-size:var(--tk-fs-xs)">${a.iban || a.type}</div></div></div>
-            <div class="tk-account__bal" style=${neg ? 'color:var(--tk-c-danger)' : ''}>${fmt.currency(a.balance)}</div>
+            <div class="tk-account__top"><span class="tk-account__ico" style=${`background:color-mix(in srgb, ${col} 16%, transparent);color:${col}`}><${Icon} name=${a.icon || ICON[a.type] || 'wallet'} size=${17} /></span>
+              <div class="tk-grow"><div class="tk-truncate" style="font-weight:600">${a.name}</div><div class="tk-truncate tk-subtle" style="font-size:var(--tk-fs-xs)">${a.iban || a.bank || a.type}</div></div></div>
+            <div class="tk-account__bal" style=${neg ? 'color:var(--tk-c-danger)' : ''}>${money(ctx, a.balance)}</div>
             <div class="tk-account__foot">${a.delta != null ? html`<span class="tk-num" style=${`font-size:var(--tk-fs-sm);font-weight:600;color:var(--tk-c-${a.delta >= 0 ? 'success' : 'danger'})`}>${a.delta > 0 ? '+' : ''}${String(a.delta).replace('.', ',')} % <span class="tk-subtle" style="font-weight:400">30 Tage</span></span>` : html`<span></span>`}
               ${a.spark && html`<${Sparkline} values=${a.spark} width=${64} height=${22} tone=${a.balance >= 0 ? col : 'danger'} />`}</div></button>`; })}
       </div></div>`;

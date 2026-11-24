@@ -139,6 +139,7 @@ export const kbNext = {
   .tk-kb-next { display:flex; flex-direction:column; gap:10px; padding:var(--tk-space-5); border-radius:var(--tk-radius-lg); background:var(--tk-c-surface); border:1px solid var(--tk-c-border); border-left:4px solid var(--tone, var(--tk-c-accent)); min-width:0; }
   .tk-kb-next__title { font-size:var(--tk-fs-xl); font-weight:var(--tk-fw-bold); letter-spacing:var(--tk-ls-tight); line-height:1.2; overflow-wrap:anywhere; }
   .tk-kb-next__sub { font-size:var(--tk-fs-sm); color:var(--tk-c-text-muted); }
+  .tk-kb-next__ev { display:flex; align-items:center; gap:6px; }
   .tk-kb-next__bar { display:flex; align-items:center; gap:10px; font-size:var(--tk-fs-sm); color:var(--tk-c-text-muted); }
   .tk-kb-next__bar .tk-progress { flex:1; }
   .tk-kb-next__row { display:flex; align-items:center; gap:10px; padding:10px 0; border-top:1px solid var(--tk-c-border); min-width:0; }
@@ -162,11 +163,11 @@ export const kbNext = {
         <div><${Button} variant="primary" icon=${p < 1 ? 'book-open' : 'rotate-ccw'} onClick=${() => open(a)}>${p < 1 ? 'Weiterlesen' : 'Noch einmal lesen'}<//></div></div>`;
     }
     if (props.mode === 'context') {
-      const ev = nextEvent(data.events, ctx.today, []);
+      const ev = nextEvent(data.events, ctx.today);
       const hit = ev && arts.map((a) => ({ a, score: (a.tags || []).includes(ev.category) * 1 + sig(ev.title).filter((w) => sig(`${a.title} ${a.tags?.join(' ')}`).includes(w)).length * 2 })).filter((x) => x.score > 0).sort((x, y) => y.score - x.score)[0];
       if (!ev || !hit) return empty('Zu den nächsten Terminen gibt es keinen passenden Artikel.');
       return html`<div class="tk-kb-next" style=${`--tone:${toneColor('warning')}`}><span class="tk-label">${label} · ${untilLabel(ev.start, ctx.today)}</span>
-        <div class="tk-kb-next__sub"><${Icon} name="calendar-clock" size=${14} /> ${ev.title} · ${fmtTime(ev.start)} Uhr</div>
+        <div class="tk-kb-next__sub tk-kb-next__ev"><${Icon} name="calendar-clock" size=${14} /><span>${ev.title} · ${fmtTime(ev.start)} Uhr</span></div>
         <div class="tk-kb-next__title">${hit.a.title}</div><div class="tk-kb-next__sub">${hit.a.area} › ${hit.a.category} · ${readMinutes(hit.a.body)} Min. Lesezeit</div>
         <div><${Button} variant="primary" icon="book-open" onClick=${() => open(hit.a)}>Artikel lesen<//></div></div>`;
     }

@@ -38,7 +38,7 @@ export const eventConflicts = {
     const day = dayStart(ev._s), same = onDay(occurrences(events, day, addDays(day, 1)), day), clash = overlapsWith(ev, same);
     if (!clash.length && props.hideWhenClear) return null;
     const dur = Math.max(15, Math.round((ev._e - ev._s) / 60000));
-    const slots = freeSlots(same.filter((o) => o.id !== ev.id), Number(props.workFrom) * 60, Number(props.workTo) * 60, dur).filter(([a]) => a !== minutesOf(ev._s)).slice(0, 3);
+    const slots = freeSlots(same.filter((o) => o.id !== ev.id), Number(props.workFrom) * 60, Number(props.workTo) * 60, dur).filter(([a]) => a !== minutesOf(ev._s)).sort((x, y) => Math.abs(x[0] - minutesOf(ev._s)) - Math.abs(y[0] - minutesOf(ev._s))).slice(0, 3);
     const move = (a) => { const s = new Date(day); s.setHours(0, a, 0, 0); const base = baseOf(events, ev); patchEvent(setData, ev, { start: toIso(ev.seriesId ? new Date(`${String(base.start).slice(0, 10)}T${hm(a)}:00`) : s), end: toIso(ev.seriesId ? new Date(`${String(base.end).slice(0, 10)}T${hm(a + dur)}:00`) : new Date(+s + dur * 60000)) }); ctx.emit('conflict.move', { id: ev.id, to: hm(a) }); ctx.emit('event.update', { id: ev.id }); ctx.toast(`„${ev.title}“ auf ${hm(a)} Uhr verschoben`); };
     return html`<${Card} title=${props.title} icon="shield-check" key=${ev.id}><div class="tk-col" style="gap:var(--tk-space-3)" data-qa="event-conflicts">
       ${clash.length ? html`<div class="tk-ev-conf__warn" role="alert"><${Icon} name="alert-triangle" size=${20} /><div><b>Überschneidung mit ${clash.length === 1 ? 'einem Termin' : `${clash.length} Terminen`}</b><div class="tk-muted" style="font-size:var(--tk-fs-sm);margin-top:2px">Zwei Dinge gleichzeitig – einer der Termine sollte weichen.</div></div></div>

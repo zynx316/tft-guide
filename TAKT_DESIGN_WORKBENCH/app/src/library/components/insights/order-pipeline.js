@@ -1,35 +1,34 @@
 // Vertrieb: Bestellungen nach Status (neu → bezahlt → versendet → zugestellt)
 import { html } from '../../../lib/html.js';
 import { useState } from 'preact/hooks';
-import { Card, Button, Badge, Icon, EmptyState, Tabs } from '../../ui.js';
+import { Card, Button, Badge, Icon, EmptyState, Tabs, Field, Input, Select } from '../../ui.js';
 import { fmt } from '../../../lib/util.js';
 import { toList } from '../../helpers.js';
-import { rel, filterItems } from './shared.js';
+import { rel, filterItems, ORDER_STAGES } from './shared.js';
+import { money } from '../../helpers.js';
 // Zusatzkomponenten der Inhalts-Bereiche (Notizen, Wissen, Erkennung): werden hier mit registriert, weil content/index.js nur Einzelexporte kennt.
 import { noteChecklists, noteInbox } from '../content/note-list.js';
 import { noteFocus } from '../content/note-editor.js';
 import { kbAreas } from '../content/kb-tree.js';
 import { kbNext } from '../content/kb-article.js';
+import { captureLauncher, docScanner } from '../content/capture-panel.js';
+import { receiptReview, businessCard } from '../content/ocr-result.js';
 
-const STAGES = {
-  new: { label: 'Neu', icon: 'inbox', tone: 'info', next: 'paid', action: 'Bezahlt markieren', done: 'bezahlt' },
-  paid: { label: 'Bezahlt', icon: 'banknote', tone: 'accent', next: 'shipped', action: 'Versenden', done: 'versendet' },
-  shipped: { label: 'Versendet', icon: 'truck', tone: 'warning', next: 'delivered', action: 'Zugestellt', done: 'zugestellt' },
-  delivered: { label: 'Zugestellt', icon: 'check-circle-2', tone: 'success', next: null },
-};
+const STAGES = ORDER_STAGES;
 const CHIPS = Object.fromEntries(Object.entries(STAGES).map(([k, s]) => [s.label.toLowerCase(), (o) => o.status === k]));
 
 export const orderPipeline = {
   id: 'order-pipeline',
   name: 'Bestell-Pipeline',
   category: 'Vertrieb',
-  description: 'Bestellungen nach Status (neu → bezahlt → versendet → zugestellt) mit Zählern, Summen und Weiterschalten per Aktion. Als Reiter-Liste oder Spalten (Desktop).',
-  version: '1.0',
+  description: 'Bestellungen nach Status (neu → bezahlt → versendet → zugestellt) mit Zählern, Summen und Weiterschalten per Aktion. Als Reiter-Liste oder Spalten (Desktop). Ein Tipp auf eine Bestellung öffnet einen Dialog oder – mit openIn „select“ – meldet order.open mit ID (für die Navigation zum Bestelldetail).',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Bestellungen' },
     { name: 'stages', label: 'Angezeigte Status', type: 'list', default: ['new', 'paid', 'shipped', 'delivered'] },
     { name: 'mode', label: 'Darstellung', type: 'select', options: ['tabs', 'columns'], default: 'tabs' },
     { name: 'initial', label: 'Start-Status', type: 'text', default: '' },
+    { name: 'openIn', label: 'Öffnen in', type: 'select', options: ['dialog', 'select'], default: 'dialog' },
     { name: 'respectFilter', label: 'Suche/Filter beachten', type: 'boolean', default: true },
   ],
   data: [{ slot: 'orders', label: 'Bestellungen', default: 'orders', shape: '{id,number,customer,channel,items,total,date,status:new|paid|shipped|delivered}[]', required: true }],
@@ -84,6 +83,7 @@ export const orderPipeline = {
     };
     const open = (o) => {
       ctx.setUi('selectedId', o.id); ctx.emit('order.open', { id: o.id });
+      if (props.openIn === 'select') return;
       const st = STAGES[o.status];
       ctx.openDialog({ title: `Bestellung ${o.number}`,
         body: () => html`<div class="tk-col" style="gap:10px"><div class="tk-row"><${Badge} tone=${st.tone}>${st.label}<//><span class="tk-muted">${o.channel} · ${rel(o.date, ctx.today)}</span></div>
@@ -122,4 +122,79 @@ export const orderPipeline = {
   },
 };
 
-export default [orderPipeline, noteChecklists, noteInbox, noteFocus, kbAreas, kbNext];
+
+// ------------------------------------------------------------------------------------------------ Bestelldetail ---
+const STEPS = ['new', 'paid', 'shipped', 'delivered'];
+const CARRIERS = ['DHL', 'DPD', 'Hermes'];
+const sumLines = (o) => Math.round(((o.lines || []).reduce((s, l) => s + l.qty * l.price, 0)) * 100) / 100;
+
+function ShipForm({ o, onSave, close }) {
+  const [carrier, setCarrier] = useState(o.carrier || 'DHL'); const [track, setTrack] = useState(o.tracking || `0034043412${String(o.number).replace(/\D/g, '')}`);
+  return html`<div class="tk-col" style="gap:12px"><${Field} label="Paketdienst"><${Select} value=${carrier} options=${CARRIERS} onChange=${setCarrier} /><//><${Field} label="Sendungsnummer" error=${track.trim() ? '' : 'Sendungsnummer fehlt.'}><${Input} value=${track} onInput=${setTrack} invalid=${!track.trim()} /><//>
+    <div class="tk-row" style="justify-content:flex-end"><${Button} onClick=${close}>Abbrechen<//><${Button} variant="primary" icon="truck" disabled=${!track.trim()} onClick=${() => { onSave(carrier, track.trim()); close(); }}>Als versendet markieren<//></div></div>`;
+}
+
+const orderDetail = {
+  id: 'order-detail',
+  name: 'Bestelldetail',
+  category: 'Vertrieb',
+  description: 'Die gewählte Bestellung (ctx.ui.selectedId) im Detail: Status-Verlauf mit Zeitpunkten, nächster Schritt (Bezahlt markieren, Versenden mit Paketdienst und Sendungsnummer, Zugestellt), Kunde, Positionen mit Summen und enthaltener MwSt, Zahlung und Versand. Layout „focus“ zeigt nur den nächsten Schritt.',
+  version: '1.0',
+  props: [
+    { name: 'layout', label: 'Layout', type: 'select', options: ['full', 'focus'], default: 'full' },
+  ],
+  data: [{ slot: 'orders', label: 'Bestellungen', default: 'orders', shape: '{id,number,customer,channel,channelId,status,date,lines:[{name,qty,price}],shipping,payment,email,address,carrier?,tracking?,history?}[]', required: true }],
+  events: ['order.advance', 'channel.open', 'order.return', 'order.contact', 'order.invoice'],
+  states: ['empty'],
+  css: `
+  .tk-ord { display:flex; flex-direction:column; gap:var(--tk-space-4); min-width:0; }
+  .tk-ord__head { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .tk-ord__no { font-size:var(--tk-fs-2xl); font-weight:var(--tk-fw-bold); letter-spacing:var(--tk-ls-tight); }
+  .tk-ord__steps { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:6px; list-style:none; margin:0; padding:0; }
+  .tk-ord__step { display:flex; flex-direction:column; align-items:center; gap:4px; text-align:center; font-size:var(--tk-fs-xs); color:var(--tk-c-text-subtle); position:relative; padding-top:2px; }
+  .tk-ord__step i { width:34px; height:34px; border-radius:50%; display:grid; place-items:center; background:var(--tk-c-surface3); color:var(--tk-c-text-subtle); font-style:normal; }
+  .tk-ord__step[data-state="done"] i { background:var(--tk-c-success-soft); color:var(--tk-c-success); }
+  .tk-ord__step[data-state="current"] i { background:var(--tk-c-accent); color:var(--tk-c-on-accent, var(--tk-c-bg)); }
+  .tk-ord__step[data-state="done"], .tk-ord__step[data-state="current"] { color:var(--tk-c-text); font-weight:var(--tk-fw-medium); }
+  .tk-ord__step small { font-size:11px; color:var(--tk-c-text-muted); font-weight:400; min-height:14px; }
+  .tk-ord__next { display:flex; align-items:center; gap:12px; padding:var(--tk-space-4); border-radius:var(--tk-radius-lg); background:var(--tk-c-accent-soft); flex-wrap:wrap; }
+  .tk-ord__next--big { flex-direction:column; align-items:stretch; padding:var(--tk-space-5); gap:14px; } .tk-ord__next--big .tk-btn { min-height:52px; justify-content:center; font-size:var(--tk-fs-lg); }
+  .tk-ord__cols { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:var(--tk-space-4); }
+  .bp-mobile .tk-ord__cols, .bp-tablet .tk-ord__cols { grid-template-columns:minmax(0,1fr); }
+  .tk-ord__kv { display:grid; grid-template-columns:minmax(90px, auto) 1fr; gap:8px 16px; margin:0; font-size:var(--tk-fs-sm); }
+  .tk-ord__kv dt { color:var(--tk-c-text-subtle); } .tk-ord__kv dd { margin:0; min-width:0; overflow-wrap:anywhere; }
+  .tk-ord__line { display:grid; grid-template-columns:minmax(0,1fr) auto auto; gap:12px; padding:10px var(--tk-space-4); border-bottom:1px solid var(--tk-c-border); font-size:var(--tk-fs-sm); align-items:baseline; }
+  .tk-ord__line .tk-num { text-align:right; }
+  .tk-ord__sum { display:flex; justify-content:space-between; padding:6px var(--tk-space-4); font-size:var(--tk-fs-sm); color:var(--tk-c-text-muted); }
+  .tk-ord__sum--total { color:var(--tk-c-text); font-weight:var(--tk-fw-bold); font-size:var(--tk-fs-lg); border-top:1px solid var(--tk-c-border); padding-top:10px; padding-bottom:12px; }
+  .tk-ord__acts { display:flex; gap:8px; flex-wrap:wrap; } .bp-mobile .tk-ord__acts .tk-btn { flex:1 1 40%; min-height:44px; justify-content:center; }`,
+  example: { data: { orders: [{ id: 'o4', number: '#4181', customer: 'Jonas Weber', channel: 'Etsy', channelId: 'etsy', status: 'paid', date: '2026-11-23T19:20:00', email: 'jonas.weber@example.org', address: 'Venloer Straße 88, 50823 Köln', payment: 'PayPal', shipping: 4.9, lines: [{ name: 'Keramikvase Skagen', qty: 1, price: 38 }], history: [{ status: 'new', at: '2026-11-23T19:20:00' }, { status: 'paid', at: '2026-11-23T19:22:00' }] }] } },
+  render: ({ props, data, setData, ctx }) => {
+    const all = data.orders || []; const o = all.find((x) => x.id === ctx.ui.selectedId) || all[0];
+    if (!o) return html`<${Card}><${EmptyState} icon="package" title="Keine Bestellung gewählt" text="Wähle eine Bestellung aus der Liste." /><//>`;
+    const st = STAGES[o.status]; const sub = sumLines(o); const total = Math.round((sub + (o.shipping || 0)) * 100) / 100; const vat = Math.round((total / 1.19) * 0.19 * 100) / 100;
+    const at = (k) => (o.history || []).find((h) => h.status === k)?.at;
+    const advance = (extra = {}) => { setData('orders', (list) => list.map((x) => (x.id === o.id ? { ...x, ...extra, status: st.next, history: [...(x.history || []), { status: st.next, at: ctx.today.toISOString() }] } : x))); ctx.emit('order.advance', { id: o.id, from: o.status, to: st.next }); ctx.toast(`${o.number} ${st.done}`); };
+    const act = () => (o.status === 'paid' ? ctx.openDialog({ title: `${o.number} versenden`, body: (close) => html`<${ShipForm} o=${o} close=${close} onSave=${(carrier, tracking) => advance({ carrier, tracking })} />` }) : advance());
+    const cur = STEPS.indexOf(o.status);
+    const stepper = html`<ol class="tk-ord__steps" aria-label="Bestellstatus">${STEPS.map((k, i) => html`<li class="tk-ord__step" data-state=${i < cur || (i === cur && k === 'delivered') ? 'done' : i === cur ? 'current' : 'todo'}><i><${Icon} name=${i < cur || (i === cur && k === 'delivered') ? 'check' : STAGES[k].icon} size=${16} /></i>${STAGES[k].label}<small>${at(k) ? rel(at(k), ctx.today) : ''}</small></li>`)}</ol>`;
+    const nextBox = (big) => html`<div class=${`tk-ord__next ${big ? 'tk-ord__next--big' : ''}`}>${st.next ? html`<div class="tk-grow"><div style="font-weight:var(--tk-fw-semibold)">Nächster Schritt</div><div class="tk-muted" style="font-size:var(--tk-fs-sm)">${o.status === 'new' ? 'Zahlungseingang prüfen und bestätigen.' : o.status === 'paid' ? 'Paket packen, Paketdienst und Sendungsnummer eintragen.' : 'Zustellung bestätigen, sobald das Paket angekommen ist.'}</div></div>
+      <${Button} variant="primary" icon=${o.status === 'paid' ? 'truck' : 'arrow-right'} onClick=${act}>${st.action}<//>` : html`<${Icon} name="check-circle-2" size=${20} /><div class="tk-grow"><strong>Abgeschlossen</strong><div class="tk-muted" style="font-size:var(--tk-fs-sm)">Die Bestellung wurde zugestellt.</div></div>`}</div>`;
+    const head = html`<div class="tk-ord__head"><span class="tk-ord__no">${o.number}</span><${Badge} tone=${st.tone} icon=${st.icon}>${st.label}<//>
+      <button type="button" class="tk-btn tk-btn--ghost tk-btn--sm" onClick=${() => ctx.emit('channel.open', { id: o.channelId })}><${Icon} name="store" size=${14} />${o.channel}<${Icon} name="chevron-right" size=${14} /></button><span class="tk-subtle" style="margin-left:auto">${rel(o.date, ctx.today)}</span></div>`;
+    const customer = html`<${Card} title="Kunde" icon="user"><dl class="tk-ord__kv"><dt>Name</dt><dd>${o.customer}</dd><dt>E-Mail</dt><dd>${o.email || '–'}</dd><dt>Lieferadresse</dt><dd>${o.address || '–'}</dd></dl>
+      <div style="margin-top:12px"><${Button} size="sm" icon="mail" onClick=${() => { ctx.emit('order.contact', { id: o.id }); ctx.toast(`E-Mail an ${o.customer}`); }}>Kunde kontaktieren<//></div><//>`;
+    if (props.layout === 'focus') return html`<div class="tk-ord">${head}${stepper}${nextBox(true)}${customer}
+      <${Card} title="Summe" icon="banknote"><div class="tk-ord__sum tk-ord__sum--total" style="border:0;padding:0"><span>Gesamt</span><span class="tk-num">${money(ctx, total)}</span></div><div class="tk-subtle" style="font-size:var(--tk-fs-xs);margin-top:4px">${(o.lines || []).reduce((s, l) => s + l.qty, 0)} Artikel · ${o.payment}</div><//></div>`;
+    const ship = html`<${Card} title="Zahlung und Versand" icon="truck"><dl class="tk-ord__kv"><dt>Zahlung</dt><dd>${o.payment || '–'}${at('paid') ? ` · bezahlt ${rel(at('paid'), ctx.today)}` : ' · noch nicht bezahlt'}</dd><dt>Paketdienst</dt><dd>${o.carrier || 'noch nicht gewählt'}</dd>
+      <dt>Sendungsnr.</dt><dd>${o.tracking ? html`<span class="tk-num">${o.tracking}</span>` : '–'}</dd></dl>${o.tracking && html`<div style="margin-top:12px"><${Button} size="sm" icon="external-link" onClick=${() => ctx.toast(`Sendung ${o.tracking} verfolgen`)}>Sendung verfolgen<//></div>`}<//>`;
+    return html`<div class="tk-ord">${head}${stepper}${nextBox(false)}
+      <${Card} flush title="Positionen" icon="package" actions=${html`<${Badge}>${(o.lines || []).length}<//>`}>${(o.lines || []).map((l) => html`<div class="tk-ord__line"><span>${l.name}</span><span class="tk-subtle tk-num">${l.qty} × ${money(ctx, l.price)}</span><span class="tk-num" style="font-weight:var(--tk-fw-medium)">${money(ctx, l.qty * l.price)}</span></div>`)}
+        <div class="tk-ord__sum" style="padding-top:10px"><span>Zwischensumme</span><span class="tk-num">${money(ctx, sub)}</span></div><div class="tk-ord__sum"><span>Versand</span><span class="tk-num">${money(ctx, o.shipping || 0)}</span></div>
+        <div class="tk-ord__sum"><span>darin MwSt 19 %</span><span class="tk-num">${money(ctx, vat)}</span></div><div class="tk-ord__sum tk-ord__sum--total"><span>Gesamt</span><span class="tk-num">${money(ctx, total)}</span></div><//>
+      <div class="tk-ord__cols">${customer}${ship}</div>
+      <div class="tk-ord__acts"><${Button} icon="rotate-ccw" onClick=${() => { ctx.emit('order.return', { id: o.id }); ctx.toast('Retoure vorgemerkt – Retouren-Workflow folgt'); }}>Retoure anlegen<//><${Button} icon="download" onClick=${() => { ctx.emit('order.invoice', { id: o.id }); ctx.toast('Rechnung als PDF exportiert'); }}>Rechnung exportieren<//></div></div>`;
+  },
+};
+
+export default [orderPipeline, orderDetail, noteChecklists, noteInbox, noteFocus, kbAreas, kbNext, captureLauncher, docScanner, receiptReview, businessCard];

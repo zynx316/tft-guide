@@ -7,7 +7,7 @@ import { slots, pctx, eur, eur0 } from './_fin.js';
 import { fmtPercent } from '../../../lib/format.js';
 import { ex } from './_example.js';
 
-const W = 640, H = 220, PX = 8, PT = 12, PB = 22;
+const PX = 8, PT = 12, PB = 24;
 const TONES = [1, 3, 4];
 
 export const finNetworthChart = {
@@ -33,7 +33,7 @@ export const finNetworthChart = {
   .tk-fnn__tip strong { display:block; font-variant-numeric:tabular-nums; white-space:nowrap; }`,
   example: { data: ex('accounts', 'history', 'prefs') },
   render: function FinNetworthChart({ props, data, ctx }) {
-    const c = pctx(ctx, data), hist = data.history || {}, labels = arr(hist.labels), series = arr(hist.series);
+    const W = ctx.bp === 'mobile' ? 340 : 640, c = pctx(ctx, data), hist = data.history || {}, labels = arr(hist.labels), series = arr(hist.series);
     const [range, setRange] = useState(String(props.range));
     const [pick, setPick] = useState(null);
     if (!labels.length || !series.length) return html`<${Card} title=${props.title} icon="trending-up"><${EmptyState} icon="trending-up" title="Noch kein Verlauf" text="Nach dem ersten Monat mit Kontoständen erscheint hier dein Vermögensverlauf." /><//>`;
@@ -54,7 +54,7 @@ export const finNetworthChart = {
         ${[0.25, 0.5, 0.75, 1].map((f) => html`<line x1=${PX} x2=${W - PX} y1=${y(max * f)} y2=${y(max * f)} stroke="var(--tk-c-border)" stroke-width="1" />`)}
         ${vals.map((_, si) => html`<path d=${area(si)} fill=${toneColor(TONES[si % 3])} opacity=".78" stroke="var(--tk-c-surface)" stroke-width="1" />`)}
         <line x1=${x(idx)} x2=${x(idx)} y1=${PT} y2=${h - PB} stroke="var(--tk-c-text)" stroke-width="1.5" stroke-dasharray="3 3" opacity=".7" />
-        ${lbl.map((l, i) => (n <= 6 || i % 2 === (n - 1) % 2) && html`<text x=${x(i)} y=${h - 6} text-anchor="middle" fill="var(--tk-c-text-subtle)" font-size="12">${l}</text>`)}
+        ${lbl.map((l, i) => (n <= 6 || i % 2 === (n - 1) % 2) && html`<text x=${x(i)} y=${h - 6} text-anchor="middle" fill="var(--tk-c-text-subtle)" font-size=${ctx.bp === 'mobile' ? 11 : 12}>${l}</text>`)}
         ${lbl.map((l, i) => html`<rect class="tk-fnn__hit" x=${x(i) - (W / n) / 2} y="0" width=${W / n} height=${h} onClick=${() => { setPick(i); ctx.emit('networth.point', { label: l }); }}><title>${l}: ${eur0(c, totals[i])}</title></rect>`)}</svg>
       <div class="tk-fnn__tip" aria-live="polite"><div><span class="tk-fn-cap">${lbl[idx]}</span><strong>${eur0(c, totals[idx])}</strong></div>${series.map((s, si) => html`<div><span class="tk-fn-sub" style="display:flex;gap:6px;align-items:center"><i style=${`width:9px;height:9px;border-radius:3px;background:${toneColor(TONES[si % 3])}`}></i>${s.name}</span><strong>${eur0(c, vals[si][idx])}</strong></div>`)}</div></div><//>`;
   },

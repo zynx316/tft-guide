@@ -85,3 +85,8 @@ export const taskList = {
   `tk-cal-…`, `tk-task-…`, `tk-xc-…` für Querschnitt), um Kollisionen zwischen Bereichen auszuschließen.
 - **Leitlinien:** Texte in Gesundheits- und Finanzkomponenten werden von `npm run check` gegen die Begriffslisten in
   `docs/HEALTH_GUIDELINES.md` und `docs/FINANCE_GUIDELINES.md` geprüft.
+- **Navigation aus Komponenten:** `ctx.emit(event, { id, to })` – liegt keine Navigationsregel (`interaction.to`) für das Event
+  vor, navigiert der App-Modus zu `detail.to` (Feature-ID oder `module:<id>`). So kann **ein** Event (z. B. `tile.open`,
+  `link.open`) viele Ziele haben. `ctx.emit` liefert `true`, wenn navigiert wurde – Hinweis-Toasts nur bei `false` zeigen.
+  `ctx.mode` ist `feature` (Einzel-Screen), `app` (Launcher) oder `component` (Galerie); Detailansichten öffnen im App-Modus
+  per Navigation statt Dialog (keine DOM-Erkennung über `.tk-app` mehr nötig).

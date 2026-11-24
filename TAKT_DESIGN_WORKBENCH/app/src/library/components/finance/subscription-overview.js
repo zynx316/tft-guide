@@ -29,6 +29,7 @@ export const finSubscriptionOverview = {
   .tk-fnsub__row > .tk-fn-tap { flex:1 1 auto; min-width:0; padding:2px 4px; }
   .tk-fnsub__call { display:flex; flex-direction:column; gap:8px; padding:var(--tk-space-3) var(--tk-space-4); border-radius:var(--tk-radius-md); background:var(--tk-c-warning-soft); border:1px solid var(--tk-c-border); }
   .tk-fnsub__calls { display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 250px), 1fr)); gap:var(--tk-space-3); }
+  .tk-fnsub__call .tk-fn-sub { color:var(--tk-c-text-muted); }
   .tk-fnsub__call--info { background:var(--tk-c-info-soft); }
   .tk-fnsub__hero { display:flex; flex-direction:column; gap:10px; margin-bottom:var(--tk-space-4); }`,
   example: { props: {}, data: ex('subscriptions', 'subMeta', 'prefs') },

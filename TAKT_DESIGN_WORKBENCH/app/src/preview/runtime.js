@@ -165,7 +165,7 @@ function Overlays({ dialogs, closeDialog, toasts }) {
 // cache (optional): Map, in der der Bedienzustand beim Navigieren erhalten bleibt (App-Modus).
 // Lebendige Uhr (nur Launcher, ctx.live): startet am Referenztag und läuft ab dem Laden weiter. In QA/Workbench fest.
 const LIVE_T0 = Date.now();
-function Screen({ variant, demoData, cacheKey, cache, theme, today, forcedState, overlays, emit, bp, width, world, privacy, params, env, live }) {
+function Screen({ variant, demoData, cacheKey, cache, theme, today, forcedState, overlays, emit, bp, width, world, privacy, params, env, live, mode = 'feature' }) {
   const cached = cache && cache.get(cacheKey);
   const [data, setDataState] = useState(() => cached?.data || clone(demoData || {}));
   const [ui, setUiState] = useState(() => ({ ...(cached?.ui || {}), ...(params?.id != null ? { selectedId: params.id } : {}), ...(params?.ui || {}) }));
@@ -179,7 +179,7 @@ function Screen({ variant, demoData, cacheKey, cache, theme, today, forcedState,
     },
   };
   const ctx = {
-    bp, width, theme, today: new Date(today || DEFAULT_TODAY), now: () => (live ? new Date(new Date(today || DEFAULT_TODAY).getTime() + (Date.now() - LIVE_T0)) : new Date(today || DEFAULT_TODAY)), live: !!live, fmt: FMT, emit, ui, privacy: !!privacy, env: env || {},
+    bp, width, theme, today: new Date(today || DEFAULT_TODAY), now: () => (live ? new Date(new Date(today || DEFAULT_TODAY).getTime() + (Date.now() - LIVE_T0)) : new Date(today || DEFAULT_TODAY)), live: !!live, mode, fmt: FMT, emit, ui, privacy: !!privacy, env: env || {},
     setUi: (k, v) => setUiState((u) => ({ ...u, [k]: v })),
     openDialog: overlays.openDialog, toast: overlays.toast,
   };
@@ -229,7 +229,7 @@ function PreviewInner({ payload }) {
   if (payload.mode === 'component') {
     const block = { id: 'preview', component: payload.component.id, props: payload.component.props || {} };
     const variant = { id: 'component', layout: { type: 'stack' }, blocks: [block] };
-    content = html`<div class="tk-bare"><${Screen} variant=${variant} demoData=${payload.component.data} theme=${payload.theme} today=${payload.today} forcedState=${payload.state} overlays=${ov} emit=${emit} bp=${bp} width=${width} /></div>`;
+    content = html`<div class="tk-bare"><${Screen} variant=${variant} demoData=${payload.component.data} theme=${payload.theme} today=${payload.today} forcedState=${payload.state} overlays=${ov} emit=${emit} bp=${bp} width=${width} mode="component" /></div>`;
   } else {
     const navEvt = (event, detail) => () => post({ type: 'interaction', event, detail });
     content = html`<${AppShell} chrome=${payload.chrome} bp=${bp} modules=${payload.modules} activeModule=${payload.module?.id} moduleName=${payload.module?.name} title=${payload.feature?.name}
@@ -277,10 +277,17 @@ function AppPlayer({ payload }) {
   const goModule = (mid) => { const m = (payload.modules || []).find((x) => x.id === mid); if (m?.home) go(m.home, { reset: true }); };
   const back = () => { if (ov.dialogs?.length) return ov.closeDialog(ov.dialogs[ov.dialogs.length - 1].id); setStack((st) => (st.length > 1 ? st.slice(0, -1) : st)); };
   appBack = back;
+  // Navigation: Regel aus interaction.to (Vorrang) oder Ziel im Event selbst (detail.to) – ein Event kann so mehrere Ziele
+  // haben (Kacheln, Verknüpfungs-Chips). Ziele: Feature-ID oder module:<id> (Modul-Startseite). Rückgabe: true = navigiert.
+  const resolveTo = (to) => (typeof to !== 'string' ? null : to.startsWith('module:') ? (payload.modules || []).find((m) => m.id === to.slice(7))?.home || null : features[to] ? to : null);
   const emit = useCallback((event, detail) => {
     post({ type: 'interaction', event, detail: detail ?? null, ts: Date.now(), featureId: fid });
     const rule = (features[fid]?.nav || []).find((r) => r.event === event);
-    if (rule && features[rule.to]) setTimeout(() => go(rule.to, { params: detail && (detail.id != null || detail.ui) ? { id: detail.id, ui: detail.ui } : null }), 60);
+    const target = resolveTo(rule?.to) || resolveTo(detail?.to);
+    if (!target) return false;
+    const otherModule = features[target]?.moduleId !== features[fid]?.moduleId && String(rule?.to || detail?.to).startsWith('module:');
+    setTimeout(() => go(target, { reset: otherModule, params: detail && (detail.id != null || detail.ui) ? { id: detail.id, ui: detail.ui } : null }), 60);
+    return true;
   }, [fid]);
   const ov = useOverlays(emit);
 
@@ -314,7 +321,7 @@ function AppPlayer({ payload }) {
       sideFeatures=${moduleFeatures.filter((x) => x.variant)} activeFeature=${fid} onFeature=${(id) => go(id)}
       onSearch=${() => (features['system.search'] ? go('system.search') : ov.toast('Globale Suche – noch kein Design'))} onBell=${() => (features['system.notifications'] ? go('system.notifications') : ov.toast('Mitteilungen – noch kein Design'))}>
     ${isPad ? html`<${Launchpad} modules=${payload.modules || []} world=${world.data} today=${new Date(payload.today || DEFAULT_TODAY)} privacy=${payload.privacy} onOpen=${goModule} />`
-    : f?.variant ? html`<${Screen} key=${`${fid}|${JSON.stringify(top.params)}`} cacheKey=${`${fid}|${JSON.stringify(top.params)}`} cache=${cache} variant=${f.variant} demoData=${f.demoData} theme=${payload.theme} today=${payload.today} forcedState=${payload.state} overlays=${ov} emit=${emit} bp=${bp} width=${width} world=${world} privacy=${payload.privacy} params=${top.params} env=${payload.env} live=${payload.live} />` : f ? html`<${SketchScreen} feature=${f} />` : html`<${NoVariant} />`}
+    : f?.variant ? html`<${Screen} key=${`${fid}|${JSON.stringify(top.params)}`} cacheKey=${`${fid}|${JSON.stringify(top.params)}`} cache=${cache} variant=${f.variant} demoData=${f.demoData} theme=${payload.theme} today=${payload.today} forcedState=${payload.state} overlays=${ov} emit=${emit} bp=${bp} width=${width} world=${world} privacy=${payload.privacy} params=${top.params} env=${payload.env} live=${payload.live} mode="app" />` : f ? html`<${SketchScreen} feature=${f} />` : html`<${NoVariant} />`}
   <//><${Overlays} dialogs=${ov.dialogs} closeDialog=${ov.closeDialog} toasts=${ov.toasts} />`;
 }
 

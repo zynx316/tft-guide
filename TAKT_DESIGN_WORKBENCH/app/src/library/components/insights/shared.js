@@ -27,3 +27,28 @@ export function filterItems(items, ui = {}, fields = [], chipMap = {}) {
 }
 
 export const SPIN_CSS = `@keyframes tk-spin { to { transform: rotate(360deg); } } .tk-spin { animation: tk-spin .9s linear infinite; } @media (prefers-reduced-motion: reduce) { .tk-spin { animation: none; } }`;
+
+// ---------------------------------------------------------------- Vertrieb: gemeinsame Kanal-Aktionen ---
+import { html as _html } from '../../../lib/html.js';
+import { Button as _Button } from '../../ui.js';
+
+/** Kanal im geteilten channels-Slot ändern. */
+export const patchChannel = (setData, id, p) => setData('channels', (all) => all.map((c) => (c.id === id ? { ...c, ...p } : c)));
+
+/** „Neu verbinden“-Dialog (Simulation): stellt den Kanal nach Bestätigung wieder her. */
+export function reconnectDialog(ctx, setData, ch) {
+  ctx.emit('channel.reconnect', { id: ch.id });
+  ctx.openDialog({
+    title: `${ch.name} neu verbinden`,
+    body: () => _html`<p class="tk-muted">Du wirst zur Anmeldung bei ${ch.name} weitergeleitet, um den Zugriff zu erneuern. (Simulation in der Vorschau)</p>`,
+    footer: (close) => _html`<${_Button} onClick=${close}>Abbrechen<//><${_Button} variant="primary" icon="link-2" onClick=${() => { patchChannel(setData, ch.id, { status: 'connected', error: null, needsAuth: false, lastSync: ctx.today.toISOString() }); ctx.toast(`${ch.name} wieder verbunden`); close(); }}>Verbinden<//>`,
+  });
+}
+
+/** Bestellstatus-Reihenfolge mit Beschriftungen (Pipeline, Detail, Attention). */
+export const ORDER_STAGES = {
+  new: { label: 'Neu', icon: 'inbox', tone: 'info', next: 'paid', action: 'Bezahlt markieren', done: 'bezahlt' },
+  paid: { label: 'Bezahlt', icon: 'banknote', tone: 'accent', next: 'shipped', action: 'Versenden', done: 'versendet' },
+  shipped: { label: 'Versendet', icon: 'truck', tone: 'warning', next: 'delivered', action: 'Zugestellt', done: 'zugestellt' },
+  delivered: { label: 'Zugestellt', icon: 'check-circle-2', tone: 'success', next: null },
+};

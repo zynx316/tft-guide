@@ -35,7 +35,8 @@ export const pageHeader = {
   example: { props: { title: 'Wochenansicht', subtitle: 'KW 48 · 24.–30. November', eyebrow: 'Kalender', primaryLabel: 'Termin' } },
   render: ({ props, ctx }) => {
     const mobile = ctx.bp === 'mobile';
-    const primary = () => { ctx.emit(props.primaryEvent || 'header.primary'); if ((props.primaryEvent || 'header.primary') === 'header.primary') ctx.toast(`${props.primaryLabel} – Aktion ausgelöst`); };
+    // Im App-Modus navigiert die Runtime (emit → true); dann kein zusätzlicher Hinweis.
+    const primary = () => { if (!ctx.emit(props.primaryEvent || 'header.primary') && (props.primaryEvent || 'header.primary') === 'header.primary') ctx.toast(`${props.primaryLabel} – Aktion ausgelöst`); };
     return html`<header class="tk-page-header">
       <div class="tk-page-header__text">
         ${props.eyebrow && !mobile && html`<div class="tk-label" style="margin-bottom:6px">${props.eyebrow}</div>`}
@@ -43,7 +44,7 @@ export const pageHeader = {
         ${props.subtitle && html`<p class="tk-page-header__sub tk-truncate">${props.subtitle}</p>`}
       </div>
       <div class="tk-page-header__actions">
-        ${props.secondaryLabel && html`<${Button} icon=${props.secondaryIcon} onClick=${() => { ctx.emit('header.secondary'); ctx.toast(props.secondaryLabel); }} aria-label=${props.secondaryLabel}>${mobile ? null : props.secondaryLabel}<//>`}
+        ${props.secondaryLabel && html`<${Button} icon=${props.secondaryIcon} onClick=${() => { if (!ctx.emit('header.secondary')) ctx.toast(props.secondaryLabel); }} aria-label=${props.secondaryLabel}>${mobile ? null : props.secondaryLabel}<//>`}
         ${props.primaryLabel && html`<${Button} variant="primary" icon=${props.primaryIcon} onClick=${primary} aria-label=${props.primaryLabel}>${mobile ? null : props.primaryLabel}<//>`}
       </div>
     </header>`;
@@ -140,7 +141,7 @@ export const actionBar = {
   example: { props: { actions: ['Foto', 'Datei', 'Zwischenablage', 'Scan'], icons: ['camera', 'upload', 'clipboard', 'scan'], style: 'tiles' } },
   render: ({ props, ctx }) => {
     const acts = list(props.actions), icons = list(props.icons);
-    const run = (a) => { ctx.emit('action.run', { action: a }); ctx.toast(`${a}`); };
+    const run = (a) => { if (!ctx.emit('action.run', { action: a })) ctx.toast(`${a}`); };
     if (props.style === 'tiles') return html`<div class="tk-action-bar tk-action-bar--tiles">
       ${acts.map((a, i) => html`<button type="button" class="tk-action-bar__tile" onClick=${() => run(a)}><span><${Icon} name=${icons[i] || 'circle'} size=${18} /></span><span class="tk-truncate" style="max-width:100%">${a}</span></button>`)}</div>`;
     return html`<div class="tk-action-bar tk-action-bar--buttons">
@@ -177,7 +178,7 @@ export const noticeBanner = {
     return html`<div class="tk-notice" role="status" style=${`background:var(--tk-c-${props.tone === 'accent' ? 'accent' : props.tone}-soft);border-color:color-mix(in srgb, var(--tk-c-${props.tone}) 30%, transparent)`}>
       <span style=${`color:var(--tk-c-${props.tone});margin-top:1px`}><${Icon} name=${icon} size=${18} /></span>
       <div class="tk-notice__body"><div class="tk-notice__title">${props.title}</div>${props.text && html`<div class="tk-notice__text">${props.text}</div>`}</div>
-      ${props.actionLabel && html`<${Button} size="sm" onClick=${() => { ctx.emit('notice.action'); ctx.toast(props.actionLabel); }}>${props.actionLabel}<//>`}
+      ${props.actionLabel && html`<${Button} size="sm" onClick=${() => { if (!ctx.emit('notice.action')) ctx.toast(props.actionLabel); }}>${props.actionLabel}<//>`}
       ${props.dismissible && html`<${Button} size="sm" variant="ghost" icon="x" aria-label="Schließen" onClick=${() => { setHidden(true); ctx.emit('notice.dismiss'); }} />`}
     </div>`;
   },

@@ -20,7 +20,7 @@ export const finFinanceCheck = {
   data: slots('accounts', 'transactions', 'months', 'subs', 'subMeta', 'prefs'),
   events: ['check.open'],
   states: ['empty'],
-  css: `${FIN_CSS}
+  css: `
   .tk-fnc__grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap:var(--tk-space-3); }
   .tk-fnc__item { display:flex; flex-direction:column; gap:8px; padding:var(--tk-space-3) var(--tk-space-4); border-radius:var(--tk-radius-md); background:var(--tk-c-surface2); border:1px solid var(--tk-c-border); text-align:left; color:inherit; font:inherit; cursor:pointer; min-width:0; min-height:44px; }
   .tk-fnc__item--list { background:none; border:0; border-radius:0; padding:var(--tk-space-3) 0; }

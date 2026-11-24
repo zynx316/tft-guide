@@ -33,7 +33,7 @@ export const finTxDetail = {
   data: [...slots('transactions', 'accounts', 'cats', 'rules', 'subs', 'prefs'), { slot: 'txMeta', label: 'Zusatzangaben', default: 'txMeta', shape: '{[txId]:{note?,receipt?}}', required: false }],
   events: ['tx.category', 'tx.note', 'tx.receipt', 'tx.split', 'tx.rule', 'tx.sub'],
   states: ['empty'],
-  css: `${FIN_CSS}
+  css: `
   .tk-fnx__hero { display:flex; align-items:center; gap:var(--tk-space-4); flex-wrap:wrap; }
   .tk-fnx__sec { display:flex; flex-direction:column; gap:8px; padding-top:var(--tk-space-4); margin-top:var(--tk-space-4); border-top:1px solid var(--tk-c-border); }
   .tk-fnx__chips { display:flex; flex-wrap:wrap; gap:6px; }
