@@ -100,7 +100,9 @@ function VariantInspector({ f, v, locked }) {
       <div class="wb-small wb-subtle">${layoutInfo(L.type).hint}</div>
       ${L.type === 'stack' && html`<${Checkbox} label="Schmale Inhaltsbreite (760 px)" checked=${!!L.narrow} disabled=${locked} onChange=${(x) => upd({ layout: { ...L, narrow: x } }, 'Layout-Option geändert')} />`}
       ${L.type === 'split' && html`<${Checkbox} label="Gleich breite Spalten" checked=${!!L.even} disabled=${locked} onChange=${(x) => upd({ layout: { ...L, even: x } }, 'Layout-Option geändert')} />
-        <${Checkbox} label="Seitenspalte auf Mobile zuerst" checked=${!!L.asideFirstOnMobile} disabled=${locked} onChange=${(x) => upd({ layout: { ...L, asideFirstOnMobile: x } }, 'Layout-Option geändert')} />`}
+        <${Checkbox} label="Seitenspalte auf Mobile zuerst" checked=${!!L.asideFirstOnMobile} disabled=${locked} onChange=${(x) => upd({ layout: { ...L, asideFirstOnMobile: x } }, 'Layout-Option geändert')} />
+        <${Checkbox} label="Seitenspalte läuft mit (Desktop)" checked=${!!L.asideSticky} disabled=${locked} onChange=${(x) => upd({ layout: { ...L, asideSticky: x } }, 'Layout-Option geändert')} />`}
+      ${L.type === 'grid' && html`<${Checkbox} label="Karten einer Reihe gleich hoch" checked=${!!L.stretch} disabled=${locked} onChange=${(x) => upd({ layout: { ...L, stretch: x } }, 'Layout-Option geändert')} />`}
       ${L.type === 'sidebar' && html`<${Field} label="Beschriftung Panel (Mobile)"><${TextInput} size="sm" value=${L.panelLabel || 'Filter & Navigation'} disabled=${locked} onCommit=${(x) => upd({ layout: { ...L, panelLabel: x } }, 'Layout-Option geändert')} /><//>`}
     </div>
     <div class="wb-section wb-small wb-subtle">Tipp: Alt+Klick in der Vorschau wählt einen Block aus. Blöcke per Drag & Drop in der Gliederung sortieren oder auf eine Region ziehen.</div>

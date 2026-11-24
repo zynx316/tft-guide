@@ -64,7 +64,7 @@ export function Layout({ variant, renderBlock, bp }) {
     default:
       body = html`<div class="tk-layout__body">${region('main', reg.main)}</div>`;
   }
-  return html`<div class=${`tk-layout tk-layout--${L.type || 'stack'} ${L.narrow ? 'tk-layout--narrow' : ''} ${L.even ? 'tk-layout--split-even' : ''}`} data-layout=${L.type}>
+  return html`<div class=${`tk-layout tk-layout--${L.type || 'stack'} ${L.narrow ? 'tk-layout--narrow' : ''} ${L.even ? 'tk-layout--split-even' : ''} ${L.stretch ? 'tk-layout--stretch' : ''} ${L.asideSticky ? 'tk-layout--aside-sticky' : ''}`} data-layout=${L.type}>
     ${region('header', reg.header)}${body}${region('footer', reg.footer)}${region('bottom', reg.bottom)}
   </div>`;
 }

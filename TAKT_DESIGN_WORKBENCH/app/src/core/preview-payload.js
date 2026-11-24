@@ -89,7 +89,7 @@ export function buildAppPayload(state, versionId = 'arbeitsstand', opts = {}) {
     favorites: (state.app?.favorites || []).filter((id) => modules.some((m) => m.id === id)),
     features: sortedFeatures, startFeatureId: startId, route: opts.route || (version.kind === 'pin' ? version.featureId : null),
     coverage: { own, total }, revision: opts.revision || state.meta?.rev || 0,
-    scenario: opts.scenario || 'alltag', env: envOf(opts), shell: opts.shell || shellOf(state, version),
+    scenario: opts.scenario || 'alltag', env: envOf(opts), shell: opts.shell || shellOf(state, version), live: !!opts.live,
     world: getWorld(state, opts.scenario || 'alltag'), privacy: !!opts.privacy,
   };
 }

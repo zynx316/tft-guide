@@ -20,7 +20,7 @@ import crosscut from './components/crosscut/index.js';    // Querschnitt (Suche,
 export const COMPONENTS = [...core, ...calendar, ...tasks, ...content, ...insights, ...finance, ...savings, ...trading, ...fitness, ...nutrition, ...weather2, ...habits, ...crosscut];
 
 export const CATEGORY_ORDER = ['Struktur', 'Navigation', 'Daten', 'Diagramme', 'Formulare', 'Feedback', 'Querschnitt',
-  'Kalender', 'Aufgaben', 'Inhalte', 'Wetter', 'Vertrieb', 'Finanzen', 'Sparpläne', 'Trading', 'Fitness', 'Ernährung', 'Gewohnheiten'];
+  'Kalender', 'Aufgaben', 'Inhalte', 'Wetter', 'Vertrieb', 'Finanzen', 'Sparpläne', 'Trading', 'Fitness', 'Ernährung', 'Gewohnheiten', 'Start'];
 
 const map = new Map();
 for (const c of COMPONENTS) {

@@ -353,7 +353,7 @@ async function e2eStage(browser, base, log) {
     await ap.locator('[data-qa="launchpad"]').waitFor({ timeout: 8000 });
     await expect(ap.locator('[data-launchpad-module]').count().then((c) => c >= 8), 'Launchpad zeigt zu wenige Module');
     await ap.locator('[data-launchpad-module="calendar"]').click();
-    await eventually(async () => /Kalender|Tag|Woche|Monat/.test(await ap.locator('.tk-app__crumb').innerText()), 'Launchpad öffnet das Modul nicht', 6000);
+    await eventually(async () => (await ap.locator('[data-qa="launchpad"]').count()) === 0 && (await ap.locator('[data-nav-module="calendar"][aria-current="page"]').count()) === 1, 'Launchpad öffnet das Modul nicht', 6000);
     await ap.locator('[data-nav-launchpad]').click(); await ap.locator('[data-qa="launchpad"]').waitFor({ timeout: 5000 });
     await ap.goto(base + '/preview.html?app=1&version=dir:fokus'); await ap.waitForSelector('body[data-ready]');
     await ap.locator('[data-qa="nav-capture"]').click(); await ap.locator('[data-qa="capture-input"]').fill('QA-Aufgabe aus dem Erfassen');

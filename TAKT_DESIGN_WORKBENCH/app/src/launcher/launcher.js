@@ -206,6 +206,8 @@ function Launcher({ initialState }) {
   const [offline, setOffline] = useState(!!prefs0.offline);
   const [textScale, setTextScale] = useState(prefs0.textScale || 1);
   const [shellMode, setShellMode] = useState(prefs0.shellMode || 'version');
+  const [resetKey, setResetKey] = useState(0); // „Demo zurücksetzen“: neue Revision → Welt und Verlauf frisch
+  const live = !navigator.webdriver; // in automatisierten Tests bleibt die Uhr fest (deterministische Screenshots)
   fbCtx = { scenario, stateRev: state.meta?.rev || 0, env: [offline && 'offline', privacy && 'privacy', textScale !== 1 && `schrift-${Math.round(textScale * 100)}`].filter(Boolean).join(',') || undefined };
   const [present, setPresent] = useState(false);
   const [mobileIdx, setMobileIdx] = useState(0);
@@ -219,7 +221,7 @@ function Launcher({ initialState }) {
 
   const device = launcherDevice(deviceId);
   const shown = mobile ? [versions.find((v) => v.id === selected[mobileIdx % Math.max(1, selected.length)]) || versions[0]] : selected.map((id) => versions.find((v) => v.id === id)).filter(Boolean);
-  const payloads = useMemo(() => Object.fromEntries(shown.map((v) => [v.id, buildAppPayload(state, v.id, { theme: themeMode === 'version' ? undefined : themeMode, revision: 1, privacy, scenario, env: { offline, scale: textScale }, shell: shellMode === 'version' ? undefined : shellMode })])), [state, shown.map((v) => v.id).join(), themeMode, privacy, scenario, offline, textScale, shellMode]);
+  const payloads = useMemo(() => Object.fromEntries(shown.map((v) => [v.id, buildAppPayload(state, v.id, { theme: themeMode === 'version' ? undefined : themeMode, revision: 1 + resetKey, privacy, scenario, env: { offline, scale: textScale }, shell: shellMode === 'version' ? undefined : shellMode, live })])), [state, shown.map((v) => v.id).join(), themeMode, privacy, scenario, offline, textScale, shellMode, resetKey]);
 
   // Handy: Android-/Browser-Zurück geht in der App eine Ebene zurück statt den Launcher zu verlassen.
   const depthRef = useRef(1);
@@ -265,7 +267,8 @@ function Launcher({ initialState }) {
       <div class="wb-row wb-wrap" style="gap:8px">
         <${Btn} icon=${privacy ? 'eye' : 'eye-off'} onClick=${() => { setPrivacy(!privacy); close(); }}>${privacy ? 'Beträge zeigen' : 'Beträge ausblenden'}<//>
         <${Btn} icon="wifi-off" pressed=${offline} onClick=${() => { setOffline(!offline); close(); }}>${offline ? 'Online' : 'Offline'}<//>
-        <${Select} value=${String(textScale)} onChange=${(x) => { setTextScale(Number(x)); close(); }} options=${[{ value: '1', label: 'Schrift 100 %' }, { value: '1.3', label: 'Schrift 130 %' }, { value: '2', label: 'Schrift 200 %' }]} aria-label="Schriftgröße" /></div></div>` });
+        <${Select} value=${String(textScale)} onChange=${(x) => { setTextScale(Number(x)); close(); }} options=${[{ value: '1', label: 'Schrift 100 %' }, { value: '1.3', label: 'Schrift 130 %' }, { value: '2', label: 'Schrift 200 %' }]} aria-label="Schriftgröße" />
+        <${Btn} icon="rotate-ccw" onClick=${() => { setResetKey((k) => k + 1); close(); toast('Demo zurückgesetzt'); }}>Demo zurücksetzen<//></div></div>` });
     return html`<div class="ln-mobile">
       <${DeviceFrame} key=${v.id} bare device=${device} payload=${payloads[v.id]} onRoute=${onRoute(v.id)} frameRef=${(el) => { frames.current[v.id] = el; }} />
       <div class="ln-fab">
@@ -303,6 +306,7 @@ function Launcher({ initialState }) {
         <span class="wb-small wb-muted" style="margin-left:8px">Bewerten auf Ebene</span>
         <${Seg} value=${level} onChange=${setLevel} options=${LEVELS.slice(0, 3).map((l) => ({ value: l.id, label: l.label }))} />
         <span class="wb-grow"></span>
+        <${Btn} size="sm" icon="rotate-ccw" onClick=${() => { setResetKey((k) => k + 1); toast('Demo zurückgesetzt – Daten und Verlauf frisch'); }} title="Alle Eingaben der Demo verwerfen (Datenwelt und Navigation neu)" data-qa="ln-reset">Demo zurücksetzen<//>
         <${Btn} size="sm" icon="maximize-2" onClick=${() => setPresent(true)} title="Präsentation (P)">Präsentation<//>
       </div>
     </header>`}

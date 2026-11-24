@@ -19,6 +19,12 @@ export const scenarioById = (id) => SCENARIOS.find((s) => s.id === id) || SCENAR
 
 /** Schlüssel, die nie geleert werden (Identität, Grundeinstellungen). */
 const PROTECTED = new Set([...Object.keys(persona), 'prefs', 'scenarios']);
+/**
+ * Nachschlage- und Fremddaten bleiben auch beim „Ersten Start“ erhalten: Kataloge (Übungen, Lebensmittel, Orte),
+ * Wetter (kommt von außen, nicht vom Nutzer), Einstellungen, Steuer-/Marktparameter und abgeleitete Zusammenfassungen.
+ */
+const REFERENCE = [/^wx/, /Library$/i, /Foods$/i, /Catalog$/i, /Places$/i, /Settings$/i, /Params$/i, /^TAX/, /Summary$/, /Units$/i, /Alerts?Levels$/i];
+export const isReferenceKey = (k) => PROTECTED.has(k) || REFERENCE.some((re) => re.test(k));
 const LONG = ' – mit ausführlichem Zusatztext, der Umbrüche und Kürzungen auf schmalen Geräten prüft';
 const TEXT_FIELDS = ['title', 'name', 'text', 'note', 'label', 'subtitle', 'description'];
 
@@ -56,14 +62,16 @@ function stressed(v, depth = 0) {
 export function applyScenario(world, id = 'alltag') {
   const base = {};
   for (const [k, v] of Object.entries(world || {})) {
-    if (k === 'scenarios') continue;
+    if (k === 'scenarios' || k === 'scenariosByFile') continue;
     if (id === 'alltag' || PROTECTED.has(k)) base[k] = clone(v);
-    else if (id === 'erststart') base[k] = emptied(clone(v));
+    else if (id === 'erststart') base[k] = isReferenceKey(k) ? clone(v) : emptied(clone(v));
     else if (id === 'stress') base[k] = stressed(clone(v));
     else base[k] = clone(v);
   }
-  const specific = world?.scenarios?.[id];
-  if (isPlain(specific)) Object.assign(base, clone(specific));
+  // Gezielte Werte: WORLD.scenarios (eine Datei) oder WORLD.scenariosByFile (mehrere Dateien, zusammengeführt)
+  const sources = [world?.scenarios, ...Object.values(world?.scenariosByFile || {})].filter(isPlain);
+  for (const src of sources) if (isPlain(src[id])) Object.assign(base, clone(src[id]));
+  delete base.scenariosByFile;
   return base;
 }
 

@@ -3,7 +3,7 @@ import './_helpers.mjs';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { WORLD } from '../app/src/seed/world/index.js';
-import { applyScenario, getWorld, SCENARIOS, hasWorldKey } from '../app/src/core/world.js';
+import { applyScenario, getWorld, SCENARIOS, hasWorldKey, isReferenceKey } from '../app/src/core/world.js';
 import { buildSeedState } from '../app/src/seed/index.js';
 import { seedHash, diffSeed, applySeedPatch, userChanged } from '../app/src/core/seedpatch.js';
 import { listVersions, resolveVariant, versionById, versionCoverage } from '../app/src/core/directions.js';
@@ -16,10 +16,16 @@ test('Szenarien: drei feste IDs, Alltag ist Standard', () => {
   assert.deepEqual(applyScenario(WORLD, 'alltag').persona, WORLD.persona);
 });
 
-test('Erster Start: alle Sammlungen leer, Persona bleibt', () => {
+test('Erster Start: Nutzerdaten leer, Kataloge/Wetter/Persona bleiben', () => {
   const w = applyScenario(WORLD, 'erststart');
-  for (const [k] of arrays(WORLD)) if (!(WORLD.scenarios?.erststart && k in WORLD.scenarios.erststart)) assert.equal(w[k].length, 0, `${k} nicht leer`);
+  for (const [k, v] of arrays(WORLD)) {
+    if (WORLD.scenarios?.erststart && k in WORLD.scenarios.erststart) continue;
+    if (isReferenceKey(k)) assert.equal(w[k].length, v.length, `${k} (Referenz) geleert`);
+    else assert.equal(w[k].length, 0, `${k} nicht leer`);
+  }
   assert.deepEqual(w.persona, WORLD.persona);
+  if (WORLD.tasks) assert.equal(w.tasks.length, 0);
+  if (WORLD.exerciseLibrary) assert.ok(w.exerciseLibrary.length > 0, 'Übungsbibliothek geleert');
 });
 
 test('Stress-Tag: Listen von Objekten verdreifacht, IDs eindeutig', () => {

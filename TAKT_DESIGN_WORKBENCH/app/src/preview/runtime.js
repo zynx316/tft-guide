@@ -163,7 +163,9 @@ function Overlays({ dialogs, closeDialog, toasts }) {
 // ------------------------------------------------------------- Screen ---
 // Ein Screen = eine Variante mit eigenen Vorschau-Daten und eigenem UI-Zustand.
 // cache (optional): Map, in der der Bedienzustand beim Navigieren erhalten bleibt (App-Modus).
-function Screen({ variant, demoData, cacheKey, cache, theme, today, forcedState, overlays, emit, bp, width, world, privacy, params, env }) {
+// Lebendige Uhr (nur Launcher, ctx.live): startet am Referenztag und läuft ab dem Laden weiter. In QA/Workbench fest.
+const LIVE_T0 = Date.now();
+function Screen({ variant, demoData, cacheKey, cache, theme, today, forcedState, overlays, emit, bp, width, world, privacy, params, env, live }) {
   const cached = cache && cache.get(cacheKey);
   const [data, setDataState] = useState(() => cached?.data || clone(demoData || {}));
   const [ui, setUiState] = useState(() => ({ ...(cached?.ui || {}), ...(params?.id != null ? { selectedId: params.id } : {}), ...(params?.ui || {}) }));
@@ -177,7 +179,7 @@ function Screen({ variant, demoData, cacheKey, cache, theme, today, forcedState,
     },
   };
   const ctx = {
-    bp, width, theme, today: new Date(today || DEFAULT_TODAY), now: () => new Date(today || DEFAULT_TODAY), fmt: FMT, emit, ui, privacy: !!privacy, env: env || {},
+    bp, width, theme, today: new Date(today || DEFAULT_TODAY), now: () => (live ? new Date(new Date(today || DEFAULT_TODAY).getTime() + (Date.now() - LIVE_T0)) : new Date(today || DEFAULT_TODAY)), live: !!live, fmt: FMT, emit, ui, privacy: !!privacy, env: env || {},
     setUi: (k, v) => setUiState((u) => ({ ...u, [k]: v })),
     openDialog: overlays.openDialog, toast: overlays.toast,
   };
@@ -312,7 +314,7 @@ function AppPlayer({ payload }) {
       sideFeatures=${moduleFeatures.filter((x) => x.variant)} activeFeature=${fid} onFeature=${(id) => go(id)}
       onSearch=${() => (features['system.search'] ? go('system.search') : ov.toast('Globale Suche – noch kein Design'))} onBell=${() => (features['system.notifications'] ? go('system.notifications') : ov.toast('Mitteilungen – noch kein Design'))}>
     ${isPad ? html`<${Launchpad} modules=${payload.modules || []} world=${world.data} today=${new Date(payload.today || DEFAULT_TODAY)} privacy=${payload.privacy} onOpen=${goModule} />`
-    : f?.variant ? html`<${Screen} key=${`${fid}|${JSON.stringify(top.params)}`} cacheKey=${`${fid}|${JSON.stringify(top.params)}`} cache=${cache} variant=${f.variant} demoData=${f.demoData} theme=${payload.theme} today=${payload.today} forcedState=${payload.state} overlays=${ov} emit=${emit} bp=${bp} width=${width} world=${world} privacy=${payload.privacy} params=${top.params} env=${payload.env} />` : f ? html`<${SketchScreen} feature=${f} />` : html`<${NoVariant} />`}
+    : f?.variant ? html`<${Screen} key=${`${fid}|${JSON.stringify(top.params)}`} cacheKey=${`${fid}|${JSON.stringify(top.params)}`} cache=${cache} variant=${f.variant} demoData=${f.demoData} theme=${payload.theme} today=${payload.today} forcedState=${payload.state} overlays=${ov} emit=${emit} bp=${bp} width=${width} world=${world} privacy=${payload.privacy} params=${top.params} env=${payload.env} live=${payload.live} />` : f ? html`<${SketchScreen} feature=${f} />` : html`<${NoVariant} />`}
   <//><${Overlays} dialogs=${ov.dialogs} closeDialog=${ov.closeDialog} toasts=${ov.toasts} />`;
 }
 

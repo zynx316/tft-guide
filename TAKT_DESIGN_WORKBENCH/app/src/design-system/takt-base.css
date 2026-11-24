@@ -267,3 +267,30 @@ h1, h2, h3, h4, p { margin: 0; }
   box-shadow: 0 6px 18px color-mix(in srgb, var(--tk-c-accent) 35%, transparent); gap: 0; }
 .tk-bottomnav--fokus .tk-navfab:focus-visible { outline: 2px solid var(--tk-c-text); outline-offset: 2px; }
 .tk-app__capture { margin-left: var(--tk-space-2); }
+
+/* ---- Primitive: Zahlen-Stepper, Ring ---- */
+.tk-stepper { display: inline-flex; align-items: center; gap: 2px; padding: 2px; border: 1px solid var(--tk-c-border); border-radius: var(--tk-radius-md); background: var(--tk-c-surface); }
+.tk-stepper__btn { width: 36px; height: 36px; border: 0; border-radius: calc(var(--tk-radius-md) - 2px); background: var(--tk-c-surface2); color: var(--tk-c-text); display: grid; place-items: center; cursor: pointer; touch-action: manipulation; }
+.tk-stepper__btn:hover:not(:disabled) { background: var(--tk-c-surface3); }
+.tk-stepper__btn:disabled { opacity: .4; cursor: default; }
+.tk-stepper__btn:focus-visible, .tk-stepper__input:focus-visible { outline: 2px solid var(--tk-c-accent); outline-offset: 1px; }
+.tk-stepper__input { width: 64px; height: 36px; border: 0; background: transparent; color: var(--tk-c-text); font: inherit; font-size: var(--tk-fs-md); font-weight: var(--tk-fw-semibold); text-align: center; font-variant-numeric: tabular-nums; }
+.tk-stepper__unit { color: var(--tk-c-text-muted); font-size: var(--tk-fs-sm); padding-right: 6px; }
+.tk-stepper--sm .tk-stepper__btn { width: 30px; height: 30px; } .tk-stepper--sm .tk-stepper__input { height: 30px; width: 52px; }
+.bp-mobile .tk-stepper__btn, .bp-mobile .tk-stepper--sm .tk-stepper__btn { width: 44px; height: 44px; }
+.bp-mobile .tk-stepper__input { height: 44px; }
+.tk-ring { position: relative; display: inline-grid; place-items: center; flex: none; }
+.tk-ring svg { position: absolute; inset: 0; }
+.tk-ring__center { position: relative; text-align: center; line-height: 1.1; font-variant-numeric: tabular-nums; }
+
+/* ---- Schalter: Trefferfläche (Button) um die sichtbare Spur – 44 px auf Mobile, Spur unverändert ---- */
+.tk-switch-hit { display: inline-grid; place-items: center; min-width: 44px; min-height: 32px; padding: 0; margin: 0; border: 0; background: none; cursor: pointer; flex: none; border-radius: var(--tk-radius-md); }
+.tk-switch-hit > .tk-switch { display: block; pointer-events: none; }
+.tk-switch-hit:focus-visible { outline: 2px solid var(--tk-c-accent); outline-offset: 1px; }
+.bp-mobile .tk-switch-hit { min-width: 52px; min-height: 44px; }
+.bp-mobile .tk-seg button { min-width: 44px; }
+
+/* ---- Layout-Optionen: Raster-Karten gleich hoch, mitlaufende Seitenspalte ---- */
+.tk-layout--stretch.tk-layout--grid .tk-region--main > .tk-block { display: flex; flex-direction: column; }
+.tk-layout--stretch.tk-layout--grid .tk-region--main > .tk-block > * { flex: 1 1 auto; }
+.bp-desktop .tk-layout--aside-sticky .tk-region--aside { position: sticky; top: var(--tk-space-4); align-self: start; max-height: calc(100vh - 2 * var(--tk-space-4)); overflow: auto; }

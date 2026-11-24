@@ -6,6 +6,7 @@
 import { html } from '../lib/html.js';
 import { Icon } from '../lib/icons.js';
 import { cx } from '../lib/util.js';
+import { useState, useRef, useEffect } from 'preact/hooks';
 
 export { Icon };
 
@@ -64,8 +65,45 @@ export const Check = ({ checked, onChange, label }) =>
   html`<button type="button" class="tk-check" role="checkbox" aria-checked=${checked ? 'true' : 'false'} aria-label=${label || 'Erledigt'}
     onClick=${(e) => { e.stopPropagation(); onChange && onChange(!checked); }}><span class="tk-check__box">${checked && html`<${Icon} name="check" size=${13} stroke=${3} />`}</span></button>`;
 
+/** Schalter: äußerer Button = Trefferfläche (44 px auf Mobile), innere Spur `.tk-switch` (Styles/Overrides wie bisher). */
 export const Switch = ({ checked, onChange, label }) =>
-  html`<button type="button" class="tk-switch" role="switch" aria-checked=${checked ? 'true' : 'false'} aria-label=${label} onClick=${() => onChange && onChange(!checked)}></button>`;
+  html`<button type="button" class="tk-switch-hit" role="switch" aria-checked=${checked ? 'true' : 'false'} aria-label=${label} onClick=${() => onChange && onChange(!checked)}><span class="tk-switch" aria-checked=${checked ? 'true' : 'false'} aria-hidden="true"></span></button>`;
+
+/**
+ * Zahleneingabe mit − / + (44 px auf Mobile), Komma-Eingabe, Dauerdruck, Grenzen und Einheit.
+ * onChange(neuerWert) erhält eine Zahl (gerundet auf decimals).
+ */
+export function NumberStepper({ value = 0, onChange, min = -Infinity, max = Infinity, step = 1, decimals = 0, unit, label = 'Wert', size }) {
+  const [text, setText] = useState(null);
+  const timer = useRef(null);
+  const round = (v) => Math.round(v * 10 ** decimals) / 10 ** decimals;
+  const clamp = (v) => Math.min(max, Math.max(min, round(v)));
+  const set = (v) => { if (Number.isFinite(v)) onChange && onChange(clamp(v)); };
+  const shown = text ?? new Intl.NumberFormat('de-DE', { minimumFractionDigits: decimals, maximumFractionDigits: decimals }).format(value);
+  const hold = (dir) => { let v = value; const tick = () => { v = clamp(v + dir * step); set(v); }; tick(); timer.current = setTimeout(function rep() { tick(); timer.current = setTimeout(rep, 90); }, 450); };
+  const stop = () => { clearTimeout(timer.current); timer.current = null; };
+  useEffect(() => stop, []);
+  return html`<div class=${`tk-stepper${size === 'sm' ? ' tk-stepper--sm' : ''}`} role="group" aria-label=${label}>
+    <button type="button" class="tk-stepper__btn" aria-label=${`${label} verringern`} disabled=${value <= min} onPointerDown=${() => hold(-1)} onPointerUp=${stop} onPointerLeave=${stop} onKeyDown=${(e) => (e.key === 'Enter' || e.key === ' ') && set(value - step)}><${Icon} name="minus" size=${16} /></button>
+    <input class="tk-stepper__input" inputmode="decimal" aria-label=${label} value=${shown} onFocus=${(e) => { setText(shown); e.currentTarget.select(); }}
+      onInput=${(e) => setText(e.currentTarget.value)} onBlur=${() => { const v = parseFloat(String(text ?? '').replace(/\./g, '').replace(',', '.')); setText(null); set(v); }}
+      onKeyDown=${(e) => { if (e.key === 'Enter') e.currentTarget.blur(); if (e.key === 'ArrowUp') { e.preventDefault(); set(value + step); } if (e.key === 'ArrowDown') { e.preventDefault(); set(value - step); } }} />
+    ${unit && html`<span class="tk-stepper__unit">${unit}</span>`}
+    <button type="button" class="tk-stepper__btn" aria-label=${`${label} erhöhen`} disabled=${value >= max} onPointerDown=${() => hold(1)} onPointerUp=${stop} onPointerLeave=${stop} onKeyDown=${(e) => (e.key === 'Enter' || e.key === ' ') && set(value + step)}><${Icon} name="plus" size=${16} /></button>
+  </div>`;
+}
+
+/** Fortschrittsring (SVG). value/max; optional zweite Runde (Überschreitung) gedämpft, nie in Warnfarbe. */
+export function Ring({ value = 0, max = 1, size = 64, stroke = 8, tone = 'accent', label, children }) {
+  const r = (size - stroke) / 2, c = 2 * Math.PI * r;
+  const ratio = max > 0 ? value / max : 0; const first = Math.min(1, Math.max(0, ratio)); const over = Math.min(1, Math.max(0, ratio - 1));
+  return html`<div class="tk-ring" style=${`width:${size}px;height:${size}px`} role="img" aria-label=${label || `${Math.round(ratio * 100)} %`}>
+    <svg width=${size} height=${size} viewBox=${`0 0 ${size} ${size}`} aria-hidden="true">
+      <circle cx=${size / 2} cy=${size / 2} r=${r} fill="none" stroke="var(--tk-c-surface3)" stroke-width=${stroke} />
+      <circle cx=${size / 2} cy=${size / 2} r=${r} fill="none" stroke=${toneColor(tone)} stroke-width=${stroke} stroke-linecap="round" stroke-dasharray=${`${first * c} ${c}`} transform=${`rotate(-90 ${size / 2} ${size / 2})`} />
+      ${over > 0 && html`<circle cx=${size / 2} cy=${size / 2} r=${r} fill="none" stroke=${toneColor(tone)} stroke-opacity="0.45" stroke-width=${stroke} stroke-linecap="round" stroke-dasharray=${`${over * c} ${c}`} transform=${`rotate(-90 ${size / 2} ${size / 2})`} />`}
+    </svg>${children && html`<div class="tk-ring__center">${children}</div>`}</div>`;
+}
 
 /** options: [{value,label,icon?}] */
 export const Segmented = ({ value, onChange, options, label = 'Ansicht' }) =>

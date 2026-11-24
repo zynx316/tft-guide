@@ -70,3 +70,18 @@ export const taskList = {
 - **Navigation im Launcher:** `ctx.emit(event, { id })`. Hat die Interaktion des Features ein Ziel (`to`), öffnet der
   Launcher das Ziel-Feature, dort ist `ctx.ui.selectedId = id` vorbelegt. Listen sollten daher beim Antippen eines
   Eintrags `ctx.emit('<bereich>.open', { id })` auslösen.
+
+## Ergänzungen (Stand 24.11.2026, Abend)
+- **Kontext:** `ctx.now()` (fest am Referenztag; im Demo-Launcher mit `ctx.live` laufend – Timer nur dann zählen lassen),
+  `ctx.fmt` (= `lib/format.js`), `ctx.env` (`offline`, `stale`, `scale`), `ctx.privacy`. Keine eigene Erkennung von
+  `navigator.webdriver` mehr nötig: `ctx.live` ist in QA/Workbench immer `false`.
+- **Neue Primitive (`ui.js`):** `NumberStepper` (− / +, 44 px auf Mobile, Komma-Eingabe, Dauerdruck, `min`/`max`/`step`/
+  `decimals`/`unit`) und `Ring` (Fortschrittsring, zweite Runde gedämpft statt Warnfarbe). Vor eigenen Steppern/Ringen nutzen.
+  `Switch` hat auf Mobile eine 44-px-Tippfläche, `Segmented` mindestens 44 px breite Buttons.
+- **Layout-Optionen:** `layout.stretch` (Raster: Karten einer Reihe gleich hoch), `layout.asideSticky` (Split: Seitenspalte
+  läuft auf Desktop mit). Beide im Design Studio schaltbar – keine komponentenspezifischen CSS-Tricks dafür.
+- **Flutter-Feld (neue Komponenten):** `flutter: { widget, propMap: { prop: 'parameter' }, events: ['event'] }`.
+- **CSS-Präfixe:** je Bereich eindeutig (`tk-fit-…`, `tk-nut-…`, `tk-wx-…`, `tk-hab-…`, `tk-fin-…`, `tk-sav-…`, `tk-trd-…`,
+  `tk-cal-…`, `tk-task-…`, `tk-xc-…` für Querschnitt), um Kollisionen zwischen Bereichen auszuschließen.
+- **Leitlinien:** Texte in Gesundheits- und Finanzkomponenten werden von `npm run check` gegen die Begriffslisten in
+  `docs/HEALTH_GUIDELINES.md` und `docs/FINANCE_GUIDELINES.md` geprüft.
