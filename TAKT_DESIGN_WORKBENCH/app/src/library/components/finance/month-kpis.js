@@ -14,7 +14,7 @@ export const finMonthKpis = {
   name: 'Monatskennzahlen',
   category: 'Finanzen',
   description: 'Einnahmen, Ausgaben, Gespart und Sparquote des laufenden Monats mit Vergleich zum Vormonat. Sparquote = (Einnahmen − Ausgaben) / Einnahmen; Umbuchungen und die Privatentnahme zählen nicht mit.',
-  version: '1.1',
+  version: '1.3',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Dieser Monat' },
     { name: 'style', label: 'Darstellung', type: 'select', options: ['tiles', 'row', 'ring'], default: 'tiles' },
@@ -28,7 +28,7 @@ export const finMonthKpis = {
   .tk-fnk__tile:hover { background:var(--tk-c-surface3); } .tk-fnk__tile strong { font-size:var(--tk-fs-xl); font-variant-numeric:tabular-nums; white-space:nowrap; }
   .tk-fnk__row { display:flex; flex-wrap:wrap; gap:6px 18px; align-items:baseline; }
   .tk-fnk__row > button { display:inline-flex; gap:6px; align-items:baseline; border:0; background:none; color:inherit; font:inherit; cursor:pointer; padding:6px 0; min-height:36px; }
-  .tk-fnk__ring { display:flex; align-items:center; gap:var(--tk-space-5); flex-wrap:wrap; } .tk-fnk__ring svg { flex:none; }
+  .tk-fnk__ring { display:flex; align-items:center; gap:var(--tk-space-5); flex-wrap:wrap; } .tk-fnk__ring svg { flex:none; } .tk-fnk__disc { position:relative; width:140px; height:140px; } [data-tk-large-text] .tk-fnk__disc { width:min(100%, calc(140px * var(--tk-text-scale, 1))); height:auto; aspect-ratio:1; } [data-tk-large-text] .tk-fnk__disc > svg { width:100%; height:100%; }
   .tk-fnk__stats { display:flex; flex-direction:column; gap:10px; flex:1 1 150px; min-width:0; }`,
   example: { data: ex('transactions', 'months', 'prefs') },
   render: function FinMonthKpis({ props, data, ctx }) {
@@ -46,7 +46,7 @@ export const finMonthKpis = {
     if (props.style === 'row') return html`<${Card} title=${props.title} icon="bar-chart-3"><div class="tk-fnk__row">${items.map((i) => html`<button type="button" onClick=${() => open(i.id)}><span class="tk-fn-meta">${i.label}</span><strong class="tk-fn-num">${i.v}</strong></button>`)}</div><//>`;
     if (props.style === 'ring') {
       const R = 56, C = 2 * Math.PI * R, p = Math.max(0, Math.min(1, cur.rate));
-      return html`<${Card} title=${props.title} icon="bar-chart-3"><div class="tk-fnk__ring"><div style="position:relative;width:140px;height:140px" role="img" aria-label=${c.privacy ? 'Sparquote ausgeblendet' : `Sparquote ${fmtPercent(cur.rate, { digits: 0 })}`}><svg width="140" height="140" viewBox="0 0 140 140" aria-hidden="true"><circle cx="70" cy="70" r=${R} fill="none" stroke="var(--tk-c-surface3)" stroke-width="14" />
+      return html`<${Card} title=${props.title} icon="bar-chart-3"><div class="tk-fnk__ring"><div class="tk-fnk__disc" role="img" aria-label=${c.privacy ? 'Sparquote ausgeblendet' : `Sparquote ${fmtPercent(cur.rate, { digits: 0 })}`}><svg width="140" height="140" viewBox="0 0 140 140" aria-hidden="true"><circle cx="70" cy="70" r=${R} fill="none" stroke="var(--tk-c-surface3)" stroke-width="14" />
         <circle cx="70" cy="70" r=${R} fill="none" stroke="var(--tk-c-accent)" stroke-width="14" stroke-linecap="round" stroke-dasharray=${`${Math.max(p * C, 0.01)} ${C}`} transform="rotate(-90 70 70)" /></svg>
         <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center"><strong class="tk-fn-big" style="font-size:var(--tk-fs-2xl)">${c.privacy ? MASK_PERCENT : fmtPercent(cur.rate, { digits: 0 })}</strong><span class="tk-fn-sub">Sparquote</span></div></div>
         <div class="tk-fnk__stats">${items.slice(0, 3).map((i) => html`<button type="button" class="tk-fn-tap" onClick=${() => open(i.id)}><${Tile} icon=${i.icon} tone=${i.tone} size=${30} /><span class="tk-fn-grow"><span class="tk-fn-sub" style="display:block">${i.label}</span><strong class="tk-fn-num">${i.v}</strong></span></button>`)}</div></div>

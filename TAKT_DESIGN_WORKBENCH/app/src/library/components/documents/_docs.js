@@ -59,4 +59,5 @@ export const DOK_CSS = `
   .tk-dok-kv dt { color:var(--tk-c-text-muted); padding-right:var(--tk-space-4); } .tk-dok-kv dd { text-align:right; font-variant-numeric:tabular-nums; }
   .tk-dok-btns { display:flex; flex-wrap:wrap; gap:var(--tk-space-2); }
   .bp-mobile .tk-dok-row { min-height:var(--tk-size-touch); padding-left:var(--tk-space-3); padding-right:var(--tk-space-3); }
-  [data-tk-large-text] .tk-dok-end { align-items:flex-start; text-align:left; }`;
+  [data-tk-large-text] .tk-dok-end { align-items:flex-start; text-align:left; }
+  [data-tk-large-text] .tk-dok-kv { grid-template-columns:minmax(0,1fr); } [data-tk-large-text] .tk-dok-kv dt { padding:9px 0 0; border-bottom:0; } [data-tk-large-text] .tk-dok-kv dd { text-align:left; padding-top:2px; overflow-wrap:break-word; hyphens:auto; }`;

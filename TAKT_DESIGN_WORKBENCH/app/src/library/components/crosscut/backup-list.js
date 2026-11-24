@@ -14,6 +14,11 @@ const CSS = `
   .tk-xc-bk__leg li { display: flex; align-items: center; gap: 6px; min-width: 0; }
   .tk-xc-bk__leg li span:last-child { margin-left: auto; font-variant-numeric: tabular-nums; color: var(--tk-c-text-muted); }
   .tk-xc-bk .tk-xc-s { white-space: normal; }
+  [data-tk-large-text] .tk-xc-bk__item { flex-wrap: wrap; }
+  [data-tk-large-text] .tk-xc-bk__item > .tk-btn { flex: 1 1 100%; justify-content: center; }
+  [data-tk-large-text] .tk-xc-bk__leg { grid-template-columns: minmax(0, 1fr); }
+  [data-tk-large-text] .tk-xc-bk__leg li { flex-wrap: wrap; }
+  [data-tk-large-text] .tk-xc-bk__leg li span:last-child { margin-left: 0; }
   .tk-xc-bk__sw { width: 10px; height: 10px; border-radius: 3px; flex: none; }
   .tk-xc-bk__item { display: flex; align-items: center; gap: var(--tk-space-3); padding: var(--tk-space-2) var(--tk-space-3); min-height: 56px; border-bottom: 1px solid var(--tk-c-border); min-width: 0; }
   .tk-xc-bk__item:last-child { border-bottom: 0; }
@@ -24,7 +29,7 @@ export const backupList = {
   name: 'Sicherung & Speicher',
   category: 'Querschnitt',
   description: 'Speichernutzung je Modul als Balken mit Zahlen, die letzten automatischen Sicherungen mit „Wiederherstellen“, „Jetzt sichern“ mit Fortschritt und „Alle Daten löschen“ mit doppelter Bestätigung (Eingabe von LÖSCHEN).',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'showStorage', label: 'Speicheranzeige', type: 'boolean', default: true },
     { name: 'showDanger', label: '„Alle Daten löschen“', type: 'boolean', default: true },

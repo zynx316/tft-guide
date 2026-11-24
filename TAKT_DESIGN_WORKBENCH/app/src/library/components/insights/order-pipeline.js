@@ -15,7 +15,7 @@ export const orderPipeline = {
   name: 'Bestell-Pipeline',
   category: 'Vertrieb',
   description: 'Bestellungen nach Status (neu → bezahlt → versendet → zugestellt) mit Zählern, Summen und Weiterschalten per Aktion. Als Reiter-Liste oder Spalten (Desktop). Ein Tipp auf eine Bestellung öffnet einen Dialog oder – mit openIn „select“ – meldet order.open mit ID (für die Navigation zum Bestelldetail).',
-  version: '1.3',
+  version: '1.4',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Bestellungen' },
     { name: 'stages', label: 'Angezeigte Status', type: 'list', default: ['new', 'paid', 'shipped', 'delivered'] },
@@ -32,6 +32,7 @@ export const orderPipeline = {
   [data-tk-large-text] .tk-order-pipeline__no { flex-wrap:wrap; }
   [data-tk-large-text] .tk-order-pipeline__no > span { white-space:nowrap; }
   [data-tk-large-text] .tk-order-pipeline__sub, [data-tk-large-text] .tk-order-pipeline__no { white-space:normal; overflow:visible; text-overflow:clip; overflow-wrap:anywhere; }
+  [data-tk-large-text] .tk-order-pipeline__row { flex-wrap:wrap; row-gap:4px; } [data-tk-large-text] .tk-order-pipeline__main { flex:1 1 12em; }
   .tk-order-pipeline__stats { display:grid; grid-template-columns:repeat(var(--n,4), minmax(0,1fr)); gap:var(--tk-space-2); margin-bottom:var(--tk-space-3); }
   .tk-order-pipeline__stat { display:flex; flex-direction:column; gap:2px; padding:10px 12px; border-radius:var(--tk-radius-md); border:1px solid var(--tk-c-border); background:var(--tk-c-surface2); cursor:pointer; text-align:left; color:inherit; min-width:0; min-height:56px; }
   .tk-order-pipeline__stat[aria-pressed="true"] { border-color:var(--tk-c-accent); background:var(--tk-c-accent-soft); }
@@ -128,7 +129,7 @@ const orderDetail = {
   name: 'Bestelldetail',
   category: 'Vertrieb',
   description: 'Die gewählte Bestellung (ctx.ui.selectedId) im Detail: Status-Verlauf mit Zeitpunkten, nächster Schritt (Bezahlt markieren, Versenden mit Paketdienst und Sendungsnummer, Zugestellt), Kunde, Positionen mit Summen und enthaltener MwSt, Zahlung und Versand. Layout „focus“ zeigt nur den nächsten Schritt.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'layout', label: 'Layout', type: 'select', options: ['full', 'focus'], default: 'full' },
   ],
@@ -156,6 +157,9 @@ const orderDetail = {
   .tk-ord__line .tk-num { text-align:right; }
   .tk-ord__sum { display:flex; justify-content:space-between; padding:6px var(--tk-space-4); font-size:var(--tk-fs-sm); color:var(--tk-c-text-muted); }
   .tk-ord__sum--total { color:var(--tk-c-text); font-weight:var(--tk-fw-bold); font-size:var(--tk-fs-lg); border-top:1px solid var(--tk-c-border); padding-top:10px; padding-bottom:12px; }
+  [data-tk-large-text] .tk-ord__steps { grid-template-columns:repeat(2, minmax(0,1fr)); row-gap:10px; }
+  [data-tk-large-text] .tk-ord__kv { grid-template-columns:minmax(0,1fr); gap:0; } [data-tk-large-text] .tk-ord__kv dt { margin-top:8px; } [data-tk-large-text] .tk-ord__kv dd { overflow-wrap:break-word; hyphens:auto; }
+  [data-tk-large-text] .tk-ord__line { grid-template-columns:minmax(0,1fr) auto; row-gap:2px; } [data-tk-large-text] .tk-ord__line > span:first-child { grid-column:1 / -1; }
   .tk-ord__acts { display:flex; gap:8px; flex-wrap:wrap; } .bp-mobile .tk-ord__acts .tk-btn { flex:1 1 40%; min-height:44px; justify-content:center; }`,
   example: { data: { orders: [{ id: 'o4', number: '#4181', customer: 'Jonas Weber', channel: 'Etsy', channelId: 'etsy', status: 'paid', date: '2026-11-23T19:20:00', email: 'jonas.weber@example.org', address: 'Venloer Straße 88, 50823 Köln', payment: 'PayPal', shipping: 4.9, lines: [{ name: 'Keramikvase Skagen', qty: 1, price: 38 }], history: [{ status: 'new', at: '2026-11-23T19:20:00' }, { status: 'paid', at: '2026-11-23T19:22:00' }] }] } },
   render: ({ props, data, setData, ctx }) => {

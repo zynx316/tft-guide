@@ -33,7 +33,7 @@ export const finTxList = {
   name: 'Buchungsliste',
   category: 'Finanzen',
   description: 'Alle Buchungen mit Suche und Filtern (Art, Kategorie, Konto), gruppiert nach Tag oder Kategorie mit Summe. Umbuchungen sind neutral markiert und zählen nicht in die Summen. Tippen öffnet das Buchungs-Detail.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Buchungen' },
     { name: 'groupBy', label: 'Gruppieren nach', type: 'select', options: ['day', 'category', 'none'], default: 'day' },
@@ -55,7 +55,8 @@ export const finTxList = {
   .tk-fnt__grp { display:flex; justify-content:space-between; gap:8px; padding:8px var(--tk-space-4) 4px; background:var(--tk-c-surface2); border-bottom:1px solid var(--tk-c-border); border-top:1px solid var(--tk-c-border); font-size:var(--tk-fs-xs); font-weight:var(--tk-fw-semibold); letter-spacing:var(--tk-ls-wide); text-transform:uppercase; color:var(--tk-c-text-subtle); font-variant-numeric:tabular-nums; }
   .tk-fnt__row { padding:8px var(--tk-space-4); min-height:56px; border-radius:0; border-bottom:1px solid var(--tk-c-border); } .tk-fnt__row:last-child { border-bottom:0; }
   .tk-fnt--compact .tk-fnt__row { min-height:44px; padding-block:4px; } .tk-fnt--compact .tk-fn-ico { width:28px !important; height:28px !important; }
-  .tk-fnt__amt { font-weight:var(--tk-fw-semibold); }`,
+  .tk-fnt__amt { font-weight:var(--tk-fw-semibold); }
+  [data-tk-large-text] .tk-fnt__row { flex-wrap:wrap; row-gap:2px; align-items:flex-start; } [data-tk-large-text] .tk-fnt__row > .tk-fn-ico { display:none; } [data-tk-large-text] .tk-fnt__row > .tk-fn-grow { flex:1 1 100%; } [data-tk-large-text] .tk-fnt__row > .tk-fn-num { margin-left:auto; } [data-tk-large-text] .tk-fnt__row .tk-fn-sub { white-space:normal; overflow:visible; text-overflow:clip; overflow-wrap:break-word; } [data-tk-large-text] .tk-fnt__grp { flex-wrap:wrap; }`,
   example: { data: ex('transactions', 'accounts', 'categories', 'prefs', 'txMeta') },
   render: function FinTxList({ props, data, ctx }) {
     const c = pctx(ctx, data), [more, setMore] = useState(0);

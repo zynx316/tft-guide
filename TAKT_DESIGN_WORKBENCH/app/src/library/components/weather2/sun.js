@@ -18,7 +18,7 @@ export const wxSun = {
   name: 'Sonne & Mond',
   category: 'Wetter',
   description: 'Sonnenbogen mit aktueller Position, Auf- und Untergang, Tageslänge (im Vergleich zu gestern), goldene Stunde und Dämmerung, dazu Mondphase mit Beleuchtung sowie Auf- und Untergang des Mondes.',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Sonne & Mond' },
     { name: 'layout', label: 'Darstellung', type: 'select', options: ['full', 'compact'], default: 'full' },
@@ -30,6 +30,7 @@ export const wxSun = {
   .tk-wxsun__arc { width:100%; } .tk-wxsun__arc svg { display:block; overflow:visible; }
   .tk-wxsun__grid { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:var(--tk-space-3); margin-top:var(--tk-space-3); } .bp-mobile .tk-wxsun__grid { grid-template-columns:repeat(2, minmax(0,1fr)); }
   .tk-wxsun__m { display:flex; flex-direction:column; gap:3px; padding:var(--tk-space-3); border-radius:var(--tk-radius-md); background:var(--tk-c-surface2); min-width:0; } .tk-wxsun__m small { font-size:var(--tk-fs-xs); text-transform:uppercase; letter-spacing:var(--tk-ls-wide); font-weight:var(--tk-fw-semibold); color:var(--tk-c-text-muted); } .tk-wxsun__m strong { font-size:var(--tk-fs-lg); font-variant-numeric:tabular-nums; } .tk-wxsun__m span { font-size:var(--tk-fs-sm); color:var(--tk-c-text-muted); }
+  [data-tk-large-text] .tk-wxsun__grid, [data-tk-large-text] .bp-mobile .tk-wxsun__grid { grid-template-columns:repeat(auto-fit, minmax(min(100%, 14ch), 1fr)); }
   .tk-wxsun__moon { display:flex; align-items:center; gap:var(--tk-space-4); margin-top:var(--tk-space-3); padding:var(--tk-space-3) var(--tk-space-4); border-radius:var(--tk-radius-md); border:1px solid var(--tk-c-border); }`,
   example: { data: { place: EX.place } },
   render: ({ props, data, ctx }) => {

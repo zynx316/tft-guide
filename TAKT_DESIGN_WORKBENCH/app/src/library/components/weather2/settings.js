@@ -11,7 +11,7 @@ export const wxSettings = {
   name: 'Einheiten & Benachrichtigungen',
   category: 'Wetter',
   description: 'Einstellungen des Wetter-Moduls: Einheiten (°C/°F, km/h, m/s, Beaufort, mph, mm/in, hPa/inHg) mit Live-Vorschau, Benachrichtigungen (Regen, Tageszusammenfassung, Pollen, UV, Pendeln), Warnstufe, Ruhezeiten, Aktualisierung und Offline-Simulation. Änderungen wirken sofort in allen Wetter-Screens des Launchers.',
-  version: '1.0',
+  version: '1.1',
   props: [{ name: 'showPreview', label: 'Live-Vorschau der Einheiten', type: 'boolean', default: true }],
   data: [SLOT_PLACE, SLOT_SETTINGS],
   events: ['weather.settings.change'],
@@ -22,6 +22,7 @@ export const wxSettings = {
   .bp-mobile .tk-wxset__row--stack { flex-direction:column; align-items:stretch; gap:8px; } .bp-mobile .tk-wxset__row--stack .tk-wxset__c { max-width:100%; }
   .bp-mobile .tk-wxset__c .tk-switch { width:56px; height:34px; border-radius:17px; } .bp-mobile .tk-wxset__c .tk-switch::after { width:28px; height:28px; top:2px; left:2px; } .bp-mobile .tk-wxset__c .tk-switch[aria-checked="true"]::after { transform:translateX(22px); }
   .bp-mobile .tk-wxset__row .tk-seg button { min-width:44px; justify-content:center; }
+  [data-tk-large-text] .tk-wxset__row { flex-wrap:wrap; row-gap:8px; } [data-tk-large-text] .tk-wxset__row > .tk-grow { flex:1 1 14ch; } [data-tk-large-text].bp-mobile .tk-wxset__row--stack, [data-tk-large-text] .bp-mobile .tk-wxset__row--stack { flex-wrap:nowrap; } [data-tk-large-text].bp-mobile .tk-wxset__row--stack > .tk-grow, [data-tk-large-text] .bp-mobile .tk-wxset__row--stack > .tk-grow { flex:0 0 auto; } [data-tk-large-text] .tk-wxset__c { max-width:100%; flex-wrap:wrap; }
   .tk-wxset__prev { display:flex; flex-wrap:wrap; gap:6px var(--tk-space-4); padding:var(--tk-space-3) var(--tk-space-4); border-radius:var(--tk-radius-md); background:var(--tk-c-accent-soft); font-variant-numeric:tabular-nums; font-size:var(--tk-fs-md); } .tk-wxset__prev span { display:inline-flex; align-items:center; gap:6px; }
   .tk-wxsrc { display:flex; align-items:center; gap:8px; flex-wrap:wrap; font-size:var(--tk-fs-xs); color:var(--tk-c-text-subtle); line-height:1.5; } .tk-wxsrc svg { flex:none; }
   .tk-wxsrc .tk-btn, .tk-wxsrc__banner .tk-btn { white-space:normal; height:auto; min-height:36px; max-width:100%; text-align:left; }

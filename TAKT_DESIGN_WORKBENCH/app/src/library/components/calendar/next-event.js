@@ -9,7 +9,7 @@ export const nextEvent = {
   name: 'Nächster Termin',
   category: 'Kalender',
   description: 'Der laufende oder nächste Termin groß dargestellt: Countdown, Uhrzeit, Ort mit Fahrzeit und Losgehzeit, Teilnehmer und Warnung bei Überschneidung. Dahinter der darauffolgende Termin.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'style', label: 'Darstellung', type: 'select', options: ['hero', 'compact'], default: 'hero' },
     { name: 'showAttendees', label: 'Teilnehmer', type: 'boolean', default: true },
@@ -28,6 +28,7 @@ export const nextEvent = {
   .tk-cal-next__facts { display:flex; flex-direction:column; gap:6px; color:var(--tk-c-text-muted); font-size:var(--tk-fs-md); }
   .tk-cal-next__facts > div { display:flex; align-items:flex-start; gap:8px; } .tk-cal-next__facts .icon { flex:none; margin-top:2px; color:var(--tk-c-text-subtle); }
   .tk-cal-next__people { display:flex; align-items:center; } .tk-cal-next__people .tk-avatar { margin-right:-6px; box-shadow:0 0 0 2px var(--tk-c-surface); }
+  [data-tk-large-text] .tk-cal-next__people { flex-wrap:wrap; gap:4px; } [data-tk-large-text] .tk-cal-next__people .tk-avatar { width:auto; min-width:2em; height:2em; padding:0 .3em; margin-right:0; }
   .tk-cal-next__foot { display:flex; align-items:center; gap:var(--tk-space-3); flex-wrap:wrap; margin-top:4px; }
   .tk-cal-next__after { display:flex; align-items:center; gap:10px; width:100%; min-height:44px; padding:6px 0 0; border:0; border-top:1px solid var(--tk-c-border); background:transparent; color:var(--tk-c-text-muted); font:inherit; font-size:var(--tk-fs-sm); text-align:left; cursor:pointer; }
   .tk-cal-next--compact { padding:var(--tk-space-4); } .tk-cal-next--compact .tk-cal-next__title { font-size:var(--tk-fs-xl); }

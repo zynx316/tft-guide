@@ -14,7 +14,7 @@ export const recipeList = {
   name: 'Rezept-Liste',
   category: 'Ernährung',
   description: 'Rezepte als Karten oder Liste mit Suche und Filtern nach Mahlzeit, Zubereitungszeit und Tags. Jede Karte zeigt Zeit, Kalorien und Eiweiß je Portion; Antippen öffnet das Rezept.',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Rezepte' },
     { name: 'style', label: 'Darstellung', type: 'select', options: ['grid', 'list'], default: 'grid' },
@@ -39,7 +39,8 @@ export const recipeList = {
   .tk-rl__fav { position:absolute; top:6px; right:6px; } .tk-rl__fav[aria-pressed="true"] { color:var(--tk-c-warning); }
   .tk-rl__tags { display:flex; gap:6px; flex-wrap:wrap; }
   .tk-rl__row { display:flex; align-items:center; gap:12px; min-height:60px; padding:8px 0; border-bottom:1px solid var(--tk-c-border); width:100%; background:none; border-left:0; border-right:0; border-top:0; color:inherit; font:inherit; text-align:left; cursor:pointer; min-width:0; }
-  .bp-mobile .tk-rl__grid { grid-template-columns:1fr; } .bp-mobile .tk-rl__cover { height:64px; }`,
+  .bp-mobile .tk-rl__grid { grid-template-columns:1fr; } .bp-mobile .tk-rl__cover { height:64px; }
+  [data-tk-large-text] .tk-rl__row { flex-wrap:wrap; row-gap:2px; } [data-tk-large-text] .tk-rl__row > .tk-grow { flex:1 1 12ch; } [data-tk-large-text] .tk-rl__row .tk-nu-meta { white-space:normal; }`,
   example: { data: { recipes: [
     { id: 'r1', title: 'Skyr-Bowl mit Blaubeeren', subtitle: 'Frühstück in fünf Minuten', meal: 'breakfast', servings: 1, prepMin: 5, cookMin: 0, tags: ['vegetarisch', 'proteinreich', 'schnell'], fav: true, tone: 1, icon: 'milk', ingredients: [], perServing: { kcal: 507, protein: 37.2 } },
     { id: 'r2', title: 'Lachs mit Ofengemüse', subtitle: 'Ein Blech, wenig Aufwand', meal: 'dinner', servings: 2, prepMin: 10, cookMin: 25, tags: ['proteinreich'], tone: 3, icon: 'fish', ingredients: [], perServing: { kcal: 636, protein: 38.9 } },

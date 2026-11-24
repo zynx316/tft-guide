@@ -10,7 +10,7 @@ export const exerciseDetail = {
   name: 'Übungs-Detail',
   category: 'Fitness',
   description: 'Eine Übung im Detail (ctx.ui.selectedId): Ausführung in Schritten, Muskeln, häufige Fehler, Atmung, Verlauf der geschätzten 1RM aus dem Training und Alternativen. Favorit und „Zum Plan“.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'showChart', label: 'Verlauf zeigen', type: 'boolean', default: true },
     { name: 'showAlternatives', label: 'Alternativen zeigen', type: 'boolean', default: true },
@@ -29,7 +29,9 @@ export const exerciseDetail = {
   .tk-exd__facts { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:var(--tk-space-3); } .tk-exd h4 { margin:0 0 8px; font-size:var(--tk-fs-md); font-weight:var(--tk-fw-semibold); }
   .tk-exd__list { margin:0; padding-left:18px; color:var(--tk-c-text-muted); display:flex; flex-direction:column; gap:4px; font-size:var(--tk-fs-sm); }
   .tk-exd__star { border:0; background:none; width:44px; height:44px; color:var(--tk-c-text-subtle); cursor:pointer; display:grid; place-items:center; border-radius:50%; flex:none; } .tk-exd__star[aria-pressed="true"] { color:var(--tk-c-warning); } .tk-exd__star[aria-pressed="true"] svg { fill:currentColor; }
-  .tk-exd__alt { display:flex; align-items:center; gap:10px; min-height:48px; width:100%; padding:6px 12px; border-radius:var(--tk-radius-md); border:1px solid var(--tk-c-border); background:var(--tk-c-surface2); color:inherit; cursor:pointer; text-align:left; } .tk-exd__alt:hover { border-color:var(--tk-c-accent); }`,
+  .tk-exd__alt { display:flex; align-items:center; gap:10px; min-height:48px; width:100%; padding:6px 12px; border-radius:var(--tk-radius-md); border:1px solid var(--tk-c-border); background:var(--tk-c-surface2); color:inherit; cursor:pointer; text-align:left; } .tk-exd__alt:hover { border-color:var(--tk-c-accent); }
+  [data-tk-large-text] .tk-exd__facts { grid-template-columns:minmax(0,1fr); }
+  [data-tk-large-text] .tk-exd__alt { flex-wrap:wrap; row-gap:4px; } [data-tk-large-text] .tk-exd__alt > .tk-grow { flex:1 1 12ch; } [data-tk-large-text] .tk-exd__alt > .tk-grow.tk-truncate { overflow-wrap:break-word; }`,
   example: { data: { items: [{ id: 'bankdruecken', name: 'Bankdrücken', muscle: 'Brust', secondary: ['Trizeps', 'Schulter'], equipment: 'Langhantel', type: 'Verbund', level: 'Mittel', unit: 'kg', favorite: true,
     intro: 'Die Grundübung für Brust, vordere Schulter und Trizeps.', steps: ['Flach auf die Bank legen, Schulterblätter zusammenziehen.', 'Stange aus dem Rack heben und kontrolliert zur Brust senken.', 'Ohne Schwung nach oben drücken.'], mistakes: ['Gesäß hebt von der Bank ab', 'Ellbogen zu weit seitlich'], breath: 'Beim Absenken einatmen, beim Drücken ausatmen.', alternatives: ['kurzhantel-bankdruecken'] },
     { id: 'kurzhantel-bankdruecken', name: 'Kurzhantel-Bankdrücken', muscle: 'Brust', secondary: [], equipment: 'Kurzhantel', type: 'Verbund', level: 'Anfänger', unit: 'kg', steps: [], mistakes: [], alternatives: [] }], history: [] } },

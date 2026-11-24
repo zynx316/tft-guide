@@ -13,7 +13,7 @@ export const mealTimeline = {
   name: 'Mahlzeiten-Timeline',
   category: 'Ernährung',
   description: 'Das Tagebuch des Tages nach Mahlzeiten (oder Uhrzeit) mit Summen, „+“ je Gruppe, Bearbeiten, Kopieren und Löschen mit Rückgängig. Geplante Mahlzeiten stehen gedämpft dabei und lassen sich mit einem Tap als gegessen übernehmen.',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'quietEmpty', label: 'Im Erststart (noch nichts erfasst) nichts anzeigen', type: 'boolean', default: false },
     { name: 'title', label: 'Titel', type: 'text', default: 'Mahlzeiten' },
@@ -46,7 +46,9 @@ export const mealTimeline = {
   .tk-mt__suggest { margin:2px 0 8px 46px; }
   .tk-mt__undo { display:flex; align-items:center; gap:10px; padding:8px 12px; border-radius:var(--tk-radius-md); background:var(--tk-c-surface2); border:1px solid var(--tk-c-border); margin-top:8px; font-size:var(--tk-nfs-sm); }
   .tk-mt__plus { flex:none; } .tk-mt__eat { flex:none; }
-  .bp-mobile .tk-mt__row { min-height:52px; padding-left:46px; }`,
+  .bp-mobile .tk-mt__row { min-height:52px; padding-left:46px; }
+  [data-tk-large-text] .tk-mt__head { flex-wrap:wrap; row-gap:2px; } [data-tk-large-text] .tk-mt__head h4 { hyphens:manual; overflow-wrap:normal; } [data-tk-large-text] .tk-mt__row, [data-tk-large-text] .bp-mobile .tk-mt__row { padding-left:12px; } [data-tk-large-text] .tk-mt__suggest { margin-left:12px; }
+  [data-tk-large-text] .tk-mt__row--plan { flex-wrap:wrap; row-gap:6px; } [data-tk-large-text] .tk-mt__row--plan > :first-child { flex:1 1 100%; } [data-tk-large-text] .tk-mt__row--plan .tk-mt__kcal { margin-left:0; text-align:left; flex:1 1 auto; } [data-tk-large-text] .tk-mt__row--plan .tk-mt__eat { margin-left:auto; }`,
   example: { data: {
     diary: [
       { id: 'a', date: '2026-11-24', meal: 'breakfast', time: '07:40', name: 'Skyr natur', amount: '250 g', grams: 250, unit: 'g', foodId: 'x', kcal: 158, protein: 27.5, carbs: 10, fat: 0.5 },

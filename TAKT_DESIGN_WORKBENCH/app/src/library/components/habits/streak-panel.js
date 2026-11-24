@@ -10,7 +10,7 @@ export const streakPanel = {
   name: 'Serien-Anzeige',
   category: 'Gewohnheiten',
   description: 'Aktuelle und beste Serie einer Gewohnheit mit Gnadentag („Pause statt Serie verlieren“), nächstem Meilenstein und Wochenpunkten. Modus „Überblick“ zeigt alle Serien als Rangliste. Bewusst ohne Punkte oder Druck.',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'mode', label: 'Modus', type: 'select', options: ['selected', 'overview'], default: 'selected' },
     { name: 'title', label: 'Titel (Überblick)', type: 'text', default: 'Serien' },
@@ -23,6 +23,7 @@ export const streakPanel = {
   states: ['empty'],
   css: `${HABIT_CSS}
   .tk-sp { display:flex; flex-direction:column; } .tk-sp__pick { display:flex; gap:8px; overflow-x:auto; scrollbar-width:none; padding:12px 16px 0; }
+  [data-tk-large-text] .tk-sp__pick .tk-chip { flex:none; white-space:nowrap; }
   .tk-sp__hero { display:flex; align-items:center; gap:18px; padding:18px 18px 8px; flex-wrap:wrap; } .tk-sp__big { display:flex; flex-direction:column; gap:2px; }
   .tk-sp__unit { font-size:var(--tk-fs-sm); color:var(--tk-c-text-muted); } .tk-sp__stats { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:10px; flex:1 1 220px; min-width:0; }
   .tk-sp__stat { padding:10px 12px; border-radius:var(--tk-radius-md); background:var(--tk-c-surface2); border:1px solid var(--tk-c-border); min-width:0; } .tk-sp__stat b { display:block; font-size:var(--tk-fs-xl); letter-spacing:var(--tk-ls-tight); font-variant-numeric:tabular-nums; } .tk-sp__stat span { font-size:var(--tk-fs-xs); color:var(--tk-c-text-subtle); }
@@ -31,7 +32,11 @@ export const streakPanel = {
   .tk-sp__joker strong { color:var(--tk-c-text); } .tk-sp__foot { display:flex; align-items:center; gap:12px; padding:12px 18px 16px; flex-wrap:wrap; } .tk-sp__foot > span:first-child { flex:1; min-width:140px; font-size:var(--tk-fs-sm); color:var(--tk-c-text-muted); }
   .tk-sp__row { display:flex; align-items:center; gap:12px; width:100%; padding:10px 16px; min-height:56px; border:0; border-bottom:1px solid var(--tk-c-border); background:none; color:inherit; font:inherit; text-align:left; cursor:pointer; } .tk-sp__row:last-child { border-bottom:0; } .tk-sp__row:hover { background:var(--tk-c-surface2); }
   .tk-sp__rk { width:26px; text-align:center; font-weight:var(--tk-fw-semibold); color:var(--tk-c-text-subtle); font-variant-numeric:tabular-nums; } .tk-sp__bar { flex:1; min-width:0; } .tk-sp__bar .tk-progress { margin-top:6px; }
-  .bp-mobile .tk-sp__stats { grid-template-columns:repeat(3, minmax(0, 1fr)); gap:6px; } .bp-mobile .tk-sp__stat { padding:8px 8px; } .bp-mobile .tk-sp__stat b { font-size:var(--tk-fs-lg); } .bp-mobile .tk-sp__hero { gap:12px; padding:14px 14px 6px; }`,
+  .bp-mobile .tk-sp__stats { grid-template-columns:repeat(3, minmax(0, 1fr)); gap:6px; } .bp-mobile .tk-sp__stat { padding:8px 8px; } .bp-mobile .tk-sp__stat b { font-size:var(--tk-fs-lg); } .bp-mobile .tk-sp__hero { gap:12px; padding:14px 14px 6px; }
+  [data-tk-large-text] .tk-sp__stats, .bp-mobile[data-tk-large-text] .tk-sp__stats { grid-template-columns:minmax(0, 1fr); flex:1 1 100%; }
+  [data-tk-large-text] .tk-sp__stat { display:flex; align-items:baseline; justify-content:space-between; gap:8px; flex-wrap:wrap; } [data-tk-large-text] .tk-sp__stat span { order:-1; flex:1 1 6em; font-size:var(--tk-fs-sm); }
+  [data-tk-large-text] .tk-sp__ms-t { flex-wrap:wrap; gap:4px 12px; } [data-tk-large-text] .tk-sp__row { flex-wrap:wrap; }
+  [data-tk-large-text] .tk-sp__joker { flex-wrap:wrap; }`,
   example: { data: { habits: [{ id: 'a', name: 'Vitamin D', icon: 'pill', tone: 4, daypart: 'morgens', rhythm: { type: 'daily' }, since: '2026-09-01',
     log: Object.fromEntries(Array.from({ length: 30 }, (_, i) => [`2026-10-${String(26 - Math.min(i, 25)).padStart(2, '0')}`, 1]).concat(Array.from({ length: 24 }, (_, i) => [`2026-11-${String(i + 1).padStart(2, '0')}`, 1]))) }] } },
   render: function StreakPanel({ props, data, setData, ctx }) {

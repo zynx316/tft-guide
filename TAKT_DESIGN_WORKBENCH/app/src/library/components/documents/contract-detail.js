@@ -13,7 +13,7 @@ export const dokContractDetail = {
   name: 'Vertrag im Detail',
   category: 'Dokumente',
   description: 'Ein Vertrag mit Frist (Tage, Stufe, Erinnerung 30/14/3), Laufzeit-Balken, zugehörigen Dokumenten und Link zu den Kosten in Finanzen. Aktion „Kündigung vorbereiten“ öffnet eine Textvorlage. Stil „facts“ als Faktenblatt, „focus“ mit der Frist zuerst.',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'style', label: 'Darstellung', type: 'select', options: ['facts', 'focus'], default: 'facts' },
     { name: 'picker', label: 'Vertrag wechseln', type: 'boolean', default: true },
@@ -29,6 +29,7 @@ export const dokContractDetail = {
   css: `
   .tk-dok-cd { display:flex; flex-direction:column; gap:var(--tk-space-4); min-width:0; } .tk-dok-cd__id { display:flex; align-items:center; gap:12px; flex-wrap:wrap; min-width:0; } .tk-dok-cd__id h2 { margin:0; font-size:var(--tk-fs-xl); line-height:1.2; overflow-wrap:anywhere; }
   .tk-dok-cd__frist { display:flex; align-items:center; gap:var(--tk-space-4); flex-wrap:wrap; padding:var(--tk-space-4); border-radius:var(--tk-radius-lg); border:1px solid color-mix(in srgb, var(--tc) 40%, var(--tk-c-border)); background:color-mix(in srgb, var(--tc) 8%, var(--tk-c-surface)); }
+  [data-tk-large-text] .tk-dok-cd__id > :first-child { display:none; } [data-tk-large-text] .tk-dok-cd__id > .tk-dok-main { flex:1 1 100%; } [data-tk-large-text] .tk-dok-cd__id h2 { overflow-wrap:break-word; hyphens:auto; }
   .tk-dok-cd__rem { display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; } .tk-dok-cd__sel { max-width:360px; }
   .tk-dok-cd__cols { display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap:var(--tk-space-4); align-items:start; }`,
   example: { props: { style: 'facts' }, data: pick('contracts', 'documents') },

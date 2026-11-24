@@ -10,7 +10,7 @@ export const focusNext = {
   name: 'Fokus: Als Nächstes',
   category: 'Aufgaben',
   description: 'Verbindet Termine und Aufgaben zur Tagesfokus-Liste: laufender/nächster Termin, überfällige Aufgaben, Zeitleiste mit freien Fenstern und passenden Aufgabenvorschlägen, die sich mit einem Klick einplanen lassen.',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Als Nächstes' },
     { name: 'workEnd', label: 'Arbeitstag bis (Std.)', type: 'number', default: 18 },
@@ -39,7 +39,13 @@ export const focusNext = {
   .tk-fn__free { margin:8px 12px; border:1px dashed color-mix(in srgb, var(--tk-c-success) 55%, var(--tk-c-border)); border-radius:var(--tk-radius-md); background:color-mix(in srgb, var(--tk-c-success) 6%, transparent); }
   .tk-fn__freehead { display:flex; align-items:center; gap:8px; padding:8px 12px; font-size:var(--tk-fs-sm); color:var(--tk-c-text-muted); }
   .tk-fn__sug { display:flex; align-items:center; gap:10px; padding:6px 8px 6px 12px; border-top:1px dashed color-mix(in srgb, var(--tk-c-success) 30%, var(--tk-c-border)); min-height:48px; min-width:0; }
-  .bp-mobile .tk-fn__row { min-height:60px; } .bp-mobile .tk-fn__free { margin:8px; }`,
+  .bp-mobile .tk-fn__row { min-height:60px; } .bp-mobile .tk-fn__free { margin:8px; }
+  [data-tk-large-text] .tk-fn__time { width:auto; min-width:3.6em; }
+  [data-tk-large-text] .tk-fn__row[data-btn="true"] { flex-wrap:wrap; row-gap:4px; }
+  [data-tk-large-text] .tk-fn__row[data-btn="true"] > .tk-grow { flex:1 1 100%; }
+  [data-tk-large-text] .tk-fn__sug { flex-wrap:wrap; }
+  [data-tk-large-text] .tk-fn__sug .tk-grow { flex:1 1 100%; }
+  [data-tk-large-text] .tk-fn__sug button { white-space:nowrap; }`,
   example: { data: {
     events: [
       { id: 'a', title: 'Daily Stand-up', start: '2026-11-24T09:45:00', end: '2026-11-24T10:00:00', category: 'Arbeit', tone: 'accent' },

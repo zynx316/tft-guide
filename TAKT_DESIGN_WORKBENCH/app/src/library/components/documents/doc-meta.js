@@ -13,7 +13,7 @@ export const dokMeta = {
   name: 'Dokument-Metadaten',
   category: 'Dokumente',
   description: 'Metadaten eines Dokuments: Ordner (wechselbar), Typ, Datum, Format, Ablaufdatum mit Stufe und Erinnerung, Tags, Aufbewahrung und Verknüpfungen zu Vertrag, Garantie, Beleg und Termin. Teilen ist simuliert, Löschen bietet „Rückgängig“.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'showActions', label: 'Aktionen', type: 'boolean', default: true },
     { name: 'showLinks', label: 'Verknüpfungen', type: 'boolean', default: true },

@@ -10,7 +10,7 @@ export const finSubscriptionOverview = {
   name: 'Abos und Fixkosten',
   category: 'Finanzen',
   description: 'Laufende Kosten auf einen Blick: Monats- und Jahressumme, Kündigungsfristen, ungenutzte Abos. „Kündigung vormerken“ erinnert rechtzeitig – gekündigt wird beim Anbieter. Bei Fristen führt „Vorlage“ zum Vertrag in „Dokumente & Verträge“ (Kündigungsvorlage, Unterlagen).',
-  version: '1.2',
+  version: '1.3',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Abos und Fixkosten' },
     { name: 'style', label: 'Darstellung', type: 'select', options: ['list', 'cards', 'callouts'], default: 'list' },
@@ -31,7 +31,9 @@ export const finSubscriptionOverview = {
   .tk-fnsub__calls { display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 250px), 1fr)); gap:var(--tk-space-3); }
   .tk-fnsub__call .tk-fn-sub { color:var(--tk-c-text-muted); }
   .tk-fnsub__call--info { background:var(--tk-c-info-soft); }
-  .tk-fnsub__hero { display:flex; flex-direction:column; gap:10px; margin-bottom:var(--tk-space-4); }`,
+  .tk-fnsub__hero { display:flex; flex-direction:column; gap:10px; margin-bottom:var(--tk-space-4); }
+  [data-tk-large-text] .tk-fnsub__row > .tk-fn-tap { flex-wrap:wrap; row-gap:2px; align-items:flex-start; } [data-tk-large-text] .tk-fnsub__row .tk-fn-tap > .tk-fn-ico { display:none; } [data-tk-large-text] .tk-fnsub__row .tk-fn-tap > .tk-fn-grow { flex:1 1 100%; } [data-tk-large-text] .tk-fnsub__row .tk-fn-tap > span:last-child { text-align:left !important; } [data-tk-large-text] .tk-fnsub__row .tk-fn-sub { white-space:normal; overflow:visible; text-overflow:clip; overflow-wrap:break-word; }
+  [data-tk-large-text] .tk-fnsub__call .tk-fn-row { flex-wrap:wrap; } [data-tk-large-text] .tk-fnsub__call .tk-fn-ico { display:none; } [data-tk-large-text] .tk-fnsub__call .tk-fn-grow { flex:1 1 100%; } [data-tk-large-text] .tk-fnsub__h { flex-wrap:wrap; }`,
   example: { props: {}, data: ex('subscriptions', 'subMeta', 'prefs') },
   render: function FinSubscriptionOverview({ props, data, setData, ctx }) {
     const c = pctx(ctx, data), meta = obj(data.subMeta);

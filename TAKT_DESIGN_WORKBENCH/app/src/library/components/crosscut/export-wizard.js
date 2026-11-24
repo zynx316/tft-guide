@@ -17,6 +17,7 @@ const CSS = `
   .tk-xc-exp { display: flex; flex-direction: column; gap: var(--tk-space-4); padding: var(--tk-space-4); min-width: 0; }
   .tk-xc-exp h4 { margin: 0 0 var(--tk-space-2); font-size: var(--tk-fs-sm); color: var(--tk-c-text-muted); font-weight: var(--tk-fw-semibold); }
   .tk-xc-exp__fmt { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--tk-space-2); }
+  [data-tk-large-text] .tk-xc-exp__fmt { grid-template-columns: minmax(0, 1fr); }
   .tk-xc-exp__opt { display: flex; align-items: center; gap: var(--tk-space-2); min-height: 56px; padding: var(--tk-space-2) var(--tk-space-3); border-radius: var(--tk-radius-lg); border: 1.5px solid var(--tk-c-border); background: var(--tk-c-surface); color: var(--tk-c-text); font: inherit; text-align: left; cursor: pointer; min-width: 0; }
   .tk-xc-exp__opt[aria-pressed="true"] { border-color: var(--tk-c-accent); background: var(--tk-c-accent-soft); }
   .tk-xc-exp__sum { display: flex; align-items: center; gap: var(--tk-space-3); flex-wrap: wrap; justify-content: space-between; padding-top: var(--tk-space-3); border-top: 1px solid var(--tk-c-border); }
@@ -28,7 +29,7 @@ export const exportWizard = {
   name: 'Export-Assistent',
   category: 'Querschnitt',
   description: 'Daten als Datei mitnehmen: Umfang (alles oder einzelne Module), Format (JSON, CSV, ICS, Markdown) und Ziel (speichern, teilen, verschlüsselt) mit geschätzter Größe, Fortschritt und Ergebnis. Der Export ist simuliert.',
-  version: '1.0',
+  version: '1.1',
   props: [{ name: 'title', label: 'Titel', type: 'text', default: 'Daten exportieren' }],
   data: [],
   events: ['export.scope', 'export.format', 'export.target', 'export.start', 'export.done', 'export.share', 'export.again'],

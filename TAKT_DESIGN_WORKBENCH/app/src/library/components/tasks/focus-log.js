@@ -10,7 +10,7 @@ export const focusLog = {
   name: 'Fokus-Protokoll',
   category: 'Aufgaben',
   description: 'Protokoll der Fokusblöcke: heute mit Aufgabe und Uhrzeit oder die Woche als Zusammenfassung, dazu Fortschritt zum Tagesziel. Antippen eines Eintrags öffnet die Aufgabe.',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Fokus heute' },
     { name: 'scope', label: 'Zeitraum', type: 'select', options: ['today', 'week'], default: 'today' },
@@ -26,7 +26,9 @@ export const focusLog = {
   .tk-focuslog__row { display:flex; align-items:center; gap:12px; width:100%; min-height:52px; padding:6px 16px; border:0; border-bottom:1px solid var(--tk-c-border); background:transparent; color:var(--tk-c-text); font:inherit; text-align:left; cursor:pointer; }
   .tk-focuslog__row:last-of-type { border-bottom:0; } .tk-focuslog__row:hover { background:var(--tk-c-surface2); }
   .tk-focuslog__time { width:44px; flex:none; font-variant-numeric:tabular-nums; font-size:var(--tk-fs-sm); color:var(--tk-c-text-muted); }
-  .tk-focuslog__sum { padding:12px 16px; display:flex; flex-direction:column; gap:8px; border-top:1px solid var(--tk-c-border); background:var(--tk-c-surface2); }`,
+  .tk-focuslog__sum { padding:12px 16px; display:flex; flex-direction:column; gap:8px; border-top:1px solid var(--tk-c-border); background:var(--tk-c-surface2); }
+  [data-tk-large-text] .tk-focuslog__time { width:auto; min-width:3.6em; }
+  [data-tk-large-text] .tk-focuslog__row { flex-wrap:wrap; row-gap:0; } [data-tk-large-text] .tk-focuslog__row > .tk-grow.tk-truncate { flex:1 0 100%; order:5; }`,
   example: { data: { log: [{ id: 'a', taskId: 't1', title: 'Angebot Müller GmbH finalisieren', start: '2026-11-24T08:05:00', minutes: 25 }, { id: 'b', taskId: 't5', title: 'Wireframes prüfen', start: '2026-11-24T08:40:00', minutes: 25 }], goal: { sessionsPerDay: 6 } } },
   render: ({ props, data, ctx }) => {
     const log = Array.isArray(data.log) ? data.log : [], goal = Number(data.goal?.sessionsPerDay) || 6, key = isoDay(ctx.today);

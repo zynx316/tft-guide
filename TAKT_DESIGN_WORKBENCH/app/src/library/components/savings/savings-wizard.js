@@ -9,7 +9,7 @@ export const savingsWizard = {
   name: 'Sparplan-Assistent',
   category: 'Sparpläne',
   description: 'Sparplan anlegen in vier Schritten (Ziel, Betrag und Rhythmus, Anlage, Übersicht) mit Prüfung vor „Weiter“ und Modellrechnung – oder alle Abschnitte auf einer Seite mit Live-Übersicht. Speichert in die gemeinsamen Sparpläne (und legt bei Bedarf ein Ziel an). Der Plan wird nicht von TAKT ausgeführt.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Sparplan anlegen' },
     { name: 'mode', label: 'Ablauf', type: 'select', options: ['steps', 'single'], default: 'steps' },

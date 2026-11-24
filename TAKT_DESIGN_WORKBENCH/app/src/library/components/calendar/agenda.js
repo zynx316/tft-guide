@@ -12,7 +12,7 @@ export const agenda = {
   name: 'Agenda',
   category: 'Kalender',
   description: 'Chronologische Termin-Liste für einen oder mehrere Tage, gruppiert nach Tag, mit Hinweis auf freie Zeitfenster und Tagesleerzustand.',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Agenda' },
     { name: 'days', label: 'Anzahl Tage', type: 'number', default: 3 },
@@ -38,7 +38,11 @@ export const agenda = {
   .tk-agenda__row[data-past="true"] .tk-agenda__main { opacity:.7; }
   .tk-agenda__free { display:flex; align-items:center; gap:10px; padding:8px 16px 8px 80px; border-bottom:1px solid var(--tk-c-border); font-size:var(--tk-fs-sm); color:var(--tk-c-text-muted); background:repeating-linear-gradient(135deg, transparent 0 8px, color-mix(in srgb, var(--tk-c-success) 6%, transparent) 8px 16px); min-height:40px; }
   .tk-agenda__empty { padding:14px 16px; color:var(--tk-c-text-subtle); font-size:var(--tk-fs-sm); border-bottom:1px solid var(--tk-c-border); display:flex; gap:8px; align-items:center; }
-  .bp-mobile .tk-agenda__free { padding-left:16px; }`,
+  .bp-mobile .tk-agenda__free { padding-left:16px; }
+  [data-tk-large-text] .tk-agenda__time { min-width:3.8em; }
+  [data-tk-large-text] .tk-agenda__free { flex-wrap:wrap; }
+  [data-tk-large-text] .tk-agenda__free .tk-grow { display:none; }
+  [data-tk-large-text] .tk-agenda__free button { white-space:nowrap; margin-left:auto; }`,
   example: { data: { events: [
     { id: 'a', title: 'Daily Stand-up', start: '2026-11-24T09:45:00', end: '2026-11-24T10:00:00', category: 'Arbeit', tone: 'accent', location: 'Teams' },
     { id: 'b', title: 'Mittag mit Jana', start: '2026-11-24T12:30:00', end: '2026-11-24T13:30:00', category: 'Privat', tone: 'accent2', location: 'Café Moll' },

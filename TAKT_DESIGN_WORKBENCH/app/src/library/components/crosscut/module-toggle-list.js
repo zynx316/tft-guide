@@ -16,6 +16,8 @@ const CSS = `
   .tk-xc-mod__empty { border-style: dashed; color: var(--tk-c-text-subtle); }
   .tk-xc-mod__star[aria-pressed="true"] { color: var(--tk-c-warning); }
   .tk-xc-mod__row { display: flex; align-items: center; gap: var(--tk-space-2); min-height: 56px; padding: var(--tk-space-2) var(--tk-space-3); border-bottom: 1px solid var(--tk-c-border); min-width: 0; }
+  [data-tk-large-text] .tk-xc-mod__row:has(.tk-switch, .tk-badge) { flex-wrap: wrap; row-gap: 6px; } [data-tk-large-text] .tk-xc-mod__row:has(.tk-switch, .tk-badge) > .tk-xc-ic { display: none; }
+  [data-tk-large-text] .tk-xc-mod__row:has(.tk-switch, .tk-badge) > .tk-xc-main { flex: 1 1 100%; } [data-tk-large-text] .tk-xc-mod__row:has(.tk-switch, .tk-badge) > :last-child { margin-left: auto; }
   .tk-xc-mod__row:last-child { border-bottom: 0; }
   .tk-xc-mod__row[data-off="true"] .tk-xc-main { opacity: .55; }
   .tk-xc-mod__tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 150px), 1fr)); gap: var(--tk-space-3); }
@@ -39,7 +41,7 @@ export const moduleToggleList = {
   name: 'Module & Navigation',
   category: 'Querschnitt',
   description: 'Alle Module auf einen Blick: ein- und ausschalten, bis zu vier Favoriten für die Navigationsleiste wählen und ordnen. Die Vorschau zeigt die Leiste sofort. Darstellung „slots“: vier Plätze der Leiste, je Platz ein Modul über „Ändern“ wählen (Tausch möglich), Module ein-/ausschalten erst auf Wunsch. Änderungen landen in den gemeinsamen Einstellungen (Favoriten, aktive Module).',
-  version: '1.2',
+  version: '1.3',
   props: [
     { name: 'style', label: 'Darstellung', type: 'select', options: ['list', 'tiles', 'slots'], default: 'list' },
     { name: 'maxFavorites', label: 'Höchstens Favoriten', type: 'number', default: 4 },

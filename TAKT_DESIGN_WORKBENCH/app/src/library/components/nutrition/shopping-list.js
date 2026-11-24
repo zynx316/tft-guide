@@ -14,7 +14,7 @@ export const shoppingList = {
   name: 'Einkaufsliste',
   category: 'Ernährung',
   description: 'Leitet die Liste aus dem Wochenplan ab (3 oder 7 Tage), summiert gleiche Zutaten, gleicht den Vorrat ab und sortiert nach Gängen. Große Abhak-Flächen (erledigt rutscht nach unten), Preisschätzung mit Lebensmittel-Budget, Laden-Modus und Export als Aufgabe.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Einkaufsliste' },
     { name: 'showPrice', label: 'Preisschätzung', type: 'boolean', default: true },
@@ -43,7 +43,8 @@ export const shoppingList = {
   .tk-sh--store .tk-sh__row { min-height:68px; } .tk-sh--store .tk-sh__name { font-size:var(--tk-nfs-xl); } .tk-sh--store .tk-sh__amt { font-size:var(--tk-nfs-lg); color:var(--tk-c-text); }
   .tk-sh__add { display:flex; gap:8px; } .tk-sh__add .tk-input { flex:1; }
   .tk-sh__budget { display:flex; flex-direction:column; gap:6px; padding:10px 12px; border-radius:var(--tk-radius-md); background:var(--tk-c-surface2); border:1px solid var(--tk-c-border); font-size:var(--tk-nfs-sm); }
-  .tk-sh__pantry { margin-top:8px; padding-top:8px; border-top:1px dashed var(--tk-c-border); }`,
+  .tk-sh__pantry { margin-top:8px; padding-top:8px; border-top:1px dashed var(--tk-c-border); }
+  [data-tk-large-text] .tk-sh__row { flex-wrap:wrap; align-items:flex-start; row-gap:2px; padding-block:6px; } [data-tk-large-text] .tk-sh__row > .tk-grow { flex:1 1 12ch; } [data-tk-large-text] .tk-sh__amt { white-space:normal; }`,
   example: { data: {
     plan: [{ id: 'p1', date: '2026-11-24', meal: 'dinner', recipeId: 'r1', servings: 2, status: 'planned' }],
     recipes: [{ id: 'r1', title: 'Lachs mit Ofengemüse', servings: 2, ingredients: [{ foodId: 'f1', g: 300 }, { foodId: 'f2', g: 300 }] }],

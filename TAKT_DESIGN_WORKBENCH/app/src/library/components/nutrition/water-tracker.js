@@ -12,7 +12,7 @@ export const waterTracker = {
   name: 'Wasser-Tracker',
   category: 'Ernährung',
   description: 'Trinken mit einem Tap erfassen: Schnelltasten (+150/+250/+500 ml), eigene Gefäße, Glas-Raster oder Fortschrittsbalken, Rückgängig und Wochenbalken. Ziel erreicht wird dezent gezeigt, ohne Animation.',
-  version: '1.2',
+  version: '1.3',
   props: [
     { name: 'quietEmpty', label: 'Im Erststart (noch nichts erfasst) nichts anzeigen', type: 'boolean', default: false },
     { name: 'title', label: 'Titel', type: 'text', default: 'Wasser' },
@@ -42,9 +42,10 @@ export const waterTracker = {
   .tk-nwat__week { display:flex; align-items:flex-start; gap:6px; } .tk-nwat__wcol { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; min-width:0; }
   .tk-nwat__wtrack { height:56px; width:100%; display:flex; align-items:flex-end; justify-content:center; }
   .tk-nwat__wbar { flex:none; width:100%; max-width:28px; border-radius:5px 5px 2px 2px; background:${WATER}; opacity:.55; min-height:3px; } .tk-nwat__wcol[data-today="true"] .tk-nwat__wbar { opacity:1; } .tk-nwat__wcol span { font-size:var(--tk-nfs-xs); color:var(--tk-c-text-subtle); }
-  .tk-nwat__line { display:flex; align-items:center; gap:10px; min-height:44px; border-bottom:1px solid var(--tk-c-border); } .tk-nwat__line:last-child { border-bottom:0; }
+  .tk-nwat__line { display:flex; align-items:center; gap:10px; min-height:44px; border-bottom:1px solid var(--tk-c-border); } .tk-nwat__line:last-child { border-bottom:0; } [data-tk-large-text] .tk-nwat__line > .tk-nu-meta { width:auto !important; min-width:6ch; flex:none; } [data-tk-large-text] .tk-nwat__line > .tk-grow { flex:1 1 8ch; }
   .tk-nwat__compact { display:flex; align-items:center; gap:12px; min-width:0; } .tk-nwat__compact .tk-progress > span { background:${WATER}; }
-  .tk-nwat .tk-progress { height:10px; } .tk-nwat .tk-progress > span { background:${WATER}; }`,
+  .tk-nwat .tk-progress { height:10px; } .tk-nwat .tk-progress > span { background:${WATER}; }
+  [data-tk-large-text] .tk-nwat__compact { flex-wrap:wrap; row-gap:var(--tk-space-3); } [data-tk-large-text] .tk-nwat__compact > .tk-grow { flex:1 1 14ch; } [data-tk-large-text] .tk-nwat__compact > .tk-grow > .tk-row { flex-wrap:wrap; gap:0 8px; } [data-tk-large-text] .tk-nwat__compact > .tk-btn { flex:1 1 100%; justify-content:center; }`,
   example: { data: {
     water: { goal: 2500, vessels: [{ id: 'v1', label: 'Glas', ml: 250, icon: 'glass-water' }, { id: 'v2', label: 'Meine Flasche', ml: 750, icon: 'cup-soda' }],
       entries: [{ id: 'w1', date: '2026-11-24', time: '07:20', ml: 250, vessel: 'Glas' }, { id: 'w2', date: '2026-11-24', time: '08:05', ml: 500, vessel: 'Flasche' }], week: [{ date: '2026-11-23', ml: 2300 }, { date: '2026-11-22', ml: 2750 }] },

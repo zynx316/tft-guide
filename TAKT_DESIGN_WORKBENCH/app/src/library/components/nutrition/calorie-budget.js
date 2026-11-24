@@ -9,7 +9,7 @@ export const calorieBudget = {
   name: 'Kalorien-Bilanz',
   category: 'Ernährung',
   description: 'Tagesbilanz aus Ziel, Gegessen und Übrig als Ring, Balken oder Formel. Geplante Mahlzeiten werden heller ergänzt. Über dem Ziel bleibt die Darstellung neutral, ohne Rot und ohne Wertung.',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Kalorien' },
     { name: 'style', label: 'Darstellung', type: 'select', options: ['ring', 'bar', 'formula'], default: 'ring' },
@@ -38,6 +38,8 @@ export const calorieBudget = {
   .tk-cb__term { display:flex; flex-direction:column; align-items:center; gap:2px; min-width:0; } .tk-cb__op { color:var(--tk-c-text-subtle); font-size:var(--tk-nfs-2xl); padding-bottom:18px; }
   .tk-cb__term strong { font-size:var(--tk-nfs-2xl); font-weight:var(--tk-fw-bold); font-variant-numeric:tabular-nums; line-height:1.1; } .tk-cb__term span { font-size:var(--tk-nfs-xs); color:var(--tk-c-text-subtle); text-transform:uppercase; letter-spacing:var(--tk-ls-wide); font-weight:var(--tk-fw-semibold); }
   .tk-cb__term--main strong { font-size:var(--tk-nfs-3xl); color:var(--tk-c-accent); }
+  [data-tk-large-text] .tk-cb__stats { flex-direction:column; gap:4px; text-align:left; } [data-tk-large-text] .tk-cb__stats > .tk-cb__stat { flex:none; display:flex; justify-content:space-between; align-items:baseline; gap:12px; }
+  [data-tk-large-text] .tk-cb__formula { flex-direction:column; align-items:stretch; flex-wrap:nowrap; gap:4px; } [data-tk-large-text] .tk-cb__term { flex-direction:row; justify-content:space-between; align-items:baseline; gap:12px; } [data-tk-large-text] .tk-cb__term span { text-align:right; } [data-tk-large-text] .tk-cb__op { display:none; }
   .bp-mobile .tk-cb__open { min-height:44px; } .bp-mobile .tk-cb__term strong { font-size:var(--tk-nfs-xl); } .bp-mobile .tk-cb__term--main strong { font-size:var(--tk-nfs-2xl); }`,
   example: { data: {
     goals: { kcal: 2400, protein: 140, carbs: 291, fat: 75, fiber: 30, water: 2500 },

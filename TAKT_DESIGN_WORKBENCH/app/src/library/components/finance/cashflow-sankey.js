@@ -14,7 +14,7 @@ export const finCashflowSankey = {
   name: 'Geldfluss (Sankey)',
   category: 'Finanzen',
   description: 'Wohin die Einnahmen des Monats fließen: Kategorien, Gespartes und Übriges als Bänder mit Beträgen. Reicht das Geld nicht, erscheint die Lücke als Quelle „Aus Guthaben“.',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Geldfluss im Monat' },
     { name: 'limit', label: 'Max. Kategorien', type: 'number', default: 5 },
@@ -29,7 +29,9 @@ export const finCashflowSankey = {
   .tk-fnsk svg { display:block; width:100%; height:100%; }
   .tk-fnsk__dst { position:relative; } .tk-fnsk__node { position:absolute; left:0; right:0; display:flex; align-items:center; gap:8px; padding-left:8px; border-left:4px solid var(--c); border-radius:2px; background:none; border-top:0; border-right:0; border-bottom:0; color:inherit; font:inherit; text-align:left; cursor:pointer; min-width:0; }
   .tk-fnsk__node:hover { background:var(--tk-c-surface2); } .tk-fnsk__node span { min-width:0; } .tk-fnsk__node b { display:block; font-weight:var(--tk-fw-medium); font-size:var(--tk-fs-sm); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; } .tk-fnsk__node em { display:block; font-style:normal; font-size:var(--tk-fs-xs); color:var(--tk-c-text-muted); font-variant-numeric:tabular-nums; white-space:nowrap; }
-  .tk-fnsk__head { display:flex; justify-content:space-between; gap:12px; align-items:baseline; margin-bottom:var(--tk-space-3); }`,
+  .tk-fnsk__head { display:flex; justify-content:space-between; gap:12px; align-items:baseline; margin-bottom:var(--tk-space-3); }
+  [data-tk-large-text] .tk-fnsk__head { flex-wrap:wrap; } [data-tk-large-text] .tk-fnsk__head > div { text-align:left !important; } [data-tk-large-text] .tk-fnsk { grid-template-columns:minmax(0,1fr); height:auto !important; } [data-tk-large-text] .tk-fnsk__src, [data-tk-large-text] .tk-fnsk svg { display:none; }
+  [data-tk-large-text] .tk-fnsk__dst { display:flex; flex-direction:column; gap:8px; } [data-tk-large-text] .tk-fnsk__node { position:static; height:auto !important; padding-block:4px; } [data-tk-large-text] .tk-fnsk__node b { white-space:normal; overflow:visible; text-overflow:clip; overflow-wrap:break-word; } [data-tk-large-text] .tk-fnsk__node em { white-space:normal; }`,
   example: { data: ex('transactions', 'categories', 'prefs') },
   render: function FinCashflowSankey({ props, data, ctx }) {
     const c = pctx(ctx, data), cur = monthTx(data.transactions, ctx.today), f = flow(cur), spent = spentByCategory(cur, ctx.today);

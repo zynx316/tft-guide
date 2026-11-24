@@ -15,7 +15,7 @@ export const trdPositions = {
   name: 'Positionen',
   category: 'Trading',
   description: 'Alle Positionen des Depots mit Stückzahl, Kurs, Wert, Tagesveränderung, Gewinn/Verlust und Anteil. Als sortierbare Tabelle, als Karten mit Verlauf oder als schlanke Zeilen. Tippen öffnet das Wertpapier. Gewinn mit Vorzeichen und Pfeil, Beträge maskierbar.',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Positionen' },
     { name: 'style', label: 'Darstellung', type: 'select', options: ['table', 'cards', 'rows'], default: 'table' },
@@ -33,6 +33,7 @@ export const trdPositions = {
   .tk-trd-ps__r { min-height:58px; border-bottom:1px solid var(--tk-c-border); } .tk-trd-ps__r > :nth-child(n+2) { text-align:right; }
   .tk-trd-ps__main { display:flex; align-items:center; gap:12px; min-width:0; background:none; border:0; color:inherit; font:inherit; text-align:left; cursor:pointer; padding:0; min-height:44px; text-align:left; }
   .tk-trd-ps__main:hover .tk-trd-title { text-decoration:underline; }
+  [data-tk-large-text] .tk-trd-item .tk-trd-num, [data-tk-large-text] .tk-trd-ps__card .tk-trd-num { white-space:normal; }
   .tk-trd-ps__sum { display:grid; grid-template-columns:minmax(0,2.4fr) minmax(70px,1fr) minmax(76px,.9fr) minmax(110px,1.3fr) 62px 40px; gap:10px; padding:10px 4px 2px; font-weight:var(--tk-fw-semibold); } .tk-trd-ps__sum > :nth-child(n+2) { text-align:right; }
   .bp-mobile .tk-trd-ps__r, .bp-mobile .tk-trd-ps__sum { grid-template-columns:minmax(0,1fr) auto; row-gap:0; column-gap:12px; } .bp-mobile .tk-trd-ps__h { display:flex; flex-wrap:wrap; gap:0 14px; }
   .bp-mobile .tk-trd-ps__x, .bp-mobile .tk-trd-ps__x2, .bp-tablet .tk-trd-ps__x2 { display:none; } .bp-mobile .tk-trd-ps__r > :nth-child(1) { grid-row:1 / 3; } .bp-mobile .tk-trd-ps__r > :nth-child(4), .bp-mobile .tk-trd-ps__sum > :nth-child(4) { grid-column:2; }

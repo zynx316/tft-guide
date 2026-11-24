@@ -32,6 +32,9 @@ const CSS = `
   .tk-xc-ob__mod { display: flex; align-items: center; gap: var(--tk-space-2); min-height: 52px; padding: var(--tk-space-2) var(--tk-space-3); border-radius: var(--tk-radius-lg); border: 1.5px solid var(--tk-c-border); background: var(--tk-c-surface); color: var(--tk-c-text-muted); font: inherit; text-align: left; cursor: pointer; min-width: 0; }
   .tk-xc-ob__mod[aria-pressed="true"] { border-color: var(--tk-c-accent); background: var(--tk-c-accent-soft); color: var(--tk-c-text); }
   .tk-xc-ob__mod span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: var(--tk-fw-medium); }
+  [data-tk-large-text] .tk-xc-ob__grid { grid-template-columns: repeat(auto-fill, minmax(min(100%, 9em), 1fr)); }
+  [data-tk-large-text] .tk-xc-ob__themes { grid-template-columns: repeat(auto-fit, minmax(min(100%, 7em), 1fr)); }
+  [data-tk-large-text] .tk-xc-ob__mod span { overflow: visible; text-overflow: clip; white-space: normal; overflow-wrap: break-word; hyphens: auto; }
   .tk-xc-ob__themes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--tk-space-2); }
   .tk-xc-ob__theme { display: flex; flex-direction: column; gap: 8px; padding: 8px; border-radius: var(--tk-radius-lg); border: 2px solid var(--tk-c-border); background: var(--tk-c-surface); color: var(--tk-c-text); font: inherit; font-size: var(--tk-fs-sm); font-weight: var(--tk-fw-medium); cursor: pointer; min-width: 0; }
   .tk-xc-ob__theme[aria-checked="true"] { border-color: var(--tk-c-accent); }
@@ -54,7 +57,7 @@ export const onboardingSteps = {
   name: 'Onboarding',
   category: 'Querschnitt',
   description: 'Erststart in sechs kurzen Schritten: Willkommen, Module wählen (mit Vorlagen), Favoriten für die Navigation, Theme, Datenschutz und Zusammenfassung. Als Schritt-für-Schritt-Ablauf oder als eine Seite. Am Ende geht es zu „Start“.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'flow', label: 'Ablauf', type: 'select', options: ['steps', 'single'], default: 'steps' },
     { name: 'startStep', label: 'Startschritt (Vorschau, 0–5)', type: 'number', default: 0 },

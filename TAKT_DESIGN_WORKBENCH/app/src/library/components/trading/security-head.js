@@ -13,7 +13,7 @@ export const trdSecurityHead = {
   name: 'Wertpapier-Kopf',
   category: 'Trading',
   description: 'Kopf der Wertpapier-Seite: Name, Kürzel, Typ und ISIN, aktueller Kurs mit Tagesveränderung (fiktiv, Stand 09:30) und die Aktionen Kauf simulieren und Verkauf simulieren, Kursalarm und Beobachten. Folgt der Auswahl.',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'followSelection', label: 'Auswahl folgen', type: 'boolean', default: true },
     { name: 'showActions', label: 'Aktionen zeigen', type: 'boolean', default: true },
@@ -26,7 +26,8 @@ export const trdSecurityHead = {
   .tk-trd-sh { display:flex; align-items:flex-start; justify-content:space-between; gap:var(--tk-space-4); flex-wrap:wrap; } .tk-trd-sh__id { display:flex; gap:14px; align-items:center; min-width:0; flex:1 1 260px; }
   .tk-trd-sh__name { font-size:var(--tk-fs-xl); font-weight:var(--tk-fw-bold); letter-spacing:var(--tk-ls-tight); line-height:1.15; overflow-wrap:anywhere; }
   .tk-trd-sh__price { display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin-top:6px; } .tk-trd-sh__price > :first-child { font-size:var(--tk-fs-3xl); font-weight:var(--tk-fw-bold); letter-spacing:var(--tk-ls-tight); }
-  .tk-trd-sh__acts { display:flex; gap:var(--tk-space-2); flex-wrap:wrap; } .bp-mobile .tk-trd-sh__acts { width:100%; } .bp-mobile .tk-trd-sh__acts .tk-btn { flex:1 1 calc(50% - 8px); justify-content:center; }`,
+  .tk-trd-sh__acts { display:flex; gap:var(--tk-space-2); flex-wrap:wrap; } .bp-mobile .tk-trd-sh__acts { width:100%; } .bp-mobile .tk-trd-sh__acts .tk-btn { flex:1 1 calc(50% - 8px); justify-content:center; }
+  [data-tk-large-text] .tk-trd-sh__id > :first-child { display:none; } [data-tk-large-text] .tk-trd-sh__acts { width:100%; flex-direction:column; } [data-tk-large-text] .tk-trd-sh__acts .tk-btn { flex:1 1 auto; width:100%; justify-content:center; }`,
   example: { data: ex('instruments', 'positions', 'watchlist', 'cash') },
   render: function TrdSecurityHead({ props, data, setData, ctx }) {
     const insts = arr(data.instruments), inst = (props.followSelection && insts.find((i) => i.id === ctx.ui.selectedId)) || insts.find((i) => arr(data.positions).some((p) => p.id === i.id)) || insts[0];

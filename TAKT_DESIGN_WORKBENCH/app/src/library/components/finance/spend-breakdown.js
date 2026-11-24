@@ -12,7 +12,7 @@ export const finSpendBreakdown = {
   name: 'Ausgaben nach Kategorie',
   category: 'Finanzen',
   description: 'Wohin das Geld im Monat geht: Kategorien nach Betrag, mit Anteil und der Marke des Vormonats. Tippen zeigt die Buchungen der Kategorie. Umbuchungen zählen nicht als Ausgaben.',
-  version: '1.1',
+  version: '1.3',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Ausgaben nach Kategorie' },
     { name: 'style', label: 'Darstellung', type: 'select', options: ['bars', 'donut'], default: 'bars' },
@@ -26,7 +26,10 @@ export const finSpendBreakdown = {
   .tk-fnd__row { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:4px 12px; padding:8px 4px; min-height:48px; }
   .tk-fnd__track { grid-column:1 / -1; position:relative; } .tk-fnd__prev { position:absolute; top:-3px; bottom:-3px; width:2px; background:var(--tk-c-text); opacity:.5; border-radius:1px; }
   .tk-fnd__donut { display:flex; gap:var(--tk-space-5); align-items:center; flex-wrap:wrap; } .tk-fnd__donut > div:last-child { flex:1 1 180px; min-width:0; }
-  .tk-fnd__leg { display:flex; align-items:center; gap:10px; padding:6px 4px; min-height:36px; } .tk-fnd__leg i { width:10px; height:10px; border-radius:3px; flex:none; }`,
+  .tk-fnd__leg { display:flex; align-items:center; gap:10px; padding:6px 4px; min-height:36px; } .tk-fnd__leg i { width:10px; height:10px; border-radius:3px; flex:none; }
+  .tk-fnd__disc { position:relative; width:150px; height:150px; } [data-tk-large-text] .tk-fnd__disc { width:min(100%, calc(150px * var(--tk-text-scale, 1))); height:auto; aspect-ratio:1; } [data-tk-large-text] .tk-fnd__disc > svg { width:100%; height:100%; }
+  [data-tk-large-text] .tk-fnd__row { grid-template-columns:minmax(0,1fr); } [data-tk-large-text] .tk-fnd__row > .tk-fn-row { flex-wrap:wrap; row-gap:2px; } [data-tk-large-text] .tk-fnd__row .tk-fn-ico { display:none; } [data-tk-large-text] .tk-fnd__row .tk-fn-title { flex:1 1 6em; }
+  [data-tk-large-text] .tk-fnd__leg { flex-wrap:wrap; row-gap:2px; } [data-tk-large-text] .tk-fnd__leg .tk-fn-grow { flex:1 1 6em; } [data-tk-large-text] .tk-fnd__donut > div:last-child { flex-basis:100%; }`,
   example: { data: ex('transactions', 'categories', 'months', 'prefs') },
   render: function FinSpendBreakdown({ props, data, ctx }) {
     const c = pctx(ctx, data);
@@ -40,7 +43,7 @@ export const finSpendBreakdown = {
     const pct = (v) => (c.privacy ? MASK_PERCENT : fmtPercent(total ? v / total : 0, { digits: 0 }));
     if (props.style === 'donut') {
       const R = 52, C = 2 * Math.PI * R; let off = 0;
-      return html`<${Card} title=${props.title} icon="pie-chart"><div class="tk-fnd__donut"><div style="position:relative;width:150px;height:150px" role="img" aria-label=${`Ausgaben ${eur0(c, total)}: ${rows.map((r) => `${r.meta.label} ${pct(r.v)}`).join(', ')}`}><svg width="150" height="150" viewBox="0 0 150 150" aria-hidden="true">
+      return html`<${Card} title=${props.title} icon="pie-chart"><div class="tk-fnd__donut"><div class="tk-fnd__disc" role="img" aria-label=${`Ausgaben ${eur0(c, total)}: ${rows.map((r) => `${r.meta.label} ${pct(r.v)}`).join(', ')}`}><svg width="150" height="150" viewBox="0 0 150 150" aria-hidden="true">
         ${rows.map((r, i) => { const len = (r.v / total) * C; const el = html`<circle cx="75" cy="75" r=${R} fill="none" stroke=${toneColor(r.meta.tone === 'neutral' ? 'neutral' : (i % 6) + 1)} stroke-width="18" stroke-dasharray=${`${Math.max(len - 2, 0.5)} ${C}`} stroke-dashoffset=${-off} transform="rotate(-90 75 75)" />`; off += len; return el; })}</svg>
         <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center"><strong class="tk-fn-num" style="font-size:var(--tk-fs-lg)">${eur0(c, total)}</strong><span class="tk-fn-sub">Ausgaben</span></div></div>
         <div>${rows.map((r, i) => html`<button type="button" class="tk-fn-tap tk-fnd__leg" onClick=${() => open(r)}><i style=${`background:${toneColor(r.meta.tone === 'neutral' ? 'neutral' : (i % 6) + 1)}`}></i><span class="tk-fn-grow tk-fn-title">${r.meta.label}</span><span class="tk-fn-sub tk-fn-num">${pct(r.v)}</span><span class="tk-fn-num" style="font-weight:600">${eur0(c, r.v)}</span></button>`)}</div></div><//>`;

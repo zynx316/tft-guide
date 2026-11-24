@@ -11,7 +11,7 @@ export const goalList = {
   name: 'Zielliste',
   category: 'Fitness',
   description: 'Wochenziele und Langzeitziele mit Fortschrittsbalken in ruhigen Farben (kein Rot bei Überschreitung). Ziel antippen öffnet das Detail, „Ziel hinzufügen“ bietet Vorschläge.',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'quietEmpty', label: 'Ohne Daten nichts anzeigen (Erststart)', type: 'boolean', default: false },
     { name: 'title', label: 'Titel', type: 'text', default: 'Ziele' },
@@ -22,7 +22,8 @@ export const goalList = {
   states: ['empty'],
   css: `
   .tk-gl { display:flex; flex-direction:column; } .tk-gl__row { display:flex; flex-direction:column; gap:8px; padding:12px 0; border:0; border-bottom:1px solid var(--tk-c-border); background:none; color:inherit; cursor:pointer; text-align:left; width:100%; min-height:60px; } .tk-gl__row:last-child { border-bottom:0; }
-  .tk-gl__top { display:flex; align-items:center; gap:10px; min-width:0; } .tk-gl__ico { width:32px; height:32px; border-radius:10px; display:grid; place-items:center; background:var(--tk-c-accent-soft); color:var(--tk-c-accent); flex:none; } .tk-gl__row[data-done="true"] .tk-gl__ico { background:var(--tk-c-success-soft); color:var(--tk-c-success); }`,
+  .tk-gl__top { display:flex; align-items:center; gap:10px; min-width:0; } .tk-gl__ico { width:32px; height:32px; border-radius:10px; display:grid; place-items:center; background:var(--tk-c-accent-soft); color:var(--tk-c-accent); flex:none; } .tk-gl__row[data-done="true"] .tk-gl__ico { background:var(--tk-c-success-soft); color:var(--tk-c-success); }
+  [data-tk-large-text] .tk-gl__top { flex-wrap:wrap; row-gap:2px; } [data-tk-large-text] .tk-gl__top > .tk-grow { flex:1 1 10ch; } [data-tk-large-text] .tk-gl__top > .tk-num { margin-left:42px; white-space:normal; }`,
   example: { data: { items: [{ id: 'g1', label: 'Krafttraining', value: 1, target: 3, unit: 'Einheiten', icon: 'dumbbell', hint: 'diese Woche' }, { id: 'g2', label: 'Schritte Ø 7 Tage', value: 8400, target: 9000, unit: 'Schritte', icon: 'person-standing', hint: 'Tagesziel flexibel' }, { id: 'g3', label: 'Gewichtstrend', value: 1.5, target: 3, unit: 'kg', icon: 'scale', hint: 'Ziel 77 kg', decimals: 1 }] } },
   render: function GoalList({ props, data, setData, ctx }) {
     const items = data.items || [];

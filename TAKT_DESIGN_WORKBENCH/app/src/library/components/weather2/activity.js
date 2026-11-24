@@ -13,7 +13,7 @@ export const wxActivity = {
   name: 'Aktivitätsfenster & Training',
   category: 'Wetter',
   description: 'Wann ist das Wetter wofür gut? Laufen, Radfahren, Spaziergang, Auto waschen, Wäsche trocknen – mit bestem Zeitfenster, Begründung, Eignungsband für 48 Stunden und freien Fenstern ohne Termin. Dazu die geplanten Trainingseinheiten (Fitness) mit Wetter dazu.',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'layout', label: 'Darstellung', type: 'select', options: ['full', 'compact'], default: 'full' },
     { name: 'title', label: 'Titel', type: 'text', default: 'Aktivitätsfenster' },
@@ -28,6 +28,7 @@ export const wxActivity = {
   .tk-wxac__row:hover { background:var(--tk-c-surface2); } .tk-wxac__row[aria-expanded="true"] { background:var(--tk-c-surface2); }
   .tk-wxac__score { flex:none; width:46px; height:46px; border-radius:50%; display:grid; place-items:center; font-weight:var(--tk-fw-bold); font-variant-numeric:tabular-nums; }
   .tk-wxac__t { display:flex; align-items:center; gap:6px; font-weight:var(--tk-fw-semibold); } .tk-wxac__t svg { flex:none; color:var(--tk-c-text-muted); } .tk-wxac__s { font-size:var(--tk-fs-sm); color:var(--tk-c-text-muted); margin-top:2px; line-height:1.4; }
+  [data-tk-large-text] .tk-wxac__row { flex-wrap:wrap; row-gap:6px; } [data-tk-large-text] .tk-wxac__row > .tk-grow { flex:1 1 14ch; } [data-tk-large-text] .tk-wxac__t { flex-wrap:wrap; }
   .tk-wxac__more { padding:var(--tk-space-3) var(--tk-space-4) var(--tk-space-4); background:var(--tk-c-surface2); border-bottom:1px solid var(--tk-c-border); display:flex; flex-direction:column; gap:var(--tk-space-3); }
   .tk-wxac__strip { display:flex; gap:2px; height:22px; } .tk-wxac__strip i { flex:1; border-radius:3px; min-width:2px; }
   .tk-wxac__axis { display:flex; justify-content:space-between; font-size:var(--tk-fs-xs); color:var(--tk-c-text-subtle); }

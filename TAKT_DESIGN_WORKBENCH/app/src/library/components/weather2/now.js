@@ -9,7 +9,7 @@ export const wxNow = {
   name: 'Jetzt (Ort & Zustand)',
   category: 'Wetter',
   description: 'Aktuelles Wetter des gewählten Ortes: Temperatur, Zustand, gefühlte Temperatur, Hoch/Tief und Kurztext. Als große Karte, kompakte Zeile oder einzeilige Leiste. Zeigt Offline-/Veraltet-Hinweis mit Stand und folgt den Einheiten.',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'layout', label: 'Darstellung', type: 'select', options: ['hero', 'compact', 'line'], default: 'hero' },
     { name: 'showSummary', label: 'Kurztext', type: 'boolean', default: true },
@@ -33,6 +33,7 @@ export const wxNow = {
   .tk-wxnow__sum svg { flex:none; margin-top:2px; color:var(--tk-c-accent); }
   .tk-wxnow--compact { flex-direction:row; align-items:center; gap:var(--tk-space-4); }
   .tk-wxnow--compact .tk-wxnow__temp { font-size:var(--tk-fs-4xl); line-height:1; }
+  [data-tk-large-text] .tk-wxnow--compact { flex-wrap:wrap; row-gap:var(--tk-space-3); } [data-tk-large-text] .tk-wxnow--compact > .tk-grow { flex:1 1 14ch; } [data-tk-large-text] .tk-wxnow--compact > div:last-child { flex:1 1 100%; display:flex; flex-wrap:wrap; align-items:baseline; justify-content:space-between; gap:2px var(--tk-space-3); }
   .tk-wxnow__line { display:flex; align-items:center; gap:var(--tk-space-3); flex-wrap:wrap; min-width:0; }
   .tk-wxnow__where { display:inline-flex; align-items:center; gap:5px; font-size:var(--tk-fs-sm); font-weight:var(--tk-fw-semibold); color:var(--tk-c-text-muted); min-width:0; }
   .tk-wxnow__stale { animation:none; }
@@ -82,7 +83,7 @@ export const wxStats = {
   name: 'Messwerte',
   category: 'Wetter',
   description: 'Detailwerte des aktuellen Wetters (Wind mit Richtung, Böen, Niederschlag, Luftfeuchte, Druck, Taupunkt, Sicht) plus UV, Luft und Pollen. Als Kacheln oder dichte Zeilen. UV/Luft/Pollen öffnen den Bereich „Pollen, UV & Luft“.',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'metrics', label: 'Werte (Reihenfolge)', type: 'list', default: ['wind', 'rain', 'humidity', 'pressure', 'uv', 'air'] },
     { name: 'layout', label: 'Darstellung', type: 'select', options: ['tiles', 'rows'], default: 'tiles' },
@@ -103,7 +104,8 @@ export const wxStats = {
   .tk-wxs__row:last-child { border-bottom:0; } .tk-wxs__row:hover { background:var(--tk-c-surface2); }
   .tk-wxs__row .tk-wxs__ic { color:var(--tk-c-text-muted); display:inline-flex; width:20px; }
   .tk-wxs__row .tk-wxs__s { margin-left:auto; text-align:right; max-width:55%; }
-  .bp-mobile .tk-wxs { grid-template-columns:repeat(2, minmax(0,1fr)); gap:var(--tk-space-2); }`,
+  .bp-mobile .tk-wxs { grid-template-columns:repeat(2, minmax(0,1fr)); gap:var(--tk-space-2); }
+  [data-tk-large-text] .tk-wxs__row { flex-wrap:wrap; row-gap:2px; } [data-tk-large-text] .tk-wxs__row > .tk-muted { flex:1 1 8ch; min-width:0; } [data-tk-large-text] .tk-wxs__row .tk-wxs__s { flex:1 1 100%; margin-left:0; max-width:100%; text-align:left; white-space:normal; overflow:visible; text-overflow:clip; }`,
   example: { props: { metrics: ['wind', 'rain', 'humidity', 'pressure', 'uv', 'air', 'pollen', 'dew'] }, data: { place: EX.place, settings: EX.settings } },
   render: ({ props, data, ctx }) => {
     const place = placeOf(data);

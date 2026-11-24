@@ -11,7 +11,7 @@ export const finSafeToSpend = {
   name: 'Frei verfügbar',
   category: 'Finanzen',
   description: 'Was bis Monatsende frei bleibt: Girokonto minus offene Kreditkarte, Abbuchungen bis zum Monatswechsel, Sparraten und Puffer. Jede Zahl ist über „Wie berechnet?“ herleitbar.',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Frei verfügbar' },
     { name: 'style', label: 'Darstellung', type: 'select', options: ['hero', 'compact', 'formula'], default: 'hero' },

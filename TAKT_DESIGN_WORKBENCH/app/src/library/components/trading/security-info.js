@@ -41,7 +41,7 @@ export const trdHolding = {
   name: 'Meine Position',
   category: 'Trading',
   description: 'Die eigene Position im gewählten Wertpapier: Stückzahl, Einstand, Wert, Gewinn/Verlust, Anteil am Depot, dazu der Sparplan-Bezug mit nächster Ausführung, aktive Alarme und offene simulierte Orders. Ohne Bestand: Hinweis und Weg zur Order.',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Meine Position' },
     { name: 'followSelection', label: 'Auswahl folgen', type: 'boolean', default: true },
@@ -51,6 +51,7 @@ export const trdHolding = {
   states: ['empty'],
   css: `${TRD_CSS}
   .tk-trd-hd { display:flex; flex-direction:column; gap:var(--tk-space-4); } .tk-trd-hd__kv { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px 12px; margin:0; font-size:var(--tk-fs-sm); } .tk-trd-hd__kv dd { margin:0; text-align:right; font-variant-numeric:tabular-nums; } .tk-trd-hd__kv dt { color:var(--tk-c-text-muted); }
+  [data-tk-large-text] .tk-trd-hd__kv { grid-template-columns:minmax(0,1fr); row-gap:0; } [data-tk-large-text] .tk-trd-hd__kv dd { text-align:left; margin-bottom:8px; }
   .tk-trd-hd__plan { display:flex; align-items:center; gap:12px; padding:10px 12px; border:1px solid var(--tk-c-border); border-radius:var(--tk-radius-md); background:var(--tk-c-surface2); width:100%; color:inherit; font:inherit; text-align:left; cursor:pointer; min-height:56px; } .tk-trd-hd__plan:hover { background:var(--tk-c-surface3); }`,
   example: { data: ex('instruments', 'positions', 'cash', 'plans', 'alerts', 'orders') },
   render: function TrdHolding({ props, data, ctx }) {

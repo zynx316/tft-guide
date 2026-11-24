@@ -14,7 +14,7 @@ export const dayBrief = {
   name: 'Tagesbriefing',
   category: 'Start',
   description: 'Morgenbriefing aus allen Modulen: Wetter, erster Termin, wichtigste Aufgaben, Gewohnheiten, Geld und Training – jede Zeile mit Quelle und Sprung ins Modul. Stile: Liste (dicht), Geschichte (große Karte) und Schritte (eine Karte nach der anderen).',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Tagesbriefing' },
     { name: 'style', label: 'Stil', type: 'select', options: ['list', 'story', 'steps'], default: 'list' },
@@ -44,7 +44,10 @@ export const dayBrief = {
   .tk-db__card { display:flex; flex-direction:column; gap:8px; padding:16px; border-radius:var(--tk-radius-lg); border:1px solid var(--tk-c-border); background:var(--tk-c-surface2); text-align:left; color:inherit; font:inherit; cursor:pointer; min-width:0; } .tk-db__card:hover { border-color:var(--tk-c-border-strong); } .tk-db__card b { font-size:var(--tk-fs-lg); letter-spacing:var(--tk-ls-tight); } .tk-db__card p { margin:0; font-size:var(--tk-fs-sm); color:var(--tk-c-text-muted); line-height:var(--tk-lh-normal); }
   .tk-db__step { display:flex; flex-direction:column; align-items:center; text-align:center; gap:14px; padding:32px 24px 20px; min-height:320px; justify-content:center; } .tk-db__step .tk-db__ic { width:72px; height:72px; border-radius:22px; } .tk-db__step h3 { font-size:var(--tk-fs-2xl); letter-spacing:var(--tk-ls-tight); margin:0; } .tk-db__step p { margin:0; font-size:var(--tk-fs-md); color:var(--tk-c-text-muted); max-width:42ch; line-height:var(--tk-lh-normal); }
   .tk-db__pips { display:flex; gap:6px; justify-content:center; } .tk-db__pips i { width:22px; height:5px; border-radius:3px; background:var(--tk-c-surface3); } .tk-db__pips i[data-on="true"] { background:var(--tk-c-accent); } .tk-db__nav { display:flex; gap:8px; justify-content:space-between; align-items:center; padding:12px 16px 16px; }
-  .bp-mobile .tk-db__hero { padding:20px 16px 16px; } .bp-mobile .tk-db__hero h2 { font-size:var(--tk-fs-2xl); } .bp-mobile .tk-db__step { padding:24px 16px 12px; min-height:300px; }`,
+  .bp-mobile .tk-db__hero { padding:20px 16px 16px; } .bp-mobile .tk-db__hero h2 { font-size:var(--tk-fs-2xl); } .bp-mobile .tk-db__step { padding:24px 16px 12px; min-height:300px; }
+  [data-tk-large-text] .tk-db__line { flex-wrap:wrap; row-gap:0; } [data-tk-large-text] .tk-db__main { flex:1 1 8em; }
+  [data-tk-large-text] .tk-db__src { flex:1 0 100%; white-space:normal; margin-top:0; padding-left:calc(36px + 12px); }
+  [data-tk-large-text] .tk-db__nav { flex-wrap:wrap; } [data-tk-large-text] .tk-db__top > div:first-child { flex:1 1 100%; min-width:0; }`,
   example: { props: { style: 'list' }, data: SAMPLE },
   render: function DayBrief({ props, data, ctx }) {
     const [i, setI] = useState(0), [sched, setSched] = useState(true), [read, setRead] = useState(false);

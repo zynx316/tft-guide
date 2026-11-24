@@ -114,7 +114,7 @@ export const calendarWeek = {
     const bs = bigTextScale(), big = bs > 1; // große Schrift: weniger Tagesspalten, damit Termintexte lesbar bleiben
     const bw = ctx.blockWidth || ctx.width || 390;
     const n0 = view === 'Tag' ? 1 : mobile ? Math.min(Number(props.mobileDays) || 3, 7) : weekDays;
-    const n = big && n0 > 1 ? Math.max(1, Math.min(n0, Math.floor((bw - 16 - 20 * bs) / (84 * bs)))) : n0;
+    const n = big && n0 > 1 ? Math.max(1, Math.min(n0, Math.floor((bw - 16 - 20 * bs) / (100 * bs)))) : n0;
     const cappedBig = big && n0 > 1 && n === 1;
     const first = n === 1 || mobile ? sel : startOfWeek(sel);
     const days = Array.from({ length: n }, (_, i) => addDays(first, i));
@@ -178,7 +178,7 @@ export const calendarWeek = {
             <span class="tk-cw__dow">${WEEKDAYS[(d.getDay() + 6) % 7]}</span><span class="tk-cw__dnum">${d.getDate()}</span></button>`; })}
         </div>
         ${hasAll ? html`<div class="tk-cw__grid tk-cw__allday" style=${`--n:${n}`}>
-          <div style="font-size:var(--tk-fs-xs);color:var(--tk-c-text-subtle);padding:6px 4px;text-align:right">${mobile ? '' : 'Ganztag'}</div>
+          <div style="font-size:var(--tk-fs-xs);color:var(--tk-c-text-subtle);padding:6px 4px;text-align:right">${mobile || big ? '' : 'Ganztag'}</div>
           ${days.map((d) => { const k = dayKey(d); const ts = tasks.filter((t) => dayKey(dueDate(t)) === k).sort((a, b) => prio(a).rank - prio(b).rank).slice(0, 2);
             return html`<div class="tk-cw__allcell">
               ${onDay(allDay, d).map((o) => html`<button type="button" class="tk-cw__allchip" style=${`--ec:${catColor(o)}`} onClick=${() => openEvent(ctx, setData, o, all, props)}><span class="tk-truncate">${o.title}</span></button>`)}

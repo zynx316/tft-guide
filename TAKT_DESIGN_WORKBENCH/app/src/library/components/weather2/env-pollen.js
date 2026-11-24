@@ -12,7 +12,7 @@ export const wxPollen = {
   name: 'Pollenflug',
   category: 'Wetter',
   description: 'Pollenbelastung für heute bis übermorgen (Hasel, Erle, Birke, Gräser, Roggen, Beifuß, Ambrosia) auf vier Stufen, „Meine Allergene“ zum Umschalten, Saisonkalender und Erklärung der Stufen. Mit Demo-Schalter „Frühling“, weil im November kaum Pollen fliegen. Gesundheitshinweis ohne medizinischen Rat.',
-  version: '1.0',
+  version: '1.2',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Pollenflug' },
     { name: 'showSeason', label: 'Saisonkalender', type: 'boolean', default: true },
@@ -29,7 +29,8 @@ export const wxPollen = {
   .tk-wxp__sum { display:flex; gap:10px; align-items:flex-start; padding:var(--tk-space-3) var(--tk-space-4); border-radius:var(--tk-radius-md); margin-bottom:var(--tk-space-3); font-size:var(--tk-fs-md); line-height:1.4; }
   .tk-wxp__season { display:grid; grid-template-columns:72px repeat(12, minmax(0,1fr)); gap:3px; align-items:center; font-size:var(--tk-fs-xs); color:var(--tk-c-text-muted); }
   .tk-wxp__season i { height:10px; border-radius:2px; background:var(--tk-c-surface3); } .tk-wxp__season i[data-on="true"] { background:var(--tk-c-warning); } .tk-wxp__season span[data-now="true"] { color:var(--tk-c-text); font-weight:var(--tk-fw-bold); }
-  .bp-mobile .tk-wxp__season { grid-template-columns:60px repeat(12, minmax(0,1fr)); } .bp-mobile .tk-wxp__row { grid-template-columns:minmax(70px, 1fr) minmax(0, 1.6fr) 64px; gap:var(--tk-space-2); }`,
+  .bp-mobile .tk-wxp__season { grid-template-columns:60px repeat(12, minmax(0,1fr)); } .bp-mobile .tk-wxp__row { grid-template-columns:minmax(70px, 1fr) minmax(0, 1.6fr) 64px; gap:var(--tk-space-2); }
+  [data-tk-large-text] .tk-wxp__row { grid-template-columns:minmax(0,1fr) auto; row-gap:4px; padding:8px 0; } [data-tk-large-text] .tk-wxp__row > :nth-child(2) { grid-column:1 / -1; grid-row:2; } [data-tk-large-text] .tk-wxp__season, [data-tk-large-text].bp-mobile .tk-wxp__season, [data-tk-large-text] .bp-mobile .tk-wxp__season { grid-template-columns:9ch repeat(12, minmax(0,1fr)); gap:2px; } [data-tk-large-text] .tk-wxp__season > span { hyphens:manual; overflow-wrap:normal; }`,
   example: { data: { place: EX.place, settings: EX.settings } },
   render: ({ props, data, setData, ctx }) => {
     const [day, setDay] = useState(0);

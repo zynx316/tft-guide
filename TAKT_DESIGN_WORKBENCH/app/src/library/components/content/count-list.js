@@ -12,7 +12,7 @@ export const countList = {
   name: 'Liste mit Gesamtzahl',
   category: 'Inhalte',
   description: 'Einträge (Erfassungen, Artikel, Belege …) als Liste mit Icon, Untertitel, Badge und Meta. Der Zähler nennt immer die Gesamtzahl, auch wenn nur ein Ausschnitt sichtbar ist („Alle (11) ›“ führt zum Verlauf). Leerzustände benennen den fachlichen Grund statt eines allgemeinen „Lege den ersten Eintrag an“.',
-  version: '1.2',
+  version: '1.3',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Verlauf' },
     { name: 'limit', label: 'Max. Einträge (0 = alle)', type: 'number', default: 0 },
@@ -39,8 +39,8 @@ export const countList = {
   .tk-cnl__title { font-weight:var(--tk-fw-medium); }
   .tk-cnl__sub { font-size:var(--tk-fs-sm); color:var(--tk-c-text-muted); }
   .tk-cnl__meta { font-size:var(--tk-fs-sm); color:var(--tk-c-text-subtle); white-space:nowrap; flex:none; }
-  [data-tk-large-text] .tk-cnl__title, [data-tk-large-text] .tk-cnl__sub { white-space:normal; overflow:visible; text-overflow:clip; overflow-wrap:anywhere; }
-  [data-tk-large-text] .tk-cnl__row { flex-wrap:wrap; }
+  [data-tk-large-text] .tk-cnl__title, [data-tk-large-text] .tk-cnl__sub { white-space:normal; overflow:visible; text-overflow:clip; overflow-wrap:break-word; hyphens:auto; }
+  [data-tk-large-text] .tk-cnl__row { flex-wrap:wrap; row-gap:4px; } [data-tk-large-text] .tk-cnl__main { flex:1 1 14ch; } [data-tk-large-text] .tk-cnl__ico { width:28px; height:28px; }
   [data-tk-large-text] .tk-cnl__meta { white-space:normal; }`,
   example: { props: { title: 'Verlauf', limit: 2, link: 'Alle' }, data: { items: [
     { id: 'c1', title: 'Quittung Bäckerei Hoffmann', subtitle: 'Bäckerei Hoffmann · Bahnhofstraße 12', meta: 'Heute, 08:12', badge: '97 %', tone: 'success', icon: 'camera' },

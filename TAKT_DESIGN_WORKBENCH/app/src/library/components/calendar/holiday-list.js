@@ -13,7 +13,7 @@ export const holidayList = {
   name: 'Feiertage & Geburtstage (Liste)',
   category: 'Kalender',
   description: 'Gesetzliche Feiertage und Brauchtum in NRW sowie Geburtstage aus den Kontakten als Liste mit Wochentag und Countdown. Der Schalter blendet die jeweilige Quelle in allen Kalenderansichten ein oder aus.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Feiertage & Geburtstage' },
     { name: 'initialTab', label: 'Start-Reiter', type: 'select', options: ['Feiertage', 'Geburtstage'], default: 'Feiertage' },
@@ -35,6 +35,10 @@ export const holidayList = {
   .tk-cal-hol__date { width:44px; text-align:center; flex:none; border-radius:var(--tk-radius-md); background:var(--tk-c-surface3); padding:4px 0; line-height:1.15; }
   .tk-cal-hol__date b { display:block; font-size:var(--tk-fs-lg); font-variant-numeric:tabular-nums; } .tk-cal-hol__date small { font-size:var(--tk-fs-xs); text-transform:uppercase; letter-spacing:var(--tk-ls-wide); color:var(--tk-c-text-muted); }
   .bp-mobile .tk-cal-hol__row { min-height:60px; }
+  [data-tk-large-text] .tk-cal-hol__row { flex-wrap:wrap; align-items:flex-start; row-gap:4px; }
+  [data-tk-large-text] .tk-cal-hol__date { width:auto; min-width:3.2em; padding:4px 6px; }
+  [data-tk-large-text] .tk-cal-hol__row > .tk-grow { flex:1 1 8em; }
+  [data-tk-large-text] .tk-cal-hol__row > .tk-badge { margin-left:calc(3.2em + 12px); }
   .bp-mobile .tk-cal-hol__bar .tk-switch { width:54px; height:32px; border-radius:16px; } .bp-mobile .tk-cal-hol__bar .tk-switch::after { width:24px; height:24px; top:3px; left:3px; }
   .bp-mobile .tk-cal-hol__bar .tk-switch[aria-checked="true"]::after { transform:translateX(22px); }`,
   example: { data: { holidays: [{ id: 'h1', name: '1. Weihnachtstag', date: '2026-12-25', type: 'gesetzlich' }, { id: 'h2', name: 'Neujahr', date: '2027-01-01', type: 'gesetzlich' }], birthdays: [{ id: 'b1', name: 'Timo', date: '2026-11-28', relation: 'Bruder', turns: 36 }], sources: [{ id: 'holidays', visible: true }, { id: 'birthdays', visible: true }], events: [] } },

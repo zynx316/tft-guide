@@ -20,7 +20,7 @@ export const foodSearch = {
   name: 'Lebensmittelsuche',
   category: 'Ernährung',
   description: 'Erfassen in höchstens drei Taps: Suchfeld mit Sofortergebnissen, Reiter Zuletzt, Favoriten, Vorlagen und Alle. Das „+“ trägt die zuletzt genutzte Portion ein, ein Tap auf die Zeile öffnet den Portions-Picker. Auch als Kachelraster.',
-  version: '1.2',
+  version: '1.3',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Lebensmittel' },
     { name: 'style', label: 'Darstellung', type: 'select', options: ['list', 'tiles'], default: 'list' },
@@ -47,7 +47,8 @@ export const foodSearch = {
   .tk-nfs__tile:hover { border-color:var(--tk-c-border-strong); background:var(--tk-c-surface2); } .tk-nfs__tile .tk-nfs__name { line-height:1.25; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
   .tk-nfs__tile .tk-nfs__plus { position:absolute; top:8px; right:8px; width:32px; height:32px; border-radius:10px; background:var(--tk-c-accent); color:var(--tk-c-text-on-accent); display:grid; place-items:center; }
   .tk-nfs__tile .tk-nfs__more { margin-top:auto; font-size:var(--tk-nfs-xs); }
-  .bp-mobile .tk-nfs__tiles { grid-template-columns:repeat(2,minmax(0,1fr)); }`,
+  .bp-mobile .tk-nfs__tiles { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  [data-tk-large-text] .tk-nfs__tiles, [data-tk-large-text] .bp-mobile .tk-nfs__tiles { grid-template-columns:minmax(0,1fr); } [data-tk-large-text] .tk-nfs__tile { min-height:0; padding-right:52px; } [data-tk-large-text] .tk-nfs__tile .tk-nfs__name { display:block; -webkit-line-clamp:unset; overflow:visible; }`,
   example: { data: {
     foods: [
       { id: 'f-skyr', name: 'Skyr natur', brand: 'Arla', category: 'Milch & Eier', kcal: 63, protein: 11, carbs: 4, fat: 0.2, fav: true, unit: 'g', portions: [{ label: 'Becher (150 g)', g: 150 }, { label: 'Schüssel (250 g)', g: 250 }] },

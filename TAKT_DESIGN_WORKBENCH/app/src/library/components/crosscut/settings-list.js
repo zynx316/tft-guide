@@ -18,6 +18,9 @@ const CSS = `
   .tk-xc-set__row--danger .tk-xc-t { color: var(--tk-c-danger); }
   .tk-xc-set__val { flex: none; display: inline-flex; align-items: center; gap: var(--tk-space-2); max-width: 55%; color: var(--tk-c-text-muted); font-size: var(--tk-fs-sm); text-align: right; min-width: 0; }
   .tk-xc-set__val > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  [data-tk-large-text] .tk-xc-set__val { flex: 0 1 auto; max-width: 100%; text-align: left; flex-wrap: wrap; }
+  [data-tk-large-text] .tk-xc-set__val > span { overflow: visible; text-overflow: clip; white-space: normal; overflow-wrap: break-word; hyphens: auto; min-width: 0; }
+  [data-tk-large-text] .tk-xc-set__val > .tk-badge { height: auto; min-height: 22px; padding-top: 2px; padding-bottom: 2px; }
   .tk-xc-set__ctl { flex: none; margin-left: auto; max-width: 100%; }
   .tk-xc-set__row--stack .tk-xc-set__ctl { flex: 1 1 100%; margin-left: 0; }
   .tk-xc-set__row--stack .tk-seg { display: flex; width: 100%; }
@@ -41,7 +44,7 @@ export const settingsList = {
   name: 'Einstellungs-Liste',
   category: 'Querschnitt',
   description: 'Gruppierte Einstellungen: Zeilen zum Öffnen, Schalter, Auswahl, Stepper, Info, Status und Aktionen. Werte mit `pref` landen in den gemeinsamen Einstellungen (wirken in allen Screens), Stil „Kacheln“ zeigt die Gruppen als Einstiegskarten.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'style', label: 'Darstellung', type: 'select', options: ['inset', 'tiles'], default: 'inset' },
     { name: 'searchable', label: 'Suchfeld', type: 'boolean', default: false },

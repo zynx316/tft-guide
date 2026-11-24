@@ -10,7 +10,7 @@ export const kcalTrend = {
   name: 'Kalorien-Verlauf',
   category: 'Ernährung',
   description: 'Balken je Tag für Woche oder Monat mit gestrichelter Zielmarke. Nicht erfasste Tage bleiben leer und zählen nicht in den Durchschnitt; unter drei erfassten Tagen gibt es bewusst keine Statistik. Ohne Rot, ohne Bewertung.',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'quietEmpty', label: 'Im Erststart (noch nichts erfasst) nichts anzeigen', type: 'boolean', default: false },
     { name: 'title', label: 'Titel', type: 'text', default: 'Verlauf' },
@@ -39,6 +39,7 @@ export const kcalTrend = {
   .tk-kt__lab { font-size:var(--tk-nfs-xs); color:var(--tk-c-text-subtle); height:16px; line-height:16px; white-space:nowrap; }
   .tk-kt__goal { position:absolute; left:0; right:0; border-top:1.5px dashed var(--tk-c-text-subtle); pointer-events:none; } .tk-kt__goal span { position:absolute; right:0; top:-19px; font-size:var(--tk-nfs-xs); color:var(--tk-c-text-muted); background:var(--tk-c-surface); padding:0 4px; border-radius:4px; }
   .tk-kt__stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:var(--tk-space-3); } .tk-kt__stats div { min-width:0; } .tk-kt__stats strong { display:block; font-size:var(--tk-nfs-lg); font-variant-numeric:tabular-nums; } .tk-kt__stats span { font-size:var(--tk-nfs-xs); color:var(--tk-c-text-subtle); }
+  [data-tk-large-text] .tk-kt__stats { grid-template-columns:minmax(0,1fr); } [data-tk-large-text] .tk-kt__ab { display:none; }
   .tk-kt__sel { font-size:var(--tk-nfs-sm); color:var(--tk-c-text-muted); min-height:20px; font-variant-numeric:tabular-nums; }`,
   example: { data: {
     history: [{ date: '2026-11-18', kcal: 2444, protein: 161, logged: true }, { date: '2026-11-19', kcal: 0, protein: 0, logged: false }, { date: '2026-11-20', kcal: 2466, protein: 148, logged: true }, { date: '2026-11-21', kcal: 2089, protein: 125, logged: true }, { date: '2026-11-22', kcal: 2701, protein: 123, logged: true }, { date: '2026-11-23', kcal: 2273, protein: 166, logged: true }, { date: '2026-11-24', kcal: 1490, protein: 69, logged: true, partial: true }],
@@ -66,7 +67,7 @@ export const kcalTrend = {
     const body = html`<div class=${`tk-kt tk-kt--${range}`}>
       <div class="tk-kt__plot" style=${`height:${H + 24}px`} role="group" aria-label=${`Kalorien der letzten ${n} Tage`}>
         <div class="tk-kt__goal" style=${`bottom:${(goal / max) * H + 24}px`}><span>Ziel ${num(goal)}</span></div>
-        ${rows.map((r) => { const d = dayOf(r.date); const lab = r.week ? `ab ${d.getDate()}.${d.getMonth() + 1}.` : range === 'month' ? (d.getDay() === 1 ? `${d.getDate()}.${d.getMonth() + 1}.` : '') : wdOf(r.date);
+        ${rows.map((r) => { const d = dayOf(r.date); const lab = r.week ? html`<span class="tk-kt__ab">ab </span>${d.getDate()}.${d.getMonth() + 1}.` : range === 'month' ? (d.getDay() === 1 ? `${d.getDate()}.${d.getMonth() + 1}.` : '') : wdOf(r.date);
           return html`<button type="button" class="tk-kt__col" data-state=${state(r)} aria-pressed=${String(sel === r.date)} onClick=${() => pick(r)} aria-label=${r.week ? `Woche ab ${dayLabel(r.date)}: Durchschnitt ${num(r.kcal)} Kilokalorien` : `${dayLabel(r.date)}: ${r.logged ? `${num(r.kcal)} Kilokalorien${r.partial ? ', Tag läuft noch' : ''}` : 'nicht erfasst'}`}>
             <div class="tk-kt__bar" style=${`height:${r.logged ? Math.max(4, (r.kcal / max) * H) : 14}px`}></div><span class="tk-kt__lab">${lab}</span></button>`; })}</div>
       <div class="tk-kt__sel" aria-live="polite">${cur ? (cur.logged ? (cur.week ? `Woche ab ${dayLabel(cur.date)}: Ø ${num(cur.kcal)} kcal · ${num(cur.protein)} g Eiweiß · ${cur.count} erfasste Tage` : `${dayLabel(cur.date)}: ${num(cur.kcal)} kcal · ${num(cur.protein)} g Eiweiß${cur.partial ? ' · Tag läuft noch' : ''}`) : `${dayLabel(cur.date)}: nicht erfasst. Das ist in Ordnung.`) : 'Tippe auf einen Tag für Details.'}</div>

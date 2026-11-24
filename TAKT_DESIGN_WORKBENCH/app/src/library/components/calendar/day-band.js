@@ -9,7 +9,7 @@ export const dayBand = {
   name: 'Tagesband',
   category: 'Kalender',
   description: 'Der Tag als Zeitstreifen: farbige Blöcke für Termine, schraffierte freie Fenster, Jetzt-Marke. Darunter die Termine als antippbare Zeilen. Zeigt auf einen Blick, wie voll und wo Luft ist.',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Heute im Überblick' },
     { name: 'startHour', label: 'Beginn (Std.)', type: 'number', default: 8 },
@@ -33,7 +33,8 @@ export const dayBand = {
   .tk-cal-band__sum b { color:var(--tk-c-text); }
   .tk-cal-band__row { display:flex; align-items:center; gap:12px; width:100%; min-height:52px; padding:6px 0; border:0; border-top:1px solid var(--tk-c-border); background:transparent; color:var(--tk-c-text); font:inherit; text-align:left; cursor:pointer; }
   .tk-cal-band__row i { width:4px; align-self:stretch; border-radius:2px; background:var(--ec); flex:none; }
-  .tk-cal-band__time { width:48px; flex:none; font-variant-numeric:tabular-nums; font-size:var(--tk-fs-sm); color:var(--tk-c-text-muted); }`,
+  .tk-cal-band__time { width:48px; flex:none; font-variant-numeric:tabular-nums; font-size:var(--tk-fs-sm); color:var(--tk-c-text-muted); }
+  [data-tk-large-text] .tk-cal-band__time { width:auto; min-width:3.6em; }`,
   example: { data: { events: [
     { id: 'a', title: 'Stand-up', start: '2026-11-24T09:45:00', end: '2026-11-24T10:00:00', category: 'Arbeit', tone: 'accent' },
     { id: 'b', title: 'Fokus', start: '2026-11-24T10:30:00', end: '2026-11-24T12:00:00', category: 'Fokus', tone: 'success' },

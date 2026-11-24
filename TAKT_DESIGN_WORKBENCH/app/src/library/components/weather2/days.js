@@ -10,7 +10,7 @@ export const wxDays = {
   name: '10-Tage-Vorhersage',
   category: 'Wetter',
   description: 'Zehn Tage mit Symbol, Regenrisiko, Min/Max-Balken über den gesamten Zeitraum, Frost- und Sturm-Hinweis. Als Liste oder wischbare Kacheln. Antippen: Stundenverlauf des Tages öffnen (navigate), Tag nur auswählen (detail) oder zur 10-Tage-Ansicht springen (open).',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'layout', label: 'Darstellung', type: 'select', options: ['list', 'tiles'], default: 'list' },
     { name: 'mode', label: 'Antippen', type: 'select', options: ['navigate', 'detail', 'open'], default: 'navigate' },
@@ -37,6 +37,7 @@ export const wxDays = {
   .tk-wxdd__grid { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:var(--tk-space-3); } .bp-mobile .tk-wxdd__grid { grid-template-columns:repeat(2, minmax(0,1fr)); }
   .tk-wxdd__cell { display:flex; flex-direction:column; align-items:center; gap:6px; padding:var(--tk-space-3); border-radius:var(--tk-radius-lg); background:var(--tk-c-surface2); text-align:center; min-width:0; }
   .tk-wxdd__m { display:flex; flex-direction:column; gap:3px; padding:var(--tk-space-3); border-radius:var(--tk-radius-md); border:1px solid var(--tk-c-border); min-width:0; }
+  [data-tk-large-text] .tk-wxd__row { grid-template-columns:minmax(0,1fr) 26px auto auto; row-gap:4px; padding-block:8px; } [data-tk-large-text] .tk-wxd__row > :nth-child(4) { grid-column:1 / -1; grid-row:2; } [data-tk-large-text] .tk-wxd__row > :nth-child(5) { grid-column:4; grid-row:1; } [data-tk-large-text] .tk-wxd__range, [data-tk-large-text].bp-mobile .tk-wxd__range, [data-tk-large-text] .bp-mobile .tk-wxd__range { grid-template-columns:5ch minmax(0,1fr) 5ch; }
   .tk-wxdd__m small { font-size:var(--tk-fs-xs); text-transform:uppercase; letter-spacing:var(--tk-ls-wide); font-weight:var(--tk-fw-semibold); color:var(--tk-c-text-muted); } .tk-wxdd__m strong { font-size:var(--tk-fs-lg); }`,
   example: { data: { place: EX.place, settings: EX.settings } },
   render: ({ props, data, ctx }) => {

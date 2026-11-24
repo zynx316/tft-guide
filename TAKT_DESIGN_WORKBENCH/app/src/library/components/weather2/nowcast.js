@@ -20,7 +20,7 @@ export const wxNowcast = {
   name: 'Nowcast (Regen in den nächsten 2 Stunden)',
   category: 'Wetter',
   description: 'Kurzfrist-Regenvorhersage in 5-Minuten-Schritten mit Klartext („Regen beginnt in 12 Min., hört gegen 10:15 auf“). Als Balkenkurve zum Streichen, als Text-zuerst-Karte oder einzeilige Leiste. Folgt dem Zeitpunkt im Regenradar (ctx.ui.radarT). Tippen öffnet das Radar.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'layout', label: 'Darstellung', type: 'select', options: ['bars', 'headline', 'strip'], default: 'bars' },
     { name: 'title', label: 'Titel', type: 'text', default: 'Regen in den nächsten 2 Stunden' },
@@ -45,6 +45,7 @@ export const wxNowcast = {
   .tk-wxn__strip:hover { border-color:var(--tk-c-border-strong); }
   .tk-wxn__mini { display:flex; align-items:flex-end; gap:1px; height:26px; width:84px; flex:none; }
   .tk-wxn__mini i { flex:1; border-radius:1px; background:var(--tk-c-surface3); min-height:2px; }
+  [data-tk-large-text] .tk-wxn__strip .tk-wxn__mini { display:none; }
   .tk-wxn__legend { display:flex; flex-wrap:wrap; gap:4px 12px; margin-top:var(--tk-space-3); font-size:var(--tk-fs-xs); color:var(--tk-c-text-muted); }
   .tk-wxn__legend span { display:inline-flex; align-items:center; gap:5px; }`,
   example: { data: { place: EX.place, settings: EX.settings } },

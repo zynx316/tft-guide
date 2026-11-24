@@ -11,7 +11,7 @@ export const eventAttendees = {
   name: 'Teilnehmer',
   category: 'Kalender',
   description: 'Teilnehmerliste des gewählten Termins mit Avatar, Rolle und Zusage-Status (Zugesagt, Offen, Vielleicht, Abgesagt). Status antippen wechselt ihn, Personen lassen sich hinzufügen und entfernen.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Teilnehmer' },
     { name: 'editable', label: 'Bearbeitbar', type: 'boolean', default: true },
@@ -29,7 +29,12 @@ export const eventAttendees = {
   .tk-ev-people__sum { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:6px; }
   .tk-ev-people__status { border:0; background:transparent; padding:0; cursor:pointer; min-height:36px; display:inline-flex; align-items:center; }
   .tk-ev-people__add { display:flex; gap:8px; margin-top:10px; }
-  .bp-mobile .tk-ev-people__status { min-height:44px; }`,
+  .bp-mobile .tk-ev-people__status { min-height:44px; }
+  [data-tk-large-text] .tk-ev-people__row { flex-wrap:wrap; row-gap:0; }
+  [data-tk-large-text] .tk-ev-people__row > .tk-avatar { width:auto; min-width:2.2em; height:2.2em; padding:0 .3em; }
+  [data-tk-large-text] .tk-ev-people__row > .tk-grow { flex:1 1 55%; }
+  [data-tk-large-text] .tk-ev-people__row > .tk-ev-people__status, [data-tk-large-text] .tk-ev-people__row > .tk-badge { margin-left:calc(2.2em + 12px); }
+  [data-tk-large-text] .tk-ev-people__add { flex-wrap:wrap; }`,
   example: { data: { events: [{ id: 'e3', title: 'Sprint-Planung', start: '2026-11-24T11:00:00', end: '2026-11-24T11:45:00', attendees: [{ name: 'Lea Hoffmann', status: 'Zugesagt', role: 'Organisatorin' }, { name: 'Ben Albrecht', status: 'Zugesagt' }, { name: 'Mara Sander', status: 'Offen' }] }] } },
   render: function EventAttendees({ props, data, setData, ctx }) {
     const [name, setName] = useState('');

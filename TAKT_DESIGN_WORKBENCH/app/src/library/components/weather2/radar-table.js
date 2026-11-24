@@ -15,7 +15,7 @@ export const wxRadarTable = {
   name: 'Radar-Tabelle (10 Minuten)',
   category: 'Wetter',
   description: 'Regen am Ort in 10-Minuten-Blöcken von −1 Std. (beobachtet) bis +2 Std. (Vorhersage): Kennzahlen (Beginn, Ende, Spitze, Summe), Zeitleiste als Farbband und eine Tabelle mit Balken, Menge je 10 Minuten und Stufe. Eine Zeile antippen setzt den Radar-Zeitpunkt (ctx.ui.radarT). Ohne Karte, dicht und exakt.',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Niederschlag je 10 Minuten' },
     { name: 'showObserved', label: 'Beobachtung (−1 Std.) zeigen', type: 'boolean', default: true },
@@ -41,7 +41,7 @@ export const wxRadarTable = {
   .tk-wxt10__bar { display:block; height:12px; border-radius:3px; min-width:2px; } .tk-wxt10__dry { color:var(--tk-c-text-subtle); }
   .tk-wxt10__rowbtn { all:unset; display:flex; align-items:center; min-height:34px; min-width:44px; cursor:pointer; } .bp-mobile .tk-wxt10__rowbtn { min-height:44px; } .tk-wxt10__rowbtn:focus-visible { outline:2px solid var(--tk-c-focus); outline-offset:2px; }
   .bp-mobile .tk-wxt10__lv, .bp-mobile .tk-wxt10__rate { display:none; }
-  [data-tk-large-text] .tk-wxt10__tbl td { height:auto; padding-block:8px; white-space:normal; } [data-tk-large-text] .tk-wxt10__kpis { grid-template-columns:minmax(0, 1fr); }`,
+  [data-tk-large-text] .tk-wxt10__tbl td { height:auto; padding-block:8px; white-space:normal; } [data-tk-large-text] .tk-wxt10__tbl th, [data-tk-large-text] .tk-wxt10__tbl td { padding-inline:4px; hyphens:manual; } [data-tk-large-text] .tk-wxt10__tbl td:nth-child(n+3), [data-tk-large-text] .tk-wxt10__tbl th:nth-child(n+3), [data-tk-large-text] .tk-wxt10__tbl td:first-child { white-space:normal; } [data-tk-large-text] .tk-wxt10__kpis { grid-template-columns:minmax(0, 1fr); }`,
   example: { data: { place: EX.place, settings: EX.settings } },
   render: ({ props, data, ctx }) => {
     const place = placeOf(data), nc = place?.nowcast;

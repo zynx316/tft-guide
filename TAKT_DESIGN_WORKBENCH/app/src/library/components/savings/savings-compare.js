@@ -16,7 +16,7 @@ export const savingsCompare = {
   name: 'Szenario-Vergleich',
   category: 'Sparpläne',
   description: 'Bis zu vier Szenarien (Rate, Startbetrag, Laufzeit, Rendite-Annahme, Ratensteigerung) als Linien und Tabelle nebeneinander, mit Unterschied zum ersten Szenario. Übernimmt auf Wunsch die Werte aus dem Rechner.',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Szenarien im Vergleich' },
     { name: 'height', label: 'Diagramm-Höhe', type: 'number', default: 260 },
@@ -33,6 +33,7 @@ export const savingsCompare = {
   .tk-svx2__sw { width:14px; height:14px; border-radius:4px; flex:none; }
   .tk-svx2__n { text-align:right; font-variant-numeric:tabular-nums; } .tk-svx2__n b { display:block; font-size:var(--tk-fs-lg); }
   .bp-mobile .tk-svx2__head { grid-template-columns:auto minmax(0,1fr) auto; } .bp-mobile .tk-svx2__head > :nth-child(3) { display:none; } .bp-mobile .tk-svx2__head > :nth-child(4) { display:none; }
+  [data-tk-large-text] .tk-svx2__head, [data-tk-large-text] .bp-mobile .tk-svx2__head, .bp-mobile[data-tk-large-text] .tk-svx2__head { grid-template-columns:auto minmax(0,1fr); row-gap:6px; align-items:start; } [data-tk-large-text] .tk-svx2__head > .tk-svx2__n { grid-column:2; text-align:left; } [data-tk-large-text] .tk-svx2__head small, [data-tk-large-text] .tk-svx2__head strong { overflow-wrap:break-word; }
   .tk-svx2__edit { display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%,200px),1fr)); gap:var(--tk-space-4); padding:var(--tk-space-4); border-top:1px solid var(--tk-c-border); background:var(--tk-c-surface2); }
   .tk-svx2__edit .tk-btnrow { grid-column:1 / -1; display:flex; gap:8px; flex-wrap:wrap; }`,
   example: { data: { scenarios: [mk(1, { id: 's1', name: 'Basis' }), mk(2, { id: 's2', name: 'Mehr sparen', monthly: 450 })] } },

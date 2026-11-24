@@ -16,7 +16,7 @@ export const channelCards = {
   name: 'Kanal-Karten',
   category: 'Vertrieb',
   description: 'Verkaufskanäle (Shopify, Etsy, Amazon …) als Karten oder Zeilen mit Status, Umsatz, Bestellungen und letztem Sync. Aktion „Synchronisieren“ mit Ladezustand; Fehlerkanäle optional zuerst. Ein Tipp auf den Kanal meldet channel.open mit ID.',
-  version: '1.3',
+  version: '1.4',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Verkaufskanäle' },
     { name: 'minWidth', label: 'Min. Kartenbreite (px)', type: 'number', default: 260 },
@@ -31,6 +31,9 @@ export const channelCards = {
   events: ['channel.open', 'channel.sync', 'channel.reconnect', 'channel.resume'],
   states: ['empty'],
   css: `
+  [data-tk-large-text] .tk-channel-row { flex-wrap:wrap; row-gap:6px; } [data-tk-large-text] .tk-channel-row > .tk-channel-card__logo { display:none; } [data-tk-large-text] .tk-channel-row > .tk-grow { flex:1 1 100%; }
+  [data-tk-large-text] .tk-channel-row > .tk-btn { margin-left:auto; }
+  [data-tk-large-text] .tk-channel-card__head { flex-wrap:wrap; row-gap:6px; } [data-tk-large-text] .tk-channel-card__head > .tk-grow { flex:1 1 7em; }
   [data-tk-large-text] .tk-channel-card__sub { white-space:normal; overflow:visible; text-overflow:clip; overflow-wrap:anywhere; }
   .tk-channel-cards { display:grid; gap:var(--tk-space-3); grid-template-columns:repeat(auto-fill, minmax(min(100%, var(--minw,260px)), 1fr)); }
   .tk-channel-card { display:flex; flex-direction:column; gap:var(--tk-space-3); text-align:left; }
@@ -134,7 +137,7 @@ export const channelDetail = {
   name: 'Kanal-Detail',
   category: 'Vertrieb',
   description: 'Der gewählte Kanal (ctx.ui.selectedId) im Detail: Status, Synchronisation (jetzt, nächster Lauf, Fehler und Neu verbinden), Kennzahlen mit Verlauf, letzte Bestellungen, Protokoll und Einstellungen. Layouts: voll, fokussiert (nur das Nötige) und kompakt (für Seitenspalten).',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'layout', label: 'Layout', type: 'select', options: ['full', 'focus', 'compact'], default: 'full' },
     { name: 'showOrders', label: 'Letzte Bestellungen', type: 'boolean', default: true },
@@ -169,6 +172,8 @@ export const channelDetail = {
   .tk-chd__btn { width:100%; border:0; background:none; color:inherit; font:inherit; text-align:left; cursor:pointer; padding:0; display:flex; align-items:center; gap:12px; min-width:0; }
   .tk-chd__log { display:flex; gap:10px; align-items:flex-start; padding:8px var(--tk-space-4); border-bottom:1px solid var(--tk-c-border); font-size:var(--tk-fs-sm); }
   .tk-chd__log:last-child { border-bottom:0; }
+  [data-tk-large-text] .tk-chd__btn { flex-wrap:wrap; row-gap:4px; } [data-tk-large-text] .tk-chd__btn > .tk-grow { flex:1 1 100%; }
+  [data-tk-large-text] .tk-chd__log:not(.tk-chd__log--col) { display:grid; grid-template-columns:auto minmax(0,1fr); column-gap:10px; row-gap:2px; } [data-tk-large-text] .tk-chd__log:not(.tk-chd__log--col) > span:last-child:not(:first-child) { grid-column:2; }
   .tk-chd__perm { display:flex; align-items:center; gap:6px; }
   .tk-chd__set { display:flex; align-items:center; gap:12px; min-height:48px; padding:0 var(--tk-space-4); border-bottom:1px solid var(--tk-c-border); }
   .tk-chd__set:last-child { border-bottom:0; } .tk-chd__set > span { flex:1; }`,
@@ -212,7 +217,7 @@ export const channelDetail = {
     const log = props.showLog && html`<${Card} flush title="Protokoll" icon="history">${(ch.log || []).length ? ch.log.map((l) => html`<div class="tk-chd__log"><span style=${`color:${toneColor(l.tone || 'info')}`}><${Icon} name=${l.tone === 'danger' ? 'alert-triangle' : l.tone === 'success' ? 'check-circle-2' : 'info'} size=${15} /></span><div class="tk-grow">${l.text}</div><span class="tk-subtle" style="white-space:nowrap">${rel(l.at, ctx.today)}</span></div>`) : html`<${EmptyState} icon="history" title="Noch kein Protokoll" />`}<//>`;
     const set = (key, label) => html`<div class="tk-chd__set"><span>${label}</span><${Switch} checked=${ch[key] !== false} label=${label} onChange=${(v) => { patchChannel(setData, ch.id, { [key]: v }); ctx.emit('channel.setting', { id: ch.id, key, value: v }); }} /></div>`;
     const settings = props.showSettings && html`<${Card} flush title="Einstellungen" icon="settings">${set('autoSync', 'Automatisch alle 15 Minuten synchronisieren')}${set('notify', 'Bei Fehlern benachrichtigen')}
-      <div class="tk-chd__log" style="flex-direction:column;gap:4px"><span class="tk-label">TAKT darf</span>${PERMS.map((p) => html`<span class="tk-muted tk-chd__perm"><${Icon} name="check" size=${13} />${p}</span>`)}<span class="tk-subtle" style="font-size:var(--tk-fs-xs)">Zahlungsdaten werden nie gespeichert.</span></div><//>`;
+      <div class="tk-chd__log tk-chd__log--col" style="flex-direction:column;gap:4px"><span class="tk-label">TAKT darf</span>${PERMS.map((p) => html`<span class="tk-muted tk-chd__perm"><${Icon} name="check" size=${13} />${p}</span>`)}<span class="tk-subtle" style="font-size:var(--tk-fs-xs)">Zahlungsdaten werden nie gespeichert.</span></div><//>`;
     return html`<div class="tk-chd">${head}${statusBox}${kpis}
       ${ch.trend && html`<${Card} title="Umsatzverlauf (6 Wochen)" icon="trending-up"><${Sparkline} values=${ch.trend} width=${Math.min(560, ctx.width ? ctx.width - 80 : 320)} height=${72} tone=${ch.delta >= 0 ? 'success' : 'danger'} /><//>`}
       ${orderRows}${log}${settings}</div>`;

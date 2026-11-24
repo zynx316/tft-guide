@@ -19,7 +19,7 @@ export const trdHistory = {
   name: 'Transaktionen',
   category: 'Trading',
   description: 'Alle Bewegungen im Depot nach Monat: Käufe, Verkäufe (mit realisiertem Gewinn und Steuer-Orientierung), Sparplan-Ausführungen, Dividenden und simulierte Orders. Filtern, suchen, Detail öffnen und als CSV ausgeben.',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Transaktionen' },
     { name: 'limit', label: 'Max. Einträge (0 = alle)', type: 'number', default: 0 },
@@ -32,7 +32,9 @@ export const trdHistory = {
   css: `${TRD_CSS}
   .tk-trd-hs { display:flex; flex-direction:column; gap:var(--tk-space-4); min-width:0; } .tk-trd-hs__tools { display:flex; gap:var(--tk-space-2); flex-wrap:wrap; align-items:center; } .tk-trd-hs__tools .tk-search { flex:1 1 200px; min-width:0; }
   .tk-trd-hs__m { display:flex; justify-content:space-between; align-items:baseline; gap:8px; padding:12px 4px 4px; } .tk-trd-hs__row { display:flex; align-items:center; gap:12px; padding:8px 4px; min-height:58px; width:100%; background:none; border:0; color:inherit; font:inherit; text-align:left; cursor:pointer; border-radius:var(--tk-radius-md); }
-  .tk-trd-hs__row:hover { background:var(--tk-c-surface2); } .tk-trd-hs__dl { display:grid; grid-template-columns:minmax(110px,auto) minmax(0,1fr); gap:8px 16px; margin:0; font-size:var(--tk-fs-sm); } .tk-trd-hs__dl dd { margin:0; text-align:right; font-variant-numeric:tabular-nums; } .tk-trd-hs__dl dt { color:var(--tk-c-text-muted); }`,
+  .tk-trd-hs__row:hover { background:var(--tk-c-surface2); } .tk-trd-hs__dl { display:grid; grid-template-columns:minmax(110px,auto) minmax(0,1fr); gap:8px 16px; margin:0; font-size:var(--tk-fs-sm); } .tk-trd-hs__dl dd { margin:0; text-align:right; font-variant-numeric:tabular-nums; } .tk-trd-hs__dl dt { color:var(--tk-c-text-muted); }
+  [data-tk-large-text] .tk-trd-hs__row { flex-wrap:wrap; row-gap:4px; align-items:flex-start; } [data-tk-large-text] .tk-trd-hs__row > .tk-trd-ico { display:none; } [data-tk-large-text] .tk-trd-hs__row > .tk-trd-grow { flex:1 1 100%; } [data-tk-large-text] .tk-trd-hs__row > .tk-trd-num { margin-left:auto; } [data-tk-large-text] .tk-trd-hs__m { flex-wrap:wrap; }
+  [data-tk-large-text] .tk-trd-hs__dl { grid-template-columns:minmax(0,1fr); gap:0; } [data-tk-large-text] .tk-trd-hs__dl dd { text-align:left; margin-bottom:8px; }`,
   example: { data: ex('trades', 'orders', 'transactions', 'dividends', 'plans', 'instruments', 'positions', 'watchlist', 'allowance') },
   render: function TrdHistory({ props, data, ctx }) {
     const [f, setF] = useState('all'), [q, setQ] = useState('');

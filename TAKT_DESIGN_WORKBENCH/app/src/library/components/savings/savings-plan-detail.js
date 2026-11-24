@@ -24,7 +24,7 @@ export const savingsPlanDetail = {
   name: 'Sparplan-Detail',
   category: 'Sparpläne',
   description: 'Ein Sparplan im Detail: Eingezahlt, Wert, Rendite (Modell), Rate, nächste Ausführung, Dynamik. Aktionen: Rate ändern, Pausieren, Dynamik, Was-wäre-wenn im Rechner, Wertpapier öffnen. Dichte Liste, Hero-Karte oder Aktionsliste.',
-  version: '1.2',
+  version: '1.3',
   props: [
     { name: 'style', label: 'Darstellung', type: 'select', options: ['dense', 'hero', 'actions'], default: 'dense' },
     { name: 'showActions', label: 'Aktionen', type: 'boolean', default: true },
@@ -44,6 +44,7 @@ export const savingsPlanDetail = {
   .tk-svd__id { display:flex; align-items:center; gap:12px; min-width:0; flex-wrap:wrap; } .tk-svd__id h2 { margin:0; font-size:var(--tk-fs-xl); line-height:1.2; overflow-wrap:anywhere; }
   .tk-svd__kpis { display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%,150px),1fr)); gap:var(--tk-space-4) var(--tk-space-5); }
   .tk-svd__dl { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:0; margin:0; font-size:var(--tk-fs-sm); } .tk-svd__dl dt, .tk-svd__dl dd { margin:0; padding:9px 0; border-bottom:1px solid var(--tk-c-border); } .tk-svd__dl dt { color:var(--tk-c-text-muted); } .tk-svd__dl dd { text-align:right; font-variant-numeric:tabular-nums; font-weight:var(--tk-fw-medium); } .tk-svd__dl > :nth-last-child(-n+2) { border-bottom:0; }
+  [data-tk-large-text] .tk-svd__dl { grid-template-columns:minmax(0,1fr); } [data-tk-large-text] .tk-svd__dl dt { border-bottom:0; padding-bottom:0; } [data-tk-large-text] .tk-svd__dl dd { text-align:left; padding-top:2px; }
   .tk-svd__hero { display:flex; gap:var(--tk-space-5); align-items:center; flex-wrap:wrap; } .tk-svd__hero > div:last-child { flex:1; min-width:200px; display:flex; flex-direction:column; gap:6px; }
   .tk-svd__acts { display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%,max(150px,10em)),1fr)); gap:var(--tk-space-2); }
   .tk-svd__act { all:unset; box-sizing:border-box; display:flex; align-items:center; gap:12px; min-height:56px; padding:10px var(--tk-space-3); border-radius:var(--tk-radius-lg); border:1px solid var(--tk-c-border); background:var(--tk-c-surface); cursor:pointer; min-width:0; }

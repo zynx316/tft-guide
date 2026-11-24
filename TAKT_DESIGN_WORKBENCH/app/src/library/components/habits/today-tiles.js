@@ -14,7 +14,7 @@ export const todayTiles = {
   name: 'Tageskacheln',
   category: 'Start',
   description: 'Modulübergreifende Kacheln für den Tag: Termine, Aufgaben, Gewohnheiten, Wetter, Finanzen, nächste Sparplan-Ausführung, Training und Ernährung. Stile: Streifen (Kennzahlen), Liste (dicht), Karten (eine Botschaft je Kachel). Jede Kachel öffnet ihr Modul.',
-  version: '1.2',
+  version: '1.3',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Dein Tag im Überblick' },
     { name: 'layout', label: 'Stil', type: 'select', options: ['strip', 'list', 'cards'], default: 'list' },
@@ -47,7 +47,11 @@ export const todayTiles = {
   .tk-tt__c { display:flex; flex-direction:column; gap:10px; padding:16px; min-height:150px; border-radius:var(--tk-radius-xl, 16px); background:var(--tk-c-surface); border:1px solid var(--tk-c-border); text-align:left; color:inherit; font:inherit; cursor:pointer; min-width:0; transition:border-color var(--tk-motion-fast); } .tk-tt__c:hover { border-color:var(--tk-c-border-strong); }
   .tk-tt__c[data-alert="true"] { border-color:color-mix(in srgb, var(--tk-c-warning) 55%, var(--tk-c-border)); } .tk-tt__cv { font-size:var(--tk-fs-2xl); font-weight:var(--tk-fw-bold); letter-spacing:var(--tk-ls-tight); font-variant-numeric:tabular-nums; line-height:1.1; margin-top:auto; } .tk-tt__cs { font-size:var(--tk-fs-sm); color:var(--tk-c-text-muted); display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
   .tk-tt__ch { display:flex; align-items:center; gap:8px; color:var(--tc); font-size:var(--tk-fs-sm); font-weight:var(--tk-fw-semibold); } .tk-tt__chl { color:var(--tk-c-text-muted); flex:1; min-width:0; } .tk-tt__ch .tk-hb-ring { margin-left:auto; color:var(--tc); }
-  .bp-mobile .tk-tt__c { padding:12px; min-height:140px; } .bp-mobile .tk-tt__cv { font-size:var(--tk-fs-xl); }`,
+  .bp-mobile .tk-tt__c { padding:12px; min-height:140px; } .bp-mobile .tk-tt__cv { font-size:var(--tk-fs-xl); }
+  [data-tk-large-text] .tk-tt__strip, .bp-mobile[data-tk-large-text] .tk-tt__strip, [data-tk-large-text] .tk-tt__cards, .bp-mobile[data-tk-large-text] .tk-tt__cards { grid-template-columns:minmax(0, 1fr); }
+  [data-tk-large-text] .tk-tt__row { flex-wrap:wrap; row-gap:0; } [data-tk-large-text] .tk-tt__main { flex:1 1 8em; }
+  [data-tk-large-text] .tk-tt__val { order:2; flex:1 0 100%; text-align:left; white-space:normal; padding-left:calc(36px + 12px); }
+  [data-tk-large-text] .tk-tt__sub, [data-tk-large-text] .tk-tt__ks, [data-tk-large-text] .tk-tt__cs { -webkit-line-clamp:unset; display:block; overflow:visible; overflow-wrap:break-word; }`,
   example: { props: { layout: 'cards' }, data: SAMPLE },
   render: ({ props, data, ctx }) => {
     const keys = toList(props.tiles).filter((k) => TILE_KEYS.includes(k));

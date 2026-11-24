@@ -12,7 +12,7 @@ export const finWealthSplit = {
   name: 'Vermögensaufteilung',
   category: 'Finanzen',
   description: 'Gesamtvermögen nach Kontoart: Liquidität, Rücklagen, Anlage und offene Kreditkarte. Als Ring, als „Brücke“ vom Girokonto bis zum Depot oder als Zeilen. Tippen öffnet die Vermögensansicht.',
-  version: '1.1',
+  version: '1.3',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Vermögen' },
     { name: 'style', label: 'Darstellung', type: 'select', options: ['donut', 'bridge', 'rows'], default: 'donut' },
@@ -24,6 +24,7 @@ export const finWealthSplit = {
   css: `
   .tk-fnw__donut { display:flex; align-items:center; gap:var(--tk-space-5); flex-wrap:wrap; } .tk-fnw__donut > div:last-child { flex:1 1 170px; min-width:0; }
   .tk-fnw__leg { display:flex; align-items:center; flex-wrap:wrap; gap:2px 10px; padding:6px 4px; min-height:40px; min-width:0; max-width:100%; } .tk-fnw__leg > .tk-fn-grow { flex:1 1 5.5em; } .tk-fnw__leg i { width:10px; height:10px; border-radius:3px; flex:none; }
+  .tk-fnw__ring { position:relative; width:150px; height:150px; } [data-tk-large-text] .tk-fnw__ring { width:min(100%, calc(150px * var(--tk-text-scale, 1))); height:auto; aspect-ratio:1; } [data-tk-large-text] .tk-fnw__ring > svg { width:100%; height:100%; }
   .tk-fnw__bridge { display:flex; flex-direction:column; gap:var(--tk-space-3); } .tk-fnw__seg { display:flex; height:30px; border-radius:var(--tk-radius-md); overflow:hidden; gap:2px; }
   .tk-fnw__seg > span { min-width:6px; } .tk-fnw__steps { display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, max(calc(92px * var(--tk-text-scale, 1)), calc(var(--fnw-len, 8) * 0.54 * var(--tk-fs-lg) + 26px))), 1fr)); gap:var(--tk-space-2); }
   .tk-fnw__step { text-align:left; border:1px solid var(--tk-c-border); border-radius:var(--tk-radius-md); background:var(--tk-c-surface2); color:inherit; font:inherit; padding:var(--tk-space-3); cursor:pointer; min-height:44px; display:flex; flex-direction:column; gap:2px; min-width:0; }
@@ -42,7 +43,7 @@ export const finWealthSplit = {
       <div class="tk-fnw__seg" role="img" aria-label=${`Vermögen: ${w.groups.map((g) => `${g.label} ${pc(g.share)}`).join(', ')}`}>${w.groups.filter((g) => g.value > 0).map((g) => html`<span style=${`flex:${g.value};background:${toneColor(g.tone)}`} title=${`${g.label}: ${eur0(c, g.value)}`}></span>`)}</div>
       <div class="tk-fnw__steps" style=${`--fnw-len:${Math.max(0, ...w.groups.map((g) => eur0(c, g.value).length))}`}>${w.groups.map((g, i) => html`<button type="button" class="tk-fnw__step" onClick=${() => open(g.id)}><span class="tk-fn-sub"><${Icon} name=${g.icon} size=${12} /> ${g.label}</span><strong>${eur0(c, g.value)}</strong><span class="tk-fn-sub">${pc(g.share)}</span></button>`)}</div></div><//>`;
     const R = 52, C = 2 * Math.PI * R; let off = 0;
-    return html`<${Card} title=${props.title} icon="landmark"><div class="tk-fnw__donut"><div style="position:relative;width:150px;height:150px" role="img" aria-label=${`Vermögen ${eur0(c, total)}: ${w.groups.map((g) => `${g.label} ${pc(g.share)}`).join(', ')}`}>
+    return html`<${Card} title=${props.title} icon="landmark"><div class="tk-fnw__donut"><div class="tk-fnw__ring" role="img" aria-label=${`Vermögen ${eur0(c, total)}: ${w.groups.map((g) => `${g.label} ${pc(g.share)}`).join(', ')}`}>
       <svg width="150" height="150" viewBox="0 0 150 150" aria-hidden="true"><circle cx="75" cy="75" r=${R} fill="none" stroke="var(--tk-c-surface3)" stroke-width="18" />${w.groups.map((g) => { const len = g.share * C; const el = html`<circle cx="75" cy="75" r=${R} fill="none" stroke=${toneColor(g.tone)} stroke-width="18" stroke-dasharray=${`${Math.max(len - 2, 0.5)} ${C}`} stroke-dashoffset=${-off} transform="rotate(-90 75 75)" />`; off += len; return el; })}</svg>
       <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center"><strong class="tk-fn-num" style="font-size:var(--tk-fs-lg)">${eur0(c, total)}</strong><span class="tk-fn-sub">netto</span></div></div>
       <div>${w.groups.map((g) => html`<button type="button" class="tk-fn-tap tk-fnw__leg" onClick=${() => open(g.id)}><i style=${`background:${toneColor(g.tone)}`}></i><span class="tk-fn-grow tk-fn-title">${g.label}</span><span class="tk-fn-sub tk-fn-num">${pc(g.share)}</span><strong class="tk-fn-num">${eur0(c, g.value)}</strong></button>`)}

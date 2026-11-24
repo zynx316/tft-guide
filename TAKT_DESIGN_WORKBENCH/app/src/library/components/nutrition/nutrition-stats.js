@@ -10,7 +10,7 @@ export const nutritionStats = {
   name: 'Auswertungs-Bausteine',
   category: 'Ernährung',
   description: 'Vier ruhige Auswertungen in einer Komponente: Makro-Verteilung, Top-5-Lebensmittel nach Kalorien oder Eiweiß, Ballaststoffe/Zucker/Salz gegen Orientierungswerte und Gewichtstrend neben der Ernährung. Nur erfasste Tage zählen; unter drei Tagen gibt es keine Statistik.',
-  version: '1.2',
+  version: '1.3',
   props: [
     { name: 'mode', label: 'Inhalt', type: 'select', options: ['macros', 'top', 'micro', 'weight'], default: 'macros' },
     { name: 'title', label: 'Titel (leer = automatisch)', type: 'text', default: '' },
@@ -32,6 +32,7 @@ export const nutritionStats = {
   .tk-ns__row strong { font-variant-numeric:tabular-nums; }
   [data-tk-large-text] .tk-ns__row { grid-template-columns:minmax(0,1fr) auto; row-gap:4px; padding:6px 0; } [data-tk-large-text] .tk-ns__row .n { grid-column:1 / -1; white-space:normal; overflow:visible; text-overflow:clip; }
   .bp-mobile .tk-ns__row { grid-template-columns:minmax(0,1fr) auto; row-gap:4px; padding:6px 0; } .bp-mobile .tk-ns__row .n { grid-column:1 / -1; white-space:normal; overflow:visible; text-overflow:clip; }
+  [data-tk-large-text] .tk-ns__leg { grid-template-columns:minmax(0,1fr); }
   .tk-ns__w { display:flex; align-items:center; gap:16px; flex-wrap:wrap; } .tk-ns__w .tk-nu-big { font-size:var(--tk-nfs-2xl); }`,
   example: { data: {
     history: [{ date: '2026-11-18', kcal: 2444, protein: 161, carbs: 210, fat: 99, fiber: 44, logged: true }, { date: '2026-11-20', kcal: 2466, protein: 148, carbs: 256, fat: 87, fiber: 20, logged: true }, { date: '2026-11-21', kcal: 2089, protein: 125, carbs: 208, fat: 65, fiber: 33, logged: true }, { date: '2026-11-22', kcal: 2701, protein: 123, carbs: 254, fat: 103, fiber: 24, logged: true }],

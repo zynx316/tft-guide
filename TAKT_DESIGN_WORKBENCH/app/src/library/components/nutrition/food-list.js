@@ -13,7 +13,7 @@ export const foodList = {
   name: 'Lebensmittel-Liste',
   category: 'Ernährung',
   description: 'Lebensmittel-Datenbank mit Suche, Filtern (Favoriten, Eigene, Marken, Kategorie) und Sortierung. Auf dem Desktop eine Tabelle mit Nährwerten je 100 g, auf dem Handy eine Liste. Auswahl füllt ctx.ui.selectedId für Detail-Blöcke.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Lebensmittel' },
     { name: 'style', label: 'Darstellung', type: 'select', options: ['auto', 'table', 'list'], default: 'auto' },
@@ -36,7 +36,9 @@ export const foodList = {
   .tk-fl__name { display:flex; align-items:center; gap:10px; min-width:0; background:none; border:0; color:inherit; font:inherit; padding:0; text-align:left; cursor:pointer; min-height:32px; }
   .tk-fl__row { display:flex; align-items:center; gap:12px; min-height:56px; padding:6px 0; border-bottom:1px solid var(--tk-c-border); width:100%; background:none; border-left:0; border-right:0; border-top:0; color:inherit; font:inherit; text-align:left; cursor:pointer; min-width:0; }
   .tk-fl__row[aria-selected="true"] { background:var(--tk-c-surface2); }
-  .tk-fl__fav { color:var(--tk-c-warning); flex:none; }`,
+  .tk-fl__fav { color:var(--tk-c-warning); flex:none; }
+  [data-tk-large-text] .tk-fl__row { flex-wrap:wrap; row-gap:4px; } [data-tk-large-text] .tk-fl__row > .tk-grow { flex:1 1 12ch; } [data-tk-large-text] .tk-fl__row .tk-nu-meta { white-space:normal; overflow:visible; text-overflow:clip; } [data-tk-large-text] .tk-fl .tk-nu-chips .tk-chip { flex:none; }
+  [data-tk-large-text] .tk-fl__row > span:last-child { flex:1 1 100%; display:flex; align-items:baseline; gap:0 6px; }`,
   example: { data: { foods: [
     { id: 'a', name: 'Skyr natur', brand: 'Arla', category: 'Milch & Eier', kcal: 63, protein: 11, carbs: 4, fat: 0.2, fiber: 0, fav: true },
     { id: 'b', name: 'Haferflocken zart', brand: 'Kölln', category: 'Getreide & Brot', kcal: 372, protein: 13.5, carbs: 58.7, fat: 7, fiber: 10 },

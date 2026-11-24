@@ -12,7 +12,7 @@ export const habitInsights = {
   name: 'Gewohnheits-Statistik',
   category: 'Gewohnheiten',
   description: 'Erfüllungsquote über 7, 30 und 90 Tage, Wochentags-Muster mit verständlichem Fazit und Serien. Umfang „alle“ vergleicht alle Gewohnheiten. Zahlen statt Bewertung.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Statistik' },
     { name: 'scope', label: 'Umfang', type: 'select', options: ['selected', 'all'], default: 'selected' },
@@ -29,7 +29,8 @@ export const habitInsights = {
   .tk-hi__b i { display:block; width:100%; max-width:34px; border-radius:6px 6px 3px 3px; background:color-mix(in srgb, var(--hc) 38%, transparent); min-height:4px; } .tk-hi__b[data-top="true"] i { background:var(--hc); } .tk-hi__b[data-low="true"] i { background:repeating-linear-gradient(135deg, color-mix(in srgb, var(--hc) 55%, transparent) 0 3px, transparent 3px 6px); border:1px solid var(--hc); }
   .tk-hi__b b { font-variant-numeric:tabular-nums; font-size:var(--tk-fs-xs); color:var(--tk-c-text-muted); font-weight:var(--tk-fw-semibold); } .tk-hi__fazit { display:flex; gap:10px; align-items:flex-start; padding:10px 12px; border-radius:var(--tk-radius-md); background:var(--tk-c-accent-soft); font-size:var(--tk-fs-sm); color:var(--tk-c-text); }
   .tk-hi__row { display:flex; align-items:center; gap:12px; padding:8px 0; border-bottom:1px solid var(--tk-c-border); min-width:0; } .tk-hi__row:last-child { border-bottom:0; } .tk-hi__row .tk-progress { flex:1; min-width:40px; } .tk-hi__nm { width:38%; min-width:0; display:flex; align-items:center; gap:8px; font-weight:var(--tk-fw-medium); } .tk-hi__v { width:46px; text-align:right; font-variant-numeric:tabular-nums; font-size:var(--tk-fs-sm); }
-  .bp-mobile .tk-hi { padding:0 12px 14px; } .bp-mobile .tk-hi__nm { width:42%; } .bp-mobile .tk-hi__bars { gap:5px; }`,
+  .bp-mobile .tk-hi { padding:0 12px 14px; } .bp-mobile .tk-hi__nm { width:42%; } .bp-mobile .tk-hi__bars { gap:5px; }
+  [data-tk-large-text] .tk-hi__row { flex-wrap:wrap; row-gap:4px; } [data-tk-large-text] .tk-hi__nm, .bp-mobile[data-tk-large-text] .tk-hi__nm { width:auto; flex:1 1 60%; } [data-tk-large-text] .tk-hi__v { width:auto; min-width:4ch; white-space:nowrap; } [data-tk-large-text] .tk-hi__row .tk-progress { flex:1 0 100%; order:5; }`,
   example: { data: { habits: [sample] } },
   render: function HabitInsights({ props, data, ctx }) {
     const all = list(data.habits), today = todayKey(ctx);

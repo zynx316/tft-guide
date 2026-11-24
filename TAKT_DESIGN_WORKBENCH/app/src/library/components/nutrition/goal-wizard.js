@@ -13,7 +13,7 @@ export const goalWizard = {
   name: 'Ziele & Bedarf (Assistent)',
   category: 'Ernährung',
   description: 'Vier Schritte zum Kalorien- und Makroziel: Ziel, Körperdaten, Aktivität, Ergebnis mit Herleitung. Sicherheits-Stopps: kein Ziel unter dem Grundumsatz, Abnehmtempo begrenzt, für unter 18 Jahre keine Defizit-Ziele; Aktivitätskalorien zählen nicht zusätzlich. Orientierungswerte, kein medizinischer Rat.',
-  version: '1.0',
+  version: '1.2',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Ziele & Bedarf' },
     { name: 'startStep', label: 'Startschritt (1–4)', type: 'number', default: 1 },
@@ -32,6 +32,7 @@ export const goalWizard = {
   .tk-gw__opt strong { display:block; } .tk-gw__opt span.t { font-size:var(--tk-nfs-sm); color:var(--tk-c-text-muted); }
   .tk-gw__fields { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:var(--tk-space-4); } .tk-gw__fields > div { display:flex; flex-direction:column; gap:6px; }
   .tk-gw__nums { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; } .tk-gw__nums div { padding:10px 12px; border-radius:var(--tk-radius-md); background:var(--tk-c-surface2); border:1px solid var(--tk-c-border); } .tk-gw__nums strong { display:block; font-size:var(--tk-nfs-xl); font-variant-numeric:tabular-nums; } .tk-gw__nums span { font-size:var(--tk-nfs-xs); color:var(--tk-c-text-muted); }
+  [data-tk-large-text] .tk-gw__nums { grid-template-columns:minmax(0,1fr); } [data-tk-large-text] .tk-gw__top { flex-wrap:wrap; row-gap:2px; } [data-tk-large-text] .tk-gw__top strong { hyphens:manual; overflow-wrap:normal; }
   .tk-gw__target { padding:var(--tk-space-4); border-radius:var(--tk-radius-lg); background:linear-gradient(135deg, var(--tk-c-accent-soft), transparent); border:1px solid var(--tk-c-border); } .tk-gw__target .tk-nu-big { color:var(--tk-c-accent); }
   .tk-gw__stop { display:flex; gap:10px; padding:10px 12px; border-radius:var(--tk-radius-md); background:var(--tk-c-warning-soft); font-size:var(--tk-nfs-sm); align-items:flex-start; } .tk-gw__stop .icon { color:var(--tk-c-warning); flex:none; margin-top:1px; }
   .tk-gw__range { width:100%; height:44px; accent-color:var(--tk-c-accent); }
@@ -82,7 +83,7 @@ export const goalWizard = {
           <span>Ziel: Gesamtumsatz ${mode === 'aufbauen' ? '+' : '−'} ${num(d.pace, 2)} kg × 7.700 kcal ÷ 7 Tage, auf 10 gerundet = <strong>${num(res.target)} kcal</strong></span><span>Untergrenze: nie unter Grundumsatz und ${num(res.floor)} kcal.</span></div>`}</div>
       <${Button} variant="primary" icon="check" onClick=${apply} disabled=${mode === 'abnehmen' && minor}>${mode === 'abnehmen' && minor ? 'Nicht verfügbar' : 'Ziel übernehmen'}<//>`;
     return html`<${Card} title=${props.title} icon="target"><div class="tk-gw">
-      <div><div class="tk-row" style="justify-content:space-between;margin-bottom:6px"><span class="tk-nu-cap">Schritt ${step + 1} von 4</span><strong>${TITLES[step]}</strong></div><${Progress} value=${(step + 1) / 4} /></div>
+      <div><div class="tk-row tk-gw__top" style="justify-content:space-between;margin-bottom:6px"><span class="tk-nu-cap">Schritt ${step + 1} von 4</span><strong>${TITLES[step]}</strong></div><${Progress} value=${(step + 1) / 4} /></div>
       ${goals.kcal > 0 && step < 3 && html`<div class="tk-nu-chips"><${Badge}>Aktuell ${num(goals.kcal)} kcal<//><${Badge}>E ${num(goals.protein)} g<//><${Badge}>KH ${num(goals.carbs)} g<//><${Badge}>F ${num(goals.fat)} g<//></div>`}
       ${body}
       <div class="tk-gw__nav"><${Button} icon="arrow-left" disabled=${step === 0} onClick=${() => go(step - 1)}>Zurück<//>${step < 3 && html`<${Button} variant="primary" iconRight="arrow-right" onClick=${() => go(step + 1)}>Weiter<//>`}</div></div><//>`;

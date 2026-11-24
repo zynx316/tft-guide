@@ -13,7 +13,7 @@ export const nextWorkout = {
   name: 'Nächstes Training',
   category: 'Fitness',
   description: 'Was steht an: heute trainieren oder Erholungstag mit Blick auf die nächste Einheit. Zeigt Übungen, Dauer, Termine davor aus dem Kalender und startet das Training.',
-  version: '1.3',
+  version: '1.4',
   props: [
     { name: 'quietEmpty', label: 'Ohne Daten nichts anzeigen (Erststart)', type: 'boolean', default: false },
     { name: 'style', label: 'Darstellung', type: 'select', options: ['hero', 'plain'], default: 'hero' },
@@ -34,7 +34,8 @@ export const nextWorkout = {
   .tk-nw__rest { display:flex; align-items:center; gap:var(--tk-space-3); } .tk-nw__moon { width:48px; height:48px; border-radius:16px; display:grid; place-items:center; background:var(--tk-c-surface3); color:var(--tk-c-text-muted); flex:none; }
   .tk-nw__next { display:flex; flex-direction:column; gap:var(--tk-space-3); padding:var(--tk-space-4); border-radius:var(--tk-radius-lg); background:var(--tk-c-surface2); border:1px solid var(--tk-c-border); }
   .tk-nw__ctx { display:flex; gap:8px; align-items:flex-start; font-size:var(--tk-fs-sm); color:var(--tk-c-text-muted); }
-  .tk-nw__cta { display:flex; gap:var(--tk-space-2); flex-wrap:wrap; } .tk-nw__cta .tk-btn--primary { flex:1 1 180px; min-height:48px; }`,
+  .tk-nw__cta { display:flex; gap:var(--tk-space-2); flex-wrap:wrap; } .tk-nw__cta .tk-btn--primary { flex:1 1 180px; min-height:48px; }
+  [data-tk-large-text] .tk-nw .tk-badge, [data-tk-large-text] .tk-nw__next .tk-badge { max-width:100%; white-space:normal; height:auto; }`,
   example: { data: { today: { kind: 'rest', headline: 'Erholungstag', text: 'Heute ist Erholung eingeplant – morgen steht Oberkörper A an.', nextDayId: 'upperA', nextDate: '2026-11-25', nextWhen: 'Morgen, 18:30', nextName: 'Oberkörper A', nextMinutes: 55, nextSets: 16, nextExercises: ['Bankdrücken', 'Rudern am Kabel', 'Schulterdrücken (Kurzhantel)', 'Latziehen'], lastTitle: 'Unterkörper', weekSessions: 1, weekGoal: 3 },
     events: [{ id: 'e9', title: 'Physiotherapie', start: '2026-11-25T16:30:00', end: '2026-11-25T17:30:00', category: 'Gesundheit' }] } },
   render: function NextWorkout({ props, data, ctx }) {

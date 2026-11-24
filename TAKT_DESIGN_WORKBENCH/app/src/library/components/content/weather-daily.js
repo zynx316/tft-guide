@@ -9,7 +9,7 @@ export const weatherDaily = {
   name: 'Tagesvorhersage',
   category: 'Wetter',
   description: '7–10-Tage-Vorhersage mit Zustands-Icon, Regenwahrscheinlichkeit und Min/Max-Balken über den gesamten Zeitraum. Auswahl eines Tages setzt ctx.ui.selectedDate (steuert die stündliche Vorhersage). Als Liste oder als Kacheln.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: '7-Tage-Vorhersage' },
     { name: 'days', label: 'Anzahl Tage', type: 'number', default: 7 },
@@ -33,6 +33,7 @@ export const weatherDaily = {
   .tk-wd__fill { position:absolute; top:0; bottom:0; border-radius:3px; background:linear-gradient(90deg, var(--tk-c-info), var(--tk-c-warning)); }
   .bp-mobile .tk-wd__row { grid-template-columns:58px 24px 50px minmax(0,1fr); gap:var(--tk-space-2); min-height:56px; padding:6px var(--tk-space-2); }
   .bp-mobile .tk-wd__range { grid-template-columns:32px minmax(0,1fr) 32px; gap:8px; }
+  [data-tk-large-text] .tk-wd__row { grid-template-columns:minmax(0,1fr) 28px auto; row-gap:4px; padding-block:8px; } [data-tk-large-text] .tk-wd__row > :nth-child(4) { grid-column:1 / -1; grid-row:2; }
   .tk-wd__tiles { display:grid; grid-template-columns:repeat(var(--n), minmax(0, 1fr)); max-width:calc(var(--n) * 160px); gap:var(--tk-space-2); }
   .bp-mobile .tk-wd__tiles { grid-template-columns:repeat(auto-fill, minmax(84px, 1fr)); max-width:none; }
   .tk-wd__tile { display:flex; flex-direction:column; align-items:center; gap:6px; padding:12px 6px; border:1px solid var(--tk-c-border); border-radius:var(--tk-radius-lg); background:var(--tk-c-surface2); color:var(--tk-c-text); font:inherit; cursor:pointer; min-height:120px; }

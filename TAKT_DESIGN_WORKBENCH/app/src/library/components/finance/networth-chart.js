@@ -15,7 +15,7 @@ export const finNetworthChart = {
   name: 'Vermögensverlauf',
   category: 'Finanzen',
   description: 'Verlauf des Gesamtvermögens über 6 oder 12 Monate, gestapelt nach Liquidität, Rücklagen und Depot. Punkt antippen zeigt die Aufteilung des Monats; der letzte Punkt folgt den aktuellen Kontoständen.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Vermögensverlauf' },
     { name: 'range', label: 'Zeitraum (Monate)', type: 'select', options: ['6', '12'], default: '12' },

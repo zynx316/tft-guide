@@ -22,12 +22,13 @@ export const finCategoryList = {
   name: 'Kategorien',
   category: 'Finanzen',
   description: 'Alle Kategorien mit Art (fix, variabel, Sparen, Einnahme), Nutzung im Monat und Buchungsanzahl. Eigene Kategorien lassen sich anlegen und umbenennen; Umbuchung bleibt fest und zählt nie als Ausgabe.',
-  version: '1.0',
+  version: '1.1',
   props: [{ name: 'title', label: 'Titel', type: 'text', default: 'Kategorien' }, { name: 'editable', label: 'Bearbeiten erlauben', type: 'boolean', default: true }],
   data: slots('cats', 'transactions', 'prefs'),
   events: ['category.open', 'category.add', 'category.edit'],
   states: ['empty'],
-  css: ``,
+  css: `
+  [data-tk-large-text] .tk-fnc__tap { flex-wrap:wrap; row-gap:4px; align-items:flex-start; } [data-tk-large-text] .tk-fnc__tap > .tk-fn-ico { display:none; } [data-tk-large-text] .tk-fnc__tap > .tk-fn-grow { flex:1 1 100%; } [data-tk-large-text] .tk-fnc__tap .tk-fn-sub { display:block; }`,
   example: { data: ex('categories', 'transactions', 'prefs') },
   render: function FinCategoryList({ props, data, setData, ctx }) {
     const c = pctx(ctx, data), cats = arr(data.categories), spent = spentByCategory(data.transactions, ctx.today), cur = monthTx(data.transactions, ctx.today);
@@ -36,7 +37,7 @@ export const finCategoryList = {
     const edit = (cat) => ctx.openDialog({ title: cat ? `${cat.label} bearbeiten` : 'Kategorie anlegen', body: (close) => html`<${CategoryForm} cat=${cat} onSave=${(f) => { save(cat, f); close(); }} />` });
     const addBtn = props.editable && html`<${Button} size="sm" variant="ghost" icon="plus" onClick=${() => edit(null)}>Kategorie<//>`;
     if (!cats.length) return html`<${Card} title=${props.title} icon="tags" actions=${addBtn}><${EmptyState} icon="tags" title="Noch keine Kategorien" text="Lege Kategorien an, um Buchungen und Budgets zu ordnen." action=${html`<${Button} variant="primary" icon="plus" onClick=${() => edit(null)}>Kategorie anlegen<//>`} /><//>`;
-    return html`<${Card} flush title=${props.title} icon="tags" actions=${addBtn}><div class="tk-fn-list">${cats.map((k) => html`<div class="tk-fn-row" style="padding:6px var(--tk-space-4);min-height:56px"><button type="button" class="tk-fn-tap" style="padding:4px" onClick=${() => ctx.emit('category.open', { id: k.id, ui: { filter: k.id } })} aria-label=${`${k.label}: Buchungen ansehen`}><${Tile} icon=${k.icon} tone=${k.tone} size=${34} />
+    return html`<${Card} flush title=${props.title} icon="tags" actions=${addBtn}><div class="tk-fn-list">${cats.map((k) => html`<div class="tk-fn-row" style="padding:6px var(--tk-space-4);min-height:56px"><button type="button" class="tk-fn-tap tk-fnc__tap" style="padding:4px" onClick=${() => ctx.emit('category.open', { id: k.id, ui: { filter: k.id } })} aria-label=${`${k.label}: Buchungen ansehen`}><${Tile} icon=${k.icon} tone=${k.tone} size=${34} />
       <span class="tk-fn-grow"><span class="tk-fn-title" style="display:block">${k.label}</span><span class="tk-fn-sub">${count(k.id)} Buchungen im Monat${spent[k.id] ? ` · ${eur(c, spent[k.id])}` : ''}</span></span><${Badge}>${KIND[k.kind] || k.kind}<//></button>
       ${props.editable && k.kind !== 'umbuchung' && html`<${Button} variant="ghost" icon="pencil" aria-label=${`${k.label} bearbeiten`} onClick=${() => edit(k)} />`}</div>`)}</div><//>`;
   },

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'preact/hooks';
 import { Button, Icon, EmptyState } from '../../ui.js';
 import {
   addDays, startOfWeek, dayKey, isoWeek, parseDay, selDate, monthStart, monthName, occurrences, onDay, eventsFiltered, timeStr, catColor,
-  openEventDialog, openCreateDialog, WEEKDAYS, longDay, EVENT_CSS,
+  openEventDialog, openCreateDialog, WEEKDAYS, longDay, EVENT_CSS, bigTextScale,
 } from './_cal.js';
 
 export const calendarMonth = {
@@ -12,7 +12,7 @@ export const calendarMonth = {
   name: 'Kalender Monat',
   category: 'Kalender',
   description: 'Monatsraster mit Termin-Chips (Mobile: Punkte), Tag wählen setzt ctx.ui.selectedDate; optional Tagesliste unter dem Raster.',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'maxChips', label: 'Chips je Tag (Desktop)', type: 'number', default: 3 },
     { name: 'dayList', label: 'Tagesliste', type: 'select', options: ['auto', 'always', 'never'], default: 'auto' },
@@ -53,6 +53,7 @@ export const calendarMonth = {
   [data-tk-large-text] .tk-cm__bar { flex-wrap:wrap; row-gap:var(--tk-space-2); }
   [data-tk-large-text] .tk-cm__title { flex:1 1 100%; order:-1; margin:0; }
   [data-tk-large-text] .tk-cm__num { width:1.9em; height:1.9em; }
+  .tk-cm__cell[data-compact="true"] { min-height:52px; align-items:center; padding:4px 0; gap:2px; }
   [data-tk-large-text] .tk-cm__dow { padding:8px 0; letter-spacing:0; }
   [data-tk-large-text] .tk-cm__dayhead { flex-wrap:wrap; }
   [data-tk-large-text] .tk-cm__dayhead > .tk-grow { flex:1 1 8em; }
@@ -77,9 +78,11 @@ export const calendarMonth = {
     const todayKey = dayKey(ctx.today), selKey = dayKey(sel);
     const move = (dir) => { const x = new Date(m); x.setMonth(x.getMonth() + dir); setM(x); ctx.emit('calendar.navigate', { month: dayKey(x).slice(0, 7) }); };
     const pick = (d) => { ctx.setUi('selectedDate', dayKey(d)); ctx.emit('date.select', { date: dayKey(d) }); };
-    const showList = props.dayList === 'always' || (props.dayList === 'auto' && !desktop);
-    const dayEvs = onDay(occs, sel).sort((a, b) => (b.allDay ? 1 : 0) - (a.allDay ? 1 : 0) || a._s - b._s);
     const cols = props.weekNumbers && !mobile ? 8 : 7;
+    // Große Schrift: sind die Tageszellen zu schmal für Termin-Chips (Zeit + Titel), zeigt das Raster Punkte und die Tagesliste darunter die Termine.
+    const bs = bigTextScale(), compact = !mobile && bs > 1 && ((ctx.blockWidth || ctx.width || 1000) - (cols === 8 ? 40 : 0)) / cols < 140 * bs;
+    const showList = props.dayList === 'always' || (props.dayList === 'auto' && (!desktop || compact));
+    const dayEvs = onDay(occs, sel).sort((a, b) => (b.allDay ? 1 : 0) - (a.allDay ? 1 : 0) || a._s - b._s);
     return html`<div class="tk-cm">
       ${props.showToolbar && html`<div class="tk-cm__bar">
         <${Button} variant="ghost" icon="chevron-left" aria-label="Vorheriger Monat" onClick=${() => move(-1)} />
@@ -93,10 +96,10 @@ export const calendarMonth = {
           ${cols === 8 && html`<div class="tk-cm__dow">KW</div>`}${WEEKDAYS.map((w) => html`<div class="tk-cm__dow">${w}</div>`)}
           ${days.map((d, i) => { const k = dayKey(d); const evs = onDay(occs, d).sort((a, b) => (b.allDay ? 1 : 0) - (a.allDay ? 1 : 0) || a._s - b._s); const max = Number(props.maxChips) || 3; const lim = ctx.bp === 'tablet' ? 2 : max;
             return html`${cols === 8 && i % 7 === 0 && html`<div class="tk-cm__week">${isoWeek(d)}</div>`}
-              <button type="button" class="tk-cm__cell" data-out=${d.getMonth() !== m.getMonth()} data-today=${k === todayKey} data-sel=${k === selKey} onClick=${() => pick(d)}
+              <button type="button" class="tk-cm__cell" data-out=${d.getMonth() !== m.getMonth()} data-today=${k === todayKey} data-sel=${k === selKey} data-compact=${compact} onClick=${() => pick(d)}
                 aria-label=${`${longDay(d)}, ${evs.length} Termine`}>
                 <span class="tk-cm__num">${d.getDate()}</span>
-                ${mobile ? html`<span class="tk-cm__dots" aria-hidden="true">${evs.slice(0, 3).map((e) => html`<i style=${`--ec:${catColor(e)}`}></i>`)}</span>`
+                ${mobile || compact ? html`<span class="tk-cm__dots" aria-hidden="true">${evs.slice(0, 3).map((e) => html`<i style=${`--ec:${catColor(e)}`}></i>`)}</span>`
                   : html`${evs.slice(0, lim).map((e) => html`<span class="tk-cm__chip" style=${`--ec:${catColor(e)}`} onClick=${(ev) => { ev.stopPropagation(); openEventDialog(ctx, setData, e, all); }}>${!e.allDay && html`<b style="font-weight:600">${timeStr(e._s)}</b> `}${e.title}</span>`)}
                     ${evs.length > lim && html`<span class="tk-cm__more">+${evs.length - lim} weitere</span>`}`}
               </button>`; })}

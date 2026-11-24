@@ -15,7 +15,7 @@ export const channelTable = {
   name: 'Kanaltabelle',
   category: 'Vertrieb',
   description: 'Alle Verkaufskanäle als dichte, sortierbare Tabelle (Kanal, Status, Umsatz, Bestellungen, Veränderung, Verlauf) mit Suche und Statusfilter. Eine Zeile antippen wählt den Kanal (ctx.ui.selectedId) für das Kurz-Detail daneben. Ohne Kanäle bleibt die Komponente still, wenn quietEmpty gesetzt ist.',
-  version: '1.0',
+  version: '1.1',
   props: [{ name: 'title', label: 'Titel', type: 'text', default: '' }, { name: 'quietEmpty', label: 'Ohne Kanäle nichts anzeigen', type: 'boolean', default: false }],
   data: [{ slot: 'channels', label: 'Kanäle', default: 'channels', shape: '{id,name,icon?,status,revenue,orders,delta?,trend?,error?}[]', required: true }],
   events: ['channel.select', 'filter.change'],
@@ -30,7 +30,14 @@ export const channelTable = {
   .tk-cht .tk-cht__r { text-align:right; } .tk-cht .tk-cht__r button { justify-content:flex-end; }
   .tk-cht__rowbtn { all:unset; box-sizing:border-box; display:flex; align-items:center; gap:8px; min-height:44px; cursor:pointer; min-width:0; } .tk-cht__rowbtn:focus-visible { outline:2px solid var(--tk-c-focus); outline-offset:2px; }
   .bp-mobile .tk-cht__x { display:none; } .bp-mobile .tk-cht td { height:56px; padding:0 8px; }
-  [data-tk-large-text] .tk-cht td { height:auto; padding-block:8px; } [data-tk-large-text] .tk-cht__x { display:none; }`,
+  [data-tk-large-text] .tk-cht td { height:auto; padding-block:8px; } [data-tk-large-text] .tk-cht__x { display:none; }
+  [data-tk-large-text] .tk-cht, [data-tk-large-text] .tk-cht thead, [data-tk-large-text] .tk-cht tbody { display:block; }
+  [data-tk-large-text] .tk-cht thead tr { display:flex; flex-wrap:wrap; gap:2px 4px; padding:4px 6px; border-bottom:1px solid var(--tk-c-border-strong); } [data-tk-large-text] .tk-cht th { display:block; border-bottom:0; } [data-tk-large-text] .tk-cht th button { padding:0 8px; }
+  [data-tk-large-text] .tk-cht tbody tr { display:flex; flex-wrap:wrap; align-items:center; gap:2px 12px; padding:8px var(--tk-space-4); border-bottom:1px solid var(--tk-c-border); }
+  [data-tk-large-text] .tk-cht tbody td { padding:0; border-bottom:0; background:none !important; box-shadow:none !important; } [data-tk-large-text] .tk-cht tbody td:first-child { flex:1 1 100%; min-width:0; }
+  [data-tk-large-text] .tk-cht tbody td.tk-cht__r { margin-left:auto; }
+  [data-tk-large-text] .tk-cht tbody tr:hover, [data-tk-large-text] .tk-cht tbody tr[data-sel="true"] { background:var(--tk-c-surface2); } [data-tk-large-text] .tk-cht tbody tr[data-sel="true"] { box-shadow:inset 4px 0 0 var(--tk-c-accent); }
+  [data-tk-large-text] .tk-cht__rowbtn > span > .tk-truncate { max-width:none !important; }`,
   example: { data: { channels: [{ id: 'shopify', name: 'Shopify', icon: 'shopping-cart', status: 'connected', revenue: 6240.5, orders: 78, delta: 8.2, trend: [5200, 5400, 5800, 5700, 6100, 6240] }, { id: 'etsy', name: 'Etsy', icon: 'store', status: 'error', revenue: 1980, orders: 31, delta: -4.1, error: 'Token abgelaufen', trend: [2300, 2250, 2100, 2050, 2000, 1980] }] } },
   render: function ChannelTable({ props, data, ctx }) {
     const [q, setQ] = useState(''), [flt, setFlt] = useState('all'), [sort, setSort] = useState({ key: 'status', dir: 1 });

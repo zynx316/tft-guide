@@ -8,7 +8,7 @@ export const projectList = {
   name: 'Projekte',
   category: 'Aufgaben',
   description: 'Projekte aus den Aufgaben abgeleitet: offene/erledigte Aufgaben, Fortschritt und nächste Fälligkeit. Antippen filtert verknüpfte Aufgabenlisten nach Projekt.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Projekte' },
     { name: 'showProgress', label: 'Fortschrittsbalken', type: 'boolean', default: true },
@@ -20,7 +20,8 @@ export const projectList = {
   .tk-pl__row { display:flex; flex-direction:column; gap:8px; width:100%; border:0; border-bottom:1px solid var(--tk-c-border); background:transparent; font:inherit; color:var(--tk-c-text); text-align:left; padding:12px 16px; cursor:pointer; min-height:64px; }
   .tk-pl__row:last-child { border-bottom:0; } .tk-pl__row:hover { background:var(--tk-c-surface2); }
   .tk-pl__row[aria-pressed="true"] { background:var(--tk-c-accent-soft); }
-  .tk-pl__sw { width:10px; height:10px; border-radius:3px; background:var(--pc); flex:none; }`,
+  .tk-pl__sw { width:10px; height:10px; border-radius:3px; background:var(--pc); flex:none; }
+  [data-tk-large-text] .tk-pl__row > .tk-row { flex-wrap:wrap; row-gap:4px; } [data-tk-large-text] .tk-pl__row > .tk-row > .tk-grow { flex:1 1 6em; }`,
   example: { data: { tasks: [
     { id: 'a', title: 'Angebot', project: 'Vertrieb', due: '2026-11-24' }, { id: 'b', title: 'Preisliste', project: 'Vertrieb', done: true },
     { id: 'c', title: 'Belege', project: 'Finanzen', due: '2026-11-23' }, { id: 'd', title: 'Fotos', project: 'Shop', due: '2026-11-25' },

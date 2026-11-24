@@ -16,7 +16,7 @@ export const trdOrderList = {
   name: 'Simulierte Orders',
   category: 'Trading',
   description: 'Die simulierten Orders: offene (Limit, Stop) und bisherige mit Richtung, Ordertyp, Kurs, Gesamtbetrag und Status. Offene Orders lassen sich stornieren und wiederherstellen. Immer als Simulation gekennzeichnet.',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Simulierte Orders' },
     { name: 'limit', label: 'Max. Einträge (0 = alle)', type: 'number', default: 0 },
@@ -26,7 +26,8 @@ export const trdOrderList = {
   events: ['order.storno', 'order.restore', 'order.open'],
   states: ['empty'],
   css: `${TRD_CSS}
-  .tk-trd-ol__row { display:flex; align-items:center; gap:12px; padding:8px 4px; min-height:60px; } .tk-trd-ol__row[data-off="true"] { opacity:.7; } .tk-trd-ol__main { display:flex; align-items:center; gap:12px; min-width:0; flex:1 1 auto; background:none; border:0; color:inherit; font:inherit; text-align:left; cursor:pointer; padding:0; min-height:44px; }`,
+  .tk-trd-ol__row { display:flex; align-items:center; gap:12px; padding:8px 4px; min-height:60px; } .tk-trd-ol__row[data-off="true"] { opacity:.7; } .tk-trd-ol__main { display:flex; align-items:center; gap:12px; min-width:0; flex:1 1 auto; background:none; border:0; color:inherit; font:inherit; text-align:left; cursor:pointer; padding:0; min-height:44px; }
+  [data-tk-large-text] .tk-trd-ol__row { flex-wrap:wrap; row-gap:4px; } [data-tk-large-text] .tk-trd-ol__main { flex:1 1 100%; align-items:flex-start; } [data-tk-large-text] .tk-trd-ol__main > .tk-trd-ico { display:none; }`,
   example: { data: ex('orders', 'instruments', 'positions', 'watchlist') },
   render: function TrdOrderList({ props, data, setData, ctx }) {
     const [tab, setTab] = useState('offen'), ok = known(data.positions, data.watchlist), all = arr(data.orders).filter(ok);

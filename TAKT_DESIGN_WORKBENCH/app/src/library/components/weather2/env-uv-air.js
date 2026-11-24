@@ -58,7 +58,7 @@ export const wxAir = {
   name: 'Luftqualität',
   category: 'Wetter',
   description: 'Luftqualitätsindex (6 Stufen von „sehr gut“ bis „extrem schlecht“) mit führendem Schadstoff, Werten für Feinstaub, Ozon, Stickstoffdioxid und Schwefeldioxid, Tagesverlauf, Ausblick und Empfehlung für Sport im Freien. Stufen erklärt im Info-Dialog.',
-  version: '1.0',
+  version: '1.1',
   props: [{ name: 'title', label: 'Titel', type: 'text', default: 'Luftqualität' }, { name: 'showDetails', label: 'Schadstoffe zeigen', type: 'boolean', default: true }],
   data: [SLOT_PLACE, SLOT_SETTINGS],
   events: ['weather.env.info', 'weather.air.pollutant'],
@@ -68,7 +68,8 @@ export const wxAir = {
   .tk-wxair__mark { position:absolute; top:-5px; width:3px; height:20px; border-radius:2px; background:var(--tk-c-text); transform:translateX(-1.5px); }
   .tk-wxair__row { display:grid; grid-template-columns:minmax(0, 1.5fr) minmax(0, 1fr) 70px; gap:var(--tk-space-3); align-items:center; min-height:42px; border-bottom:1px solid var(--tk-c-border); width:100%; background:transparent; border-left:0; border-right:0; border-top:0; color:var(--tk-c-text); font:inherit; text-align:left; cursor:pointer; }
   .tk-wxair__row:last-child { border-bottom:0; } .tk-wxair__bar { height:6px; border-radius:3px; background:var(--tk-c-surface3); overflow:hidden; } .tk-wxair__bar i { display:block; height:100%; border-radius:3px; }
-  .tk-wxair__hours { display:flex; gap:2px; height:18px; } .tk-wxair__hours i { flex:1; border-radius:2px; }`,
+  .tk-wxair__hours { display:flex; gap:2px; height:18px; } .tk-wxair__hours i { flex:1; border-radius:2px; }
+  [data-tk-large-text] .tk-wxair__row { grid-template-columns:minmax(0,1fr) auto; row-gap:4px; padding:8px 0; } [data-tk-large-text] .tk-wxair__row > :nth-child(1) { grid-column:1; grid-row:1; } [data-tk-large-text] .tk-wxair__row > :nth-child(3) { grid-column:2; grid-row:1; } [data-tk-large-text] .tk-wxair__row > :nth-child(2) { grid-column:1 / -1; grid-row:2; }`,
   example: { data: { place: EX.place, settings: EX.settings } },
   render: ({ props, data, ctx }) => {
     const place = placeOf(data), A = place?.air;

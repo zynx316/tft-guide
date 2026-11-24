@@ -17,7 +17,7 @@ export const trdDividends = {
   name: 'Dividenden',
   category: 'Trading',
   description: 'Dividenden aus dem Depot: Zahlungskalender über zwölf Monate, erhaltene und erwartete Zahlungen, Prognose für die nächsten zwölf Monate (Annahme: gleichbleibende Ausschüttung) und Steuer-Orientierung mit dem Freistellungsauftrag.',
-  version: '1.2',
+  version: '1.3',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Dividenden' },
     { name: 'style', label: 'Darstellung', type: 'select', options: ['calendar', 'list', 'next'], default: 'calendar' },
@@ -35,7 +35,8 @@ export const trdDividends = {
   .bp-mobile .tk-trd-dv__m { height:96px; } .tk-trd-dv__m:hover, .tk-trd-dv__m[aria-pressed="true"] { background:var(--tk-c-surface2); }
   .tk-trd-dv__bar { width:70%; max-width:34px; min-height:4px; border-radius:6px 6px 2px 2px; background:var(--tk-c-accent); } .tk-trd-dv__bar--f { background:repeating-linear-gradient(135deg, var(--tk-c-accent) 0 4px, transparent 4px 8px); outline:1px solid var(--tk-c-accent); outline-offset:-1px; } .tk-trd-dv__bar--0 { background:var(--tk-c-surface3); }
   .tk-trd-dv__lab { font-size:var(--tk-fs-xs); color:var(--tk-c-text-muted); } .tk-trd-dv__amt { font-size:var(--tk-fs-xs); font-variant-numeric:tabular-nums; min-height:1.2em; }
-  .tk-trd-dv__row { display:flex; align-items:center; gap:12px; padding:10px 4px; min-height:56px; width:100%; background:none; border:0; color:inherit; font:inherit; text-align:left; cursor:pointer; border-radius:var(--tk-radius-md); } .tk-trd-dv__row:hover { background:var(--tk-c-surface2); }`,
+  .tk-trd-dv__row { display:flex; align-items:center; gap:12px; padding:10px 4px; min-height:56px; width:100%; background:none; border:0; color:inherit; font:inherit; text-align:left; cursor:pointer; border-radius:var(--tk-radius-md); } .tk-trd-dv__row:hover { background:var(--tk-c-surface2); }
+  [data-tk-large-text] .tk-trd-dv__row { flex-wrap:wrap; row-gap:4px; align-items:flex-start; } [data-tk-large-text] .tk-trd-dv__row > .tk-trd-ico { display:none; } [data-tk-large-text] .tk-trd-dv__row > .tk-trd-grow { flex:1 1 100%; } [data-tk-large-text] .tk-trd-dv__row > .tk-trd-num { margin-left:auto; } [data-tk-large-text] .tk-trd-dv__row .tk-trd-sub { overflow-wrap:break-word; }`,
   example: { data: ex('dividends', 'positions', 'allowance') },
   render: function TrdDividends({ props, data, ctx }) {
     const plan = dividendPlan(data.dividends, data.positions, ctx.today, data.allowance), [sel, setSel] = useState(null);

@@ -14,7 +14,7 @@ export const finPrivacyPanel = {
   name: 'Privatsphäre und Sicherheit',
   category: 'Finanzen',
   description: 'Beträge ausblenden (mit Vorschau), App-Sperre für Finanzen als Simulation, Puffer für „frei verfügbar“ und der Hinweis, dass alle Daten lokal liegen. Export und Löschen sind als Simulation vorhanden.',
-  version: '1.0',
+  version: '1.1',
   props: [{ name: 'title', label: 'Titel', type: 'text', default: 'Privatsphäre und Sicherheit' }, { name: 'showPreview', label: 'Vorschau der Maske', type: 'boolean', default: true }],
   data: slots('prefs', 'accounts'),
   events: ['privacy.toggle', 'privacy.lock', 'privacy.test', 'privacy.export', 'privacy.delete', 'privacy.reserve'],
@@ -23,6 +23,7 @@ export const finPrivacyPanel = {
   .tk-fnv { display:flex; flex-direction:column; gap:var(--tk-space-4); min-width:0; }
   .tk-fnv__sec { display:flex; flex-direction:column; gap:var(--tk-space-2); } .tk-fnv__row { display:flex; align-items:center; gap:12px; min-height:48px; padding:4px 0; border-bottom:1px solid var(--tk-c-border); } .tk-fnv__row:last-child { border-bottom:0; }
   .tk-fnv__prev { display:flex; align-items:center; gap:12px; padding:var(--tk-space-3); border-radius:var(--tk-radius-md); background:var(--tk-c-surface2); border:1px dashed var(--tk-c-border-strong); }
+  [data-tk-large-text] .tk-fnv__prev { flex-wrap:wrap; row-gap:4px; } [data-tk-large-text] .tk-fnv__prev > .tk-fn-ico { display:none; } [data-tk-large-text] .tk-fnv__prev > .tk-fn-grow { flex:1 1 8em; }
   .tk-fnv__lock { display:flex; flex-direction:column; align-items:center; gap:12px; padding:var(--tk-space-6) 0; text-align:center; }
   .bp-mobile .tk-fnv .tk-switch { width:52px; height:32px; } .bp-mobile .tk-fnv .tk-switch::after { width:26px; height:26px; }`,
   example: { data: ex('prefs', 'accounts') },

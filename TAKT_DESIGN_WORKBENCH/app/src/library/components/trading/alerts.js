@@ -13,7 +13,7 @@ export const trdAlerts = {
   name: 'Kursalarme',
   category: 'Trading',
   description: 'Kursalarme je Wertpapier mit Richtung und Kursmarke: aktive und ausgelöste Alarme, Abstand zum aktuellen Kurs, pausieren, löschen mit Rückgängig. Als Liste, als Karten mit Abstandsbalken oder kompakt mit Schnell-Anlage.',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Kursalarme' },
     { name: 'style', label: 'Darstellung', type: 'select', options: ['list', 'cards', 'quick'], default: 'list' },
@@ -31,7 +31,8 @@ export const trdAlerts = {
   .tk-trd-al__main { display:flex; align-items:center; gap:12px; min-width:0; flex:1 1 auto; background:none; border:0; color:inherit; font:inherit; text-align:left; cursor:pointer; padding:0; min-height:44px; }
   .tk-trd-al__cards { display:grid; grid-template-columns:repeat(auto-fill, minmax(min(100%, calc(250px * var(--tk-text-scale, 1))), 1fr)); gap:var(--tk-space-3); }
   .tk-trd-al__card { border:1px solid var(--tk-c-border); border-radius:var(--tk-radius-lg); background:var(--tk-c-surface2); padding:var(--tk-space-4); display:flex; flex-direction:column; gap:10px; min-width:0; }
-  .tk-trd-al__undo { display:flex; align-items:center; gap:8px; justify-content:space-between; padding:8px 12px; border-radius:var(--tk-radius-md); background:var(--tk-c-surface2); font-size:var(--tk-fs-sm); }`,
+  .tk-trd-al__undo { display:flex; align-items:center; gap:8px; justify-content:space-between; padding:8px 12px; border-radius:var(--tk-radius-md); background:var(--tk-c-surface2); font-size:var(--tk-fs-sm); }
+  [data-tk-large-text] .tk-trd-al__row { flex-wrap:wrap; row-gap:4px; } [data-tk-large-text] .tk-trd-al__main { flex:1 1 100%; align-items:flex-start; } [data-tk-large-text] .tk-trd-al__main > .tk-trd-ico { display:none; } [data-tk-large-text] .tk-trd-al__undo { flex-wrap:wrap; }`,
   example: { data: ex('alerts', 'instruments', 'positions', 'watchlist') },
   render: function TrdAlerts({ props, data, setData, ctx }) {
     const [tab, setTab] = useState('aktiv'), [undo, setUndo] = useState(null), [form, setForm] = useState(false);

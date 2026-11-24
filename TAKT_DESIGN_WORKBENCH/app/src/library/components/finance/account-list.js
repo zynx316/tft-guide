@@ -23,7 +23,7 @@ export const finAccountList = {
   name: 'Kontenübersicht',
   category: 'Finanzen',
   description: 'Konten nach Art (Liquidität, Rücklagen, Anlage, Kreditkarte) mit Saldo, Verlauf und Gesamtvermögen. Antippen öffnet die Buchungen des Kontos oder wählt es für eine danebenstehende Liste. Konto anlegen inklusive.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Konten' },
     { name: 'style', label: 'Darstellung', type: 'select', options: ['rows', 'cards'], default: 'rows' },
@@ -40,7 +40,9 @@ export const finAccountList = {
   .tk-fna__cards { display:grid; grid-template-columns:repeat(auto-fill, minmax(min(100%, 230px), 1fr)); gap:var(--tk-space-3); }
   .tk-fna__card { display:flex; flex-direction:column; gap:10px; padding:var(--tk-space-4); border:1px solid var(--tk-c-border); border-radius:var(--tk-radius-lg); background:var(--tk-c-surface2); color:inherit; font:inherit; text-align:left; cursor:pointer; min-width:0; }
   .tk-fna__card:hover { background:var(--tk-c-surface3); } .tk-fna__card[aria-pressed="true"] { border-color:var(--tk-c-accent); background:var(--tk-c-accent-soft); }
-  .tk-fna__lim { height:5px; border-radius:3px; background:var(--tk-c-surface3); overflow:hidden; } .tk-fna__lim i { display:block; height:100%; background:var(--tk-c-accent2); }`,
+  .tk-fna__lim { height:5px; border-radius:3px; background:var(--tk-c-surface3); overflow:hidden; } .tk-fna__lim i { display:block; height:100%; background:var(--tk-c-accent2); }
+  [data-tk-large-text] .tk-fna__total { font-size:var(--tk-fs-2xl); } [data-tk-large-text] .tk-fna__row { flex-wrap:wrap; row-gap:4px; align-items:flex-start; height:auto; } [data-tk-large-text] .tk-fna__row > .tk-fn-grow { flex:1 1 100%; } [data-tk-large-text] .tk-fna__row > .tk-fn-ico, [data-tk-large-text] .tk-fna__row > svg, [data-tk-large-text] .tk-fna__card .tk-fn-ico, [data-tk-large-text] .tk-fna__card svg { display:none; }
+  [data-tk-large-text] .tk-fna__row > .tk-fn-num { margin-left:auto; } [data-tk-large-text] .tk-fna__card .tk-fn-row { flex-wrap:wrap; } [data-tk-large-text] .tk-fna__card .tk-fn-grow { flex:1 1 100%; } [data-tk-large-text] .tk-fna__card .tk-fn-title { white-space:normal; overflow:visible; text-overflow:clip; overflow-wrap:break-word; } [data-tk-large-text] .tk-fna__grp { flex-wrap:wrap; }`,
   example: { data: ex('accounts', 'prefs') },
   render: function FinAccountList({ props, data, setData, ctx }) {
     const c = pctx(ctx, data), accs = arr(data.accounts);
@@ -53,7 +55,7 @@ export const finAccountList = {
     const sub = (a) => (a.type === 'savings' ? `${a.bank} · ${fmtPercent(a.interestPa || 0, { digits: 1 })} p. a.` : a.type === 'depot' ? `${a.bank} · Wert aus dem Depot` : a.type === 'credit' ? `${a.bank} · Rahmen ${eur0(c, a.limit || 0)}` : `${a.bank || ''}${a.iban ? ` · ${a.iban.slice(-8)}` : ''}`);
     const bal = (a) => html`<strong class="tk-fn-num" style=${a.balance < 0 ? 'color:var(--tk-c-text)' : ''}>${eur(c, a.balance)}</strong>`;
     const trend = (a) => (arr(a.spark).length > 1 ? html`<${Sparkline} values=${a.spark} width=${56} height=${22} tone=${a.balance >= 0 ? toneColor(a.tone || 1) : 'neutral'} />` : null);
-    const total = html`<div class="tk-fn-row" style="justify-content:space-between;margin-bottom:var(--tk-space-3)"><div><div class="tk-fn-cap">Gesamtvermögen</div><div class="tk-fn-big">${eur(c, w.net)}</div></div>${ctx.ui.account && html`<${Button} size="sm" variant="ghost" icon="x" onClick=${() => ctx.setUi('account', null)}>Auswahl aufheben<//>`}</div>`;
+    const total = html`<div class="tk-fn-row" style="justify-content:space-between;margin-bottom:var(--tk-space-3)"><div><div class="tk-fn-cap">Gesamtvermögen</div><div class="tk-fn-big tk-fna__total">${eur(c, w.net)}</div></div>${ctx.ui.account && html`<${Button} size="sm" variant="ghost" icon="x" onClick=${() => ctx.setUi('account', null)}>Auswahl aufheben<//>`}</div>`;
     const pressed = (a) => String(ctx.ui.account === a.id);
     const body = props.style === 'cards'
       ? groups.map((g) => html`<div class="tk-fna__grp"><span class="tk-fn-cap">${g.label}</span></div><div class="tk-fna__cards">${g.list.map((a) => html`<button type="button" class="tk-fna__card" aria-pressed=${pressed(a)} onClick=${() => pick(a)} aria-label=${`${a.name}, ${eur(c, a.balance)}`}>

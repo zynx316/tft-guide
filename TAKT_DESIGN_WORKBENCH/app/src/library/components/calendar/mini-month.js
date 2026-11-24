@@ -9,7 +9,7 @@ export const miniMonth = {
   name: 'Mini-Monat',
   category: 'Kalender',
   description: 'Kompakter Monatsnavigator mit Terminpunkten. Auswahl setzt ctx.ui.selectedDate; die gewählte Woche wird hervorgehoben.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'showDots', label: 'Terminpunkte', type: 'boolean', default: true },
     { name: 'highlightWeek', label: 'Woche hervorheben', type: 'boolean', default: true },
@@ -32,7 +32,10 @@ export const miniMonth = {
   .tk-mm__day[data-sel="true"] span { background:var(--tk-c-accent); color:var(--tk-c-text-on-accent); }
   .tk-mm__day span { width:26px; height:26px; border-radius:50%; display:grid; place-items:center; }
   .tk-mm__dot { position:absolute; bottom:2px; display:flex; gap:2px; font-style:normal; } .tk-mm__dot i { width:4px; height:4px; border-radius:50%; background:var(--ec); display:block; }
-  .bp-mobile .tk-mm__day { height:44px; }`,
+  .bp-mobile .tk-mm__day { height:44px; }
+  [data-tk-large-text] .tk-mm__day { font-size:var(--tk-fs-xs); height:auto; min-height:calc(1.9em + 10px); }
+  [data-tk-large-text] .tk-mm__day span { width:auto; min-width:1.9em; height:1.9em; padding:0 2px; }
+  [data-tk-large-text] .tk-mm__dow { letter-spacing:0; padding:4px 0; }`,
   example: { data: { events: [{ id: 'a', title: 'Stand-up', start: '2026-11-24T09:45:00', end: '2026-11-24T10:00:00', tone: 'accent' }, { id: 'b', title: 'Zahnarzt', start: '2026-11-26T08:00:00', end: '2026-11-26T09:00:00', tone: 'danger' }] } },
   render: function MiniMonth({ props, data, ctx }) {
     const sel = selDate(ctx);

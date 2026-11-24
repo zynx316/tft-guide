@@ -25,7 +25,7 @@ export const finBudgetEnvelopes = {
   name: 'Budget-Hüllen',
   category: 'Finanzen',
   description: 'Budgets als Hüllen: Rest, Tagesbudget und Monatsverlauf je Kategorie. Warnfarbe ab 85 %, bei Überschreitung sachlich in Warnton. Hüllen lassen sich anpassen, hinzufügen und entfernen.',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Budgets' },
     { name: 'style', label: 'Darstellung', type: 'select', options: ['bars', 'envelopes', 'attention'], default: 'bars' },
@@ -52,7 +52,9 @@ export const finBudgetEnvelopes = {
   .tk-fnb__edit { position:absolute; top:6px; right:6px; }
   .tk-fnb__rest { font-size:var(--tk-fs-xl); font-weight:var(--tk-fw-bold); font-variant-numeric:tabular-nums; }
   .tk-fnb__foot { display:flex; flex-wrap:wrap; gap:4px 16px; margin-top:var(--tk-space-3); padding-top:var(--tk-space-3); border-top:1px solid var(--tk-c-border); font-size:var(--tk-fs-sm); color:var(--tk-c-text-muted); font-variant-numeric:tabular-nums; }
-  .tk-fnb__stat { display:inline-flex; align-items:center; gap:6px; font-size:var(--tk-fs-sm); }`,
+  .tk-fnb__stat { display:inline-flex; align-items:center; gap:6px; font-size:var(--tk-fs-sm); }
+  [data-tk-large-text] .tk-fnb__stat { flex-wrap:wrap; white-space:normal; }
+  [data-tk-large-text] .tk-fnb__row .tk-fnb__stat { flex:0 1 auto; max-width:100%; min-width:0; }`,
   example: { props: { style: 'envelopes' }, data: ex('budgets', 'transactions', 'categories', 'prefs') },
   render: function FinBudgetEnvelopes({ props, data, setData, ctx }) {
     const c = pctx(ctx, data);

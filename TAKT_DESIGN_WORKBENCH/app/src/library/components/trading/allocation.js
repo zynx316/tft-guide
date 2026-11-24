@@ -36,7 +36,7 @@ export const trdAllocation = {
   name: 'Aufteilung Soll und Ist',
   category: 'Trading',
   description: 'Verteilung des Depots nach Baustein, Anlageklasse, Region oder Sektor mit Ist-Anteil, eigenem Soll-Anteil und Abweichung in Prozentpunkten. Zielwerte lassen sich anpassen (Summe 100 %). Als Tabelle oder als zwei gestapelte Balken. Keine Empfehlung.',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Aufteilung' },
     { name: 'style', label: 'Darstellung', type: 'select', options: ['table', 'bars'], default: 'table' },
@@ -51,6 +51,8 @@ export const trdAllocation = {
   .tk-trd-al2__h { color:var(--tk-c-text-subtle); font-size:var(--tk-fs-xs); text-transform:uppercase; letter-spacing:var(--tk-ls-wide); font-weight:var(--tk-fw-semibold); border-bottom:1px solid var(--tk-c-border-strong); min-height:0; padding-bottom:6px; }
   .tk-trd-al2__track { position:relative; height:10px; border-radius:5px; background:var(--tk-c-surface3); } .tk-trd-al2__track i { position:absolute; left:0; top:0; bottom:0; border-radius:5px; } .tk-trd-al2__track b { position:absolute; top:-3px; bottom:-3px; width:3px; border-radius:2px; background:var(--tk-c-text); }
   .bp-mobile .tk-trd-al2__row { grid-template-columns:minmax(0,1fr) auto auto; row-gap:6px; } .bp-mobile .tk-trd-al2__track { grid-column:1 / -1; order:5; } .bp-mobile .tk-trd-al2__soll { display:none; } .bp-mobile .tk-trd-al2__h > :nth-child(2) { display:none; }
+  [data-tk-large-text] .tk-trd-al2__h { display:none; } [data-tk-large-text] .tk-trd-al2__row { grid-template-columns:minmax(0,1fr); row-gap:4px; padding-block:12px; } [data-tk-large-text] .tk-trd-al2__row > :nth-child(n+3) { text-align:left; } [data-tk-large-text] .tk-trd-al2__row > .tk-trd-al2__track { order:5; }
+  [data-tk-large-text] .tk-trd-al2__row:not(.tk-trd-al2__h) > .tk-trd-al2__soll:not([style])::before { content:'Soll '; }
   .tk-trd-al2__stack { display:flex; height:28px; border-radius:var(--tk-radius-md); overflow:hidden; gap:2px; } .tk-trd-al2__stack span { min-width:3px; }
   .tk-trd-al2__leg { display:flex; flex-wrap:wrap; gap:6px 16px; margin-top:8px; font-size:var(--tk-fs-sm); color:var(--tk-c-text-muted); } .tk-trd-al2__leg i { display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:6px; }`,
   example: { data: ex('positions', 'cash', 'targets') },

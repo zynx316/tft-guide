@@ -8,7 +8,7 @@ export const wxHourlyStrip = {
   name: 'Nächste Stunden (kompakt)',
   category: 'Wetter',
   description: 'Die nächsten Stunden auf einen Blick: wischbare Karten (Zeit, Symbol, Temperatur, Regenrisiko) oder dichte Tabelle mit gefühlter Temperatur, Regen und Wind. Antippen öffnet den vollständigen Stundenverlauf.',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'layout', label: 'Darstellung', type: 'select', options: ['cards', 'table'], default: 'cards' },
     { name: 'count', label: 'Anzahl Stunden', type: 'number', default: 12 },
@@ -30,7 +30,8 @@ export const wxHourlyStrip = {
   .tk-wxhs__day { padding:6px var(--tk-space-4); font-size:var(--tk-fs-xs); font-weight:var(--tk-fw-semibold); letter-spacing:var(--tk-ls-wide); text-transform:uppercase; color:var(--tk-c-text-subtle); background:var(--tk-c-surface2); border-bottom:1px solid var(--tk-c-border); }
   .tk-wxhs__chips { display:flex; gap:6px; overflow-x:auto; padding:var(--tk-space-3) var(--tk-space-4); border-bottom:1px solid var(--tk-c-border); scrollbar-width:thin; }
   .tk-wxhs__w { display:inline-flex; align-items:center; gap:5px; color:var(--tk-c-text-muted); font-size:var(--tk-fs-sm); }
-  .bp-mobile .tk-wxhs__row { grid-template-columns:44px 26px 44px minmax(0,1fr) minmax(0,1fr); gap:var(--tk-space-2); padding:4px var(--tk-space-3); min-height:48px; }`,
+  .bp-mobile .tk-wxhs__row { grid-template-columns:44px 26px 44px minmax(0,1fr) minmax(0,1fr); gap:var(--tk-space-2); padding:4px var(--tk-space-3); min-height:48px; }
+  [data-tk-large-text] .tk-wxhs__row, [data-tk-large-text].bp-mobile .tk-wxhs__row, [data-tk-large-text] .bp-mobile .tk-wxhs__row { grid-template-columns:6ch 24px minmax(0,1fr); row-gap:2px; padding-top:8px; padding-bottom:8px; } [data-tk-large-text] .tk-wxhs__row > :nth-child(4) { grid-column:1 / 3; grid-row:2; } [data-tk-large-text] .tk-wxhs__row > :nth-child(5) { grid-column:3; grid-row:2; }`,
   example: { props: { layout: 'table' }, data: { place: EX.place, settings: EX.settings } },
   render: ({ props, data, ctx }) => {
     const place = placeOf(data);

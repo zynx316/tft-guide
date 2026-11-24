@@ -11,7 +11,7 @@ export const goalWeekPicker = {
   name: 'Wochenfokus wählen',
   category: 'Ziele',
   description: `Wähle höchstens ${FOCUS_MAX} Ziele für diese Woche. Ein viertes Ziel wird nicht still verworfen: TAKT erklärt, warum, und bietet an, es gegen eines der drei zu tauschen. Liste mit Schaltern oder drei Plätze.`,
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Wochenfokus' },
     { name: 'style', label: 'Darstellung', type: 'select', options: ['list', 'slots'], default: 'list' },
@@ -26,6 +26,7 @@ export const goalWeekPicker = {
   .tk-gl-wk__meter { display:flex; align-items:center; gap:10px; flex-wrap:wrap; } .tk-gl-wk__dots { display:flex; gap:6px; } .tk-gl-wk__dots i { width:14px; height:14px; border-radius:50%; border:2px solid var(--tk-c-border-strong); } .tk-gl-wk__dots i[data-on="true"] { background:var(--tk-c-accent2); border-color:var(--tk-c-accent2); }
   .tk-gl-wk__row { display:flex; align-items:center; gap:12px; padding:10px 14px; min-height:64px; border-radius:var(--tk-radius-md); border:1px solid var(--tk-c-border); background:var(--tk-c-surface); min-width:0; } .tk-gl-wk__row[data-on="true"] { border-color:color-mix(in srgb, var(--tk-c-accent2) 55%, var(--tk-c-border)); background:color-mix(in srgb, var(--tk-c-accent2) 7%, var(--tk-c-surface)); }
   .tk-gl-wk__b { flex:1; min-width:0; display:flex; flex-direction:column; gap:3px; } .tk-gl-wk__b b { font-weight:var(--tk-fw-medium); overflow-wrap:anywhere; }
+  [data-tk-large-text] .tk-gl-wk__row { flex-wrap:wrap; row-gap:6px; } [data-tk-large-text] .tk-gl-wk__b { flex:1 1 100%; } [data-tk-large-text] .tk-gl-wk__row > :last-child { margin-left:auto; }
   .tk-gl-wk__why { padding:12px 14px; border-radius:var(--tk-radius-md); background:var(--tk-c-info-soft); border:1px solid color-mix(in srgb, var(--tk-c-info) 35%, var(--tk-c-border)); font-size:var(--tk-fs-sm); display:flex; flex-direction:column; gap:8px; }
   .tk-gl-wk__sw { display:flex; flex-wrap:wrap; gap:8px; }
   .tk-gl-wk__slots { display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 200px), 1fr)); gap:var(--tk-space-3); }

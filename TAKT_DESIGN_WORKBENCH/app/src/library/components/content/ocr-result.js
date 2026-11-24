@@ -1,7 +1,7 @@
 // Picture to Text: Erkennungsergebnis mit Konfidenz-Markierung, Bildvorschau (gestaltet), Aktionen
 import { html } from '../../../lib/html.js';
 import { useState } from 'preact/hooks';
-import { Card, Button, Badge, Icon, Segmented, EmptyState, Input, Field, Progress, Switch, Select } from '../../ui.js';
+import { Card, Button, Badge, Icon, Segmented, EmptyState, Input, Textarea, Field, Progress, Switch, Select } from '../../ui.js';
 import { isoLocal, wordCount } from './content-util.js';
 import { useReceiptForm, findDupe, CATS, ACCOUNTS } from './receipt-parts.js';
 import { money } from '../../helpers.js';
@@ -225,12 +225,13 @@ const CARD_FIELDS = [['name', 'Name', 'user'], ['title', 'Funktion', 'briefcase'
 function CardForm({ c, setData, ctx }) {
   const [f, setF] = useState(() => Object.fromEntries(CARD_FIELDS.map(([k]) => [k, c[k] || ''])));
   const [saved, setSaved] = useState(!!c.saved);
+  const large = typeof document !== 'undefined' && document.documentElement.hasAttribute('data-tk-large-text'); // große Schrift: lange Werte in zwei Zeilen statt abgeschnitten
   const bad = { email: f.email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(f.email) ? 'Diese Adresse passt nicht. Prüfe das @-Zeichen.' : '', phone: f.phone && !/^[+\d][\d\s/().-]{5,}$/.test(f.phone) ? 'Diese Nummer passt nicht.' : '', name: !f.name.trim() ? 'Name fehlt.' : '' };
   const ok = !bad.email && !bad.phone && !bad.name;
   const save = () => { setData('cards', (a) => a.map((x) => (x.id === c.id ? { ...x, ...f, saved: true } : x))); setSaved(true); ctx.emit('card.save', { id: c.id }); ctx.toast(`Kontakt gespeichert: ${f.name}`); };
   const ini = f.name.replace(/^(Dr\.|Prof\.)\s*/, '').split(/\s+/).map((w) => w[0]).slice(0, 2).join('');
   return html`<div class="tk-card-bc"><div class="tk-card-bc__card"><span class="tk-card-bc__av" aria-hidden="true">${ini || '?'}</span><div style="min-width:0"><div class="tk-card-bc__name">${f.name || 'Name'}</div><div class="tk-muted">${f.title}${f.title && f.company ? ' · ' : ''}${f.company}</div></div></div>
-    <div class="tk-rcpt__grid">${CARD_FIELDS.map(([k, label]) => html`<${Field} label=${label} error=${bad[k]}><${Input} value=${f[k]} onInput=${(v) => setF((x) => ({ ...x, [k]: v }))} invalid=${!!bad[k]} aria-label=${label} /><${Conf} c=${c.conf?.[k]} /><//>`)}</div>
+    <div class="tk-rcpt__grid">${CARD_FIELDS.map(([k, label]) => html`<${Field} label=${label} error=${bad[k]}>${large ? html`<${Textarea} rows="2" value=${f[k]} onInput=${(v) => setF((x) => ({ ...x, [k]: v.replace(/\n/g, " ") }))} onKeyDown=${(e) => { if (e.key === "Enter") e.preventDefault(); }} aria-invalid=${bad[k] ? "true" : undefined} aria-label=${label} />` : html`<${Input} value=${f[k]} onInput=${(v) => setF((x) => ({ ...x, [k]: v }))} invalid=${!!bad[k]} aria-label=${label} />`}<${Conf} c=${c.conf?.[k]} /><//>`)}</div>
     <div class="tk-ocr__actions"><${Button} variant="primary" icon=${saved ? 'check' : 'users'} disabled=${!ok || saved} onClick=${save}>${saved ? 'Kontakt gespeichert' : 'Kontakt speichern'}<//>
       <${Button} icon="mail" disabled=${!f.email} onClick=${() => { ctx.emit('card.mail', { id: c.id }); ctx.toast(`E-Mail an ${f.email}`); }}>E-Mail<//><${Button} icon="smartphone" disabled=${!f.phone} onClick=${() => { ctx.emit('card.call', { id: c.id }); ctx.toast(`Anruf: ${f.phone}`); }}>Anrufen<//>
       <${Button} icon="calendar-plus" onClick=${() => { ctx.emit('card.event', { id: c.id }); ctx.toast('Termin mit diesem Kontakt vorschlagen'); }}>Termin<//></div></div>`;
@@ -241,7 +242,7 @@ export const businessCard = {
   name: 'Visitenkarte',
   category: 'Inhalte',
   description: 'Erkannte Visitenkarte als Kontaktkarte mit prüfbaren Feldern (Name, Funktion, Firma, Telefon, E-Mail, Website, Adresse), Konfidenz-Hinweisen, Eingabeprüfung und Aktionen Kontakt speichern, E-Mail, Anrufen, Termin.',
-  version: '1.0',
+  version: '1.1',
   props: [{ name: 'title', label: 'Titel', type: 'text', default: 'Visitenkarte' }],
   data: [{ slot: 'cards', label: 'Visitenkarten', default: 'cards', shape: '{id,name,title?,company?,phone?,email?,web?,address?,conf?,saved?}[]', required: true }],
   events: ['card.save', 'card.mail', 'card.call', 'card.event'],
@@ -251,6 +252,7 @@ export const businessCard = {
   .tk-card-bc__card { display:flex; align-items:center; gap:14px; padding:var(--tk-space-5); border-radius:var(--tk-radius-lg); background:var(--tk-c-accent-soft); border:1px solid color-mix(in srgb, var(--tk-c-accent) 30%, transparent); min-width:0; }
   .tk-card-bc .tk-input, .tk-rcpt .tk-input { text-overflow:ellipsis; }
   [data-tk-large-text] .tk-card-bc .tk-input, [data-tk-large-text] .tk-rcpt .tk-input { text-overflow:clip; }
+  [data-tk-large-text] .tk-card-bc .tk-textarea { min-height:0; resize:none; overflow-wrap:anywhere; field-sizing:content; } [data-tk-large-text] .tk-card-bc__av { width:64px; height:64px; font-size:var(--tk-fs-md); }
   .tk-card-bc__av { width:56px; height:56px; border-radius:50%; flex:none; display:grid; place-items:center; background:var(--tk-c-accent); color:var(--tk-c-on-accent, var(--tk-c-bg)); font-weight:var(--tk-fw-bold); font-size:var(--tk-fs-lg); }
   .tk-card-bc__name { font-size:var(--tk-fs-xl); font-weight:var(--tk-fw-bold); letter-spacing:var(--tk-ls-tight); overflow-wrap:anywhere; }`,
   example: { data: { cards: [{ id: 'k1', name: 'Dr. Anna Müller', title: 'Steuerberaterin', company: 'Müller & Partner mbB', phone: '+49 521 555 0142', email: 'anna.mueller@mueller-partner.example', web: 'mueller-partner.example', address: 'Marktstraße 4, 33602 Bielefeld', conf: { name: 0.61 } }] } },

@@ -25,7 +25,7 @@ export const finTxDetail = {
   name: 'Buchungs-Detail',
   category: 'Finanzen',
   description: 'Eine Buchung im Detail: Betrag, Konto, Zeitpunkt; Kategorie ändern (auf Wunsch als Regel merken), Notiz, Beleg anhängen und auf zwei Kategorien aufteilen. Die Auswahl kommt aus der Buchungsliste (selectedId).',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Buchung' },
     { name: 'allowSplit', label: 'Aufteilen anbieten', type: 'boolean', default: true },

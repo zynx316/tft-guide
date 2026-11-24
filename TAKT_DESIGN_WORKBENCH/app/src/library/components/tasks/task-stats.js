@@ -9,7 +9,7 @@ export const taskStats = {
   name: 'Aufgaben-Kennzahlen',
   category: 'Aufgaben',
   description: 'Kennzahlen, die sich aus den Aufgaben berechnen: heute fällig (mit geplanter Zeit), überfällig, Eingang, diese Woche erledigt und Fokus-Blöcke heute. Jede Kachel führt in den passenden Bereich.',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'style', label: 'Darstellung', type: 'select', options: ['tiles', 'strip'], default: 'tiles' },
     { name: 'items', label: 'Kennzahlen', type: 'list', default: ['today', 'overdue', 'inbox', 'done', 'focus'] },
@@ -35,7 +35,8 @@ export const taskStats = {
   .tk-tsk-stats--strip { display:flex; flex-wrap:wrap; gap:6px; }
   .tk-tsk-stats--strip .tk-tsk-stats__tile { flex-direction:row; align-items:center; gap:8px; min-height:44px; padding:6px 14px; border-radius:var(--tk-radius-pill); }
   .tk-tsk-stats--strip .tk-tsk-stats__value { font-size:var(--tk-fs-lg); } .tk-tsk-stats--strip .tk-tsk-stats__sub, .tk-tsk-stats--strip .tk-tsk-stats__spark { display:none; }
-  .bp-mobile .tk-tsk-stats { grid-template-columns:repeat(2, minmax(0,1fr)); gap:var(--tk-space-2); } .bp-mobile .tk-tsk-stats__tile { padding:var(--tk-space-3); }`,
+  .bp-mobile .tk-tsk-stats { grid-template-columns:repeat(2, minmax(0,1fr)); gap:var(--tk-space-2); } .bp-mobile .tk-tsk-stats__tile { padding:var(--tk-space-3); }
+  [data-tk-large-text] .tk-tsk-stats__spark { display:none; }`,
   example: { data: { tasks: [{ id: 'a', title: 'Angebot', due: '2026-11-24', estimate: 60 }, { id: 'b', title: 'Belege', due: '2026-11-23' }, { id: 'c', title: 'Fotos', due: '2026-11-25', done: true, doneAt: '2026-11-24' }], inbox: [{ id: 'i', title: 'Rückruf' }], activity: [], log: [] } },
   render: ({ props, data, ctx }) => {
     const tasks = Array.isArray(data.tasks) ? data.tasks : [], inbox = Array.isArray(data.inbox) ? data.inbox : [];
