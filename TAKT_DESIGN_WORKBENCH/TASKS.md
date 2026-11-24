@@ -1,7 +1,7 @@
 # Aufgaben – TAKT Design Workbench
 
 > Pflege: Checkboxen abhaken, neue Aufgaben mit Datum ergänzen, Erledigtes in `WORK_LOG.md` protokollieren.
-> Priorität: **P1** = als Nächstes · **P2** = bald · **P3** = später/optional. Stand: 24.11.2026, Ende Session 2.
+> Priorität: **P1** = als Nächstes · **P2** = bald · **P3** = später/optional. Stand: 24.11.2026, Ende Session 2 (Mittag).
 > Umsetzungsstand des Bauplans je Paket: `docs/BAUPLAN_STATUS.md`.
 
 ## 0. Übernahme auf den eigenen Rechner (P1, ~15 Min.) – siehe HANDOFF.md
@@ -28,16 +28,22 @@
 - [ ] Danach Modul für Modul nach Ausbaustufen (Übersicht › Fahrplan): Modul-Richtung, Startseite, Tier-1-Features mit Scorecard,
       Gates, QA, Freigabe; Gerätetest für Tier 1 (`docs/GERAETETEST.md`)
 - [ ] Nach den ersten Freigaben: `npm run spec -- --released` (Umsetzungsvorlagen für Flutter, `/takt-spec`)
+- [ ] Offene Gestaltungsfragen der neuen Varianten (je eine Entscheidung mit Empfehlung im Manifest, z. B. Fächer vs. Tasten im
+      Aufgaben-Eingang, Pinnwand, Kapitelkarten, Beleg-Kategorien als Kacheln, Modulsperre Dokumente, Vorlage-Verweis aus
+      Finanzen, Fitness-Plan im Erststart) – erscheinen in der Entscheidungs-Inbox
 
 ## 3. Inhalte und Module (P2)
 - [ ] Skelett-Features (Status „Nicht untersucht“) je Modul mit Varianten füllen – erst nach der Richtungswahl, damit nur die
       gewählte Richtung gebaut wird
 - [ ] Einkaufsliste: nach der Entscheidung `shopping.list` („Wem gehört die Lebensmittel-Liste?“) Eigentum von Ernährung
       (`nutShopping`) zu „Einkauf & Haushalt“ (`shoppingLists`) verlagern (Bauplan 5.13, DATENWELT B5); `nutrition.shopping` wird
-      dann Verknüpfung; `nutShopping.spentMonth` aus `finance.transactions` ableiten (Budget-Rest folgt „Einkauf fertig“ sofort)
+      dann Verknüpfung. Das Budget in „Einkauf & Haushalt“ rechnet schon live aus den Buchungen; nur die ältere Liste in Ernährung
+      zeigt noch den festen Wert `nutShopping.spentMonth`
 - [ ] Neue Module (24.11.): Ziele bearbeiten/archivieren wiederherstellen, `goals.settings` gestalten; Einkauf: Laden anlegen,
       Gänge umbenennen, Wartung anlegen/bearbeiten (recurrence-picker); Dokumente: Erinnerungsstufen frei wählbar (Entscheidung),
-      Entsperr-Abfrage für sensible Module (`prefs.privacy.sensitive`), Hinweis „Vorlage in Dokumente“ aus Finanzen › Abos
+      Entsperr-Abfrage für sensible Module (`prefs.privacy.sensitive` wird gespeichert, hat in der Demo noch keine Wirkung)
+- [ ] Erststart weiterer Features ruhig machen (Start-Seiten aller Module sind es): z. B. fitness.goals/body/activity/recovery,
+      notes.overview, nutrition.log stapeln noch mehrere Leerkarten – mit `hideWhenEmpty`/`showWhenEmpty`/`quietEmpty` lösbar
 - [ ] Fachliche Prüfung der Aufbewahrungsrichtwerte (Dokumente) und der Gewährleistungstexte
 - [ ] Kredite (Finanzen), Allokation (Trading) als Features ergänzen; Import CSV/CAMT, Entnahmeplan, Widgets, Teilen ausarbeiten
 - [ ] Fachliche Prüfung der Gesundheits-, Finanz- und Steuertexte (Grundsatzfrage „Rechtsprüfung“) vor jeder Veröffentlichung
@@ -48,10 +54,19 @@
       erledigt: Welt nicht mehr im Zustand, Rückgängig mit strukturellem Teilen (0,3 MB statt ~180 MB für 60 Schritte)
 - [ ] **Migrationskette** (`migrations[n]`, Backup vor Migration, Snapshots mitmigrieren) – erst nötig, wenn sich Felder
       inkompatibel ändern (bisher alles additiv in Schema 2)
-- [ ] QA-Sonde: DOM-Knotenbudget; E2E-Suite in `qa/e2e/` aufteilen (erledigt: `legal-present`, `money-format`, Privatsphäre im
-      App-Modus, statische `legal`-Prüfung in `npm run check`)
-- [ ] Hinweise aus `npm run check` abbauen (`Math.random`/`Date.now`/`Intl` in älteren Komponenten → `ctx.newId/now/fmt`)
+- [ ] QA-Sonde: DOM-Knotenbudget, Textüberlappung; E2E-Suite in `qa/e2e/` aufteilen (erledigt: `legal-present`, `money-format`,
+      Privatsphäre im App-Modus, „…“, gequetschte Titel und zu schmale Spalten bei großer Schrift, statische `legal`-Prüfung)
+- [ ] **Abgeleitete Welt-Werte live halten:** `<modul>Summary`, `homeHeadline`, `homeHintCards` werden beim Laden berechnet und folgen
+      Änderungen in der Demo nicht (Start-Untertitel bleibt nach dem Abhaken der Aufgabe stehen) – Ableitung in die Runtime ziehen
+- [ ] Tagesfortschritt einheitlich definieren (Start-Ringe „0 von 6“ vs. Aufgaben-Diagramm „2/6 erledigt“), Vorwoche in der Welt
+      (Delta im Wochenrückblick)
+- [ ] Privatsphäre-Modus: Ausnahmeliste bestätigen (Allokationsanteile, PP-Abweichung, Kurse öffentlicher Papiere, Sparziel-%,
+      Annahmen 3/5/7 % bleiben sichtbar) – Entscheidung des Nutzers
+- [ ] App-Rahmen bei großer Schrift: Kopfzeile und Reiterbeschriftungen der Leiste („Einstellun…“) bleiben gekürzt (feste Höhe);
+      prüfen, ob Reiter bei 200 % nur Symbole zeigen sollen
 - [ ] Launcher: Tageszeit-Stationen (07:30/12:30/18:30) für kontextabhängige Startseiten
+- [ ] Bestehende Stände: nach jedem Pull **Daten & Backup › Seed abgleichen …** (neue Varianten, Bindungen, Module kommen sonst
+      nicht in einen gespeicherten Stand)
 - [ ] Deklaratives Modell erweitern: Container-/Gruppen-Block, Props je Breakpoint, Feldmapping in `bind`
 - [ ] Master-Detail mobil (`preview/layouts.js`, Typ `sidebar`): Liste zuerst, nach Auswahl (`ctx.ui.selectedId`) Detail mit
       Zurück-Schritt; heute startet die Liste nur aufgeklappt (`layout.panelOpen` bei notes.overview/B, knowledge.browse/A,
@@ -76,3 +91,7 @@
       Szenarien; Fachmodule Finanzen, Sparpläne, Trading, Fitness, Ernährung, Wetter (+ alle übrigen Module ausgebaut);
       Formatstandard, Wiederholungslogik, Gesundheits-/Finanzmathematik mit Tests; Leitlinien; WLAN-PIN; Spezifikation als JSON;
       Integritätsprüfung; Tastenkürzel und Querformat im Launcher – Details in WORK_LOG.md
+- [x] Session 2, Vormittag: Module Ziele, Einkauf & Haushalt, Dokumente & Verträge (19 Module des Bauplans); Abschluss-QA aller
+      Modulgruppen mit Korrektur und Nachprüfung; Lückenschluss: alle 49 Tier-1-Features in allen drei Richtungen, ruhige
+      Erststarts der Startseiten, Altlasten (check 0 Hinweise, Vertrag 0 Hinweise); große Schrift; Start/Suche/Erfassen kennen
+      die neuen Module; Blockbedingungen `hideWhenEmpty`/`showWhenEmpty`, `quietEmpty`
