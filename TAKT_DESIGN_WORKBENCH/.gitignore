@@ -1,0 +1,11 @@
+node_modules/
+data/backups/
+data/*.tmp
+qa/results/
+!qa/results/.gitkeep
+.DS_Store
+Thumbs.db
+# Baselines sind maschinenspezifisch (Schriftrendering) – entstehen beim ersten QA-Lauf auf dem Zielrechner.
+# Wer die Workbench als eigenes Repo führt und Baselines versionieren will: diese Zeilen entfernen.
+qa/baselines/*
+!qa/baselines/.gitkeep

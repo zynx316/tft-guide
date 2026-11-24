@@ -1,0 +1,24 @@
+{
+  "name": "takt-design-workbench",
+  "version": "0.1.0",
+  "private": true,
+  "description": "TAKT Design Workbench – Module, Features, Designvarianten, interaktive Vorschau, Freigaben und QA fuer TAKT V2.0",
+  "type": "module",
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "start": "node server.mjs --open",
+    "serve": "node server.mjs",
+    "lan": "node server.mjs --host 0.0.0.0",
+    "qa": "node qa/run-qa.mjs",
+    "qa:changed": "node qa/run-qa.mjs --changed",
+    "qa:e2e": "node qa/run-qa.mjs --only e2e",
+    "qa:visual": "node qa/run-qa.mjs --only visual",
+    "qa:baseline": "node qa/run-qa.mjs --only visual --update-baseline",
+    "check": "node tools/check.mjs"
+  },
+  "devDependencies": {
+    "pixelmatch": "^5.3.0",
+    "playwright": "^1.49.0",
+    "pngjs": "^7.0.0"
+  }
+}
