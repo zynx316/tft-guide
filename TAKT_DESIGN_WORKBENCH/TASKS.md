@@ -53,6 +53,9 @@
 - [ ] Hinweise aus `npm run check` abbauen (`Math.random`/`Date.now`/`Intl` in älteren Komponenten → `ctx.newId/now/fmt`)
 - [ ] Launcher: Tageszeit-Stationen (07:30/12:30/18:30) für kontextabhängige Startseiten
 - [ ] Deklaratives Modell erweitern: Container-/Gruppen-Block, Props je Breakpoint, Feldmapping in `bind`
+- [ ] Master-Detail mobil (`preview/layouts.js`, Typ `sidebar`): Liste zuerst, nach Auswahl (`ctx.ui.selectedId`) Detail mit
+      Zurück-Schritt; heute startet die Liste nur aufgeklappt (`layout.panelOpen` bei notes.overview/B, knowledge.browse/A,
+      picture-to-text.history/A). Achtung: `detail-view` wählt mit `autoSelectFirst` sofort den ersten Eintrag
 
 ## 5. Flutter-Überführung (P2, nach Phase 1 und ersten Freigaben)
 - [ ] Token-Abgleich mit den Flutter-Themes (`takt_tokens.dart` aus der Workbench gegen das Projekt)
