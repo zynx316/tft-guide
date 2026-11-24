@@ -106,6 +106,11 @@ export async function runProbe({ payload, errors = [] } = {}) {
     if (overX || overY) clipped.push(`${describe(el)} (${overX ? 'breite' : ''}${overX && overY ? '+' : ''}${overY ? 'höhe' : ''})`);
     if (clipped.length > 12) break;
   }
+  // Gequetschte Titel: bei großer Schrift darf ein Titel neben Badge/Aktion nicht auf wenige Pixel schrumpfen
+  if (largeText) for (const el of document.querySelectorAll('.tk-card__title, .tk-page-header h1')) {
+    if (!visible(el) || !(el.textContent || '').trim()) continue;
+    if (el.getBoundingClientRect().width < 48) clipped.push(`${describe(el)} (Titel auf ${Math.round(el.getBoundingClientRect().width)} px gequetscht)`);
+  }
   add('clipped', clipped.length ? 'warn' : 'pass', clipped.length ? `${clipped.length} Elemente schneiden Inhalt ab` : 'Keine abgeschnittenen Inhalte', clipped);
 
   // 5) Touch-Ziele (nur Mobile relevant)

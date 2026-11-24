@@ -303,6 +303,9 @@ h1, h2, h3, h4, p { margin: 0; }
 [data-tk-large-text] { hyphens: auto; -webkit-hyphens: auto; } /* lange Wörter mit Trennstrich statt hartem Umbruch (lang="de") */
 [data-tk-large-text] .tk-truncate, [data-tk-large-text] .tk-card__title { white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: break-word; }
 [data-tk-large-text] .tk-app__top .tk-truncate { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } /* Kopfleiste hat feste Höhe */
+/* Kartenkopf: Titel behält Lesebreite (mind. 8 Zeichen), Badge/Aktionen rutschen in die nächste Zeile statt den Titel zu quetschen */
+[data-tk-large-text] .tk-card__head { flex-wrap: wrap; row-gap: 4px; }
+[data-tk-large-text] .tk-card__title { flex: 1 1 8em; }
 /* Großbuchstaben-Labels ohne Versalien-Umwandlung (CSS macht aus „ß“ sonst „SS“, z. B. EIWEISS) */
 .tk-label--nocaps, .tk-nocaps { text-transform: none; letter-spacing: normal; }
 
