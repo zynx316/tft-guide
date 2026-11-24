@@ -25,8 +25,9 @@ export const todayIso = (ctx) => isoDay(ctx.today);
 export function useViews(data, ctx) {
   const today = todayIso(ctx), src = sourcesOf(data, today);
   const raw = Array.isArray(data.goals) ? data.goals : [];
-  // „Gewicht ausblenden“ aus Fitness (ctx.ui.hideWeight) gilt auch für Körperziele hier.
-  const views = deriveAll(raw, src).map((v) => (v.kind === 'weight' && ctx.ui?.hideWeight && !v.numbersHidden ? { ...v, numbersHidden: true } : v));
+  // „Werte ausblenden“ aus Fitness gilt app-weit (prefs.health.hideWeight, wie fitness/_ui.js weightHidden) auch für Körperziele hier.
+  const hideWeight = !!(ctx.world?.get?.('prefs')?.health?.hideWeight ?? ctx.ui?.hideWeight);
+  const views = deriveAll(raw, src).map((v) => (v.kind === 'weight' && hideWeight && !v.numbersHidden ? { ...v, numbersHidden: true } : v));
   return { today, src, raw, areas: src.areas, views };
 }
 export const setGoals = (setData, fn) => setData('goals', (xs) => fn(Array.isArray(xs) ? xs : []));

@@ -12,7 +12,7 @@ export const hintCards = {
   name: 'Smart-Hinweise',
   category: 'Start',
   description: 'Regelbasierte Hinweise aus mehreren Modulen („Sturmböen und Termin“, „Frist heute“, „Abo ungenutzt“) mit Quelle, Aktion, Wegwischen und „Später erinnern“. Stile: Liste, Karten, Banner (nur der wichtigste Hinweis).',
-  version: '1.2',
+  version: '1.3',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Hinweise' },
     { name: 'style', label: 'Stil', type: 'select', options: ['list', 'cards', 'banner'], default: 'list' },
@@ -20,7 +20,7 @@ export const hintCards = {
     { name: 'dense', label: 'Kompakt', type: 'boolean', default: false },
   ],
   data: [
-    { slot: 'hints', label: 'Hinweise', default: 'hints', shape: '{id,tone,icon,title,text,source,module?,actionLabel?,needs?}[]', required: true },
+    { slot: 'hints', label: 'Hinweise', default: 'hints', shape: '{id,tone,icon,title,text,source,module?,actionLabel?,needs?,to?,carry?}[]', required: true },
     // Optionale Quellen: Ein Hinweis mit `needs` erscheint nur, solange seine Grundlage in den Daten existiert (z. B. offene Aufgabe, Termin, Warnung).
     { slot: 'tasks', label: 'Aufgaben (Grundlage)', default: 'tasks', shape: '{id,done?}[]', required: false },
     { slot: 'events', label: 'Termine (Grundlage)', default: 'events', shape: '{id}[]', required: false },
@@ -28,7 +28,7 @@ export const hintCards = {
     { slot: 'plans', label: 'Sparpläne (Grundlage)', default: 'plans', shape: '{id,active?}[]', required: false },
     { slot: 'subs', label: 'Abos (Grundlage)', default: 'subs', shape: '{id}[]', required: false },
   ],
-  events: ['hint.open', 'hint.dismiss', 'hint.snooze', 'hint.open.weather', 'hint.open.tasks', 'hint.open.calendar', 'hint.open.finance', 'hint.open.savings', 'hint.open.habits'],
+  events: ['hint.open', 'hint.dismiss', 'hint.snooze', 'hint.open.weather', 'hint.open.tasks', 'hint.open.calendar', 'hint.open.finance', 'hint.open.savings', 'hint.open.habits', 'hint.open.documents', 'hint.open.shopping', 'hint.open.goals'],
   states: ['empty'],
   css: `
   .tk-hc__list { display:flex; flex-direction:column; } .tk-hc__item { display:flex; gap:12px; align-items:flex-start; padding:12px 12px 12px 16px; border-bottom:1px solid var(--tk-c-border); min-width:0; position:relative; } .tk-hc__item:last-child { border-bottom:0; }
@@ -49,7 +49,8 @@ export const hintCards = {
     const all = (Array.isArray(data.hints) ? data.hints : []).filter(ok);
     const hints = props.limit > 0 || props.style === 'banner' ? all.slice(0, props.style === 'banner' ? 1 : props.limit) : all;
     if (!all.length) return html`<${Card} title=${props.title}><${EmptyState} icon="sparkles" title="Keine Hinweise" text="Hier erscheint etwas, sobald es wichtig wird." /><//>`;
-    const act = (h) => ctx.emit(h.module ? `hint.open.${h.module}` : 'hint.open', { id: h.id });
+    // Hinweise aus anderen Modulen bringen ihr Ziel mit (`to`, Auswahl `carry`) – die Runtime navigiert dorthin, wenn keine Regel greift.
+    const act = (h) => ctx.emit(h.module ? `hint.open.${h.module}` : 'hint.open', { id: h.id, ...(h.to ? { to: h.to } : {}), ...(h.carry ? { ui: h.carry } : {}) });
     const dismiss = (h) => { setData('hints', (xs) => xs.filter((x) => x.id !== h.id)); ctx.emit('hint.dismiss', { id: h.id }); ctx.toast('Hinweis ausgeblendet'); };
     const snooze = (h) => { setData('hints', (xs) => xs.filter((x) => x.id !== h.id)); ctx.emit('hint.snooze', { id: h.id }); ctx.toast('Ich erinnere dich später'); };
     const actions = (h) => html`<div class="tk-hc__meta">${h.actionLabel && html`<${Button} size="sm" variant="primary" onClick=${() => act(h)}>${h.actionLabel}<//>`}<${Button} size="sm" variant="ghost" icon="clock" onClick=${() => snooze(h)}>Später<//><span class="tk-hc__src">Quelle: ${h.source}</span></div>`;

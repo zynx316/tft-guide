@@ -1,4 +1,4 @@
-// Start: Modul-Kacheln – Termine, Aufgaben, Gewohnheiten, Wetter, Finanzen, Sparplan, Training, Ernährung (live aus den Daten).
+// Start: Modul-Kacheln – Termine, Aufgaben, Gewohnheiten, Wetter, Finanzen, Sparplan, Training, Ernährung, Ziele, Einkauf, Fristen (live aus den Daten).
 import { html } from '../../../lib/html.js';
 import { Card, EmptyState, Icon, toneColor } from '../../ui.js';
 import { toList } from '../../helpers.js';
@@ -14,7 +14,7 @@ export const todayTiles = {
   name: 'Tageskacheln',
   category: 'Start',
   description: 'Modulübergreifende Kacheln für den Tag: Termine, Aufgaben, Gewohnheiten, Wetter, Finanzen, nächste Sparplan-Ausführung, Training und Ernährung. Stile: Streifen (Kennzahlen), Liste (dicht), Karten (eine Botschaft je Kachel). Jede Kachel öffnet ihr Modul.',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Dein Tag im Überblick' },
     { name: 'layout', label: 'Stil', type: 'select', options: ['strip', 'list', 'cards'], default: 'list' },
@@ -30,8 +30,11 @@ export const todayTiles = {
     { slot: 'plans', label: 'Sparpläne', default: 'plans', shape: '{name,monthly,day,active}[]', required: false },
     { slot: 'training', label: 'Training', default: 'training', shape: '{next,nextName}', required: false },
     { slot: 'nutrition', label: 'Ernährung', default: 'nutrition', shape: '{kcal,kcalGoal,protein,proteinGoal}', required: false },
+    { slot: 'goalsSummary', label: 'Ziele (Kennzahlen)', default: 'goalsSummary', shape: '{kpis:[{label,value}]}', required: false },
+    { slot: 'shoppingSummary', label: 'Einkauf & Haushalt (Kennzahlen)', default: 'shoppingSummary', shape: '{kpis:[{label,value}]}', required: false },
+    { slot: 'documentsSummary', label: 'Dokumente & Verträge (Kennzahlen)', default: 'documentsSummary', shape: '{kpis:[{label,value}]}', required: false },
   ],
-  events: ['tile.open.calendar', 'tile.open.tasks', 'tile.open.habits', 'tile.open.weather', 'tile.open.finance', 'tile.open.savings', 'tile.open.training', 'tile.open.nutrition'],
+  events: ['tile.open.calendar', 'tile.open.tasks', 'tile.open.habits', 'tile.open.weather', 'tile.open.finance', 'tile.open.savings', 'tile.open.training', 'tile.open.nutrition', 'tile.open.goals', 'tile.open.shopping', 'tile.open.documents'],
   states: ['empty'],
   css: `
   .tk-tt__strip { display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:var(--tk-space-3); } .bp-mobile .tk-tt__strip { grid-template-columns:repeat(2, minmax(0, 1fr)); gap:var(--tk-space-2); }

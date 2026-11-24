@@ -8,38 +8,41 @@ import savings from './savings.js';
 import fitness from './fitness.js';
 import nutrition from './nutrition.js';
 import weather from './weather.js';
+import goals from './goals.js';
+import shopping from './shopping.js';
+import documents from './documents.js';
 
 // --- Navigationsziele: nur Features, die es wirklich gibt --------------------------------------------------------
-const FEATURE_IDS = new Set([calendar, tasks, finance, savings, fitness, nutrition, weather].flatMap((m) => (m.features || []).map((f) => f.id)));
+const FEATURE_IDS = new Set([calendar, tasks, finance, savings, fitness, nutrition, weather, goals, shopping, documents].flatMap((m) => (m.features || []).map((f) => f.id)));
 const go = (...ids) => ids.find((id) => FEATURE_IDS.has(id)) || '';
 const NAV = {
   calendar: go('calendar.home', 'calendar.week'), tasks: go('tasks.home', 'tasks.overview'), habits: 'habits.home', weather: go('weather.home', 'weather.current'),
   finance: go('finance.home', 'finance.accounts'), savings: go('savings.home'), training: go('fitness.home', 'fitness.overview'), nutrition: go('nutrition.home'),
+  goals: go('goals.home'), shopping: go('shopping.home'), documents: go('documents.home'),
 };
-const LABEL = { calendar: 'Kalender', tasks: 'Aufgaben', habits: 'Gewohnheiten', weather: 'Wetter', finance: 'Finanzen', savings: 'Sparpläne', training: 'Fitness', nutrition: 'Ernährung' };
+const LABEL = { calendar: 'Kalender', tasks: 'Aufgaben', habits: 'Gewohnheiten', weather: 'Wetter', finance: 'Finanzen', savings: 'Sparpläne', training: 'Fitness', nutrition: 'Ernährung', goals: 'Ziele', shopping: 'Einkauf & Haushalt', documents: 'Dokumente & Verträge' };
 /** Interaktionen „<prefix>.<modul>“ → Modul-Startseite, nur wo das Ziel existiert. */
 const links = (prefix, keys, what) => keys.filter((k) => NAV[k]).map((k) => ({ trigger: `${what}: ${LABEL[k]}`, result: `${LABEL[k]} öffnet sich`, event: `${prefix}.${k}`, to: NAV[k] }));
 
 // --- Lokale Kurzdaten der Persona (Di, 24.11.2026 09:30) -----------------------------------------------------------
 // Wetter, Training und Ernährung kommen aus der gemeinsamen Datenwelt (Wetter-Ort, Fitness heute, Ernährung heute).
-const HINTS = [
-  { id: 'hi1', tone: 'danger', icon: 'alert-circle', title: 'Angebot Müller GmbH heute 14:00 fällig', text: 'Noch offen: PDF erzeugen und an den Kunden senden – etwa 60 Minuten eingeplant.', source: 'Aufgaben', module: 'tasks', actionLabel: 'Aufgabe öffnen', needs: { task: 't1' } },
-  { id: 'hi2', tone: 'warning', icon: 'wind', title: 'Sturmböen ab 14 Uhr', text: 'Der Lieferanten-Call um 15:00 läuft per Zoom – Wege am besten vor 14 Uhr erledigen.', source: 'Wetter · Kalender', module: 'weather', actionLabel: 'Wetter ansehen', needs: { alert: true, events: 'e6' } },
-  { id: 'hi3', tone: 'accent', icon: 'calendar-clock', title: 'Überschneidung um 11:00', text: 'Sprint-Planung und „Fokus: Workbench-Review“ liegen übereinander.', source: 'Kalender', module: 'calendar', actionLabel: 'Im Kalender ansehen', needs: { events: ['e3', 'e4'] } },
-  { id: 'hi4', tone: 'info', icon: 'piggy-bank', title: 'Sparpläne laufen am 01.12.', text: 'Die nächste Ausführung ist am Dienstag; das Girokonto ist ausreichend gedeckt.', source: 'Sparpläne · Finanzen', module: 'savings', actionLabel: 'Sparpläne ansehen', needs: { plans: true } },
-  { id: 'hi5', tone: 'neutral', icon: 'tv', title: 'Netflix seit 34 Tagen nicht genutzt', text: 'Das Abo läuft monatlich weiter – prüfen, ob es noch gebraucht wird.', source: 'Finanzen (Abos)', module: 'finance', actionLabel: 'Abos prüfen', needs: { sub: 'sub-netflix' } },
-];
+// Hinweise der Startseite: eigene Regeln plus der dringendste Hinweis aus Dokumente, Einkauf und Ziele – Datenwelt `homeHintCards`
+// (world/home.js), sortiert nach Dringlichkeit; im Ersten Start leer.
+const HINTS = '@world:homeHintCards';
 const TILES = [
   { id: 'hints', label: 'Hinweise', icon: 'sparkles', tone: 'accent', on: true, size: 'M' }, { id: 'rings', label: 'Tag in Ringen', icon: 'target', tone: 'success', on: true, size: 'M' },
   { id: 'agenda', label: 'Agenda', icon: 'calendar', tone: 'accent', on: true, size: 'L' }, { id: 'tasks', label: 'Aufgaben', icon: 'list-checks', tone: 'warning', on: true, size: 'M' },
   { id: 'habits', label: 'Gewohnheiten', icon: 'repeat', tone: 'success', on: true, size: 'M' }, { id: 'weather', label: 'Wetter', icon: 'cloud-sun', tone: 'info', on: true, size: 'S' },
   { id: 'finance', label: 'Finanzen', icon: 'wallet', tone: 'accent2', on: true, size: 'S' }, { id: 'savings', label: 'Sparplan', icon: 'piggy-bank', tone: 3, on: false, size: 'S' },
   { id: 'training', label: 'Training', icon: 'dumbbell', tone: 6, on: true, size: 'S' }, { id: 'nutrition', label: 'Ernährung', icon: 'apple', tone: 4, on: false, size: 'S' },
+  { id: 'goals', label: 'Ziele', icon: 'target', tone: 'accent', on: true, size: 'S' }, { id: 'shopping', label: 'Einkauf & Haushalt', icon: 'shopping-basket', tone: 5, on: true, size: 'S' },
+  { id: 'documents', label: 'Fristen', icon: 'folder', tone: 'warning', on: true, size: 'S' },
   { id: 'quick', label: 'Schnellerfassung', icon: 'plus', tone: 'accent', on: true, size: 'M' },
 ];
 // Wochenwerte (Aufgaben, Fokuszeit, Auszahlungen) werden nie hier gepflegt: Diagramm und Rückblick rechnen sie aus der Welt (tasks, taskActivity, taskFocusLog, transactions).
 
-const world = { events: '@world:events', tasks: '@world:tasks', finance: '@world:financeSummary', plans: '@world:savingsPlans', budgets: '@world:budgets', subs: '@world:subscriptions', weather: '@world:wxActive', training: '@world:fitnessToday', nutrition: '@world:nutSummary', activity: '@world:taskActivity', log: '@world:taskFocusLog', transactions: '@world:transactions' };
+const world = { events: '@world:events', tasks: '@world:tasks', finance: '@world:financeSummary', plans: '@world:savingsPlans', budgets: '@world:budgets', subs: '@world:subscriptions', weather: '@world:wxActive', training: '@world:fitnessToday', nutrition: '@world:nutSummary', activity: '@world:taskActivity', log: '@world:taskFocusLog', transactions: '@world:transactions',
+  goalsSummary: '@world:goalsSummary', shoppingSummary: '@world:shoppingSummary', documentsSummary: '@world:documentsSummary' };
 const local = { habits: '@world:habits', hints: HINTS };
 const ALL_VP = ['desktop', 'notebook', 'tablet', 'mobile'];
 const demoToday = { ...world, ...local, tiles: TILES };
@@ -75,7 +78,7 @@ export default {
       '- Gibt es im echten TAKT bereits eine Startseite oder ein Dashboard im Modulregister?',
       '- Wie viele Kacheln sind standardmäßig sichtbar (Minimal vs. Alles)?',
     ].join('\n'),
-    links: ['calendar', 'tasks', 'habits', 'finance', 'savings', 'fitness', 'nutrition', 'weather'],
+    links: ['calendar', 'tasks', 'habits', 'goals', 'shopping', 'documents', 'finance', 'savings', 'fitness', 'nutrition', 'weather'],
   },
   features: withLegal([
     // ----------------------------------------------------------------------------------------- Heute
@@ -87,7 +90,7 @@ export default {
         { text: 'Agenda des Tages (heutige Termine mit Uhrzeit und freien Fenstern) aus dem Kalender', type: 'info', priority: 'must' },
         { text: 'Fällige und überfällige Aufgaben, abhakbar, aus dem Aufgaben-Modul', type: 'action', priority: 'must' },
         { text: 'Gewohnheiten des Tages abhaken oder hochzählen; Sprung in „Gewohnheiten“', type: 'action', priority: 'must' },
-        { text: 'Kurzinfos: Wetter, Finanzen (Ausgaben, Sparquote), nächste Sparplan-Ausführung, Training und Ernährung', type: 'info', priority: 'should' },
+        { text: 'Kurzinfos: Wetter, Finanzen (Ausgaben, Sparquote), nächste Sparplan-Ausführung, Training, Ernährung, Ziele, Einkauf & Haushalt und Fristen aus Dokumente & Verträge', type: 'info', priority: 'should' },
         { text: 'Smart-Hinweise mit Quelle und Aktion; ausblenden oder „Später“', type: 'action', priority: 'should' },
         { text: 'Schnellerfassung ohne Modulwechsel: Aufgabe, Notiz, Ausgabe, Wasser', type: 'action', priority: 'should' },
         { text: 'Jede Kachel öffnet ihr Modul; „Anpassen“ öffnet die Konfiguration der Startseite', type: 'action', priority: 'must' },
@@ -96,8 +99,10 @@ export default {
       interactions: [
         { trigger: 'Aufgabe abhaken', result: 'Aufgabe wird durchgestrichen, Zähler und Ringe aktualisieren sich', event: 'task.toggle' },
         { trigger: 'Aufgabe antippen', result: 'Aufgaben-Detail', event: 'task.open', to: go('tasks.detail') },
-        ...links('tile.open', ['calendar', 'tasks', 'habits', 'weather', 'finance', 'savings', 'training', 'nutrition'], 'Kachel'),
+        ...links('tile.open', ['calendar', 'tasks', 'habits', 'weather', 'finance', 'savings', 'training', 'nutrition', 'goals', 'shopping', 'documents'], 'Kachel'),
         ...links('hint.open', ['weather', 'tasks', 'calendar', 'finance', 'savings'], 'Hinweis'),
+        // Hinweise aus Dokumente, Einkauf und Ziele bringen ihr Ziel selbst mit (hint-cards: detail.to + Auswahl) – keine feste Regel
+        ...['documents', 'shopping', 'goals'].map((k) => ({ trigger: `Hinweis: ${LABEL[k]}`, result: `Der Anlass öffnet sich in „${LABEL[k]}“ (z. B. Garantie, Wartung, Ziel)`, event: `hint.open.${k}` })),
         ...EXTRA_NAV,
         { trigger: '„Briefing“ im Kopf', result: 'Morgenbriefing öffnet sich', event: 'briefing.open', to: 'home.briefing' },
         { trigger: '„Anpassen“ im Kopf', result: 'Startseite anpassen', event: 'header.secondary', to: 'home.customize' },
@@ -129,7 +134,7 @@ export default {
             { id: 'agenda', component: 'agenda', region: 'main', span: 7, spanTablet: 12, bind: { events: 'events' }, props: { title: 'Agenda heute', days: 1, startFrom: 'today', showFree: true } },
             { id: 'tasks', component: 'task-list', region: 'main', span: 5, spanTablet: 12, bind: { tasks: 'tasks' }, props: { title: 'Aufgaben', groupBy: 'due', showDone: false, dense: true, limit: 7, showProject: false, selectable: false } },
             { id: 'habits', component: 'habit-list', region: 'main', span: 5, spanTablet: 12, bind: { habits: 'habits' }, props: { title: 'Gewohnheiten', style: 'rows', groupBy: 'daypart', showWeek: false, showStreak: true } },
-            { id: 'more', component: 'today-tiles', region: 'main', span: 7, spanTablet: 12, props: { title: 'Geld, Training & Ernährung', layout: 'list', tiles: ['finance', 'savings', 'training', 'nutrition'] } },
+            { id: 'more', component: 'today-tiles', region: 'main', span: 7, spanTablet: 12, props: { title: 'Geld, Haushalt & Gesundheit', layout: 'list', tiles: ['finance', 'savings', 'documents', 'shopping', 'training', 'nutrition', 'goals'] } },
             { id: 'cap', component: 'quick-capture', region: 'bottom', bind: { tasks: 'tasks', habits: 'habits' }, props: { elevated: true } },
           ],
         },
@@ -142,7 +147,7 @@ export default {
             { id: 'note', component: 'hint-cards', region: 'main', bind: { hints: 'hints' }, props: { style: 'banner' } },
             { id: 'next', component: 'focus-next', region: 'main', bind: { events: 'events', tasks: 'tasks' }, props: { title: 'Als Nächstes' } },
             { id: 'habit', component: 'habit-list', region: 'main', bind: { habits: 'habits' }, props: { title: 'Gewohnheiten', style: 'next', allLabel: 'Alle Gewohnheiten' } },
-            { id: 'ctx', component: 'today-tiles', region: 'main', props: { title: 'Kontext', layout: 'list', tiles: ['calendar', 'tasks', 'weather', 'training', 'nutrition', 'finance', 'savings'] } },
+            { id: 'ctx', component: 'today-tiles', region: 'main', props: { title: 'Kontext', layout: 'list', tiles: ['calendar', 'tasks', 'documents', 'shopping', 'weather', 'training', 'nutrition', 'goals', 'finance', 'savings'] } },
             { id: 'cap', component: 'quick-capture', region: 'bottom', bind: { tasks: 'tasks', habits: 'habits' }, props: { elevated: true } },
           ],
         },
@@ -154,7 +159,7 @@ export default {
             { id: 'hdr', component: 'page-header', region: 'header', props: { eyebrow: 'Dienstag, 24. November', title: 'Guten Morgen', subtitle: 'Ein ruhiger Überblick über deinen Tag', primaryLabel: 'Briefing', primaryIcon: 'sunrise', primaryEvent: 'briefing.open', secondaryLabel: 'Anpassen', secondaryIcon: 'sliders-horizontal' } },
             { id: 'rings', component: 'day-rings', region: 'main', span: 5, spanTablet: 12, bind: { events: 'events', tasks: 'tasks', habits: 'habits' }, props: { title: 'Dein Tag', layout: 'stacked' } },
             { id: 'agenda', component: 'agenda', region: 'main', span: 7, spanTablet: 12, bind: { events: 'events' }, props: { title: 'Heute', days: 1, startFrom: 'today', showFree: true } },
-            { id: 'cards', component: 'today-tiles', region: 'main', span: 12, spanTablet: 12, props: { layout: 'cards', columns: 3, tiles: ['weather', 'finance', 'training', 'nutrition', 'savings', 'tasks'] } },
+            { id: 'cards', component: 'today-tiles', region: 'main', span: 12, spanTablet: 12, props: { layout: 'cards', columns: 3, tiles: ['weather', 'finance', 'training', 'nutrition', 'savings', 'tasks', 'goals', 'shopping', 'documents'] } },
             { id: 'habits', component: 'habit-list', region: 'main', span: 12, spanTablet: 12, bind: { habits: 'habits' }, props: { title: 'Gewohnheiten', style: 'cards', allLabel: 'Alle Gewohnheiten' } },
             { id: 'chart', component: 'task-week-chart', region: 'main', span: 7, spanTablet: 12, bind: { tasks: 'tasks', activity: 'activity', log: 'log' }, props: { title: 'Aufgaben – letzte 7 Tage' } },
             { id: 'hints', component: 'hint-cards', region: 'main', span: 5, spanTablet: 12, bind: { hints: 'hints' }, props: { title: 'Hinweise', style: 'list', limit: 3 } },
@@ -345,7 +350,7 @@ export default {
         { text: 'Hinweise nennen keine Beträge (Privatsphäre)', type: 'rule', priority: 'should' },
         { text: 'Leerzustand „Alles im Griff“', type: 'state', priority: 'must' },
       ],
-      interactions: [...links('hint.open', ['weather', 'tasks', 'calendar', 'finance', 'savings'], 'Hinweis'), { trigger: 'Hinweis wegwischen', result: 'Hinweis verschwindet', event: 'hint.dismiss' }],
+      interactions: [...links('hint.open', ['weather', 'tasks', 'calendar', 'finance', 'savings'], 'Hinweis'), ...['documents', 'shopping', 'goals'].map((k) => ({ trigger: `Hinweis: ${LABEL[k]}`, result: `Der Anlass öffnet sich in „${LABEL[k]}“`, event: `hint.open.${k}` })), { trigger: 'Hinweis wegwischen', result: 'Hinweis verschwindet', event: 'hint.dismiss' }],
       viewports: ALL_VP, demoData: { ...world, hints: HINTS },
       variants: [
         {

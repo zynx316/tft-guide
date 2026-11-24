@@ -53,12 +53,17 @@ export function nextSavings(plans, now) {
   return { date: new Date(first), total: hit.reduce((s, p) => s + (p.monthly || 0), 0), names: hit.map((p) => p.name), count: hit.length };
 }
 
-export const TILE_KEYS = ['calendar', 'tasks', 'habits', 'weather', 'finance', 'savings', 'training', 'nutrition'];
+export const TILE_KEYS = ['calendar', 'tasks', 'habits', 'weather', 'finance', 'savings', 'training', 'nutrition', 'goals', 'shopping', 'documents'];
+/** Kacheln, die nur die ersten Kennzahlen eines Moduls zeigen (`<modul>Summary.kpis` aus der Welt, Slot `<modul>Summary`). */
+export const SUMMARY_TILES = ['goals', 'shopping', 'documents'];
 export const TILE_META = {
   calendar: { label: 'Termine', icon: 'calendar', tone: 'accent' }, tasks: { label: 'Aufgaben', icon: 'list-checks', tone: 'warning' }, habits: { label: 'Gewohnheiten', icon: 'repeat', tone: 'success' },
   weather: { label: 'Wetter', icon: 'cloud-sun', tone: 'info' }, finance: { label: 'Finanzen', icon: 'wallet', tone: 'accent2' }, savings: { label: 'Sparplan', icon: 'piggy-bank', tone: 3 },
   training: { label: 'Training', icon: 'dumbbell', tone: 6 }, nutrition: { label: 'Ernährung', icon: 'apple', tone: 4 },
+  goals: { label: 'Ziele', icon: 'target', tone: 'accent' }, shopping: { label: 'Einkauf & Haushalt', icon: 'shopping-basket', tone: 5 }, documents: { label: 'Fristen', icon: 'folder', tone: 'warning' },
 };
+/** Kachel aus den Modul-Kennzahlen: erste Kennzahl groß, zweite als Zusatzzeile; Erster Start ohne Kennzahlen → „–“. */
+const summaryTile = (s) => { const [k0, k1] = (obj(s).kpis || []); return k0 ? { value: String(k0.value), sub: [k0.label, k1 && `${k1.label}: ${k1.value}`].filter(Boolean).join(' · '), progress: null } : { value: '–', sub: 'Noch nichts angelegt', progress: null }; };
 
 /** Kacheln mit Wert, Zusatzzeile und Fortschritt (0–1 oder null). */
 export function buildTiles(d, ctx, dd = dayData(d, ctx)) {
@@ -75,6 +80,7 @@ export function buildTiles(d, ctx, dd = dayData(d, ctx)) {
     training: { value: tr.weekGoal ? `${tr.weekDone} von ${tr.weekGoal}` : tk ? `${weekCount(tk, dd.key)} von ${perWeek(tk)}` : tr.next || '–', sub: tr.next ? `${tr.headline ? `${tr.headline} · ` : ''}${tr.next}: ${tr.nextName}` : 'Kein Training geplant', progress: tr.weekGoal ? Math.min(1, tr.weekDone / tr.weekGoal) : tk ? Math.min(1, weekCount(tk, dd.key) / perWeek(tk)) : null, meta: 'diese Woche' },
     nutrition: { value: nu.kcal != null ? `${nf(nu.kcal)} kcal` : '–', sub: nu.kcal != null ? `von ${nf(nu.kcalGoal)} · Protein ${nf(nu.protein)}/${nf(nu.proteinGoal)} g${nu.waterMl != null ? ` · Wasser ${lit(nu.waterMl)}/${lit(nu.waterGoal)} l` : wa ? ` · Wasser ${countOn(wa, dd.key)}/${target(wa)}` : ''}` : 'Keine Daten', progress: nu.kcalGoal ? Math.min(1, nu.kcal / nu.kcalGoal) : null, meta: 'heute' },
   };
+  for (const k of SUMMARY_TILES) t[k] = summaryTile(d[`${k}Summary`]);
   return TILE_KEYS.map((k) => ({ key: k, ...TILE_META[k], ...t[k] }));
 }
 
