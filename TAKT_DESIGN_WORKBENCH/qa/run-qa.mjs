@@ -5,6 +5,7 @@
 //   npm run qa                         alles: Vertrag + E2E + visuelle Matrix
 //   npm run qa -- --only e2e           nur Bedientests der Workbench
 //   npm run qa -- --only visual        nur Screenshots/Layout-Prüfung/Regression
+//   npm run qa -- --only visual --scenario erststart|stress --env privacy,offline --scale 2   Datenwelt/Umgebung
 //   npm run qa -- --feature calendar.week[,tasks.overview]
 //   npm run qa -- --module calendar
 //   npm run qa -- --component calendar-week   (alle Features, die sie nutzen)
@@ -97,6 +98,8 @@ function plan(state, changed) {
   const vps = list('viewports') || ['desktop', 'notebook', 'tablet-l', 'tablet', 'mobile'];
   const themes = list('themes') || ['graphite'];
   const states = list('states') || ['default'];
+  // Szenario der Datenwelt und Umgebung (z. B. --scenario erststart --env privacy,offline --scale 2)
+  const extra = `${opt('scenario') ? `&scenario=${opt('scenario')}` : ''}${opt('env') ? `&env=${opt('env')}` : ''}${opt('scale') ? `&scale=${opt('scale')}` : ''}`;
   const jobs = [];
   for (const f of features) {
     const variants = flag('all-variants') || comps || changed ? f.variants.map((v) => v.id) : [f.selectedVariantId || f.variants[0].id];
@@ -442,7 +445,7 @@ async function visualStage(browser, base, jobs, pixel, log) {
     const [w, h] = j.size;
     await page.setViewportSize({ width: w, height: h });
     errs.length = 0;
-    await page.goto(`${base}/preview.html?feature=${encodeURIComponent(j.f.id)}&variant=${encodeURIComponent(j.v)}&theme=${j.theme}&state=${j.st}&chrome=1`);
+    await page.goto(`${base}/preview.html?feature=${encodeURIComponent(j.f.id)}&variant=${encodeURIComponent(j.v)}&theme=${j.theme}&state=${j.st}&chrome=1${extra}`);
     await page.waitForSelector('body[data-ready]', { timeout: 15000 }).catch(() => {});
     await page.waitForTimeout(250);
     const probe = await page.evaluate(() => window.__taktQA.run()).catch((e) => ({ status: 'fail', checks: [{ id: 'runner', name: 'Prüflauf', status: 'fail', detail: e.message, items: [] }] }));

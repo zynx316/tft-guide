@@ -13,6 +13,8 @@ import { rankDecisions, appDone, moduleDone, featureReady, featureDone, gateSumm
 import { navigate, moduleHref, featureHref } from '../router.js';
 import { newRoundDialog } from './rounds.js';
 import { cx } from '../../lib/util.js';
+import { SHELLS } from '../../preview/launchpad.js';
+import { shellOf } from '../../core/directions.js';
 
 const TABS = [
   { value: 'leitbild', label: 'Leitbild', icon: 'target' }, { value: 'inbox', label: 'Inbox', icon: 'inbox' }, { value: 'muster', label: 'Grundsätze & Muster', icon: 'scale' },
@@ -45,6 +47,9 @@ function Leitbild({ state }) {
       <${Card} title="Bewertungsgewichte" icon="scale" sub="Gewichtung der Scorecard beim Variantenvergleich (0 = egal, 3 = entscheidend).">
         <div class="wb-col" style="gap:8px">${SCORE_CRITERIA.map((c) => html`<div class="wb-row"><span class="wb-grow" title=${c.hint}>${c.label}</span>
           <${Select} size="sm" style="width:auto" value=${String(a.weights?.[c.id] ?? 1)} onChange=${(v) => act(() => actions.setAppSetting({ weights: { ...a.weights, [c.id]: Number(v) } }, 'Gewichte bearbeitet'))} options=${['0', '1', '2', '3'].map((x) => ({ value: x, label: x }))} aria-label=${`Gewicht ${c.label}`} /></div>`)}</div><//>
+      <${Card} title="App-Rahmen (Navigation)" icon="smartphone" sub="Standard: folgt der gewählten App-Richtung. Abweichend festlegen, wenn z. B. Richtung „Visuell“ mit Tab-Leiste gewünscht ist.">
+        <${Select} value=${a.shell || ''} onChange=${(v) => act(() => actions.setAppSetting({ shell: v || null }, v ? `App-Rahmen → ${SHELLS.find((x) => x.id === v)?.label}` : 'App-Rahmen folgt der Richtung'))} data-qa="app-shell"
+          options=${[{ value: '', label: `Aus der Richtung (${SHELLS.find((x) => x.id === shellOf({ ...state, app: { ...state.app, shell: null } }, null))?.label || 'Tab-Leiste'})` }, ...SHELLS.map((x) => ({ value: x.id, label: `${x.label} – ${x.hint}` }))]} aria-label="App-Rahmen" /><//>
       <${Card} title="Favoriten der Navigation" icon="star" sub="Bis zu 4 Module in der unteren Leiste, der Rest unter „Mehr“.">
         <div class="wb-col" style="gap:4px">${mods.map((m) => { const on = (a.favorites || []).includes(m.id); return html`<${Checkbox} checked=${on} label=${m.name} disabled=${!on && (a.favorites || []).length >= 4}
           onChange=${(v) => act(() => actions.setAppSetting({ favorites: v ? [...(a.favorites || []), m.id] : (a.favorites || []).filter((x) => x !== m.id) }, 'Favoriten geändert'))} />`; })}</div><//>

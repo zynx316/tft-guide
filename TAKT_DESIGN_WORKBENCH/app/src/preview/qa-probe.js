@@ -14,6 +14,8 @@ export const CHECKS = [
   { id: 'touch', name: 'Touch-Ziele ausreichend gross (Mobile)' },
   { id: 'contrast', name: 'Textkontrast (WCAG)' },
   { id: 'images', name: 'Bilder geladen & beschriftet' },
+  { id: 'a11y-names', name: 'Bedienelemente haben einen Namen (Screenreader)' },
+  { id: 'privacy', name: 'Privatsphäre-Modus: keine Beträge sichtbar' },
 ];
 
 const visible = (el) => {
@@ -137,6 +139,33 @@ export async function runProbe({ payload, errors = [] } = {}) {
   const imgs = [...document.querySelectorAll('img')];
   const badImg = imgs.filter((i) => !i.complete || i.naturalWidth === 0 || !i.hasAttribute('alt')).map((i) => describe(i));
   add('images', badImg.length ? 'fail' : 'pass', imgs.length ? `${imgs.length} Bilder, ${badImg.length} Probleme` : 'keine Bilder', badImg);
+
+  // 8) Zugängliche Namen: Buttons, Links, Formularfelder und Rollen-Elemente brauchen Text, aria-label, Titel oder Label
+  const nameOf = (el) => {
+    if (el.getAttribute('aria-label')?.trim() || el.getAttribute('title')?.trim()) return true;
+    const lb = el.getAttribute('aria-labelledby'); if (lb && lb.split(/\s+/).some((id) => document.getElementById(id)?.textContent.trim())) return true;
+    if (/^(INPUT|SELECT|TEXTAREA)$/.test(el.tagName)) {
+      if (el.type === 'hidden') return true;
+      if (el.id && document.querySelector(`label[for="${CSS.escape(el.id)}"]`)) return true;
+      if (el.closest('label')) return true;
+      return !!(el.getAttribute('placeholder') || '').trim(); // Platzhalter als schwacher Ersatz
+    }
+    if ((el.textContent || '').trim()) return true;
+    return [...el.querySelectorAll('img[alt]')].some((i) => i.alt.trim());
+  };
+  const interactive = [...document.querySelectorAll('button, a[href], input, select, textarea, [role="button"], [role="switch"], [role="checkbox"], [role="radio"], [role="tab"], [role="slider"]')]
+    .filter((el) => visible(el) && !el.closest('[aria-hidden="true"]'));
+  const unnamed = interactive.filter((el) => !nameOf(el)).map((el) => describe(el));
+  add('a11y-names', unnamed.length ? 'warn' : 'pass', unnamed.length ? `${unnamed.length} von ${interactive.length} Bedienelementen ohne Namen` : `${interactive.length} Bedienelemente benannt`, unnamed.slice(0, 20));
+
+  // 9) Privatsphäre: im Privatsphäre-Modus darf kein Geldbetrag lesbar sein
+  if (payload?.privacy) {
+    const money = /(?:^|[^\w•])[−-]?\d{1,3}(?:\.\d{3})*(?:,\d{1,2})?\s?€/;
+    const leaks = [];
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    for (let n = walker.nextNode(); n; n = walker.nextNode()) { const t = n.textContent; if (money.test(t) && n.parentElement && visible(n.parentElement) && !n.parentElement.closest('script,style')) leaks.push(`${describe(n.parentElement)} „${t.trim().slice(0, 40)}“`); }
+    add('privacy', leaks.length ? 'warn' : 'pass', leaks.length ? `${leaks.length} Beträge trotz Privatsphäre-Modus sichtbar` : 'Keine Beträge sichtbar', leaks.slice(0, 20));
+  } else add('privacy', 'pass', 'nicht aktiv');
 
   const worst = checks.some((c) => c.status === 'fail') ? 'fail' : checks.some((c) => c.status === 'warn') ? 'warn' : 'pass';
   return { status: worst, bp, width: W, height: H, theme: payload?.theme, state: payload?.state || 'default', checks, ts: new Date().toISOString() };
