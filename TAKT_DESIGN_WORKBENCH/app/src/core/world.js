@@ -33,6 +33,7 @@ const isPlain = (v) => v && typeof v === 'object' && !Array.isArray(v);
 
 function emptied(v, depth = 0) {
   if (Array.isArray(v)) return [];
+  if (depth === 0 && typeof v === 'number') return 0; // Summen ohne Daten (z. B. savingsMonthlyTotal, depotValue, netWorth)
   if (isPlain(v) && depth < 2) return Object.fromEntries(Object.entries(v).map(([k, x]) => [k, emptied(x, depth + 1)]));
   return v;
 }

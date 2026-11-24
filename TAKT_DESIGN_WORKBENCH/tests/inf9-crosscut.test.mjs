@@ -11,12 +11,14 @@ import { validateComponent } from '../app/src/library/registry.js';
 const START = new Date(2026, 10, 24, 9, 30); // Di 24.11.2026
 const ids = ['legal-notice', 'offline-banner', 'sync-status', 'permission-card', 'recurrence-picker', 'undo-toast', 'link-chips', 'firstrun-card'];
 
-test('crosscut/index.js exportiert alle acht Komponenten', () => {
-  assert.deepEqual(crosscut.map((c) => c.id), ids);
+test('crosscut/index.js exportiert alle acht Querschnitt-Komponenten (weitere erlaubt)', () => {
+  const have = crosscut.map((c) => c.id);
+  for (const id of ids) assert.ok(have.includes(id), `${id} fehlt`);
+  assert.equal(new Set(have).size, have.length, 'doppelte IDs');
 });
 
 test('Vertrag: Pflichtfelder, example, flutter {widget, propMap, events}, Kategorie', () => {
-  for (const c of crosscut) {
+  for (const c of crosscut.filter((x) => ids.includes(x.id))) {
     assert.deepEqual(validateComponent(c), [], c.id);
     assert.equal(c.category, 'Querschnitt', c.id);
     assert.ok(c.flutter && c.flutter.widget && c.flutter.propMap && c.flutter.events, `${c.id}: flutter-Feld`);

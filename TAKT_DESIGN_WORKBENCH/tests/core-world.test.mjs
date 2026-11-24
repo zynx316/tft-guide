@@ -131,3 +131,8 @@ test('Gezielte Szenario-Werte der Welt-Dateien werden angewendet', () => {
     }
   }
 });
+
+test('Erster Start: Summen-Zahlen der Nutzerdaten sind 0', () => {
+  const w = applyScenario(WORLD, 'erststart');
+  for (const [k, v] of Object.entries(WORLD)) if (typeof v === 'number' && !isReferenceKey(k) && !targeted('erststart').has(k)) assert.equal(w[k], 0, `${k} nicht 0`);
+});
