@@ -21,7 +21,7 @@ export const habitList = {
   name: 'Gewohnheitsliste',
   category: 'Gewohnheiten',
   description: 'Gewohnheiten des Tages zum Abhaken oder Hochzählen, mit Serie, Wochenpunkten und ruhigem Fortschritt. Stile: Zeilen (dicht), Karten (Ringe) und „Als Nächstes“ (eine klare Aktion).',
-  version: '1.2',
+  version: '1.3',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Gewohnheiten heute' },
     { name: 'style', label: 'Stil', type: 'select', options: ['rows', 'cards', 'next'], default: 'rows' },

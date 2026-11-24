@@ -22,7 +22,7 @@ export const trdUpcoming = {
   name: 'Als Nächstes',
   category: 'Trading',
   description: 'Die nächsten Termine mit Geldwirkung im Depot: Sparplan-Ausführungen (mit Verschiebung auf den nächsten Handelstag und Deckungs-Hinweis für das Girokonto) und erwartete Dividenden. Als Liste nach Tag oder als hervorgehobener nächster Termin.',
-  version: '1.2',
+  version: '1.3',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Als Nächstes' },
     { name: 'style', label: 'Darstellung', type: 'select', options: ['list', 'next'], default: 'list' },
@@ -36,6 +36,7 @@ export const trdUpcoming = {
   css: `${TRD_CSS}
   .tk-trd-up__row { display:flex; align-items:center; gap:12px; padding:8px 4px; min-height:56px; width:100%; background:none; border:0; color:inherit; font:inherit; text-align:left; cursor:pointer; border-radius:var(--tk-radius-md); } .tk-trd-up__row:hover { background:var(--tk-c-surface2); }
   .tk-trd-up__hero { display:flex; align-items:center; gap:14px; width:100%; padding:var(--tk-space-4); border-radius:var(--tk-radius-lg); background:var(--tk-c-accent-soft); border:0; color:inherit; font:inherit; text-align:left; cursor:pointer; min-height:72px; } .tk-trd-up__hero:hover { filter:brightness(.97); }
+  [data-tk-large-text] .tk-trd-up__row, [data-tk-large-text] .tk-trd-up__hero { flex-wrap:wrap; row-gap:4px; align-items:flex-start; } [data-tk-large-text] .tk-trd-up__row > .tk-trd-ico { display:none; } [data-tk-large-text] .tk-trd-up__row > .tk-trd-grow, [data-tk-large-text] .tk-trd-up__hero > .tk-trd-grow { flex:1 1 6em; } [data-tk-large-text] .tk-trd-up__row > .tk-trd-num, [data-tk-large-text] .tk-trd-up__hero > .tk-trd-num { margin-left:auto; }
   .tk-trd-up__link { display:flex; justify-content:flex-end; margin-top:var(--tk-space-2); } .tk-trd-up__day { text-align:center; min-width:48px; line-height:1.1; } .tk-trd-up__day strong { display:block; font-size:var(--tk-fs-2xl); } .tk-trd-up__day span { font-size:var(--tk-fs-xs); text-transform:uppercase; color:var(--tk-c-text-muted); letter-spacing:var(--tk-ls-wide); }`,
   example: { data: ex('plans', 'positions', 'dividends', 'allowance', 'accounts') },
   render: function TrdUpcoming({ props, data, ctx }) {

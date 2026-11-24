@@ -159,7 +159,7 @@ export const receiptReview = {
   name: 'Beleg erkennen',
   category: 'Inhalte',
   description: 'Erkannter Beleg als prüfbares Formular (Händler, Datum, Betrag, MwSt, Kategorie, Konto) mit Konfidenz-Hinweisen, Dublettenprüfung gegen vorhandene Buchungen und „Als Ausgabe buchen“: in der App öffnet Schnell erfassen (Finanzen) mit den Angaben als Vorbelegung, im Einzel-Screen schreibt es direkt in die Buchungen der Datenwelt. Auch als Belegliste und als „Nächster Beleg“-Karte.',
-  version: '1.4',
+  version: '1.5',
   props: [
     { name: 'mode', label: 'Darstellung', type: 'select', options: ['review', 'list', 'next'], default: 'review' },
     { name: 'title', label: 'Titel', type: 'text', default: 'Beleg prüfen' },
@@ -182,6 +182,7 @@ export const receiptReview = {
   .tk-rcpt__grid { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:var(--tk-space-3); align-items:start; }
   .bp-mobile .tk-rcpt__grid { grid-template-columns:minmax(0,1fr); }
   [data-tk-large-text] .tk-rcpt__grid { grid-template-columns:minmax(0,1fr); }
+  [data-tk-large-text] .tk-rcpt.tk-rcpt--img { grid-template-columns:minmax(0,1fr); }
   .tk-rcpt__vat { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:0 4px; min-height:var(--tk-size-control); font-size:var(--tk-fs-sm); }
   .tk-rcpt__lines { display:flex; flex-direction:column; border:1px solid var(--tk-c-border); border-radius:var(--tk-radius-md); padding:var(--tk-space-3) var(--tk-space-4); gap:6px; }
   .tk-rcpt__line { display:flex; justify-content:space-between; gap:12px; font-size:var(--tk-fs-sm); color:var(--tk-c-text-muted); }

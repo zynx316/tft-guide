@@ -15,7 +15,7 @@ export const finNetworthChart = {
   name: 'Vermögensverlauf',
   category: 'Finanzen',
   description: 'Verlauf des Gesamtvermögens über 6 oder 12 Monate, gestapelt nach Liquidität, Rücklagen und Depot. Punkt antippen zeigt die Aufteilung des Monats; der letzte Punkt folgt den aktuellen Kontoständen.',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Vermögensverlauf' },
     { name: 'range', label: 'Zeitraum (Monate)', type: 'select', options: ['6', '12'], default: '12' },
@@ -28,6 +28,7 @@ export const finNetworthChart = {
   css: `
   .tk-fnn > svg { display:block; width:100%; height:auto; overflow:visible; } .tk-fnn__legend { display:flex; flex-wrap:wrap; gap:6px 14px; margin-top:var(--tk-space-3); font-size:var(--tk-fs-xs); color:var(--tk-c-text-muted); } .tk-fnn__legend span { display:inline-flex; align-items:center; gap:6px; } .tk-fnn__legend i { width:10px; height:10px; border-radius:3px; }
   .tk-fnn__head { display:flex; justify-content:space-between; align-items:flex-end; gap:12px; flex-wrap:wrap; margin-bottom:var(--tk-space-3); }
+  [data-tk-large-text] .tk-fnn__range { flex-wrap:wrap; justify-content:flex-end; max-width:100%; }
   .tk-fnn__hit { fill:transparent; cursor:pointer; }
   .tk-fnn__tip { display:grid; grid-template-columns:repeat(auto-fit, minmax(calc(110px * var(--tk-text-scale, 1)), 1fr)); gap:8px; padding:var(--tk-space-3); border-radius:var(--tk-radius-md); background:var(--tk-c-surface2); border:1px solid var(--tk-c-border); margin-top:var(--tk-space-3); }
   .tk-fnn__tip strong { display:block; font-variant-numeric:tabular-nums; white-space:nowrap; }`,
@@ -48,7 +49,7 @@ export const finNetworthChart = {
     const idx = pick == null ? n - 1 : Math.min(pick, n - 1), lbl = labels.slice(from);
     const delta = totals[n - 1] - totals[0], rel = totals[0] ? delta / totals[0] : 0;
     const setR = (r) => { setRange(r); ctx.emit('networth.range', { range: r }); };
-    return html`<${Card} title=${props.title} icon="trending-up" actions=${props.showRange && html`<div style="display:flex;gap:6px"><${Chip} active=${range === '6'} onClick=${() => setR('6')}>6 Monate<//><${Chip} active=${range === '12'} onClick=${() => setR('12')}>12 Monate<//></div>`}><div class="tk-fnn">
+    return html`<${Card} title=${props.title} icon="trending-up" actions=${props.showRange && html`<div class="tk-fnn__range" style="display:flex;gap:6px"><${Chip} active=${range === '6'} onClick=${() => setR('6')}>6 Monate<//><${Chip} active=${range === '12'} onClick=${() => setR('12')}>12 Monate<//></div>`}><div class="tk-fnn">
       <div class="tk-fnn__head"><div><div class="tk-fn-cap">Vermögen heute</div><div class="tk-fn-big">${eur0(c, totals[n - 1])}</div></div><div class="tk-fn-meta tk-fn-num">${eur0(c, delta, { sign: true })}${c.privacy ? '' : ` (${fmtPercent(rel, { digits: 1, sign: true })})`} seit ${lbl[0]}</div></div>
       <svg viewBox=${`0 0 ${W} ${h}`} role="img" aria-label=${`Vermögensverlauf: von ${eur0(c, totals[0])} auf ${eur0(c, totals[n - 1])}`}>
         ${[0.25, 0.5, 0.75, 1].map((f) => html`<line x1=${PX} x2=${W - PX} y1=${y(max * f)} y2=${y(max * f)} stroke="var(--tk-c-border)" stroke-width="1" />`)}

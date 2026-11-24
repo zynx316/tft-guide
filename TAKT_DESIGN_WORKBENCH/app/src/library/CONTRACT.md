@@ -133,7 +133,17 @@ export const taskList = {
   `[data-tk-large-text] …` verwenden, nicht `[data-tk-large-text] .bp-mobile …`.
 - **Basis bei großer Schrift (takt-base.css):** Chips und Badges werden nie gequetscht (`flex-shrink:0`, umbrechen erst, wenn
   länger als die Zeile), Chips mind. 36 px hoch; Reiter (`.tk-tabs`) und Filterchips (`search-filter`) brechen um statt
-  versteckt seitlich zu wischen; Silbentrennung erst ab Wörtern mit 10 Zeichen (`hyphenate-limit-chars: 10 4 4`).
+  versteckt seitlich zu wischen; Silbentrennung ab Wörtern mit 8 Zeichen (`hyphenate-limit-chars: 8 2 2` – bei 10 brachen
+  8–9-stellige Wörter hart um). Chips in bewusst seitlich scrollenden Reihen bleiben einzeilig (`white-space:nowrap;
+  max-width:none`), sonst streckt der längste Chip die ganze Reihe.
 - **Zeilen mit Titel + Betrag/Meta:** bei großer Schrift umbrechen lassen (`flex-wrap`, Titel `flex:1 1 6em`, Meta rechts in
   der Folgezeile) statt den Titel auf wenige Pixel zu quetschen; Icon-Kacheln dürfen ausgeblendet werden. Vorbild: `item-list`
   1.3, `fin-tx-list` 1.1.
+- **Seitenspalten und feste Raster** (Inhaltsverzeichnis, Bildstreifen, Vorschau-Split, 4-Spalten-Boards): bei großer Schrift
+  einspaltig schalten bzw. Raster in `em` statt `px` angeben – `repeat(auto-fill, minmax(min(100%, 9em), 1fr))`. Vorbilder:
+  `kb-article` 1.5, `receipt-review` 1.5, `receipt-slip` 1.2, `order-pipeline` 1.5, `card-grid` 1.3, `tile-config` 1.1.
+- **Mehrspaltigkeit nach Blockbreite, nicht nach Viewport:** Ein Block in der Seitenspalte ist auch auf dem Desktop schmal.
+  Spalten innerhalb einer Komponente an `ctx.blockWidth` koppeln (z. B. zwei Spalten erst ab 560 px), nicht an `.bp-desktop`.
+  Vorbild: `exercise-detail` 1.2.
+- **Prüfen:** Sonde bei 200 % in allen Breiten (360/390/768/1024/1280/1440) – die Zwischenbreiten 1024/1280 zeigen gequetschte
+  Seitenspalten, die bei 390 und 1440 nicht auffallen. Bei 100 % muss die Darstellung pixelgleich bleiben.

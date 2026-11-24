@@ -18,7 +18,7 @@ export const bodyMeasures = {
   name: 'Umfänge & Körperwerte',
   category: 'Fitness',
   description: 'Umfänge (Taille, Brust, Hüfte, Oberarm, Oberschenkel) und Körperfett (Waagen-Schätzung) mit Verlauf seit der ersten Messung. Änderungen werden neutral dargestellt, ohne Bewertungsfarbe. Messung per Dialog erfassen; Werte lassen sich ausblenden.',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Umfänge' },
     { name: 'showAdd', label: 'Erfassen-Knopf', type: 'boolean', default: true },
@@ -29,7 +29,8 @@ export const bodyMeasures = {
   css: `
   .tk-bm__row { display:grid; grid-template-columns:minmax(0,1fr) auto 84px; gap:var(--tk-space-3); align-items:center; min-height:56px; border-bottom:1px solid var(--tk-c-border); } .tk-bm__row:last-child { border-bottom:0; }
   .tk-bm__v { text-align:right; font-variant-numeric:tabular-nums; } .tk-bm__v strong { display:block; font-size:var(--tk-fs-lg); } .tk-bm__v span { font-size:var(--tk-fs-xs); color:var(--tk-c-text-subtle); }
-  .bp-mobile .tk-bm__row { grid-template-columns:minmax(0,1fr) auto 60px; gap:var(--tk-space-2); }`,
+  .bp-mobile .tk-bm__row { grid-template-columns:minmax(0,1fr) auto 60px; gap:var(--tk-space-2); }
+  [data-tk-large-text] .tk-bm__row { display:flex; flex-wrap:wrap; gap:4px var(--tk-space-3); padding-block:8px; } [data-tk-large-text] .tk-bm__row > .tk-grow { flex:1 1 100%; } [data-tk-large-text] .tk-bm__row > .tk-bm__v { margin-left:auto; }`,
   example: { data: { items: [{ id: 'waist', label: 'Taille', unit: 'cm', points: [{ date: '2026-08-30', value: 88 }, { date: '2026-11-22', value: 84.8 }] }, { id: 'arm', label: 'Oberarm', unit: 'cm', points: [{ date: '2026-08-30', value: 34.8 }, { date: '2026-11-22', value: 35.6 }] }] } },
   render: function BodyMeasures({ props, data, setData, ctx }) {
     const items = data.items || [];

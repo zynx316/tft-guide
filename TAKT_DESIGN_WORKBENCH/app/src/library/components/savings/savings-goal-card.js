@@ -37,7 +37,7 @@ export const savingsGoalCard = {
   name: 'Sparziele mit Prognose',
   category: 'Sparpläne',
   description: 'Sparziele mit Fortschritt, voraussichtlichem Datum und nötiger Rate (Modellrechnung). Liste (dicht), Karten mit Ring oder Fokus-Karte für das Ziel, das Aufmerksamkeit braucht. Rate anpassen direkt im Dialog.',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Sparziele' },
     { name: 'style', label: 'Darstellung', type: 'select', options: ['list', 'cards', 'hero'], default: 'list' },
@@ -59,6 +59,7 @@ export const savingsGoalCard = {
   .tk-svgl__row small, .tk-svgl__meta { font-size:var(--tk-fs-sm); color:var(--tk-c-text-muted); display:block; }
   .tk-svgl__prog { display:flex; flex-direction:column; gap:6px; min-width:0; } .tk-svgl__prog .tk-sv-meta { font-variant-numeric:tabular-nums; }
   @container (max-width: 560px) { .tk-svgl__row { grid-template-columns:auto minmax(0,1fr) auto; } .tk-svgl__prog { grid-column:1 / -1; order:5; } }
+  [data-tk-large-text] .tk-svgl__row { grid-template-columns:minmax(0,1fr); row-gap:6px; align-items:start; } [data-tk-large-text] .tk-svgl__row > .tk-sv-tile { display:none; } [data-tk-large-text] .tk-svgl__row > div:nth-child(2) { order:1; } [data-tk-large-text] .tk-svgl__row > :last-child { order:2; justify-self:start; } [data-tk-large-text] .tk-svgl__row > .tk-svgl__prog { order:3; grid-column:auto; }
   .tk-svgl__cards { display:grid; grid-template-columns:repeat(auto-fill, minmax(min(100%,260px),1fr)); gap:var(--tk-space-4); }
   .tk-svgl__card { all:unset; box-sizing:border-box; display:flex; gap:var(--tk-space-4); align-items:center; padding:var(--tk-space-4); border-radius:var(--tk-radius-lg); border:1px solid var(--tk-c-border); background:var(--tk-c-surface); cursor:pointer; min-width:0; }
   .tk-svgl__card:hover { border-color:var(--tk-c-border-strong); } .tk-svgl__card:focus-visible { outline:2px solid var(--tk-c-focus); }

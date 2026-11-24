@@ -15,8 +15,8 @@ function SetRow({ ex, st, i, ops, mode }) {
   return html`<div class=${`tk-sl-row ${kgUnit ? '' : 'tk-sl-row--one'}`} data-done=${String(!!st.done)} data-warm=${String(warm)}>
     <span class="tk-sl-nr" title=${warm ? 'Aufwärmsatz' : `Arbeitssatz ${setLabel(ex, i)}`}>${setLabel(ex, i)}</span>
     ${html`<span class="tk-sl-prev" title="Letztes Mal">${prev}</span>`}
-    ${kgUnit && html`<${Stepper} label=${`Gewicht Satz ${setLabel(ex, i)}`} value=${st.kg} step=${ex.step} min=${0} max=${600} disabled=${ops.locked} onChange=${(v) => ops.edit(ex, st, { kg: v })} />`}
-    <${Stepper} label=${`${unitLabel(ex)} Satz ${setLabel(ex, i)}`} value=${st.reps} step=${ex.unit === 's' ? 5 : 1} min=${0} max=${ex.unit === 's' ? 600 : 100} disabled=${ops.locked} onChange=${(v) => ops.edit(ex, st, { reps: v })} />
+    ${kgUnit && html`<${Stepper} label=${`Gewicht Satz ${setLabel(ex, i)}`} value=${st.kg} step=${ex.step} min=${0} max=${600} unit="kg" disabled=${ops.locked} onChange=${(v) => ops.edit(ex, st, { kg: v })} />`}
+    <${Stepper} label=${`${unitLabel(ex)} Satz ${setLabel(ex, i)}`} value=${st.reps} step=${ex.unit === 's' ? 5 : 1} min=${0} max=${ex.unit === 's' ? 600 : 100} unit=${unitLabel(ex)} disabled=${ops.locked} onChange=${(v) => ops.edit(ex, st, { reps: v })} />
     <button type="button" class="tk-sl-ok" aria-pressed=${String(!!st.done)} aria-label=${`Satz ${setLabel(ex, i)} ${st.done ? 'zurücknehmen' : 'abhaken'}`} disabled=${ops.locked && !st.done} onClick=${() => ops.toggle(ex, st)}><${Icon} name="check" size=${20} stroke=${3} /></button>
   </div>`;
 }
@@ -46,7 +46,7 @@ export const setLogger = {
   name: 'Satz-Logger',
   category: 'Fitness',
   description: 'Alle Übungen der Einheit mit Sätzen: Vorgabe aus dem letzten Training, „Vorher“-Werte, kg- und Wiederholungs-Stepper (Dezimalkomma), 1-Tap-Haken, Übung tauschen oder auslassen, Bestwert-Hinweis. Modus „rows“ (dicht) oder „cards“ (Karte je Übung mit Fortschrittspunkten).',
-  version: '1.2',
+  version: '1.3',
   props: [
     { name: 'quietEmpty', label: 'Ohne Einheit nichts anzeigen (Erststart)', type: 'boolean', default: false },
     { name: 'mode', label: 'Darstellung', type: 'select', options: ['rows', 'cards'], default: 'rows' },
@@ -78,6 +78,9 @@ export const setLogger = {
   .bp-mobile .tk-sl-row, .bp-mobile .tk-sl-cols { grid-template-columns:24px minmax(0,1fr) minmax(0,1fr) 44px; gap:6px; } .bp-mobile .tk-sl-row--one { grid-template-columns:24px minmax(0,1fr) 44px; }
   .bp-mobile .tk-sl-prev, .bp-mobile .tk-sl-cols span:nth-child(2) { display:none; } .bp-mobile .tk-sl-ex { padding:var(--tk-space-3); }
   .bp-mobile .tk-sl-row .tk-fit-step button { width:32px; } .bp-mobile .tk-sl-row .tk-fit-step input { font-size:16px; min-width:0; }
+  .tk-sl-row .tk-fit-step__u { display:none; }
+  [data-tk-large-text]:not(.bp-mobile) .tk-sl-cols { display:none; } [data-tk-large-text]:not(.bp-mobile) .tk-sl-row { display:flex; flex-wrap:wrap; gap:6px 8px; align-items:center; } [data-tk-large-text]:not(.bp-mobile) .tk-sl-nr { flex:none; min-width:1.4em; } [data-tk-large-text]:not(.bp-mobile) .tk-sl-prev { flex:1 1 calc(100% - 1.4em - 44px - 18px); min-width:0; white-space:normal; }
+  [data-tk-large-text]:not(.bp-mobile) .tk-sl-row .tk-fit-step { width:auto; min-width:0; flex:1 1 7em; order:2; } [data-tk-large-text]:not(.bp-mobile) .tk-sl-row .tk-fit-step__u { display:inline; } [data-tk-large-text]:not(.bp-mobile) .tk-sl-ok { flex:none; order:1; }
   .tk-sl-head .tk-btn { flex:none; } .bp-mobile .tk-sl-head .tk-btn--icon { width:40px; height:40px; }`,
   example: { data: { session: { id: 's', dayId: 'upperA', title: 'Oberkörper A', status: 'running', exercises: [
     { id: 'x1', exerciseId: 'bankdruecken', name: 'Bankdrücken', muscle: 'Brust', equipment: 'Langhantel', unit: 'kg', step: 2.5, rest: 120, repLo: 8, repHi: 10, hint: 'Alle Sätze bei 10 Wdh. – heute 62,5 kg × 8.', best: 80, sets: [

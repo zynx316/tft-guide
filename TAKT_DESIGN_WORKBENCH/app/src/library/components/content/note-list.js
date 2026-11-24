@@ -21,7 +21,7 @@ export const noteList = {
   name: 'Notizliste',
   category: 'Inhalte',
   description: 'Notizen als Liste, einzeilige Kompaktliste oder Karten-Raster: angeheftete zuerst, Auszug, Tags, Checklisten-Fortschritt, relatives Datum. Beachtet Suche/Filter („Angeheftet“, „Eingang“, „Archiv“, Tags). Auswahl über ctx.ui.selectedId – oder Bearbeiten im Dialog.',
-  version: '1.4',
+  version: '1.5',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Notizen' },
     { name: 'layout', label: 'Darstellung', type: 'select', options: ['list', 'compact', 'grid'], default: 'list' },
@@ -81,6 +81,8 @@ export const noteList = {
   .tk-note-card__tags { display:flex; gap:6px; flex-wrap:wrap; min-width:0; }
   .tk-note-card__bar { display:flex; align-items:center; gap:8px; font-size:var(--tk-fs-xs); color:var(--tk-c-text-muted); }
   .tk-note-card__bar .tk-progress { flex:1; }
+  [data-tk-large-text] .tk-note-row--compact { align-items:flex-start; } [data-tk-large-text] .tk-note-row--compact .tk-note-row__main { flex-direction:column; align-items:stretch; gap:2px; }
+  [data-tk-large-text] .tk-note-row--compact .tk-note-row__title { flex:none; } [data-tk-large-text] .tk-note-row--compact .tk-note-row__excerpt { flex:none; } [data-tk-large-text] .tk-note-row--compact .tk-note-row__meta { flex-wrap:wrap; }
   [data-tk-large-text] .tk-note-list .tk-truncate, [data-tk-large-text] .tk-note-card .tk-truncate, [data-tk-large-text] .tk-note-row__excerpt, [data-tk-large-text] .tk-note-checks__card .tk-truncate, [data-tk-large-text] .tk-note-checks__next, [data-tk-large-text] .tk-note-checks__head .tk-truncate, [data-tk-large-text] .tk-note-inbox__title .tk-truncate, [data-tk-large-text] .tk-note-checks__big small { white-space:normal; overflow:visible; text-overflow:clip; overflow-wrap:anywhere; }`,
   example: { props: { title: 'Notizen' }, data: { notes: [
     { id: 'n1', title: 'Ideen TAKT V2', body: '## Fokus\n- Modulweise Entwicklung\n- Workbench als Designarbeitsplatz', tags: ['Projekt'], pinned: true, updated: '2026-11-24T07:40:00' },
@@ -212,7 +214,7 @@ export const noteInbox = {
   name: 'Notiz-Eingang',
   category: 'Inhalte',
   description: 'Schnellnotiz ohne Umweg und Eingang zum Einsortieren: Tag vergeben, als Aufgabe übernehmen, behalten oder archivieren. Als Liste mit Aktionen in der Zeile oder als Sortier-Assistent (eine Notiz nach der anderen).',
-  version: '1.2',
+  version: '1.3',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Eingang' },
     { name: 'mode', label: 'Darstellung', type: 'select', options: ['list', 'triage'], default: 'list' },
@@ -244,7 +246,8 @@ export const noteInbox = {
   .tk-note-inbox__big { display:flex; flex-direction:column; gap:14px; padding:var(--tk-space-5); }
   .tk-note-inbox__big h3 { margin:0; font-size:var(--tk-fs-xl); font-weight:var(--tk-fw-bold); letter-spacing:var(--tk-ls-tight); }
   .tk-note-inbox__grid { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:8px; }
-  .tk-note-inbox__grid .tk-btn { min-height:48px; justify-content:center; }`,
+  .tk-note-inbox__grid .tk-btn { min-height:48px; justify-content:center; }
+  [data-tk-large-text] .tk-note-inbox__row .tk-note-inbox__title { flex-wrap:wrap; row-gap:2px; } [data-tk-large-text] .tk-note-inbox__row .tk-note-inbox__title .tk-truncate { flex:1 1 6em; overflow-wrap:break-word; }`,
   example: { props: { title: 'Eingang' }, data: { tasks: [], notes: [
     { id: 'i1', title: 'Newsletter-Betreff testen', body: 'Zwei Varianten im A/B-Test.', tags: [], inbox: true, updated: '2026-11-24T08:52:00' },
     { id: 'i2', title: 'Rückruf Frau Weber', body: 'Lieferzeit Wolldecke klären.', tags: [], inbox: true, updated: '2026-11-24T09:05:00' },

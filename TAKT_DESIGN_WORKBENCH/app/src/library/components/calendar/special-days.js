@@ -12,7 +12,7 @@ export const specialDays = {
   name: 'Feiertage & Geburtstage',
   category: 'Kalender',
   description: 'Die nächsten gesetzlichen Feiertage (NRW) und Geburtstage aus den Kontakten mit Countdown. Ausgeblendete Quellen verschwinden auch hier. Antippen öffnet den zugehörigen Termin.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Feiertage & Geburtstage' },
     { name: 'days', label: 'Zeitraum (Tage)', type: 'number', default: 60 },
@@ -39,6 +39,11 @@ export const specialDays = {
   .tk-cal-special__card:hover { border-color:var(--tk-c-border-strong); }
   .tk-cal-special__card[data-kind="birthday"] { background:color-mix(in srgb, var(--tk-c-accent2) 9%, var(--tk-c-surface)); }
   .tk-cal-special__big { font-size:var(--tk-fs-3xl); font-weight:var(--tk-fw-bold); line-height:1; font-variant-numeric:tabular-nums; }
+  [data-tk-large-text] .tk-cal-special__row { flex-wrap:wrap; row-gap:4px; align-items:flex-start; padding-block:10px; }
+  [data-tk-large-text] .tk-cal-special__row > .tk-grow { flex:1 1 6em; min-width:0; }
+  [data-tk-large-text] .tk-cal-special__row .tk-truncate, [data-tk-large-text] .tk-cal-special__card .tk-truncate { white-space:normal; overflow:visible; text-overflow:clip; overflow-wrap:break-word; }
+  [data-tk-large-text] .tk-cal-special__row > .tk-badge { margin-left:calc(44px + 12px); }
+  [data-tk-large-text] .tk-cal-special__cards { grid-template-columns:repeat(auto-fill, minmax(min(100%, 9em), 1fr)); }
   .bp-mobile .tk-cal-special__row { min-height:60px; } .bp-mobile .tk-cal-special__cards { grid-template-columns:repeat(2, minmax(0,1fr)); gap:var(--tk-space-2); }`,
   example: { data: {
     holidays: [{ id: 'h1', name: '1. Weihnachtstag', date: '2026-12-25', type: 'gesetzlich' }, { id: 'h2', name: 'Heiligabend', date: '2026-12-24', type: 'Brauchtum' }],

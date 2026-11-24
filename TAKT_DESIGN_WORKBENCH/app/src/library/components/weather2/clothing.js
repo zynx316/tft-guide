@@ -10,7 +10,7 @@ export const wxClothing = {
   name: 'Kleidungstipp',
   category: 'Wetter',
   description: 'Was heute anziehen? Aus gefühlter Temperatur, Wind, Regen und UV für den Rest des Tages abgeleitet. Empfindlichkeit einstellbar (friert schnell / normal / unempfindlich), Dinge zum Mitnehmen abhakbar, Aufschlüsselung nach Tageszeit.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'layout', label: 'Darstellung', type: 'select', options: ['card', 'compact'], default: 'card' },
     { name: 'title', label: 'Titel', type: 'text', default: 'Heute anziehen' },
@@ -29,6 +29,7 @@ export const wxClothing = {
   .tk-wxcl__item[aria-pressed="true"] span:last-child { text-decoration:line-through; text-decoration-thickness:1px; }
   .tk-wxcl__parts { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:var(--tk-space-2); margin-top:var(--tk-space-4); }
   .tk-wxcl__part { display:flex; flex-direction:column; gap:2px; padding:var(--tk-space-3); border-radius:var(--tk-radius-md); background:var(--tk-c-surface2); font-size:var(--tk-fs-sm); color:var(--tk-c-text-muted); min-width:0; } .tk-wxcl__part strong { color:var(--tk-c-text); font-size:var(--tk-fs-lg); }
+  [data-tk-large-text] .tk-wxcl__parts { grid-template-columns:repeat(auto-fill, minmax(min(100%, 7.5em), 1fr)); } [data-tk-large-text] .tk-wxcl__part { overflow-wrap:break-word; }
   .tk-wxbf__item { display:flex; gap:var(--tk-space-3); align-items:flex-start; padding:var(--tk-space-3) var(--tk-space-4); border-top:1px solid var(--tk-c-border); }
   .tk-wxbf__item { flex-wrap:wrap; } .tk-wxbf__item > .tk-grow { flex:1 1 150px; min-width:0; overflow-wrap:anywhere; } .tk-wxbf__item > .tk-row { margin-left:auto; }
   .tk-wxbf__item:first-child { border-top:0; } .tk-wxbf__n { flex:none; width:28px; height:28px; border-radius:50%; display:grid; place-items:center; font-weight:var(--tk-fw-bold); font-size:var(--tk-fs-sm); }

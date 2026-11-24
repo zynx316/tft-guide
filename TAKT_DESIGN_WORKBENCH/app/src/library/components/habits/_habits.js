@@ -145,4 +145,6 @@ export const HABIT_CSS = `
 .tk-hb-dot[data-s="pause"] { border-style:dotted; opacity:.6; } .tk-hb-dot[data-s="rest"], .tk-hb-dot[data-s="none"] { width:6px; height:6px; opacity:.45; border-width:1px; }
 .tk-hb-dot[data-s="future"] { opacity:.4; } .tk-hb-dot[data-s="missed"]::after { content:''; position:absolute; inset:2px; border-radius:50%; background:var(--tk-c-text-subtle); opacity:.55; }
 .tk-hb-dot[data-today="true"] { outline:2px solid var(--tk-c-accent); outline-offset:1px; }
+[data-tk-large-text] .tk-hl__row { flex-wrap:wrap; row-gap:4px; } [data-tk-large-text] .tk-hl__row .tk-hl__main { flex:1 1 6em; } [data-tk-large-text] .tk-hl__row .tk-hl__qty { margin-left:auto; }
+[data-tk-large-text] .tk-wg__name span:last-child { white-space:normal; text-overflow:clip; overflow-wrap:anywhere; }
 `;

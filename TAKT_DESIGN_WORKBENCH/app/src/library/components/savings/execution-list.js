@@ -10,7 +10,7 @@ export const executionList = {
   name: 'Ausführungen eines Plans',
   category: 'Sparpläne',
   description: 'Kommende und bereits ausgeführte Ausführungen des gewählten Sparplans (ui.selectedId). Kommende mit Hinweis auf Verschiebung (Wochenende, Feiertag) und geschätzter Stückzahl, ausgeführte als Umbuchungen.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Ausführungen' },
     { name: 'upcoming', label: 'Kommende', type: 'number', default: 4 },
@@ -26,7 +26,8 @@ export const executionList = {
   css: `${SV_CSS}
   .tk-sx { display:flex; flex-direction:column; min-width:0; } .tk-sx__h { padding:10px 0 4px; }
   .tk-sx__r { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:2px 12px; align-items:center; padding:10px 0; border-bottom:1px solid var(--tk-c-border); min-width:0; } .tk-sx__r:last-child { border-bottom:0; }
-  .tk-sx__r strong { font-weight:var(--tk-fw-semibold); } .tk-sx__r small { font-size:var(--tk-fs-sm); color:var(--tk-c-text-muted); display:block; } .tk-sx__r > div:last-child { text-align:right; display:flex; flex-direction:column; align-items:flex-end; gap:2px; font-variant-numeric:tabular-nums; }`,
+  .tk-sx__r strong { font-weight:var(--tk-fw-semibold); } .tk-sx__r small { font-size:var(--tk-fs-sm); color:var(--tk-c-text-muted); display:block; } .tk-sx__r > div:last-child { text-align:right; display:flex; flex-direction:column; align-items:flex-end; gap:2px; font-variant-numeric:tabular-nums; }
+  [data-tk-large-text] .tk-sx__r { grid-template-columns:minmax(0,1fr); row-gap:6px; padding:12px 0; } [data-tk-large-text] .tk-sx__r > div:last-child { text-align:left; align-items:flex-start; } [data-tk-large-text] .tk-sx__r small { overflow-wrap:break-word; }`,
   example: { data: { plans: [{ id: 'sp1', name: 'All-World Sparplan', positionId: 'p1', monthly: 300, day: 1, intervalMonths: 1, active: true, startDate: '2024-01-01' }], positions: [{ id: 'p1', price: 118.42, short: 'All-World' }], transactions: [{ id: 't1', title: 'Sparplan All-World', date: '2026-11-02T07:00:00', amount: -300, type: 'transfer', category: 'Sparen' }] } },
   render: function ExecutionList({ props, data, ctx }) {
     const today = todayOf(ctx), plans = arr(data.plans);

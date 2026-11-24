@@ -13,7 +13,7 @@ export const habitWeekGrid = {
   name: 'Gewohnheits-Wochenraster',
   category: 'Gewohnheiten',
   description: 'Alle Gewohnheiten auf einen Blick: Zeilen = Gewohnheiten, Spalten = Mo–So. Tage lassen sich tippen und nachtragen, Wochen wechseln. Zustände sind auch ohne Farbe lesbar (Haken, Punkt, Strich).',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Wochenraster' },
     { name: 'editable', label: 'Nachtragen erlauben', type: 'boolean', default: true },

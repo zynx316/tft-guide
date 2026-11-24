@@ -23,7 +23,7 @@ export const taxAllowance = {
   name: 'Freibetrag und Steuern',
   category: 'Sparpläne',
   description: 'Sparer-Pauschbetrag und Freistellungsauftrag mit Auslastung, Teilfreistellung Aktienfonds und eine Schätzung der Steuer auf einen Gewinn – mit Herleitung. Beispielrechnung je Position („wenn verkauft würde“). Parameter kommen aus dem Rechenkern (Stand), Orientierung statt Steuerberatung.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Sparer-Pauschbetrag' },
     { name: 'part', label: 'Teil', type: 'select', options: ['all', 'allowance', 'estimate', 'positions'], default: 'all' },
@@ -43,7 +43,8 @@ export const taxAllowance = {
   .tk-svt2__res { padding:var(--tk-space-4); border-radius:var(--tk-radius-lg); background:var(--tk-c-surface2); border:1px solid var(--tk-c-border); display:flex; flex-direction:column; gap:6px; }
   .tk-svt2__dl { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:4px 0; margin:0; font-size:var(--tk-fs-sm); font-variant-numeric:tabular-nums; } .tk-svt2__dl dd { margin:0; text-align:right; } .tk-svt2__dl dt { color:var(--tk-c-text-muted); padding-right:12px; } .tk-svt2__dl .s { font-weight:var(--tk-fw-semibold); border-top:1px solid var(--tk-c-border); padding-top:6px; color:var(--tk-c-text); }
   .tk-svt2__pos { display:grid; grid-template-columns:minmax(0,1fr) auto auto; gap:4px 16px; align-items:center; padding:10px 0; border-bottom:1px solid var(--tk-c-border); font-variant-numeric:tabular-nums; } .tk-svt2__pos:last-child { border-bottom:0; } .tk-svt2__pos small { color:var(--tk-c-text-muted); display:block; }
-  .tk-svt2__pos > :nth-child(n+2) { text-align:right; } .bp-mobile .tk-svt2__pos { grid-template-columns:minmax(0,1fr) auto; } .bp-mobile .tk-svt2__pos > :nth-child(2) { display:none; }`,
+  .tk-svt2__pos > :nth-child(n+2) { text-align:right; } .bp-mobile .tk-svt2__pos { grid-template-columns:minmax(0,1fr) auto; } .bp-mobile .tk-svt2__pos > :nth-child(2) { display:none; }
+  [data-tk-large-text] .tk-svt2__pos, .bp-mobile[data-tk-large-text] .tk-svt2__pos { grid-template-columns:minmax(0,1fr); row-gap:2px; } [data-tk-large-text] .tk-svt2__pos > :nth-child(n+2) { text-align:left; } [data-tk-large-text] .tk-svt2__pos small { overflow-wrap:break-word; }`,
   example: { data: { allowance: { total: 1000, used: 312.4, bank: 'Trade Republic', stand: '24.11.2026' }, plans: [{ id: 'sp1', positionId: 'p1' }], positions: [{ id: 'p1', short: 'All-World', type: 'ETF', gain: 3399.56, value: 18036.55 }] } },
   render: function TaxAllowance({ props, data, setData, ctx }) {
     const [kind, setKind] = useState('single'), [gain, setGain] = useState(props.startGain), [eq, setEq] = useState('fonds');

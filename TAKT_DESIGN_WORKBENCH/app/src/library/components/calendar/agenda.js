@@ -12,7 +12,7 @@ export const agenda = {
   name: 'Agenda',
   category: 'Kalender',
   description: 'Chronologische Termin-Liste für einen oder mehrere Tage, gruppiert nach Tag, mit Hinweis auf freie Zeitfenster und Tagesleerzustand.',
-  version: '1.2',
+  version: '1.3',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Agenda' },
     { name: 'days', label: 'Anzahl Tage', type: 'number', default: 3 },
@@ -40,7 +40,14 @@ export const agenda = {
   .tk-agenda__empty { padding:14px 16px; color:var(--tk-c-text-subtle); font-size:var(--tk-fs-sm); border-bottom:1px solid var(--tk-c-border); display:flex; gap:8px; align-items:center; }
   .bp-mobile .tk-agenda__free { padding-left:16px; }
   [data-tk-large-text] .tk-agenda__time { min-width:3.8em; }
-  [data-tk-large-text] .tk-agenda__free { flex-wrap:wrap; }
+  [data-tk-large-text] .tk-agenda__row { display:grid; grid-template-columns:4px minmax(0, 1fr); column-gap:12px; row-gap:2px; align-items:start; }
+  [data-tk-large-text] .tk-agenda__bar { grid-column:1; grid-row:1 / span 3; min-height:100%; }
+  [data-tk-large-text] .tk-agenda__time { grid-column:2; grid-row:1; min-width:0; white-space:normal; } [data-tk-large-text] .tk-agenda__time b { display:inline; }
+  [data-tk-large-text] .tk-agenda__end::before { content:" – "; }
+  [data-tk-large-text] .tk-agenda__main { grid-column:2; grid-row:2; min-width:0; } [data-tk-large-text] .tk-agenda__row > .tk-badge { grid-column:2; grid-row:3; justify-self:start; }
+  [data-tk-large-text] .tk-agenda__main .tk-truncate { white-space:normal; overflow:visible; text-overflow:clip; overflow-wrap:break-word; }
+  [data-tk-large-text] .tk-agenda__free { flex-wrap:wrap; padding-left:16px; }
+  [data-tk-large-text] .tk-agenda__main > .tk-subtle { display:flex; gap:.3em; align-items:baseline; } [data-tk-large-text] .tk-agenda__main > .tk-subtle svg { flex:none; }
   [data-tk-large-text] .tk-agenda__free .tk-grow { display:none; }
   [data-tk-large-text] .tk-agenda__free button { white-space:nowrap; margin-left:auto; }`,
   example: { data: { events: [
@@ -66,7 +73,7 @@ export const agenda = {
           ${!evs.length ? html`<div class="tk-agenda__empty"><${Icon} name="sun" size=${16} />Keine Termine – freier Tag.</div>` : rows.map((r) => r.t === 'free'
             ? (r.b - r.a >= 45 ? html`<div class="tk-agenda__free"><${Icon} name="timer" size=${15} /><span><b>${hm(r.a)}–${hm(r.b)}</b> frei · ${durLabel(r.b - r.a)}</span><span class="tk-grow"></span><${Button} size="sm" variant="ghost" onClick=${() => { ctx.emit('agenda.free.use', { from: hm(r.a) }); openCreateDialog(ctx, setData, { date: k, start: hm(r.a), end: hm(Math.min(r.b, r.a + 60)) }); }}>Nutzen<//></div>` : null)
             : html`<button type="button" class="tk-agenda__row" data-past=${isToday && !r.e.allDay && minutesOf(r.e._e) <= nowMin} onClick=${() => openEvent(ctx, setData, r.e, all, props)}>
-              <span class="tk-agenda__time">${r.e.allDay ? html`<b>Ganztag</b>` : html`<b>${timeStr(r.e._s)}</b>${timeStr(r.e._e)}`}</span>
+              <span class="tk-agenda__time">${r.e.allDay ? html`<b>Ganztag</b>` : html`<b>${timeStr(r.e._s)}</b><span class="tk-agenda__end">${timeStr(r.e._e)}</span>`}</span>
               <span class="tk-agenda__bar" style=${`--ec:${catColor(r.e)}`}></span>
               <span class="tk-grow tk-agenda__main"><div style="font-weight:600" class="tk-truncate">${r.e.title}</div>${r.e.location && html`<div class="tk-subtle tk-truncate" style="font-size:var(--tk-fs-sm)"><${Icon} name="map-pin" size=${12} /> ${r.e.location}</div>`}</span>
               ${ctx.bp !== 'mobile' && r.e.category && html`<${Badge} tone=${catTone(r.e)}>${r.e.category}<//>`}

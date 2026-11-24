@@ -13,7 +13,7 @@ export const wxRadar = {
   name: 'Regenradar (Simulation)',
   category: 'Wetter',
   description: 'Simulierte, animierte Regenkarte der Region mit Ortsmarke, Zeitleiste von −2 bis +2 Stunden (Beobachtung und Vorhersage), Play/Pause, Zoom und Intensitäts-Legende. Der Zeitpunkt wird in ctx.ui.radarT geteilt, damit der Nowcast mitläuft. Als Karte mit Steuerung oder als kleine Kachel für die Startseite.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'layout', label: 'Darstellung', type: 'select', options: ['full', 'compact', 'tile'], default: 'full' },
     { name: 'title', label: 'Titel', type: 'text', default: 'Regenradar' },
@@ -32,6 +32,8 @@ export const wxRadar = {
   .tk-wxr__range { flex:1; min-width:0; height:44px; margin:0; accent-color:var(--tk-c-accent); cursor:pointer; background:transparent; }
   .tk-wxr__ticks { display:flex; justify-content:space-between; font-size:var(--tk-fs-xs); color:var(--tk-c-text-subtle); font-variant-numeric:tabular-nums; padding:0 4px; margin-top:-6px; }
   .tk-wxr__legend { display:flex; flex-wrap:wrap; gap:4px 14px; margin-top:var(--tk-space-3); font-size:var(--tk-fs-xs); color:var(--tk-c-text-muted); } .tk-wxr__legend span { display:inline-flex; align-items:center; gap:5px; } .tk-wxr__legend i { width:12px; height:12px; border-radius:3px; }
+  [data-tk-large-text] .tk-wxr--tile .tk-wxr__map { aspect-ratio:1; } [data-tk-large-text] .tk-wxr--tile .tk-wxr__chip { max-width:calc(100% - 20px); white-space:normal; } [data-tk-large-text] .tk-wxr--tile .tk-wxr__chip--ph { top:auto !important; bottom:10px; }
+  [data-tk-large-text] .tk-wxr__th { flex-wrap:wrap; row-gap:4px; } [data-tk-large-text] .tk-wxr__th > strong { flex:1 1 6em; }
   .tk-wxr__tilebtn { display:block; width:100%; padding:0; border:0; background:transparent; color:inherit; font:inherit; text-align:left; cursor:pointer; }`,
   example: { data: { place: EX.place, settings: EX.settings } },
   render: ({ props, data, ctx }) => {
@@ -55,10 +57,10 @@ export const wxRadar = {
       <svg viewBox=${vb} preserveAspectRatio="xMidYMid slice" aria-hidden="true"><defs><filter id="tk-wxr-blur" x="-5%" y="-5%" width="110%" height="110%"><feGaussianBlur stdDeviation=".32" /></filter></defs>
         <${BaseMap} named=${place.id === 'bielefeld'} /><g filter="url(#tk-wxr-blur)">${[1, 2, 3, 4, 5].map((l) => paths[l] && html`<path d=${paths[l]} fill=${LEVEL_FILL[l]} />`)}</g><${HomeMarker} name=${place.name} /></svg>
       <span class="tk-wxr__chip" style="left:10px;top:10px">${dateStr(time)} · ${hm(time)} Uhr</span>
-      <span class="tk-wxr__chip" style=${`right:10px;top:10px;${t < 0 ? 'color:var(--tk-c-text-muted)' : t === 0 ? 'color:var(--tk-c-success)' : 'color:var(--tk-c-accent)'}`}>${phase}</span>
+      <span class="tk-wxr__chip tk-wxr__chip--ph" style=${`right:10px;top:10px;${t < 0 ? 'color:var(--tk-c-text-muted)' : t === 0 ? 'color:var(--tk-c-success)' : 'color:var(--tk-c-accent)'}`}>${phase}</span>
       ${!tile && html`<span class="tk-wxr__chip" style="left:10px;bottom:10px"><${Icon} name="map-pin" size=${13} />${place.name}: ${lvl ? (at >= 0.1 ? `${lvl.label} · ${U.p(at).replace(/ (mm|in)$/, '')} ${U.raw.precip === 'in' ? 'in' : 'mm'}/h` : 'trocken') : 'beobachtet'}</span>`}</div>`;
     if (tile) return html`<${Card} flush><button type="button" class="tk-wxr__tilebtn tk-wxr--tile" aria-label=${`${props.title} öffnen. ${nc.headline}`} onClick=${() => ctx.emit('weather.radar.open', { id: 'tile' })}>
-      <div style="padding:var(--tk-space-3) var(--tk-space-4) var(--tk-space-2);display:flex;align-items:center;gap:var(--tk-space-2)"><span class="tk-subtle" style="display:inline-flex"><${Icon} name="waves" size=${16} /></span><strong class="tk-grow">${props.title}</strong><${Badge} tone=${nc.state === 'dry' ? 'success' : 'info'}>${nc.headline}<//></div>
+      <div class="tk-wxr__th" style="padding:var(--tk-space-3) var(--tk-space-4) var(--tk-space-2);display:flex;align-items:center;gap:var(--tk-space-2)"><span class="tk-subtle" style="display:inline-flex"><${Icon} name="waves" size=${16} /></span><strong class="tk-grow">${props.title}</strong><${Badge} tone=${nc.state === 'dry' ? 'success' : 'info'}>${nc.headline}<//></div>
       <div style="padding:0 var(--tk-space-3) var(--tk-space-3)">${map}</div></button><//>`;
     return html`<${Card} title=${props.title} icon="waves" actions=${html`<${Segmented} label="Zoom" value=${zoom} onChange=${(v) => { setZoom(v); ctx.emit('weather.radar.zoom', { zoom: v }); }} options=${[{ value: 1, label: '1×' }, { value: 2, label: '2×' }]} />`}><div class=${`tk-wxr--${props.layout}`}>${map}
       <div class="tk-wxr__ctl"><${Button} variant="primary" icon=${playing ? 'pause' : 'play'} aria-label=${playing ? 'Pause' : 'Abspielen'} onClick=${play}>${ctx.bp === 'mobile' ? null : playing ? 'Pause' : 'Abspielen'}<//>

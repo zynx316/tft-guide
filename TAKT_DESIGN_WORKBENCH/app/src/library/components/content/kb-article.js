@@ -9,7 +9,7 @@ export const kbArticle = {
   name: 'Wissensartikel',
   category: 'Inhalte',
   description: 'Zeigt den gewählten Artikel (ctx.ui.selectedId) mit Markdown-Darstellung, Inhaltsverzeichnis (Desktop), Metadaten und verwandten Artikeln. Optional direkt bearbeitbar, auch als ruhige Leseansicht mit großer Schrift.',
-  version: '1.4',
+  version: '1.5',
   props: [
     { name: 'showToc', label: 'Inhaltsverzeichnis (Desktop)', type: 'boolean', default: true },
     { name: 'showRelated', label: 'Verwandte Artikel', type: 'boolean', default: true },
@@ -61,7 +61,11 @@ export const kbArticle = {
   .bp-mobile .tk-kb-article__rel button { min-height:48px; }
   .tk-kb-article--reading { max-width:700px; margin:0 auto; width:100%; }
   .tk-kb-article--reading .tk-md { font-size:var(--tk-fs-lg); line-height:1.8; }
-  .tk-kb-article--reading .tk-kb-article__title { font-size:var(--tk-fs-3xl); }`,
+  .tk-kb-article--reading .tk-kb-article__title { font-size:var(--tk-fs-3xl); }
+  [data-tk-large-text] .tk-kb-article--toc { grid-template-columns:minmax(0,1fr); gap:var(--tk-space-4); }
+  [data-tk-large-text] .tk-kb-article__toc { position:static; order:-1; flex-direction:row; flex-wrap:wrap; gap:2px 16px; border-left:0; border-bottom:1px solid var(--tk-c-border); padding:0 0 var(--tk-space-3); } [data-tk-large-text] .tk-kb-article__toc .tk-label { flex:1 1 100%; }
+  [data-tk-large-text] .tk-kb-article__rel button { flex-wrap:wrap; row-gap:0; } [data-tk-large-text] .tk-kb-article__rel button > .tk-grow { flex:1 1 6em; white-space:normal; overflow:visible; text-overflow:clip; overflow-wrap:break-word; } [data-tk-large-text] .tk-kb-article__rel button > .tk-subtle:last-child { flex:1 1 100%; padding-left:25px; }
+  [data-tk-large-text] .tk-kb-article__title { overflow-wrap:break-word; }`,
   example: { data: { articles: [
     { id: 'a1', title: 'Git-Workflow im Team', area: 'Technik', category: 'Entwicklung', author: 'Jana', tags: ['Git', 'Team'], updated: '2026-11-20T10:00:00', related: ['a2'],
       body: 'Dieser Leitfaden beschreibt, wie wir **Feature-Branches** nutzen.\n\n## Branches\n- `main` ist immer lauffähig\n- Feature-Branches heißen `feat/<thema>`\n\n> Hinweis: Direkte Pushes auf `main` sind gesperrt.\n\n## Ablauf\n1. Branch anlegen\n2. Änderungen committen\n3. Pull Request öffnen\n\n```\ngit switch -c feat/neues-modul\n```' },

@@ -68,11 +68,11 @@
 - [ ] App-Rahmen bei großer Schrift: Kopfzeile und Reiterbeschriftungen der Leiste („Einstellun…“) bleiben gekürzt (feste Höhe);
       prüfen, ob Reiter bei 200 % nur Symbole zeigen sollen
 - [ ] Große Schrift, Feinschliff (alle Varianten sind bei 200 % ohne Befund der Sonde; Rest ist Optik): Querschnitt-Komponenten
-      `_xc-css.js` von `overflow-wrap:anywhere` auf `break-word` (Versionssprung ~20 Komponenten); Sparplan-Ausführungsliste
-      zweispaltig eng; Depot-Positionen und „Auch wichtig“ mit Icon-Kachel; Kursalarm-Aktionen nur als Symbol; Kalender-Woche
-      kürzt Termine in schmalen Überlappungsspalten (`data-clip-ok`, Volltext per Tippen); Wochenleiste nutrition.home/B eng;
+      `_xc-css.js` von `overflow-wrap:anywhere` auf `break-word` (Versionssprung ~20 Komponenten); Depot-Positionen und
+      „Auch wichtig“ mit Icon-Kachel; Kursalarm-Aktionen nur als Symbol; Kalender-Woche kürzt Termine in schmalen Überlappungsspalten (`data-clip-ok`, Volltext per Tippen); Wochenleiste nutrition.home/B eng;
       Notizkarten kürzen die Vorschau (line-clamp); `calendar/_cal.js › bigTextScale()` auf `ctx.textScale` umstellen;
-      umbrechende Reiter (`.tk-tabs`) haben nur unter der letzten Zeile eine Grundlinie (optional: Linie je Zeile)
+      umbrechende Reiter (`.tk-tabs`) haben nur unter der letzten Zeile eine Grundlinie (optional: Linie je Zeile); Radar-Kachel
+      (weather.home/B): Datums-Chip verdeckt bei 200 % viel von der kleinen Karte
 - [ ] Kleinigkeiten beim allerersten Start: `GET /api/state` antwortet 404, solange es noch keine `data/workbench.json` gibt
       (harmlose rote Konsolenmeldung im Browser; Client erwartet heute genau das); `work-order --round latest` ohne Runde endet
       mit Exit 1 (Hinweis steht in `/takt-work-order`)

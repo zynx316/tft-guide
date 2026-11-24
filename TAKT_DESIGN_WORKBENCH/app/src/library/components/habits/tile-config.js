@@ -19,7 +19,7 @@ export const tileConfig = {
   name: 'Startseite anpassen',
   category: 'Start',
   description: 'Kacheln der Startseite wählen, sortieren (Pfeile, auch per Tastatur) und in der Größe festlegen. Vorlagen („Minimal“, „Arbeit“, „Fitness-Fokus“) und eine Live-Vorschau der gewählten Reihenfolge.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Kacheln' },
     { name: 'mode', label: 'Darstellung', type: 'select', options: ['list', 'preview'], default: 'list' },
@@ -37,7 +37,11 @@ export const tileConfig = {
   .tk-tc__phone { border:1px solid var(--tk-c-border-strong); border-radius:28px; padding:14px 12px; background:var(--tk-c-bg); display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:8px; max-width:340px; margin:0 auto; min-height:260px; align-content:start; width:100%; }
   .tk-tc__ph { border-radius:12px; border:1px solid var(--tk-c-border); background:var(--tk-c-surface); padding:10px; display:flex; align-items:center; gap:8px; font-size:var(--tk-fs-sm); font-weight:var(--tk-fw-medium); min-width:0; color:var(--tk-c-text); } .tk-tc__ph .tk-tc__ic { width:26px; height:26px; border-radius:8px; }
   .tk-tc__ph[data-size="S"] { grid-column:span 1; min-height:44px; } .tk-tc__ph[data-size="M"] { grid-column:span 2; min-height:52px; } .tk-tc__ph[data-size="L"] { grid-column:span 2; min-height:92px; align-items:flex-start; }
-  .tk-tc__foot { display:flex; gap:8px; justify-content:space-between; align-items:center; flex-wrap:wrap; }`,
+  .tk-tc__foot { display:flex; gap:8px; justify-content:space-between; align-items:center; flex-wrap:wrap; }
+  [data-tk-large-text] .tk-tc__split--preview { grid-template-columns:minmax(0, 1fr); }
+  [data-tk-large-text] .tk-tc__row { flex-wrap:wrap; row-gap:4px; } [data-tk-large-text] .tk-tc__name { flex:1 1 6em; white-space:normal; overflow:visible; text-overflow:clip; overflow-wrap:break-word; }
+  [data-tk-large-text] .tk-tc__row > .tk-seg, [data-tk-large-text] .tk-tc__row > [role="radiogroup"], [data-tk-large-text] .tk-tc__row > [role="group"] { order:5; flex:1 1 100%; max-width:100%; }
+  [data-tk-large-text] .tk-tc__phone { grid-template-columns:minmax(0, 1fr); } [data-tk-large-text] .tk-tc__ph[data-size] { grid-column:auto; } [data-tk-large-text] .tk-tc__ph .tk-truncate { white-space:normal; overflow:visible; text-overflow:clip; overflow-wrap:break-word; }`,
   example: { data: { tiles: EXAMPLE } },
   render: ({ props, data, setData, ctx }) => {
     const tiles = Array.isArray(data.tiles) ? data.tiles : [];

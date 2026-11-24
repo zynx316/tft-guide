@@ -15,7 +15,7 @@ export const orderPipeline = {
   name: 'Bestell-Pipeline',
   category: 'Vertrieb',
   description: 'Bestellungen nach Status (neu → bezahlt → versendet → zugestellt) mit Zählern, Summen und Weiterschalten per Aktion. Als Reiter-Liste oder Spalten (Desktop). Ein Tipp auf eine Bestellung öffnet einen Dialog oder – mit openIn „select“ – meldet order.open mit ID (für die Navigation zum Bestelldetail).',
-  version: '1.4',
+  version: '1.5',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Bestellungen' },
     { name: 'stages', label: 'Angezeigte Status', type: 'list', default: ['new', 'paid', 'shipped', 'delivered'] },
@@ -33,6 +33,8 @@ export const orderPipeline = {
   [data-tk-large-text] .tk-order-pipeline__no > span { white-space:nowrap; }
   [data-tk-large-text] .tk-order-pipeline__sub, [data-tk-large-text] .tk-order-pipeline__no { white-space:normal; overflow:visible; text-overflow:clip; overflow-wrap:anywhere; }
   [data-tk-large-text] .tk-order-pipeline__row { flex-wrap:wrap; row-gap:4px; } [data-tk-large-text] .tk-order-pipeline__main { flex:1 1 12em; }
+  [data-tk-large-text] .tk-order-pipeline__cols.tk-order-pipeline__cols { grid-template-columns:repeat(auto-fit, minmax(min(100%, 14em), 1fr)); }
+  [data-tk-large-text] .tk-order-pipeline__stats.tk-order-pipeline__stats { grid-template-columns:repeat(auto-fit, minmax(min(100%, 6.5em), 1fr)); }
   .tk-order-pipeline__stats { display:grid; grid-template-columns:repeat(var(--n,4), minmax(0,1fr)); gap:var(--tk-space-2); margin-bottom:var(--tk-space-3); }
   .tk-order-pipeline__stat { display:flex; flex-direction:column; gap:2px; padding:10px 12px; border-radius:var(--tk-radius-md); border:1px solid var(--tk-c-border); background:var(--tk-c-surface2); cursor:pointer; text-align:left; color:inherit; min-width:0; min-height:56px; }
   .tk-order-pipeline__stat[aria-pressed="true"] { border-color:var(--tk-c-accent); background:var(--tk-c-accent-soft); }

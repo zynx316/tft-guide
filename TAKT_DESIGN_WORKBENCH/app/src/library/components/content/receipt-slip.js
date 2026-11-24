@@ -17,7 +17,7 @@ function Slip({ rc, data, setData, ctx, showItems }) {
       <div class="tk-rcs__vat"><span>Darin MwSt ${rc.vatRate} %</span><span class="tk-num">${money(ctx, vat)}</span></div>
       <div class="tk-rcs__sum"><span>Gesamt</span><strong class="tk-num">${money(ctx, total > 0 ? total : 0)}</strong></div></div>
     <div class="tk-rcs__check">
-      <div class="tk-rcs__conf"><${Ring} value=${conf} max=${100} size=${56} stroke=${7} tone=${conf >= 90 ? 'success' : 'warning'} label=${`Erkennung ${conf} Prozent sicher`}><b style="font-size:var(--tk-fs-xs)">${conf} %</b><//>
+      <div class="tk-rcs__conf"><${Ring} value=${conf} max=${100} size=${ctx.largeText ? 84 : 56} stroke=${7} tone=${conf >= 90 ? 'success' : 'warning'} label=${`Erkennung ${conf} Prozent sicher`}><b style="font-size:var(--tk-fs-xs)">${conf}\u00A0%</b><//>
         <div><strong>${low.length ? `Bitte prüfen: ${low.join(', ')}` : 'Alles sicher erkannt'}</strong><div class="tk-subtle" style="font-size:var(--tk-fs-sm)"><${Badge} tone=${booked ? 'success' : 'info'} icon=${booked ? 'check' : 'clock'}>${booked ? 'Gebucht' : 'Noch nicht gebucht'}<//></div></div></div>
       ${dupe && !booked && html`<div class="tk-ocr__sugg" role="status"><${Icon} name="copy" size=${18} /><div class="tk-grow"><strong>Möglicherweise schon gebucht</strong><div class="tk-muted" style="font-size:var(--tk-fs-sm)">${dupe.title} · ${money(ctx, dupe.amount)} am ${fmt.date(dupe.date)}</div></div></div>`}
       <${Field} label="Betrag (€)" error=${err.total}><${Input} class="tk-input tk-rcs__amount" inputmode="decimal" value=${f.total} onInput=${set('total')} invalid=${!!err.total} disabled=${booked} /><//>
@@ -35,7 +35,7 @@ export const receiptSlip = {
   name: 'Beleg-Karte',
   category: 'Inhalte',
   description: 'Beleg als gestalteter Kassenzettel (Positionen mit Farbanteilen, MwSt, Gesamt) neben der Prüfung: Erkennungs-Ring, Betrag groß, Kategorie als Kacheln, Konto, Dublettenhinweis und „Als Ausgabe buchen“. Oben wählt eine Leiste den Beleg.',
-  version: '1.1',
+  version: '1.3',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Beleg' },
     { name: 'showItems', label: 'Positionen mit Anteilen', type: 'boolean', default: true },
@@ -74,7 +74,10 @@ export const receiptSlip = {
   .tk-rcs__cats { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:8px; margin-top:6px; }
   .tk-rcs__cats button { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; min-height:72px; padding:8px 4px; border:1px solid var(--tk-c-border); border-radius:var(--tk-radius-md); background:var(--tk-c-surface2); color:var(--tk-c-text); font:inherit; font-size:var(--tk-fs-sm); cursor:pointer; text-align:center; overflow-wrap:anywhere; hyphens:auto; }
   .tk-rcs__cats button[aria-checked="true"] { border-color:var(--tk-c-accent); background:var(--tk-c-accent-soft); color:var(--tk-c-accent); font-weight:var(--tk-fw-semibold); }
-  .tk-rcs__cats button:disabled { opacity:.6; cursor:default; }`,
+  .tk-rcs__cats button:disabled { opacity:.6; cursor:default; }
+  [data-tk-large-text] .tk-rcs .tk-rcs__stage { grid-template-columns:minmax(0,1fr); } [data-tk-large-text] .tk-rcs .tk-rcs__two { grid-template-columns:minmax(0,1fr); }
+  [data-tk-large-text] .tk-rcs__amount { height:auto; min-height:56px; }
+  [data-tk-large-text] .tk-rcs__cats { grid-template-columns:repeat(auto-fill, minmax(min(100%, 6em), 1fr)); }`,
   example: { props: {}, data: { transactions: [], receipts: [
     { id: 'r1', merchant: 'Bäckerei Hoffmann', date: '2026-11-24', time: '08:05', total: 4.5, vatRate: 7, category: 'Lebensmittel', account: 'Girokonto', payment: 'Karte', status: 'offen', conf: { merchant: 0.98, date: 0.96, total: 0.97 }, lines: [{ name: 'Brötchen', qty: 2, total: 1.6 }, { name: 'Kaffee', qty: 1, total: 2.9 }] },
   ] } },

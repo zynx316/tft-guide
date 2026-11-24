@@ -122,7 +122,7 @@ export const cardGrid = {
   name: 'Kartenraster',
   category: 'Daten',
   description: 'Raster aus Inhaltskarten (Notizen, Artikel, Kanäle …) mit Icon/Farbfeld, Text-Auszug und Tags. Spaltenzahl responsiv.',
-  version: '1.2',
+  version: '1.3',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: '' },
     { name: 'minWidth', label: 'Min. Kartenbreite (px)', type: 'number', default: 240 },
@@ -143,7 +143,9 @@ export const cardGrid = {
   .tk-card-grid__inner { padding:var(--tk-space-4); display:flex; flex-direction:column; gap:8px; min-width:0; }
   .tk-card-grid__title { font-weight:var(--tk-fw-semibold); display:flex; gap:8px; align-items:center; min-width:0; }
   .tk-card-grid__text { font-size:var(--tk-fs-sm); color:var(--tk-c-text-muted); display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
-  .tk-card-grid__tags { display:flex; gap:6px; flex-wrap:wrap; }`,
+  .tk-card-grid__tags { display:flex; gap:6px; flex-wrap:wrap; }
+  [data-tk-large-text] .tk-card-grid { grid-template-columns:repeat(auto-fill, minmax(min(100%, max(var(--minw,240px), 11em)), 1fr)); }
+  [data-tk-large-text] .tk-card-grid__inner > .tk-row { flex-wrap:wrap; row-gap:4px; } [data-tk-large-text] .tk-card-grid__tags { min-width:0; max-width:100%; } [data-tk-large-text] .tk-card-grid__inner .tk-subtle { white-space:normal !important; overflow-wrap:break-word; }`,
   example: { props: { title: 'Zuletzt bearbeitet' }, data: { items: [
     { id: 'a', title: 'Ideen TAKT V2', text: 'Modulweise Entwicklung, Workbench als Designarbeitsplatz, Freigabeprozess …', tags: ['Projekt'], icon: 'lightbulb', tone: 'warning', meta: 'vor 2 Std.' },
     { id: 'b', title: 'Einkaufsliste', text: 'Hafermilch, Tomaten, Basilikum, Kaffee', tags: ['Privat'], icon: 'shopping-cart', tone: 'success', meta: 'gestern' },
