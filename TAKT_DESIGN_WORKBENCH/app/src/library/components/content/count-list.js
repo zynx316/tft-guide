@@ -4,15 +4,15 @@ import { Card, Button, Badge, Icon, EmptyState, toneColor } from '../../ui.js';
 import { applyUiFilter } from '../../helpers.js';
 import { maskMoney } from '../../../lib/format.js';
 
-/** Privatsphäre-Modus: Beträge im Freitext (erkannter Beleg-Text) werden ausgeblendet. */
-const hideAmounts = (ctx, t) => (ctx.privacy && typeof t === 'string' ? t.replace(/\d[\d.]*,\d{2}\s?(€|EUR)/g, () => maskMoney('0 €')) : t);
+/** Erkannter Freitext: Beträge im Standardformat (geschütztes Leerzeichen vor €), im Privatsphäre-Modus ausgeblendet. */
+const hideAmounts = (ctx, t) => (typeof t === 'string' ? t.replace(/(\d[\d.]*,\d{2})\s?(€|EUR)/g, (_, n) => (ctx.privacy ? maskMoney('0 €') : `${n}\u00a0€`)) : t);
 
 export const countList = {
   id: 'count-list',
   name: 'Liste mit Gesamtzahl',
   category: 'Inhalte',
   description: 'Einträge (Erfassungen, Artikel, Belege …) als Liste mit Icon, Untertitel, Badge und Meta. Der Zähler nennt immer die Gesamtzahl, auch wenn nur ein Ausschnitt sichtbar ist („Alle (11) ›“ führt zum Verlauf). Leerzustände benennen den fachlichen Grund statt eines allgemeinen „Lege den ersten Eintrag an“.',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Verlauf' },
     { name: 'limit', label: 'Max. Einträge (0 = alle)', type: 'number', default: 0 },

@@ -24,6 +24,8 @@ export const XC_CSS = `
   .tk-xc-chips { display: flex; gap: var(--tk-space-2); overflow-x: auto; scrollbar-width: none; padding: 2px 1px; margin: 0 -1px; }
   .tk-xc-chips::-webkit-scrollbar { display: none; }
   .tk-xc-chips .tk-chip { flex: none; }
+  [data-tk-large-text] .tk-xc-chips { flex-wrap: wrap; overflow-x: visible; }
+  [data-tk-large-text] .tk-xc-chips .tk-chip, [data-tk-large-text] .tk-xc-chips .tk-chip * { max-width: none; overflow: visible; text-overflow: clip; }
   .tk-xc-wrap { display: flex; flex-wrap: wrap; gap: var(--tk-space-2); min-width: 0; }
   .tk-xc-kbd { display: inline-flex; align-items: center; justify-content: center; min-width: 22px; height: 22px; padding: 0 6px; border-radius: var(--tk-radius-xs); border: 1px solid var(--tk-c-border-strong); background: var(--tk-c-surface2); color: var(--tk-c-text-muted); font-size: var(--tk-fs-xs); font-family: var(--tk-font); }
   .tk-xc-link { border: 0; background: none; padding: var(--tk-space-2) var(--tk-space-3); color: var(--tk-c-accent); font: inherit; font-size: var(--tk-fs-sm); font-weight: var(--tk-fw-medium); cursor: pointer; border-radius: var(--tk-radius-sm); min-height: 36px; }
