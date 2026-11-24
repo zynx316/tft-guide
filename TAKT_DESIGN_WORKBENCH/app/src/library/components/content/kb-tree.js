@@ -10,11 +10,12 @@ export const kbAreas = {
   name: 'Wissensbereiche',
   category: 'Inhalte',
   description: 'Bereiche der Wissensbasis als Karten (oder Zeilen) mit Artikelzahl, Kategorien, letzter Änderung und Lesefortschritt. Antippen meldet den Bereich als Filter für die Navigation.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Bereiche' },
     { name: 'layout', label: 'Darstellung', type: 'select', options: ['cards', 'rows'], default: 'cards' },
     { name: 'minWidth', label: 'Min. Kartenbreite (px)', type: 'number', default: 240 },
+    { name: 'quietEmpty', label: 'Ohne Artikel nichts anzeigen', type: 'boolean', default: false },
   ],
   data: [
     { slot: 'articles', label: 'Artikel', default: 'articles', shape: '{id,title,area,category,updated,lastRead?}[]', required: true },
@@ -44,6 +45,7 @@ export const kbAreas = {
     const arts = (data.articles || []).filter((a) => a.status !== 'draft');
     const meta = Object.fromEntries((data.areas || []).map((a) => [a.id, a]));
     const names = [...new Set(arts.map((a) => a.area))];
+    if (!names.length && props.quietEmpty) return null;
     if (!names.length) return html`<${Card} title=${props.title}><${EmptyState} icon="library" title="Noch keine Bereiche" text="Lege den ersten Artikel an, Bereiche entstehen daraus." /><//>`;
     const rows = props.layout === 'rows';
     const open = (n) => { ctx.setUi('filter', n); ctx.emit('kb.area', { id: n, ui: { filter: n } }); };

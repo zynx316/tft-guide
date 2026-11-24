@@ -43,7 +43,7 @@ export const trdPerformance = {
   name: 'Wertentwicklung',
   category: 'Trading',
   description: 'Depot gegen einen Vergleichsindex, der dieselben Einzahlungen erhalten hätte (Wert in Euro oder Rendite in Prozent), dazu Kennzahlen: Gewinn seit Kauf, Wertzuwachs 12 Monate, Dividenden, realisierte Gewinne und Rendite pro Jahr der Einzelaktien. Modellrechnung auf Demo-Daten.',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Wertentwicklung' },
     { name: 'part', label: 'Umfang', type: 'select', options: ['both', 'chart', 'kpis'], default: 'both' },
@@ -55,7 +55,8 @@ export const trdPerformance = {
   css: `${TRD_CSS}
   .tk-trd-pf { display:flex; flex-direction:column; gap:var(--tk-space-5); min-width:0; } .tk-trd-pf__tip { min-height:38px; display:flex; flex-wrap:wrap; gap:2px 16px; align-items:center; font-size:var(--tk-fs-sm); color:var(--tk-c-text-muted); font-variant-numeric:tabular-nums; margin-bottom:4px; }
   .tk-trd-pf__tip i { display:inline-block; width:10px; height:3px; border-radius:2px; margin-right:6px; vertical-align:middle; } .tk-trd-pf__tip strong { color:var(--tk-c-text); }
-  .tk-trd-pf__pa { display:grid; grid-template-columns:minmax(0,1fr) auto auto; gap:6px 16px; align-items:center; font-size:var(--tk-fs-sm); font-variant-numeric:tabular-nums; } .tk-trd-pf__pa > :nth-child(3n+2), .tk-trd-pf__pa > :nth-child(3n) { text-align:right; }`,
+  .tk-trd-pf__pa { display:grid; grid-template-columns:minmax(0,1fr) auto auto; gap:6px 16px; align-items:center; font-size:var(--tk-fs-sm); font-variant-numeric:tabular-nums; } .tk-trd-pf__pa > :nth-child(3n+2), .tk-trd-pf__pa > :nth-child(3n) { text-align:right; }
+  [data-tk-large-text] .tk-trd-pf__pa { grid-template-columns:minmax(0,1fr); gap:2px; } [data-tk-large-text] .tk-trd-pf__pa > * { text-align:left !important; } [data-tk-large-text] .tk-trd-pf__pa > :nth-child(3n) { margin-bottom:10px; }`,
   example: { data: ex('positions', 'cash', 'history', 'benchmark', 'dividends', 'trades', 'instruments', 'allowance', 'watchlist') },
   render: function TrdPerformance({ props, data, ctx }) {
     const [mode, setMode] = useState(props.mode), hd = holdings(data.positions, data.cash), c = compare(obj(data.history), data.benchmark);

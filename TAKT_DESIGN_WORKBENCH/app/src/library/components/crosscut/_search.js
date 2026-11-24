@@ -81,7 +81,7 @@ export function buildIndex(data, ctx) {
   for (const r of arr(data.nutRecipes)) push('recipe', r.id, r.title, `${(r.prepMin || 0) + (r.cookMin || 0)} Min. · ${r.subtitle || ''}`, { icon: r.icon || 'chef-hat', extra: (r.tags || []).join(' ') });
   for (const f of arr(data.nutFoods)) push('food', f.id, f.name, `${fmtNumber(f.kcal, { unit: 'kcal' })} je 100 g · ${f.category}`, { extra: `${f.brand || ''} ${(f.tags || []).join(' ')}` });
   // Live-Quellen: entstehen zur Laufzeit (Schnellnotiz, neue Erfassung, neue Bestellung) und sind deshalb sofort auffindbar
-  const plain = (t) => String(t || '').replace(/[#>*`\[\]_|-]+/g, ' ').replace(/\s+/g, ' ').trim();
+  const plain = (t) => String(t || '').replace(/\[[ xX]\]/g, ' ').replace(/[#>*`\[\]_|-]+/g, ' ').replace(/\s+/g, ' ').trim();
   const live = new Set();
   if (Array.isArray(data.notes)) { live.add('note:'); for (const n of data.notes) if (!n.archived) push('note', n.id, n.title || 'Unbenannte Notiz', [n.inbox ? 'Eingang' : (n.tags || []).join(', ') || 'Notiz', plain(n.body).slice(0, 70)].filter(Boolean).join(' · '), { ts: n.updated, extra: `${plain(n.body)} ${(n.tags || []).join(' ')}` }); }
   if (Array.isArray(data.articles)) { live.add('article:'); for (const a of data.articles) push('article', a.id, a.title, `${a.area} › ${a.category}`, { ts: a.updated, extra: `${plain(a.body)} ${(a.tags || []).join(' ')} ${a.author || ''}` }); }

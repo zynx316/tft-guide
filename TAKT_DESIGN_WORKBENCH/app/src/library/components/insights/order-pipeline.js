@@ -27,6 +27,8 @@ export const orderPipeline = {
   events: ['order.open', 'order.advance', 'pipeline.stage'],
   states: ['empty'],
   css: `
+  [data-tk-large-text] .tk-order-pipeline__no { flex-wrap:wrap; }
+  [data-tk-large-text] .tk-order-pipeline__no > span { white-space:nowrap; }
   [data-tk-large-text] .tk-order-pipeline__sub, [data-tk-large-text] .tk-order-pipeline__no { white-space:normal; overflow:visible; text-overflow:clip; overflow-wrap:anywhere; }
   .tk-order-pipeline__stats { display:grid; grid-template-columns:repeat(var(--n,4), minmax(0,1fr)); gap:var(--tk-space-2); margin-bottom:var(--tk-space-3); }
   .tk-order-pipeline__stat { display:flex; flex-direction:column; gap:2px; padding:10px 12px; border-radius:var(--tk-radius-md); border:1px solid var(--tk-c-border); background:var(--tk-c-surface2); cursor:pointer; text-align:left; color:inherit; min-width:0; min-height:56px; }

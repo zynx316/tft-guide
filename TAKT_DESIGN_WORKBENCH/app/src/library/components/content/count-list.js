@@ -12,7 +12,7 @@ export const countList = {
   name: 'Liste mit Gesamtzahl',
   category: 'Inhalte',
   description: 'Einträge (Erfassungen, Artikel, Belege …) als Liste mit Icon, Untertitel, Badge und Meta. Der Zähler nennt immer die Gesamtzahl, auch wenn nur ein Ausschnitt sichtbar ist („Alle (11) ›“ führt zum Verlauf). Leerzustände benennen den fachlichen Grund statt eines allgemeinen „Lege den ersten Eintrag an“.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Verlauf' },
     { name: 'limit', label: 'Max. Einträge (0 = alle)', type: 'number', default: 0 },
@@ -50,6 +50,7 @@ export const countList = {
   render: ({ props, data, ctx }) => {
     const all = applyUiFilter(data.items, ctx.ui, { respect: props.respectFilter });
     const total = all.length;
+    const narrow = (ctx.blockWidth || 999) < 420 && ctx.bp !== 'mobile'; // schmale Master-Spalte am Desktop: Zeitangabe unter den Titel
     if (!total && props.quietEmpty && !ctx.ui.query && !(data.items || []).length) return null;
     const items = props.limit > 0 ? all.slice(0, props.limit) : all;
     const open = (it) => { ctx.setUi('selectedId', it.id); ctx.emit('item.open', { id: it.id }); };
@@ -58,8 +59,8 @@ export const countList = {
       ? html`<${EmptyState} icon="inbox" title=${props.emptyTitle} text=${ctx.ui.query ? `Keine Treffer für „${ctx.ui.query}“.` : props.emptyText} />`
       : items.map((it) => html`<button type="button" class="tk-cnl__row" aria-current=${ctx.ui.selectedId === it.id ? 'true' : 'false'} onClick=${() => open(it)}>
         ${it.icon && html`<span class="tk-cnl__ico" style=${`color:${toneColor(it.tone || 'accent')}`}><${Icon} name=${it.icon} size=${17} /></span>`}
-        <span class="tk-cnl__main"><span class="tk-cnl__title tk-truncate">${it.title}</span>${it.subtitle && !props.dense && html`<span class="tk-cnl__sub tk-truncate">${hideAmounts(ctx, it.subtitle)}</span>`}</span>
-        ${it.badge && html`<${Badge} tone=${it.tone || 'neutral'}>${it.badge}<//>`}${it.meta && ctx.bp !== 'mobile' && html`<span class="tk-cnl__meta">${it.meta}</span>`}
+        <span class="tk-cnl__main"><span class="tk-cnl__title tk-truncate">${it.title}</span>${(it.subtitle || (narrow && it.meta)) && !props.dense && html`<span class="tk-cnl__sub tk-truncate">${[narrow && it.meta, it.subtitle && hideAmounts(ctx, it.subtitle)].filter(Boolean).join(' · ')}</span>`}</span>
+        ${it.badge && html`<${Badge} tone=${it.tone || 'neutral'}>${it.badge}<//>`}${it.meta && ctx.bp !== 'mobile' && !narrow && html`<span class="tk-cnl__meta">${it.meta}</span>`}
       </button>`);
     return html`<${Card} flush title=${props.title} class=${`tk-cnl ${props.dense ? 'tk-cnl--dense' : ''}`} actions=${html`<div class="tk-row"><${Badge}>${total}<//>${link}</div>`}>${body}<//>`;
   },

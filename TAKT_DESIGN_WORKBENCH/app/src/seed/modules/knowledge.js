@@ -77,7 +77,7 @@ export default {
           layout: { type: 'grid' },
           blocks: [
             hdr({ eyebrow: 'Wissensdatenbank', title: 'Übersicht', subtitle: 'Was möchtest du nachschlagen?', primaryLabel: '', secondaryLabel: 'Alle Artikel', secondaryIcon: 'library' }),
-            { id: 'areas', component: 'kb-areas', region: 'main', span: 12, props: { title: 'Bereiche' } },
+            { id: 'areas', component: 'kb-areas', region: 'main', span: 12, props: { title: 'Bereiche', quietEmpty: true } },
             { id: 'resume', component: 'kb-next', region: 'main', span: 7, spanTablet: 12, props: { mode: 'resume' } },
             { id: 'ring', component: 'chart', region: 'main', span: 5, spanTablet: 12, bind: { series: 'areaChart' }, props: { title: 'Artikel nach Bereich', type: 'donut' } },
             { id: 'marks', component: 'card-grid', region: 'main', span: 12, bind: { items: 'bookmarkCards' }, props: { title: 'Lesezeichen', cover: true, minWidth: 220 } },

@@ -171,7 +171,9 @@ export const captureLauncher = {
   .tk-launch--hero { display:flex; flex-direction:column; gap:10px; }
   .tk-launch--hero .tk-btn--primary { min-height:64px; font-size:var(--tk-fs-lg); justify-content:center; gap:10px; }
   .tk-launch__alt { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:8px; }
-  .tk-launch__alt .tk-btn { min-height:48px; justify-content:center; }`,
+  .tk-launch__alt .tk-btn { min-height:48px; justify-content:center; }
+  [data-tk-large-text] .tk-launch__alt { grid-template-columns:minmax(0,1fr); }
+  [data-tk-large-text] .tk-launch--hero .tk-btn, [data-tk-large-text] .tk-launch__alt .tk-btn { overflow-wrap:break-word; }`,
   example: { props: { style: 'tiles' }, data: {} },
   render: ({ props, ctx }) => {
     const go = (w) => ctx.emit(w.event);
