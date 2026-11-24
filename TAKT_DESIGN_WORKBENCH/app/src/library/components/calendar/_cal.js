@@ -42,7 +42,7 @@ export function occurrences(events, from, to) {
     return { ...ev, ...extra, id: series ? `${ev.id}@${dayKey(st)}` : ev.id, seriesId: series ? ev.id : undefined, start: toIso(st), end: toIso(en), _s: st, _e: en };
   };
   for (const ev of Array.isArray(events) ? events : []) {
-    if (!ev || !ev.start) continue;
+    if (!ev || !ev.start || ev.hidden) continue; // ausgeblendete Quelle (Kalender & Feiertage)
     const s = parseDay(ev.start);
     if (ev.allDay) {
       const e = ev.end ? parseDay(ev.end) : s;

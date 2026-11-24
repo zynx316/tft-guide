@@ -3,6 +3,7 @@ import { html } from '../../../lib/html.js';
 import { useState } from 'preact/hooks';
 import { Badge, Button, Icon, Input, EmptyState, toneColor } from '../../ui.js';
 import { toList } from '../../helpers.js';
+import { isoDay } from '../../../lib/util.js';
 import { dueInfo, filterTasks, sortTasks, PrioFlag, DueText, SubCount, STATUSES, TASK_CSS, prio } from './_tasks.js';
 
 const COL_TONE = { Offen: 'neutral', 'In Arbeit': 'accent', Review: 'warning', Erledigt: 'success' };
@@ -65,7 +66,7 @@ export const kanbanBoard = {
     if (!all.length) return html`<${EmptyState} icon="kanban" title="Noch keine Aufgaben" text="Lege Aufgaben an, um sie auf dem Board zu organisieren." />`;
     const move = (id, to) => {
       const t = all.find((x) => x.id === id); if (!t || statusOf(t, cols) === to) return;
-      setData('tasks', (a) => a.map((x) => (x.id === id ? { ...x, status: to, done: to === last } : x)));
+      setData('tasks', (a) => a.map((x) => (x.id === id ? { ...x, status: to, done: to === last, doneAt: to === last ? isoDay(ctx.today) : undefined } : x)));
       ctx.emit('kanban.move', { id, from: statusOf(t, cols), to }); ctx.toast(`„${t.title}“ → ${to}`);
     };
     const openMove = (t) => ctx.openDialog({ title: 'Verschieben nach …', body: (close) => html`<div class="tk-col" style="gap:8px">${cols.map((c) => html`<button type="button" class="tk-kb__moveopt" aria-current=${statusOf(t, cols) === c} onClick=${() => { move(t.id, c); close(); }}><i class="tk-dot" style=${`color:${toneColor(COL_TONE[c] || 'accent')}`}></i><span class="tk-grow" style="text-align:left">${c}</span>${statusOf(t, cols) === c && html`<${Icon} name="check" size=${16} />`}</button>`)}</div>` });

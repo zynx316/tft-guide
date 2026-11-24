@@ -3,7 +3,7 @@ import { html } from '../../../lib/html.js';
 import { useState, useRef, useEffect } from 'preact/hooks';
 import { Card, Button, Badge, Icon, Segmented, EmptyState, Select } from '../../ui.js';
 import { fmt } from '../../../lib/util.js';
-import { isoLocal, relDay, renderMarkdown, toggleTaskLine, wordCount, sortNotes } from './content-util.js';
+import { isoLocal, relDay, renderMarkdown, toggleTaskLine, wordCount, sortNotes, checklistStats, stripMd, nextEvent, untilLabel } from './content-util.js';
 
 const TOOLS = [
   { id: 'heading', icon: 'heading', label: 'Überschrift', prefix: '## ' },
@@ -65,6 +65,7 @@ export function NoteForm({ note, actions, props, ctx, switcher }) {
   const addTag = () => { const t = tag.trim().replace(/^#/, ''); if (!t || (note.tags || []).includes(t)) { setTag(''); return; } change({ tags: [...(note.tags || []), t] }); ctx.emit('note.tag.add', { tag: t }); setTag(''); };
   const dropTag = (t) => { change({ tags: (note.tags || []).filter((x) => x !== t) }); ctx.emit('note.tag.remove', { tag: t }); };
   const words = wordCount(note.body);
+  const checks = checklistStats(note.body);
 
   return html`<div class=${`tk-note-editor ${focus ? 'tk-note-editor--focus' : ''}`}>
     <div class="tk-note-editor__bar">
@@ -87,7 +88,7 @@ export function NoteForm({ note, actions, props, ctx, switcher }) {
     ${mode === 'edit'
       ? html`<textarea ref=${ta} class="tk-textarea tk-note-editor__body" value=${note.body || ''} placeholder="Schreib los … Markdown wird unterstützt." aria-label="Inhalt der Notiz" onInput=${(e) => change({ body: e.currentTarget.value })}></textarea>`
       : html`<div class="tk-md tk-note-editor__preview">${(note.body || '').trim() ? renderMarkdown(note.body, { onToggle: (idx) => { change({ body: toggleTaskLine(note.body, idx) }); ctx.emit('note.checklist.toggle', { id: note.id }); } }) : html`<p class="tk-subtle">Noch kein Inhalt.</p>`}</div>`}
-    <div class="tk-note-editor__foot"><span>${words} ${words === 1 ? 'Wort' : 'Wörter'}</span><span>Bearbeitet ${relDay(note.updated, ctx.today).replace('Heute, ', 'heute ')}</span></div>
+    <div class="tk-note-editor__foot"><span>${words} ${words === 1 ? 'Wort' : 'Wörter'}${checks.total > 0 ? ` · ${checks.done} von ${checks.total} erledigt` : ''}</span><span>Bearbeitet ${relDay(note.updated, ctx.today).replace('Heute, ', 'heute ')}</span></div>
   </div>`;
 }
 
@@ -95,8 +96,8 @@ export const noteEditor = {
   id: 'note-editor',
   name: 'Notiz-Editor',
   category: 'Inhalte',
-  description: 'Bearbeitet die gewählte Notiz (ctx.ui.selectedId): Titel, Markdown-Textbereich mit Formatierungsleiste, Tags, Anheften/Archivieren/Löschen, Autosave-Anzeige und Vorschau mit abhakbaren Checklisten.',
-  version: '1.0',
+  description: 'Bearbeitet die gewählte Notiz (ctx.ui.selectedId): Titel, Markdown-Textbereich mit Formatierungsleiste, Tags, Anheften/Archivieren/Löschen, Autosave-Anzeige und Vorschau mit abhakbaren Checklisten. Eine in einem anderen Screen neu angelegte Notiz (ctx.ui.newNote) wird übernommen.',
+  version: '1.1',
   props: [
     { name: 'showToolbar', label: 'Formatierungsleiste', type: 'boolean', default: true },
     { name: 'showTags', label: 'Tags', type: 'boolean', default: true },
@@ -136,8 +137,10 @@ export const noteEditor = {
   example: { data: { notes: [{ id: 'n1', title: 'Ideen TAKT V2', body: '## Fokus\n- Modulweise Entwicklung\n- Workbench als Designarbeitsplatz\n\n## To-do\n- [x] Tokens abstimmen\n- [ ] Kalender-Varianten prüfen', tags: ['Projekt', 'Ideen'], pinned: true, updated: '2026-11-24T07:40:00' }] } },
   render: ({ props, data, setData, ctx }) => {
     const all = data.notes || [];
-    const live = sortNotes(all.filter((n) => !n.archived));
-    const note = all.find((n) => n.id === ctx.ui.selectedId) || live[0];
+    const incoming = ctx.ui.newNote && ctx.ui.newNote.id === ctx.ui.selectedId && !all.some((n) => n.id === ctx.ui.newNote.id) ? ctx.ui.newNote : null;
+    useEffect(() => { if (incoming) setData('notes', (a) => (a.some((n) => n.id === incoming.id) ? a : [incoming, ...a])); }, [incoming?.id]);
+    const live = sortNotes(all.filter((n) => !n.archived && !n.inbox));
+    const note = all.find((n) => n.id === ctx.ui.selectedId) || incoming || live[0];
     if (!note) return html`<${Card}><${EmptyState} icon="notebook-pen" title="Keine Notiz ausgewählt" text="Lege eine neue Notiz an oder wähle eine aus der Liste."
       action=${html`<${Button} variant="primary" icon="plus" onClick=${() => { const id = `n${all.length + 1}x`; setData('notes', (a) => [{ id, title: '', body: '', tags: [], updated: isoLocal(ctx.today) }, ...a]); ctx.setUi('selectedId', id); ctx.emit('note.create', { id }); }}>Neue Notiz<//>`} /><//>`;
     const actions = noteActions({ setData, ctx, id: note.id });
@@ -145,5 +148,64 @@ export const noteEditor = {
       <${Select} aria-label="Notiz wechseln" value=${note.id} options=${live.map((n) => ({ value: n.id, label: n.title || 'Unbenannte Notiz' }))} onChange=${(v) => { ctx.setUi('selectedId', v); ctx.emit('note.open', { id: v }); }} /></div>`;
     const form = html`<${NoteForm} key=${note.id} note=${note} actions=${actions} props=${props} ctx=${ctx} switcher=${switcher} />`;
     return props.focusMode ? form : html`<${Card}>${form}<//>`;
+  },
+};
+
+// ------------------------------------------------------------------------------------------------ Fokus-Karte ---
+const words = (s) => String(s || '').toLowerCase().split(/[^\p{L}\p{N}]+/u).filter((w) => w.length > 3);
+
+export const noteFocus = {
+  id: 'note-focus',
+  name: 'Notiz-Fokus',
+  category: 'Inhalte',
+  description: 'Fokus-Einstieg für Notizen: „Weiterschreiben“ mit der zuletzt bearbeiteten Notiz und der Kontext zum nächsten Termin (passende Notiz oder Notiz zum Termin anlegen). Termine kommen aus dem Kalender.',
+  version: '1.0',
+  props: [
+    { name: 'showResume', label: 'Weiterschreiben zeigen', type: 'boolean', default: true },
+    { name: 'showEvent', label: 'Termin-Kontext zeigen', type: 'boolean', default: true },
+  ],
+  data: [
+    { slot: 'notes', label: 'Notizen', default: 'notes', shape: '{id,title,body,tags?,updated}[]', required: true },
+    { slot: 'events', label: 'Termine (Kalender)', default: 'events', shape: '{id,title,start,end,category,allDay?}[]', required: false },
+  ],
+  events: ['note.open', 'note.create'],
+  states: ['empty'],
+  css: `
+  .tk-note-focus { display:flex; flex-direction:column; gap:var(--tk-space-3); min-width:0; }
+  .tk-note-focus__hero { display:flex; flex-direction:column; gap:10px; padding:var(--tk-space-5); border-radius:var(--tk-radius-lg); background:var(--tk-c-surface); border:1px solid var(--tk-c-border); border-left:4px solid var(--tk-c-accent); min-width:0; }
+  .tk-note-focus__title { font-size:var(--tk-fs-xl); font-weight:var(--tk-fw-bold); letter-spacing:var(--tk-ls-tight); line-height:1.2; overflow-wrap:anywhere; }
+  .tk-note-focus__text { color:var(--tk-c-text-muted); font-size:var(--tk-fs-md); line-height:1.55; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+  .tk-note-focus__ctx { display:flex; gap:12px; align-items:flex-start; padding:var(--tk-space-4); border-radius:var(--tk-radius-lg); background:var(--tk-c-surface2); border:1px solid var(--tk-c-border); min-width:0; }
+  .tk-note-focus__ico { width:40px; height:40px; border-radius:12px; display:grid; place-items:center; flex:none; background:var(--tk-c-warning-soft); color:var(--tk-c-warning); }
+  .tk-note-focus__acts { display:flex; flex-wrap:wrap; gap:8px; }
+  .bp-mobile .tk-note-focus__acts .tk-btn { flex:1 1 auto; min-height:44px; justify-content:center; }`,
+  example: { data: { events: [{ id: 'e6', title: 'Lieferanten-Call Etsy', start: '2026-11-24T15:00:00', end: '2026-11-24T16:00:00', category: 'Sales' }], notes: [
+    { id: 'n1', title: 'Ideen TAKT V2', body: '## Fokus\n- Modulweise Entwicklung\n- Design vor Code', tags: ['Projekt'], updated: '2026-11-24T07:40:00' },
+    { id: 'n3', title: 'Meeting Sales-Review', body: '- Etsy-Kanal wächst am stärksten', tags: ['Arbeit', 'Sales'], updated: '2026-11-23T11:05:00' },
+  ] } },
+  render: ({ props, data, setData, ctx }) => {
+    const live = (data.notes || []).filter((n) => !n.archived && !n.inbox);
+    const last = live.slice().sort((a, b) => String(b.updated).localeCompare(String(a.updated)))[0];
+    const ev = props.showEvent ? nextEvent(data.events, ctx.today) : null;
+    const match = ev && live.find((n) => (n.tags || []).includes(ev.category) || words(ev.title).some((w) => words(`${n.title} ${n.body}`).includes(w)));
+    const open = (n) => { ctx.setUi('selectedId', n.id); ctx.emit('note.open', { id: n.id }); };
+    const create = () => {
+      const id = `n${Date.now().toString(36)}`;
+      const n = { id, title: ev ? `${ev.title} – Notizen` : '', body: ev ? '## Agenda\n- \n\n## Ergebnisse\n- \n\n## Aufgaben\n- [ ] ' : '', tags: ev ? [ev.category] : [], updated: isoLocal(ctx.today) };
+      setData('notes', (a) => [n, ...a]); ctx.setUi('selectedId', id); ctx.emit('note.create', { id, ui: { newNote: n } }); ctx.toast(ev ? 'Notiz zum Termin angelegt' : 'Neue Notiz angelegt');
+    };
+    if (!last && !ev) return html`<${Card}><${EmptyState} icon="notebook-pen" title="Noch keine Notiz" text="Halte den ersten Gedanken fest – er bleibt hier griffbereit." action=${html`<${Button} variant="primary" icon="plus" onClick=${create}>Erste Notiz<//>`} /><//>`;
+    return html`<div class="tk-note-focus">
+      ${props.showResume && last && html`<div class="tk-note-focus__hero"><span class="tk-label">Weiterschreiben</span>
+        <div class="tk-note-focus__title">${last.title || 'Unbenannte Notiz'}</div>
+        <div class="tk-note-focus__text">${stripMd(last.body) || 'Leere Notiz'}</div>
+        <div class="tk-row" style="justify-content:space-between;flex-wrap:wrap;gap:8px"><span class="tk-subtle" style="font-size:var(--tk-fs-sm)">${relDay(last.updated, ctx.today)} · ${wordCount(last.body)} Wörter</span>
+          <${Button} variant="primary" icon="pencil" onClick=${() => open(last)}>Öffnen<//></div></div>`}
+      ${ev && html`<div class="tk-note-focus__ctx"><span class="tk-note-focus__ico"><${Icon} name="calendar-clock" size=${20} /></span>
+        <div class="tk-grow tk-col" style="gap:8px;min-width:0"><div><span class="tk-label">Als Nächstes · ${untilLabel(ev.start, ctx.today)}</span>
+          <div style="font-weight:var(--tk-fw-semibold)">${ev.title} <span class="tk-subtle" style="font-weight:400">· ${fmt.time(ev.start)} Uhr</span></div>
+          ${match && html`<div class="tk-muted" style="font-size:var(--tk-fs-sm)">Passende Notiz: ${match.title}</div>`}</div>
+          <div class="tk-note-focus__acts">${match && html`<${Button} size="sm" icon="notebook-pen" onClick=${() => open(match)}>Notiz öffnen<//>`}<${Button} size="sm" icon="plus" onClick=${create}>Notiz zum Termin<//></div></div></div>`}
+    </div>`;
   },
 };

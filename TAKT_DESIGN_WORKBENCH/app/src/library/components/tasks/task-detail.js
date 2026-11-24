@@ -2,6 +2,7 @@
 import { html } from '../../../lib/html.js';
 import { useState } from 'preact/hooks';
 import { Card, Check, Button, Badge, Field, Input, Select, Textarea, Segmented, Progress, EmptyState, Icon } from '../../ui.js';
+import { isoDay } from '../../../lib/util.js';
 import { dueInfo, dueDate, subProgress, toggleTask, PRIORITY, STATUSES, TASK_REPEATS, TASK_CSS } from './_tasks.js';
 
 export const taskDetail = {
@@ -9,14 +10,15 @@ export const taskDetail = {
   name: 'Aufgaben-Detail',
   category: 'Aufgaben',
   description: 'Detailpanel zur gewählten Aufgabe (ctx.ui.selectedId): Titel, Priorität, Status, Fälligkeit, Projekt, Wiederholung, Unteraufgaben mit Fortschritt und Notiz. Änderungen wirken sofort in allen Listen.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'fallbackFirst', label: 'Ohne Auswahl erste Aufgabe zeigen', type: 'boolean', default: true },
     { name: 'showNote', label: 'Notiz', type: 'boolean', default: true },
     { name: 'showRepeat', label: 'Wiederholung', type: 'boolean', default: true },
+    { name: 'showFocus', label: 'Button „Fokus starten“', type: 'boolean', default: true },
   ],
   data: [{ slot: 'tasks', label: 'Aufgaben', default: 'tasks', shape: 'Aufgaben mit subtasks, repeat, note, project', required: true }],
-  events: ['task.update', 'task.toggle', 'subtask.toggle', 'subtask.add', 'task.delete'],
+  events: ['task.update', 'task.toggle', 'subtask.toggle', 'subtask.add', 'task.delete', 'focus.open'],
   states: ['empty'],
   css: `${TASK_CSS}
   .tk-td { display:flex; flex-direction:column; gap:var(--tk-space-4); }
@@ -45,10 +47,11 @@ export const taskDetail = {
         <div class="tk-grow"><input class="tk-td__title" value=${t.title} aria-label="Titel" onChange=${(e) => upd({ title: e.currentTarget.value.trim() || t.title }, 'title')} />
           <div class="tk-row" style="margin-top:6px;flex-wrap:wrap"><${Badge} tone=${di.overdue ? 'danger' : di.tone === 'warning' ? 'warning' : 'neutral'} icon="calendar">${di.text}<//>${t.project && html`<${Badge} tone="accent">${t.project}<//>`}${t.repeat && t.repeat !== 'Keine' && html`<${Badge} icon="repeat">${t.repeat}<//>`}</div></div>
         <${Button} variant="ghost" icon="trash-2" aria-label="Aufgabe löschen" style="flex:none" onClick=${del} /></div>
+      ${props.showFocus && !t.done && html`<div><${Button} variant="primary" icon="play" onClick=${() => { ctx.setUi('selectedId', t.id); ctx.emit('focus.open', { id: t.id }); }}>Fokus starten<//></div>`}
       <div class="tk-field"><span class="tk-field__label">Priorität</span><${Segmented} label="Priorität" value=${t.priority || 'mittel'} onChange=${(v) => upd({ priority: v })} options=${Object.entries(PRIORITY).map(([value, o]) => ({ value, label: o.label }))} /></div>
       <div class="tk-td__grid">
         <${Field} label="Fällig am"><${Input} type="date" value=${dueVal} onInput=${(v) => upd({ due: v || undefined }, 'due')} /><//>
-        <${Field} label="Status"><${Select} value=${t.status || (t.done ? 'Erledigt' : 'Offen')} onChange=${(v) => upd({ status: v, done: v === 'Erledigt' }, 'status')} options=${STATUSES} /><//>
+        <${Field} label="Status"><${Select} value=${t.status || (t.done ? 'Erledigt' : 'Offen')} onChange=${(v) => upd({ status: v, done: v === 'Erledigt', doneAt: v === 'Erledigt' ? isoDay(ctx.today) : undefined }, 'status')} options=${STATUSES} /><//>
         <${Field} label="Projekt"><${Select} value=${t.project || ''} onChange=${(v) => upd({ project: v || undefined })} options=${[{ value: '', label: 'Kein Projekt' }, ...projects.map((x) => ({ value: x, label: x }))]} /><//>
         ${props.showRepeat && html`<${Field} label="Wiederholung"><${Select} value=${t.repeat || 'Keine'} onChange=${(v) => upd({ repeat: v === 'Keine' ? undefined : v }, 'repeat')} options=${TASK_REPEATS} /><//>`}
       </div>

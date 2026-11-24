@@ -5,6 +5,11 @@ import { Card, Button, Badge, Icon, EmptyState, Tabs } from '../../ui.js';
 import { fmt } from '../../../lib/util.js';
 import { toList } from '../../helpers.js';
 import { rel, filterItems } from './shared.js';
+// Zusatzkomponenten der Inhalts-Bereiche (Notizen, Wissen, Erkennung): werden hier mit registriert, weil content/index.js nur Einzelexporte kennt.
+import { noteChecklists, noteInbox } from '../content/note-list.js';
+import { noteFocus } from '../content/note-editor.js';
+import { kbAreas } from '../content/kb-tree.js';
+import { kbNext } from '../content/kb-article.js';
 
 const STAGES = {
   new: { label: 'Neu', icon: 'inbox', tone: 'info', next: 'paid', action: 'Bezahlt markieren', done: 'bezahlt' },
@@ -117,4 +122,4 @@ export const orderPipeline = {
   },
 };
 
-export default [orderPipeline];
+export default [orderPipeline, noteChecklists, noteInbox, noteFocus, kbAreas, kbNext];

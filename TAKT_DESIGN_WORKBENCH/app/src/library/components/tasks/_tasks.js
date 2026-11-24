@@ -2,6 +2,7 @@
 import { html } from '../../../lib/html.js';
 import { Icon, Badge, toneColor } from '../../ui.js';
 import { applyUiFilter } from '../../helpers.js';
+import { isoDay } from '../../../lib/util.js';
 
 export const PRIORITY = {
   hoch: { label: 'Hoch', tone: 'danger', rank: 0 },
@@ -68,7 +69,7 @@ export function toggleTask(ctx, setData, t) {
   setData('tasks', (all) => all.map((x) => {
     if (x.id !== t.id) return x;
     if (nd) return { ...x, due: nd, subtasks: (x.subtasks || []).map((s) => ({ ...s, done: false })) };
-    return { ...x, done: !x.done, status: !x.done ? 'Erledigt' : 'Offen' };
+    return { ...x, done: !x.done, status: !x.done ? 'Erledigt' : 'Offen', doneAt: !x.done ? isoDay(ctx.today) : undefined };
   }));
   ctx.emit('task.toggle', { id: t.id, done: nd ? false : !t.done });
   if (nd) ctx.toast(`„${t.title}“ erledigt – nächste Fälligkeit ${dueInfo({ ...t, due: nd }, ctx.today).text}`);

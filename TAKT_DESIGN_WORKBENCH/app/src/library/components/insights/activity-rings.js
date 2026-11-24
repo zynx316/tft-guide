@@ -9,11 +9,12 @@ export const activityRings = {
   name: 'Aktivitätsringe',
   category: 'Fitness',
   description: 'Konzentrische Ziel-Ringe (z. B. Bewegung, Training, Schritte) mit Wert/Ziel-Legende. Antippen eines Rings zeigt Details in der Mitte. Referenzbaustein für Fortschrittsdarstellung.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Heute' },
     { name: 'size', label: 'Durchmesser (px)', type: 'number', default: 168 },
     { name: 'layout', label: 'Anordnung', type: 'select', options: ['side', 'stacked'], default: 'side' },
+    { name: 'showLegend', label: 'Legende zeigen', type: 'boolean', default: true },
   ],
   data: [{ slot: 'rings', label: 'Ringe', default: 'rings', shape: '{id,label,value,goal,unit?,tone?,icon?}[]', required: true }],
   events: ['ring.open'],
@@ -38,7 +39,7 @@ export const activityRings = {
     const rings = data.rings || [];
     const [sel, setSel] = useState(null);
     if (!rings.length) return html`<${Card} title=${props.title}><${EmptyState} icon="activity" title="Noch keine Aktivität" text="Sobald du dich bewegst, füllen sich hier deine Ringe." /><//>`;
-    const S = props.size, cx = S / 2, sw = Math.max(10, S * 0.075), gap = 4;
+    const S = Math.min(props.size, Math.max(120, (ctx.width || 400) - 96)), cx = S / 2, sw = Math.max(10, S * 0.075), gap = 4;
     const cur = rings.find((r) => r.id === sel);
     const avg = rings.reduce((a, r) => a + Math.min(r.value / r.goal, 1), 0) / rings.length;
     const choose = (r) => { setSel(sel === r.id ? null : r.id); ctx.emit('ring.open', { id: r.id }); };
@@ -51,11 +52,11 @@ export const activityRings = {
         <text x=${cx} y=${cx - 2} text-anchor="middle" fill="var(--tk-c-text)" style="font-size:22px;font-weight:700">${cur ? fmt.percent(Math.min(cur.value / cur.goal, 9.99), 0) : fmt.percent(avg, 0)}</text>
         <text x=${cx} y=${cx + 16} text-anchor="middle" fill="var(--tk-c-text-subtle)" style="font-size:11px">${cur ? cur.label : 'Tagesziele'}</text>
       </svg>
-      <div class="tk-rings__legend">${rings.map((r, i) => { const col = toneColor(r.tone || i + 1); const done = r.value >= r.goal;
+      ${props.showLegend && html`<div class="tk-rings__legend">${rings.map((r, i) => { const col = toneColor(r.tone || i + 1); const done = r.value >= r.goal;
         return html`<button type="button" class="tk-rings__item" aria-pressed=${String(sel === r.id)} onClick=${() => choose(r)}>
           <span class="tk-rings__dot" style=${`background:color-mix(in srgb, ${col} 16%, transparent);color:${col}`}><${Icon} name=${done ? 'check' : r.icon || 'activity'} size=${16} /></span>
           <span class="tk-grow tk-truncate" style="font-weight:500">${r.label}</span>
-          <span class="tk-rings__val"><strong>${fmt.number(r.value)} ${r.unit || ''}</strong><small>von ${fmt.number(r.goal)} ${r.unit || ''}</small></span></button>`; })}</div>
+          <span class="tk-rings__val"><strong>${fmt.number(r.value)} ${r.unit || ''}</strong><small>von ${fmt.number(r.goal)} ${r.unit || ''}</small></span></button>`; })}</div>`}
     </div><//>`;
   },
 };

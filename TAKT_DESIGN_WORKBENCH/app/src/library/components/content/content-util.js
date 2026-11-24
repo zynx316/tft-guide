@@ -103,3 +103,30 @@ export function renderMarkdown(md = '', { onToggle } = {}) {
 
 /** Schaltet die Checkliste in Zeile idx um. */
 export const toggleTaskLine = (body, idx) => String(body).split('\n').map((l, i) => (i === idx ? l.replace(/\[( |x|X)\]/, (m, c) => (c === ' ' ? '[x]' : '[ ]')) : l)).join('\n');
+
+// ---------------------------------------------------------------- Ergänzungen (Notizen, Wissen, Erkennung) ---
+/** Checklistenpunkte einer Notiz: [{ idx (Zeile), done, text }]. */
+export const checklistItems = (body = '') => String(body).split('\n').map((l, idx) => { const m = /^\s*[-*]\s+\[([ xX])\]\s+(.*)$/.exec(l); return m ? { idx, done: m[1] !== ' ', text: m[2] } : null; }).filter(Boolean);
+export const checklistStats = (body = '') => { const it = checklistItems(body); const done = it.filter((i) => i.done).length; return { total: it.length, done, open: it.length - done }; };
+
+/** Stabile Diagrammfarbe (1–6) je Tag – gleiche Tags haben überall dieselbe Farbe. */
+export const tagTone = (tag = '') => 1 + ([...String(tag)].reduce((s, c) => s + c.charCodeAt(0), 0) % 6);
+
+/** Minuten bis zu einem Zeitpunkt, als Text: „in 1 Std. 30 Min.“, „in 25 Min.“, „läuft“. */
+export function untilLabel(iso, today) {
+  const min = Math.round((new Date(iso) - new Date(today)) / 60000);
+  if (min <= 0) return 'läuft';
+  const h = Math.floor(min / 60), m = min % 60;
+  return `in ${h ? `${h} Std.` : ''}${h && m ? ' ' : ''}${m || !h ? `${m} Min.` : ''}`;
+}
+
+/** Nächster Termin ab ctx.today (ohne Ganztägiges, ohne Kategorien in `skip`). */
+export const nextEvent = (events = [], today, skip = ['Fokus']) => (events || [])
+  .filter((e) => !e.allDay && new Date(e.start) > new Date(today) && !skip.includes(e.category))
+  .sort((a, b) => String(a.start).localeCompare(String(b.start)))[0] || null;
+
+/** Wortanzahl-basierte Lesezeit in Minuten (mind. 1). */
+export const readMinutes = (body = '') => Math.max(1, Math.round(wordCount(body) / 200));
+
+/** Gemeinsame Beschriftungszeile „Label · Wert“ – nutzt Komponenten für Kopfbereiche kleiner Karten. */
+export const caps = (s) => String(s || '').replace(/^./, (c) => c.toUpperCase());

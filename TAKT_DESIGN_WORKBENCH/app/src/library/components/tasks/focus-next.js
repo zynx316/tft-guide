@@ -2,6 +2,7 @@
 import { html } from '../../../lib/html.js';
 import { Card, Check, Badge, Button, Icon, EmptyState, toneColor } from '../../ui.js';
 import { occurrences, dayStart, addDays, minutesOf, timeStr, hm, durLabel, freeSlots, catColor, catTone, openEventDialog, toIso } from '../calendar/_cal.js';
+import { openEvent, OPEN_MODE_PROP } from '../calendar/_cal-info.js';
 import { dueInfo, sortTasks, toggleTask, PrioFlag, DueText, TASK_CSS } from './_tasks.js';
 
 export const focusNext = {
@@ -17,6 +18,7 @@ export const focusNext = {
     { name: 'showOverdue', label: 'Überfällige zeigen', type: 'boolean', default: true },
     { name: 'showSuggestions', label: 'Vorschläge für freie Zeit', type: 'boolean', default: true },
     { name: 'showHero', label: 'Hervorgehobener nächster Termin', type: 'boolean', default: true },
+    OPEN_MODE_PROP,
   ],
   data: [
     { slot: 'events', label: 'Termine', default: 'events', shape: '{id,title,start,end,category?,tone?}[]', required: true },
@@ -71,12 +73,12 @@ export const focusNext = {
     const head = (icon, text, n) => html`<div class="tk-fn__sec"><${Icon} name=${icon} size=${13} />${text}${n != null && html`<span>${n}</span>`}</div>`;
     const timeline = [...rest.map((o) => ({ at: minutesOf(o._s), o })), ...plan.map((p) => ({ at: p.a, p }))].sort((x, y) => x.at - y.at);
     return html`<${Card} flush=${true} title=${props.title} icon="target" actions=${html`<${Badge} tone="accent">${rest.length} Termine · ${open.filter((t) => dueInfo(t, ctx.today).diff <= 0).length} fällig<//>`}>
-      ${props.showHero && next && html`<button type="button" class="tk-fn__hero" onClick=${() => openEventDialog(ctx, setData, next, events)}><span class="tk-fn__badge"><${Icon} name=${current ? 'play' : 'clock'} size=${22} /></span>
+      ${props.showHero && next && html`<button type="button" class="tk-fn__hero" onClick=${() => openEvent(ctx, setData, next, events, props)}><span class="tk-fn__badge"><${Icon} name=${current ? 'play' : 'clock'} size=${22} /></span>
         <span class="tk-grow"><div class="tk-fn__eyebrow">${current ? `Läuft jetzt · noch ${durLabel(minutesOf(next._e) - nowMin)}` : `Als Nächstes · in ${durLabel(minutesOf(next._s) - nowMin)}`}</div>
           <div class="tk-truncate" style="font-size:var(--tk-fs-lg);font-weight:600">${next.title}</div><div class="tk-muted" style="font-size:var(--tk-fs-sm)">${timeStr(next._s)}–${timeStr(next._e)}${next.location ? ` · ${next.location}` : ''}</div></span><${Icon} name="chevron-right" size=${18} /></button>`}
       ${props.showOverdue && overdue.length > 0 && html`${head('alert-circle', 'Überfällig', overdue.length)}${overdue.map(taskRow)}`}
       ${head('calendar-clock', 'Heute noch', null)}
-      ${timeline.length ? timeline.map((r) => r.o ? html`<button type="button" class="tk-fn__row" data-btn="true" onClick=${() => openEventDialog(ctx, setData, r.o, events)}><span class="tk-fn__time">${timeStr(r.o._s)}</span><span class="tk-fn__bar" style=${`--ec:${catColor(r.o)}`}></span>
+      ${timeline.length ? timeline.map((r) => r.o ? html`<button type="button" class="tk-fn__row" data-btn="true" onClick=${() => openEvent(ctx, setData, r.o, events, props)}><span class="tk-fn__time">${timeStr(r.o._s)}</span><span class="tk-fn__bar" style=${`--ec:${catColor(r.o)}`}></span>
           <span class="tk-grow"><div class="tk-truncate" style="font-weight:500">${r.o.title}</div><div class="tk-subtle" style="font-size:var(--tk-fs-sm)">bis ${timeStr(r.o._e)}${r.o.taskId ? ' · Aufgabe eingeplant' : ''}</div></span>${r.o.taskId ? html`<${Icon} name="check-circle-2" size=${16} />` : html`<${Badge} tone=${catTone(r.o)}>${r.o.category || 'Termin'}<//>`}</button>`
         : html`<div class="tk-fn__free"><div class="tk-fn__freehead"><${Icon} name="timer" size=${15} /><span><b>${hm(r.p.a)}–${hm(r.p.b)}</b> frei · ${durLabel(r.p.b - r.p.a)}</span></div>
           ${r.p.sug.length ? r.p.sug.map((s) => html`<div class="tk-fn__sug"><div class="tk-grow"><div class="tk-truncate" style="font-weight:500">${s.t.title}</div><div class="tk-subtle" style="font-size:var(--tk-fs-sm)">ca. ${durLabel(s.d)} · ${dueInfo(s.t, ctx.today).text}</div></div><${PrioFlag} t=${s.t} /><${Button} size="sm" variant="primary" onClick=${() => schedule(s.t, s.at, s.d)}>Einplanen<//></div>`) : html`<div class="tk-fn__sug tk-subtle" style="font-size:var(--tk-fs-sm)">Kein passender Aufgabenvorschlag – Zeit für Pause oder Spontanes.</div>`}</div>`)

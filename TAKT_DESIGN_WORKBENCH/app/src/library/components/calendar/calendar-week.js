@@ -7,6 +7,7 @@ import {
 } from './_cal.js';
 import { dueDate, prio } from '../tasks/_tasks.js';
 import { toneColor } from '../../ui.js';
+import { openEvent, OPEN_MODE_PROP } from './_cal-info.js';
 
 const HH = { compact: 40, comfortable: 56, spacious: 76 };
 
@@ -15,7 +16,7 @@ export const calendarWeek = {
   name: 'Kalender Tag/Woche',
   category: 'Kalender',
   description: 'Zeitraster mit Terminen nach Uhrzeit, Überlappungen nebeneinander, Jetzt-Linie und Anlegen per Klick auf freie Zeit. Mobil: 3-Tage-Raster mit Tagesleiste. Reagiert auf ctx.ui.view (Tag/Woche) und selectedDate.',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'startHour', label: 'Erste Stunde', type: 'number', default: 7 },
     { name: 'endHour', label: 'Letzte Stunde', type: 'number', default: 20 },
@@ -29,6 +30,7 @@ export const calendarWeek = {
     { name: 'view', label: 'Ansicht festlegen', type: 'select', options: ['auto', 'Tag', 'Woche'], default: 'auto' },
     { name: 'respectView', label: 'Ansicht (Tag/Woche) vom Umschalter übernehmen', type: 'boolean', default: true },
     { name: 'respectFilter', label: 'Suche/Filter beachten', type: 'boolean', default: true },
+    OPEN_MODE_PROP,
   ],
   data: [
     { slot: 'events', label: 'Termine', default: 'events', shape: '{id,title,start,end,category?,tone?,location?,repeat?,allDay?}[]', required: true },
@@ -149,7 +151,7 @@ export const calendarWeek = {
           <div style="font-size:var(--tk-fs-xs);color:var(--tk-c-text-subtle);padding:6px 4px;text-align:right">${mobile ? '' : 'Ganztag'}</div>
           ${days.map((d) => { const k = dayKey(d); const ts = tasks.filter((t) => dayKey(dueDate(t)) === k).sort((a, b) => prio(a).rank - prio(b).rank).slice(0, 2);
             return html`<div class="tk-cw__allcell">
-              ${onDay(allDay, d).map((o) => html`<button type="button" class="tk-cw__allchip" style=${`--ec:${catColor(o)}`} onClick=${() => openEventDialog(ctx, setData, o, all)}><span class="tk-truncate">${o.title}</span></button>`)}
+              ${onDay(allDay, d).map((o) => html`<button type="button" class="tk-cw__allchip" style=${`--ec:${catColor(o)}`} onClick=${() => openEvent(ctx, setData, o, all, props)}><span class="tk-truncate">${o.title}</span></button>`)}
               ${ts.map((t) => html`<button type="button" class="tk-cw__allchip tk-cw__allchip--task" style=${`--ec:${toneColor(prio(t).tone)}`} onClick=${() => { ctx.setUi('selectedId', t.id); ctx.emit('task.open', { id: t.id }); }}><${Icon} name="circle" size=${11} /><span class="tk-truncate">${t.title}</span></button>`)}
             </div>`; })}
         </div>` : null}
@@ -159,7 +161,7 @@ export const calendarWeek = {
             return html`<div class="tk-cw__col" data-today=${k === todayKey} style=${`height:${H}px`} onClick=${(e) => createAt(d, e)} aria-label=${`Freie Zeit am ${k}`}>
               ${items.map(({ ev, col, cols, s, e }) => { const top = (s - s0 * 60) / 60 * hh; const h = Math.max(mobile ? 32 : 20, (e - s) / 60 * hh - 2); const lineH = props.density === 'spacious' ? 16 : 14, padV = props.density === 'spacious' ? 12 : 6; const lines = Math.floor((h - padV) / lineH); const narrow = cols > 1 && n > 4 && ctx.bp !== 'desktop'; const one = lines < 2 || narrow; const tl = Math.max(1, lines - 1);
                 return html`<div class="tk-cw__ev" role="button" tabindex="0" data-clip-ok data-one=${one} style=${`--ec:${catColor(ev)};--tl:${tl};top:${top + 1}px;height:${h}px;left:calc(${col} / ${cols} * 100% + 1px);width:calc(100% / ${cols} - 3px)`}
-                    onClick=${() => openEventDialog(ctx, setData, ev, all)} onKeyDown=${(k2) => k2.key === 'Enter' && openEventDialog(ctx, setData, ev, all)} aria-label=${`${ev.title}, ${timeStr(ev._s)} bis ${timeStr(ev._e)}`}>
+                    onClick=${() => openEvent(ctx, setData, ev, all, props)} onKeyDown=${(k2) => k2.key === 'Enter' && openEvent(ctx, setData, ev, all, props)} aria-label=${`${ev.title}, ${timeStr(ev._s)} bis ${timeStr(ev._e)}`}>
                   ${one ? html`<b>${ev.title}</b>${cols === 1 && html`<span>${timeStr(ev._s)}</span>`}` : html`<b>${ev.title}</b><span>${timeStr(ev._s)}–${timeStr(ev._e)}</span>${(props.showLocation || props.density === 'spacious') && ev.location && lines > 3 && html`<span>${ev.location}</span>`}`}
                 </div>`; })}
               ${showNow && k === todayKey && html`<div class="tk-cw__now" style=${`top:${(nowMin - s0 * 60) / 60 * hh}px`} aria-hidden="true"></div>`}

@@ -115,11 +115,152 @@ export const dividends = [
 ];
 export const taxAllowance = { total: 1000, used: 312.40, bank: 'Trade Republic', stand: '24.11.2026' };
 
-/** Kennzahlen für Übersichten (abgeleitet – nicht von Hand pflegen). */
+/** Kennzahlen für Übersichten (abgeleitet – nicht von Hand pflegen). `kpis` speist die Kachel im Launchpad (erste Kennzahl). */
 export const financeSummary = (() => {
   const nov = transactions.filter((t) => t.date.startsWith('2026-11'));
   const income = r2(nov.filter((t) => t.type === 'income').reduce((s, t) => s + t.amount, 0));
   const expenses = r2(-nov.filter((t) => t.type === 'expense').reduce((s, t) => s + t.amount, 0));
   const saved = r2(-nov.filter((t) => t.type === 'transfer' && t.category === 'Sparen').reduce((s, t) => s + t.amount, 0));
-  return { netWorth, depotValue, income, expenses, saved, savingsRate: income ? (income - expenses) / income : 0, fixedCostsMonthly, savingsMonthlyTotal };
+  const inPlan = budgets.filter((b) => b.value <= b.target).length;
+  // Gesamtsicht: Die Privatentnahme (Geschäftskonto → Girokonto) ist intern und zählt nicht als Einnahme.
+  const incomeTotal = r2(nov.filter((t) => t.type === 'income' && !/^Privatentnahme/i.test(t.title)).reduce((s, t) => s + t.amount, 0));
+  const rateTotal = incomeTotal ? (incomeTotal - expenses) / incomeTotal : 0;
+  const pct = (x) => String(Math.round(x * 100));
+  return {
+    netWorth, depotValue, income, expenses, saved, savingsRate: income ? (income - expenses) / income : 0, fixedCostsMonthly, savingsMonthlyTotal,
+    kpis: [
+      { label: 'Budgets im Plan', value: `${inPlan} von ${budgets.length}`, icon: 'wallet', tone: inPlan === budgets.length ? 'success' : 'warning' },
+      { label: 'Sparquote Nov.', value: pct(rateTotal), unit: '%', icon: 'piggy-bank', tone: 'accent' },
+      { label: 'gespart im November', value: String(Math.round(saved)), unit: '€', icon: 'piggy-bank', tone: 'accent' },
+      { label: 'Vermögen', value: String(Math.round(netWorth)), unit: '€', icon: 'landmark', tone: 'info' },
+    ],
+  };
 })();
+
+// ============================================================================
+// ERWEITERUNGEN Finanzen (Ausbau des Moduls). Nur ergänzt – bestehende Schlüssel bleiben unverändert.
+// Eigentümer: finance. Sparpläne/Trading lesen die obigen Schlüssel; diese hier sind Finanzen-intern.
+// ============================================================================
+
+// --- Kategorien (feste Taxonomie, kind: fix | variabel | sparen | einkommen | umbuchung) ---------------------
+export const financeCategories = [
+  { id: 'Lebensmittel', label: 'Lebensmittel', icon: 'shopping-cart', tone: 2, kind: 'variabel' },
+  { id: 'Restaurants', label: 'Restaurants', icon: 'utensils', tone: 3, kind: 'variabel' },
+  { id: 'Haushalt', label: 'Haushalt', icon: 'shopping-basket', tone: 5, kind: 'variabel' },
+  { id: 'Freizeit', label: 'Freizeit', icon: 'party-popper', tone: 4, kind: 'variabel' },
+  { id: 'Mobilität', label: 'Mobilität', icon: 'car', tone: 1, kind: 'variabel' },
+  { id: 'Gesundheit', label: 'Gesundheit', icon: 'heart-pulse', tone: 6, kind: 'fix' },
+  { id: 'Wohnen', label: 'Wohnen', icon: 'home', tone: 1, kind: 'fix' },
+  { id: 'Versicherungen', label: 'Versicherungen', icon: 'shield', tone: 5, kind: 'fix' },
+  { id: 'Abos', label: 'Abos', icon: 'repeat', tone: 4, kind: 'fix' },
+  { id: 'Sonstiges', label: 'Sonstiges', icon: 'tag', tone: 'neutral', kind: 'variabel' },
+  { id: 'Einnahmen Shop', label: 'Einnahmen Shop', icon: 'store', tone: 'success', kind: 'einkommen' },
+  { id: 'Einnahmen', label: 'Sonstige Einnahmen', icon: 'banknote', tone: 'success', kind: 'einkommen' },
+  { id: 'Sparen', label: 'Sparen', icon: 'piggy-bank', tone: 'accent', kind: 'sparen' },
+  { id: 'Umbuchung', label: 'Umbuchung', icon: 'arrow-left-right', tone: 'neutral', kind: 'umbuchung' },
+];
+
+// --- Regeln: „Wenn der Titel X enthält, dann Kategorie Y“ (Treffer werden aus den Buchungen berechnet) ---------
+export const financeRules = [
+  { id: 'r-rewe', match: 'rewe', category: 'Lebensmittel', active: true },
+  { id: 'r-edeka', match: 'edeka', category: 'Lebensmittel', active: true },
+  { id: 'r-markt', match: 'wochenmarkt', category: 'Lebensmittel', active: true },
+  { id: 'r-aral', match: 'aral', category: 'Mobilität', active: true },
+  { id: 'r-dm', match: 'dm-drogerie', category: 'Haushalt', active: true },
+  { id: 'r-kino', match: 'kino', category: 'Freizeit', active: true },
+  { id: 'r-etsy', match: 'etsy', category: 'Einnahmen Shop', active: true },
+  { id: 'r-shopify', match: 'shopify', category: 'Einnahmen Shop', active: true },
+  { id: 'r-netflix', match: 'netflix', category: 'Abos', active: true },
+  { id: 'r-spotify', match: 'spotify', category: 'Abos', active: false },
+  { id: 'r-sparplan', match: 'sparplan', category: 'Sparen', active: true },
+].map((r) => ({ ...r, hits: transactions.filter((t) => t.title.toLowerCase().includes(r.match)).length }));
+
+// --- Zusatzangaben zu Buchungen (Notiz, Beleg) – Buchungen selbst bleiben unverändert ----------------------------
+export const financeTxMeta = {
+  t8: { note: 'Wocheneinkauf plus Zutaten für die Grillfeier am Samstag', receipt: 'edeka-17-11.jpg' },
+  t12: { note: 'Zwei Karten, Jana kommt mit', receipt: 'ringlokschuppen-tickets.pdf' },
+  t5: { note: 'Auszahlung KW 47', receipt: 'shopify-auszahlung-47.pdf' },
+  t2: { note: 'Abendessen mit Jana' },
+  t21: { note: 'Dauerauftrag, Mietvertrag im Ordner Wohnung' },
+};
+
+// --- Weitere Termine mit Geldwirkung (neben Abos und Sparplänen) -----------------------------------------------
+export const financeEvents = [
+  { id: 'ev-kk', kind: 'karte', title: 'Kreditkartenabrechnung', date: '2026-11-30', amount: accounts.find((a) => a.type === 'credit').balance, from: 'acc-giro', icon: 'credit-card', tone: 6 },
+  { id: 'ev-est', kind: 'steuer', title: 'Einkommensteuer-Vorauszahlung', date: '2026-12-10', amount: -1200, from: 'acc-business', business: true, icon: 'landmark', tone: 'warning', note: 'Annahme, Demo-Wert' },
+];
+
+// --- Fristen und Laufzeiten der Verträge (Annahmen der Demo) ---------------------------------------------------
+export const financeSubMeta = {
+  'sub-kfz': { cancelBy: '2026-11-30', term: 'Jahresvertrag, verlängert sich zum 01.01.2027', note: 'Kündigung zum Jahreswechsel nur bis 30.11.' },
+  'sub-handy': { cancelBy: '2026-12-15', term: '24 Monate, verlängert sich zum 15.03.2027', note: 'Drei Monate Frist' },
+  'sub-fitx': { cancelBy: '2026-12-03', term: 'Monatlich kündbar mit 28 Tagen Frist', note: 'Zum Jahresende kündigen bis 03.12.' },
+  'sub-strom': { term: 'Variabler Tarif, 14 Tage Frist' },
+  'sub-netflix': { term: 'Monatlich kündbar' },
+  'sub-spotify': { term: 'Monatlich kündbar' },
+  'sub-icloud': { term: 'Monatlich kündbar' },
+  'sub-adobe': { term: 'Jahresabo, monatlich gezahlt', note: 'Betriebsausgabe' },
+  'sub-miete': { term: 'Unbefristeter Mietvertrag' },
+};
+
+// --- Monatswerte der Vormonate (Jun–Okt). Der laufende Monat wird zur Laufzeit aus den Buchungen berechnet. ------
+const month = (key, label, income, saved, byCat) => ({ key, label, income, saved, byCat, expenses: r2(Object.values(byCat).reduce((s, x) => s + x, 0)) });
+export const financeMonths = [
+  month('2026-06', 'Jun', 3120, 525, { Wohnen: 1245, Lebensmittel: 398.4, Restaurants: 112.8, Freizeit: 96, Mobilität: 128.5, Haushalt: 54.3, Abos: 49.97, Versicherungen: 54.1, Gesundheit: 39.9 }),
+  month('2026-07', 'Jul', 2840, 575, { Wohnen: 1245, Lebensmittel: 412.2, Restaurants: 168.4, Freizeit: 214.5, Mobilität: 183, Haushalt: 61.8, Abos: 49.97, Versicherungen: 54.1, Gesundheit: 39.9 }),
+  month('2026-08', 'Aug', 3560, 575, { Wohnen: 1245, Lebensmittel: 389.9, Restaurants: 142.1, Freizeit: 131.2, Mobilität: 96.4, Haushalt: 47.6, Abos: 49.97, Versicherungen: 54.1, Gesundheit: 39.9 }),
+  month('2026-09', 'Sep', 3290, 575, { Wohnen: 1262, Lebensmittel: 421.6, Restaurants: 98.7, Freizeit: 88, Mobilität: 142.3, Haushalt: 72.4, Abos: 49.97, Versicherungen: 54.1, Gesundheit: 39.9 }),
+  month('2026-10', 'Okt', 3715, 575, { Wohnen: 1245, Lebensmittel: 436.8, Restaurants: 124.5, Freizeit: 172.4, Mobilität: 164.9, Haushalt: 66.2, Abos: 49.97, Versicherungen: 54.1, Gesundheit: 39.9 }),
+];
+
+// --- Vermögensverlauf nach Gruppen (Dez–Nov); letzter Wert = aktueller Stand der Konten ------------------------
+const grp = (types) => r2(accounts.filter((a) => types.includes(a.type)).reduce((s, a) => s + a.balance, 0));
+export const financeNetWorthHistory = {
+  labels: depotHistory.labels,
+  series: [
+    { name: 'Liquidität', values: [12840, 13620, 14180, 13950, 15310, 14870, 13490, 14760, 15620, 14930, 16180, grp(['giro', 'business', 'credit'])] },
+    { name: 'Rücklagen', values: [7520, 7700, 7880, 8060, 8240, 8420, 8600, 8780, 8960, 9140, 9320, grp(['savings'])] },
+    { name: 'Depot', values: [...depotHistory.series[0].values.slice(0, 11), depotValue] },
+  ],
+};
+
+// --- Einstellungen Privatsphäre & Sicherheit (nur Finanzen) -----------------------------------------------------
+export const financePrefs = {
+  hideAmounts: false, tapReveal: true, hideInNotifications: true, hideInSwitcher: true,
+  lock: false, lockMethod: 'biometrie', lockAfterMin: 1,
+  reserve: 300, // Puffer, der bei „frei verfügbar“ nicht mitzählt (eigene Vorgabe)
+};
+
+// --- Launchpad, Start, Suche, Mitteilungen --------------------------------------------------------------------
+const fmtEur = (v) => `${new Intl.NumberFormat('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Math.abs(v))}\u00a0€`;
+export const financeHints = [
+  ...budgets.filter((b) => b.value > b.target).map((b) => ({ id: `h-bud-${b.id}`, text: `${b.label} liegt ${fmtEur(b.value - b.target)} über dem Budget.`, source: 'budget', module: 'finance', tone: 'warning', to: 'finance.budgets' })),
+  { id: 'h-kfz', text: 'Kfz-Versicherung: Kündigung zum 01.01. ist noch bis 30.11. möglich.', source: 'abo', module: 'finance', tone: 'info', to: 'finance.subscriptions' },
+  { id: 'h-netflix', text: 'Netflix wurde seit 34 Tagen nicht genutzt (167,88\u00a0€ im Jahr).', source: 'abo', module: 'finance', tone: 'info', to: 'finance.subscriptions' },
+];
+export const financeSearch = [
+  ...accounts.map((a) => ({ id: `s-${a.id}`, type: 'Konto', title: a.name, subtitle: `${a.bank} · ${fmtEur(a.balance)}`, module: 'finance', to: 'finance.accounts' })),
+  ...transactions.slice(0, 12).map((t) => ({ id: `s-${t.id}`, type: 'Buchung', title: t.title, subtitle: `${t.category} · ${fmtEur(t.amount)}`, module: 'finance', to: 'finance.transaction', params: { id: t.id } })),
+  ...subscriptions.map((s) => ({ id: `s-${s.id}`, type: 'Abo', title: s.name, subtitle: `${fmtEur(s.amount)} im Monat`, module: 'finance', to: 'finance.subscriptions' })),
+];
+export const financeNotifications = [
+  { id: 'n-kfz', title: 'Kündigungsfrist Kfz-Versicherung', text: 'Noch bis 30.11. zum Jahreswechsel kündbar.', module: 'finance', tone: 'warning', priority: 'wichtig', time: '2026-11-24T08:00:00', to: 'finance.subscriptions' },
+  { id: 'n-fun', title: 'Freizeit über Budget', text: `${fmtEur(budgets.find((b) => b.id === 'b-fun').value - budgets.find((b) => b.id === 'b-fun').target)} über dem Monatsbudget.`, module: 'finance', tone: 'warning', priority: 'normal', time: '2026-11-22T20:10:00', to: 'finance.budgets' },
+  { id: 'n-tx', title: 'Etsy Auszahlung eingegangen', text: `Geschäftskonto: ${fmtEur(812.4)}`, module: 'finance', tone: 'info', priority: 'leise', time: '2026-11-23T10:05:00', to: 'finance.transaction', params: { id: 't3' } },
+];
+
+// --- Szenarien: Erststart (nichts erfasst) und Stress (Extremwerte) ---------------------------------------------
+const zeroSummary = { netWorth: 0, depotValue: 0, income: 0, expenses: 0, saved: 0, savingsRate: 0, fixedCostsMonthly: 0, savingsMonthlyTotal: 0, kpis: [] };
+export const scenarios = {
+  erststart: {
+    financeSummary: zeroSummary, netWorth: 0, fixedCostsMonthly: 0,
+    financeMonths: [], financeEvents: [], financeHints: [], financeSearch: [], financeNotifications: [],
+    financeNetWorthHistory: { labels: [], series: [] },
+    financeRules: [], financeTxMeta: {},
+    financeCategories, financePrefs,
+  },
+  stress: {
+    financeMonths,
+    accounts: [...accounts, { id: 'acc-extrem', name: 'Verrechnungskonto Online-Shop Nordlicht Studio mit sehr langem Namen', bank: 'Kontist Business Premium', type: 'business', balance: 9999999.99, icon: 'briefcase', tone: 5, spark: [9800000, 9900000, 9999999.99], iban: 'DE02 1203 0000 •••• •••• 00' }],
+  },
+};

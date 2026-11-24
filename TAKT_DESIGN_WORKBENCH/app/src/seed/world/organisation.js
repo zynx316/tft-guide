@@ -1,6 +1,6 @@
 // Gemeinsame Datenwelt: Termine & Aufgaben der Persona (Kalender, Aufgaben, Start, Fokus …)
 // Referenztag: Di, 24.11.2026 09:30. Von Modul-Manifesten importiert oder per '@world:events' gebunden.
-export const events = [
+const baseEvents = [
   // Serien
   { id: 'e-standup', title: 'Daily Stand-up', start: '2026-11-02T09:45:00', end: '2026-11-02T10:00:00', category: 'Arbeit', tone: 'accent', location: 'Teams', repeat: 'Werktags' },
   { id: 'e-planung', title: 'Wochenplanung', start: '2026-11-02T08:30:00', end: '2026-11-02T09:15:00', category: 'Fokus', tone: 'success', repeat: 'Wöchentlich', note: 'Prioritäten der Woche festlegen, Kalender und Aufgaben abgleichen.' },
@@ -43,7 +43,7 @@ export const events = [
 ];
 
 /** Aufgaben (Referenz: heute Di 24.11.2026). status: Offen | In Arbeit | Review | Erledigt */
-export const tasks = [
+const baseTasks = [
   { id: 't1', title: 'Angebot Müller GmbH finalisieren', due: '2026-11-24T14:00:00', priority: 'hoch', project: 'Vertrieb', category: 'Arbeit', status: 'In Arbeit', estimate: 60, note: 'Kunde erwartet Rückmeldung bis 14:00 Uhr.', subtasks: [{ id: 't1s1', title: 'Preise prüfen', done: true }, { id: 't1s2', title: 'PDF erzeugen', done: false }, { id: 't1s3', title: 'An Kunden senden', done: false }] },
   { id: 't2', title: 'Belege Oktober hochladen', due: '2026-11-23', priority: 'mittel', project: 'Finanzen', category: 'Finanzen', status: 'Offen', estimate: 30, repeat: 'Monatlich', subtasks: [] },
   { id: 't3', title: 'Produktfotos Winterkollektion auswählen', due: '2026-11-25', priority: 'mittel', project: 'Shop', category: 'Arbeit', status: 'Offen', estimate: 90, subtasks: [{ id: 't3s1', title: 'Rohdaten sichten', done: true }, { id: 't3s2', title: 'Favoriten markieren', done: true }, { id: 't3s3', title: 'Retusche beauftragen', done: false }, { id: 't3s4', title: 'Bilder hochladen', done: false }] },
@@ -66,3 +66,118 @@ export const tasks = [
   { id: 't20', title: 'Umsatzsteuer-Voranmeldung', due: '2026-12-10', priority: 'hoch', project: 'Finanzen', category: 'Finanzen', status: 'Offen', estimate: 45, subtasks: [] },
   { id: 't21', title: 'Kassenbuch abgleichen', due: '2026-11-20', priority: 'mittel', project: 'Finanzen', category: 'Finanzen', status: 'Erledigt', done: true, subtasks: [] },
 ];
+
+// ============================================================================
+// ERGÄNZUNGEN Kalender & Aufgaben (additiv; die Einträge oben bleiben unverändert).
+// Neue Welt-Schlüssel: calSources, calHolidays, calBirthdays, calPrefs, taskInbox, taskActivity, taskFocusLog, taskFocusGoal.
+// ============================================================================
+
+/** Termin-Details (Teilnehmer, Erinnerungen, Fahrzeit, Link) – werden den Basis-Terminen per ID zugeordnet. */
+const EVENT_DETAILS = {
+  e3: { attendees: [{ name: 'Lea Hoffmann', status: 'Zugesagt', role: 'Organisatorin' }, { name: 'Ben Albrecht', status: 'Zugesagt' }, { name: 'Mara Sander', status: 'Offen' }], reminders: ['15 Min. vorher'], link: 'Teams-Besprechung' },
+  e4: { reminders: ['5 Min. vorher'] },
+  e5: { attendees: [{ name: 'Jana', status: 'Zugesagt' }], reminders: ['30 Min. vorher'], travel: 10 },
+  e6: { attendees: [{ name: 'Frau Petersen', status: 'Zugesagt', role: 'Lieferantin' }, { name: 'Tom Wagner', status: 'Zugesagt' }], reminders: ['10 Min. vorher'], link: 'Zoom-Meeting' },
+  e7: { attendees: [{ name: 'Herr Müller', status: 'Zugesagt', role: 'Kunde' }], reminders: ['1 Tag vorher', '15 Min. vorher'] },
+  e8: { attendees: [{ name: 'Sven Ritter', status: 'Zugesagt', role: 'Fotograf' }, { name: 'Jana', status: 'Vielleicht' }], reminders: ['1 Tag vorher', '1 Std. vorher'], travel: 25 },
+  e9: { reminders: ['1 Std. vorher'], travel: 12 },
+  e10: { reminders: ['1 Tag vorher', '30 Min. vorher'], travel: 15 },
+  e11: { attendees: [{ name: 'Mara Sander', status: 'Zugesagt' }, { name: 'Ben Albrecht', status: 'Vielleicht' }], reminders: ['15 Min. vorher'], link: 'Teams-Besprechung' },
+  e12: { attendees: [{ name: 'Lea Hoffmann', status: 'Zugesagt' }], reminders: ['10 Min. vorher'] },
+  e15: { reminders: ['15 Min. vorher'] },
+  e16: { attendees: [{ name: 'Lea Hoffmann', status: 'Zugesagt' }, { name: 'Ben Albrecht', status: 'Zugesagt' }, { name: 'Mara Sander', status: 'Abgesagt' }], reminders: ['1 Tag vorher'], travel: 8 },
+  e17: { attendees: [{ name: 'Frau Brandt', status: 'Zugesagt', role: 'Steuerberaterin' }], reminders: ['1 Tag vorher', '1 Std. vorher'], travel: 20 },
+  e20: { attendees: [{ name: 'Jana', status: 'Zugesagt' }, { name: 'Timo', status: 'Offen' }], reminders: ['1 Tag vorher'], travel: 85 },
+  'e-standup': { attendees: [{ name: 'Lea Hoffmann', status: 'Zugesagt' }, { name: 'Ben Albrecht', status: 'Zugesagt' }], reminders: ['5 Min. vorher'], link: 'Teams-Besprechung' },
+};
+
+/** Feiertage NRW (gesetzlich, Brauchtum) – Winter bis Frühjahr 2027. eventId: bereits als Termin vorhanden. */
+export const calHolidays = [
+  { id: 'h-allerheiligen', name: 'Allerheiligen', date: '2026-11-01', type: 'gesetzlich' },
+  { id: 'h-totensonntag', name: 'Totensonntag', date: '2026-11-22', type: 'Gedenktag' },
+  { id: 'h-advent1', name: '1. Advent', date: '2026-11-29', type: 'Brauchtum', eventId: 'e19' },
+  { id: 'h-nikolaus', name: 'Nikolaus', date: '2026-12-06', type: 'Brauchtum' },
+  { id: 'h-heiligabend', name: 'Heiligabend', date: '2026-12-24', type: 'Brauchtum' },
+  { id: 'h-weihnacht1', name: '1. Weihnachtstag', date: '2026-12-25', type: 'gesetzlich' },
+  { id: 'h-weihnacht2', name: '2. Weihnachtstag', date: '2026-12-26', type: 'gesetzlich' },
+  { id: 'h-silvester', name: 'Silvester', date: '2026-12-31', type: 'Brauchtum' },
+  { id: 'h-neujahr', name: 'Neujahr', date: '2027-01-01', type: 'gesetzlich' },
+  { id: 'h-karfreitag', name: 'Karfreitag', date: '2027-03-26', type: 'gesetzlich' },
+  { id: 'h-ostermontag', name: 'Ostermontag', date: '2027-03-29', type: 'gesetzlich' },
+  { id: 'h-mai', name: 'Tag der Arbeit', date: '2027-05-01', type: 'gesetzlich' },
+  { id: 'h-himmelfahrt', name: 'Christi Himmelfahrt', date: '2027-05-06', type: 'gesetzlich' },
+  { id: 'h-pfingstmontag', name: 'Pfingstmontag', date: '2027-05-17', type: 'gesetzlich' },
+  { id: 'h-fronleichnam', name: 'Fronleichnam', date: '2027-05-27', type: 'gesetzlich' },
+];
+
+/** Geburtstage aus den Kontakten (nächstes Vorkommen, `turns` = wird … Jahre). */
+export const calBirthdays = [
+  { id: 'bd-jana', name: 'Jana', relation: 'Partnerin', date: '2026-11-20', turns: 37, eventId: 'e24' },
+  { id: 'bd-timo', name: 'Timo', relation: 'Bruder', date: '2026-11-28', turns: 36 },
+  { id: 'bd-mama', name: 'Mama (Ingrid)', relation: 'Familie', date: '2026-12-03', turns: 66 },
+  { id: 'bd-lea', name: 'Lea Hoffmann', relation: 'Team', date: '2026-12-17', turns: 31 },
+  { id: 'bd-papa', name: 'Papa (Dieter)', relation: 'Familie', date: '2027-01-09', turns: 68 },
+];
+
+/** Kalenderquellen & Konten (Sync-Status je Quelle). status: ok | error | permission */
+export const calSources = [
+  { id: 'personal', name: 'Jonas · Persönlich', kind: 'google', account: 'Google-Konto', tone: 'accent', visible: true, isDefault: true, status: 'ok', lastSync: '2026-11-24T09:12:00' },
+  { id: 'work', name: 'Nordlicht Studio', kind: 'microsoft', account: 'Microsoft 365', tone: 'warning', visible: true, status: 'ok', lastSync: '2026-11-24T09:05:00' },
+  { id: 'family', name: 'Jana & Jonas', kind: 'icloud', account: 'iCloud · geteilt mit Jana', tone: 'accent2', visible: true, status: 'ok', lastSync: '2026-11-24T08:40:00' },
+  { id: 'etsy', name: 'Etsy-Versandfristen', kind: 'ics', account: 'ICS-Abo per URL', tone: 'success', visible: true, status: 'error', error: 'Anmeldung abgelaufen – das Abo liefert seit Sonntag keine Daten.', lastSync: '2026-11-22T06:00:00' },
+  { id: 'holidays', name: 'Feiertage NRW', kind: 'builtin', account: 'Gesetzliche Feiertage und Brauchtum', tone: 'neutral', visible: true, status: 'ok', readonly: true, lastSync: '2026-11-24T00:00:00' },
+  { id: 'birthdays', name: 'Geburtstage', kind: 'contacts', account: 'Aus deinen Kontakten', tone: 'accent2', visible: true, status: 'ok', readonly: true, lastSync: '2026-11-24T00:00:00' },
+  { id: 'school', name: 'Schulferien NRW', kind: 'ics', account: 'ICS-Abo per URL', tone: 'info', visible: false, status: 'ok', lastSync: '2026-11-20T06:00:00' },
+  { id: 'device', name: 'Gerätekalender', kind: 'device', account: 'Pixel 9 · Lokal', tone: 'info', visible: false, status: 'permission' },
+];
+
+/** Kalender-Einstellungen (Wochenstart, Dauer, Erinnerung, Zeitraster). */
+export const calPrefs = { weekStart: 'Montag', defaultDuration: 60, defaultReminder: '15 Min. vorher', gridFrom: 7, gridTo: 20, weekNumbers: true };
+
+const holidayEvents = calHolidays.filter((h) => !h.eventId && h.type !== 'Gedenktag').map((h) => ({ id: h.id, title: h.name, start: h.date, end: h.date, allDay: true, category: 'Feiertag', tone: 'neutral', source: 'holidays', kind: 'holiday' }));
+const birthdayEvents = calBirthdays.filter((b) => !b.eventId).map((b) => ({ id: b.id, title: `Geburtstag ${b.name.split(' (')[0]}`, start: b.date, end: b.date, allDay: true, category: 'Geburtstag', tone: 'accent2', source: 'birthdays', kind: 'birthday', note: `${b.relation} · wird ${b.turns}` }));
+const extraEvents = [
+  { id: 'e-etsy1', title: 'Etsy: Versandfrist Winterkollektion', start: '2026-11-26', end: '2026-11-26', allDay: true, category: 'Sales', tone: 'warning', source: 'etsy' },
+  { id: 'e-etsy2', title: 'Etsy: Letzter Versandtag vor Weihnachten', start: '2026-12-17', end: '2026-12-17', allDay: true, category: 'Sales', tone: 'warning', source: 'etsy' },
+  { id: 'e-ferien', title: 'Weihnachtsferien NRW', start: '2026-12-23', end: '2027-01-06', allDay: true, category: 'Feiertag', tone: 'info', source: 'school', kind: 'holiday', hidden: true },
+];
+
+/** Termine der Persona inklusive Details, Feiertagen, Geburtstagen und Abo-Terminen. */
+export const events = [...baseEvents.map((e) => (EVENT_DETAILS[e.id] ? { ...e, ...EVENT_DETAILS[e.id] } : e)), ...holidayEvents, ...birthdayEvents, ...extraEvents];
+/** Ursprüngliche Termine ohne Ergänzungen (für freigegebene Features, die unverändert bleiben). Keine Welt-Daten. */
+export const legacyEvents = () => baseEvents.map((e) => ({ ...e }));
+export const legacyTasks = () => baseTasks.map((t) => ({ ...t }));
+
+/** Erledigungstag der bereits abgehakten Aufgaben (für Wochenauswertung). */
+const DONE_AT = { t4: '2026-11-23', t18: '2026-11-23', t21: '2026-11-20' };
+export const tasks = baseTasks.map((t) => (DONE_AT[t.id] ? { ...t, doneAt: DONE_AT[t.id] } : t));
+
+/** Eingang: schnell erfasste Dinge, die noch sortiert werden müssen (Quelle, Zeitpunkt, Vorschlag). */
+export const taskInbox = [
+  { id: 'in1', title: 'Rückruf Spedition wegen Palette Winterkollektion', source: 'Sprache', at: '2026-11-24T08:12:00', suggest: { project: 'Shop', due: '2026-11-24', priority: 'hoch' } },
+  { id: 'in2', title: 'Rechnung Fotograf prüfen und buchen', source: 'Scan', at: '2026-11-24T07:55:00', suggest: { project: 'Finanzen', due: '2026-11-26', priority: 'mittel' } },
+  { id: 'in3', title: 'Verpackungsmaterial nachbestellen (Karton 30 × 20)', source: 'Notiz', at: '2026-11-23T17:40:00', suggest: { project: 'Shop', due: '2026-11-25', priority: 'mittel' } },
+  { id: 'in4', title: 'Jana fragen: Weihnachtsgeschenke für die Eltern', source: 'Erfassen', at: '2026-11-23T21:15:00', suggest: { project: 'Privat', due: '2026-11-28', priority: 'niedrig' } },
+  { id: 'in5', title: 'Artikel zur neuen Verpackungsverordnung lesen', source: 'Teilen', at: '2026-11-23T14:05:00', suggest: { project: 'Shop', priority: 'niedrig' } },
+  { id: 'in6', title: 'Idee: Adventskalender-Bundle im Shop anbieten', source: 'Sprache', at: '2026-11-22T10:30:00', suggest: { project: 'Vertrieb', priority: 'mittel' } },
+  { id: 'in7', title: 'Steuerberater: Frage zu Etsy-Gebühren mitbringen', source: 'Erfassen', at: '2026-11-21T16:20:00', suggest: { project: 'Finanzen', due: '2026-11-27', priority: 'mittel' } },
+];
+
+/** Bereits archivierte Erledigungen je Tag (nicht mehr in der Liste). Zusammen mit tasks[].doneAt ergibt das die Wochenstatistik (Mo + Di = 9). */
+export const taskActivity = [
+  { day: '2026-11-18', archived: 4 }, { day: '2026-11-19', archived: 6 }, { day: '2026-11-20', archived: 4 }, { day: '2026-11-21', archived: 1 },
+  { day: '2026-11-22', archived: 0 }, { day: '2026-11-23', archived: 5 }, { day: '2026-11-24', archived: 2 },
+];
+
+/** Fokus-Sitzungen (Pomodoro, 25 Min.) der letzten Tage; heute bis 09:30: zwei Sitzungen. */
+const FOCUS_DAYS = {
+  '2026-11-18': [['t17', '09:00'], ['t17', '09:30'], ['t3', '14:00'], ['t3', '14:30']],
+  '2026-11-19': [['t6', '08:30'], ['t6', '09:00'], ['t9', '10:00'], ['t9', '10:30'], ['t13', '15:00']],
+  '2026-11-20': [['t10', '09:00'], ['t10', '09:30'], ['t21', '11:00']],
+  '2026-11-23': [['t11', '08:30'], ['t3', '10:00'], ['t3', '10:30'], ['t7', '15:30']],
+  '2026-11-24': [['t1', '08:05'], ['t5', '08:40']],
+};
+export const taskFocusLog = Object.entries(FOCUS_DAYS).flatMap(([day, list]) => list.map(([taskId, at], i) => ({
+  id: `fl-${day.slice(5)}-${i + 1}`, taskId, title: (baseTasks.find((t) => t.id === taskId) || {}).title || 'Aufgabe', start: `${day}T${at}:00`, minutes: 25, kind: 'Fokus',
+})));
+export const taskFocusGoal = { sessionsPerDay: 6, focusMinutes: 25, breakMinutes: 5, longBreakMinutes: 15 };

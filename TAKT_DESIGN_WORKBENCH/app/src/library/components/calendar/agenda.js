@@ -5,6 +5,7 @@ import {
   addDays, dayKey, selDate, occurrences, onDay, eventsFiltered, timeStr, minutesOf, hm, durLabel, freeSlots, catColor, catTone,
   openEventDialog, openCreateDialog, longDay, EVENT_CSS,
 } from './_cal.js';
+import { openEvent, OPEN_MODE_PROP } from './_cal-info.js';
 
 export const agenda = {
   id: 'agenda',
@@ -21,6 +22,7 @@ export const agenda = {
     { name: 'freeTo', label: 'Arbeitstag bis (Std.)', type: 'number', default: 18 },
     { name: 'hideEmptyDays', label: 'Leere Tage ausblenden', type: 'boolean', default: false },
     { name: 'respectFilter', label: 'Suche/Filter beachten', type: 'boolean', default: true },
+    OPEN_MODE_PROP,
   ],
   data: [{ slot: 'events', label: 'Termine', default: 'events', shape: '{id,title,start,end,category?,tone?,location?}[]', required: true }],
   events: ['event.open', 'event.create', 'event.create.open', 'event.update', 'event.delete', 'agenda.free.use'],
@@ -59,7 +61,7 @@ export const agenda = {
         return html`<div><div class="tk-agenda__day" data-today=${isToday}><b>${isToday ? 'Heute' : k === dayKey(addDays(ctx.today, 1)) ? 'Morgen' : new Intl.DateTimeFormat('de-DE', { weekday: 'long' }).format(d)}</b><span class="tk-subtle" style="font-size:var(--tk-fs-sm)">${new Intl.DateTimeFormat('de-DE', { day: 'numeric', month: 'long' }).format(d)}</span><span class="tk-grow"></span><${Badge}>${evs.length} ${evs.length === 1 ? 'Termin' : 'Termine'}<//></div>
           ${!evs.length ? html`<div class="tk-agenda__empty"><${Icon} name="sun" size=${16} />Keine Termine – freier Tag.</div>` : rows.map((r) => r.t === 'free'
             ? (r.b - r.a >= 45 ? html`<div class="tk-agenda__free"><${Icon} name="timer" size=${15} /><span><b>${hm(r.a)}–${hm(r.b)}</b> frei · ${durLabel(r.b - r.a)}</span><span class="tk-grow"></span><${Button} size="sm" variant="ghost" onClick=${() => { ctx.emit('agenda.free.use', { from: hm(r.a) }); openCreateDialog(ctx, setData, { date: k, start: hm(r.a), end: hm(Math.min(r.b, r.a + 60)) }); }}>Nutzen<//></div>` : null)
-            : html`<button type="button" class="tk-agenda__row" data-past=${isToday && !r.e.allDay && minutesOf(r.e._e) <= nowMin} onClick=${() => openEventDialog(ctx, setData, r.e, all)}>
+            : html`<button type="button" class="tk-agenda__row" data-past=${isToday && !r.e.allDay && minutesOf(r.e._e) <= nowMin} onClick=${() => openEvent(ctx, setData, r.e, all, props)}>
               <span class="tk-agenda__time">${r.e.allDay ? html`<b>Ganztag</b>` : html`<b>${timeStr(r.e._s)}</b>${timeStr(r.e._e)}`}</span>
               <span class="tk-agenda__bar" style=${`--ec:${catColor(r.e)}`}></span>
               <span class="tk-grow tk-agenda__main"><div style="font-weight:600" class="tk-truncate">${r.e.title}</div>${r.e.location && html`<div class="tk-subtle tk-truncate" style="font-size:var(--tk-fs-sm)"><${Icon} name="map-pin" size=${12} /> ${r.e.location}</div>`}</span>
