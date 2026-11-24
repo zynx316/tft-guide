@@ -11,6 +11,9 @@ import { navigate, featureHref, moduleHref, studioHref } from '../router.js';
 import { fmt, cx } from '../../lib/util.js';
 import { themes, THEME_IDS } from '../../design-system/tokens.js';
 
+const CRIT_LABELS = { zeit: 'Zeit', einhand: 'Einhand', uebersicht: 'Übersicht', ruhe: 'Ruhe', module20: '20+ Module' };
+const critText = (e) => Object.entries(e.criteria || {}).filter(([, v]) => v).map(([k, v]) => `${CRIT_LABELS[k] || k} ${v}`).join(' · ');
+
 function applyDialog(state, scope, targetId, dir) {
   const where = scope === 'app' ? 'die ganze App' : scope === 'module' ? `Modul „${state.modules.find((m) => m.id === targetId)?.name}“` : `Feature „${state.features.find((f) => f.id === targetId)?.name}“`;
   const cov = versionCoverage(state, `dir:${dir.id}`, scope === 'module' ? targetId : null);
@@ -92,7 +95,7 @@ function FeedbackInbox({ state }) {
     <${Card}>${!fb.length ? html`<${Empty} icon="message-square" title="Noch kein Feedback" text="Im Demo-Launcher Versionen bewerten, kommentieren oder übernehmen – die Rückmeldungen erscheinen hier." action=${html`<a class="wb-btn wb-btn--primary" href="./launcher.html" target="_blank"><${Icon} name="smartphone" size=${15} />Launcher öffnen<//>`} />`
       : html`<table class="wb-table"><thead><tr><th>Zeit</th><th>Version</th><th>Ebene · Bezug</th><th>Bewertung</th><th>Kommentar</th><th>Gerät</th><th>Status</th><th></th></tr></thead><tbody>
         ${fb.slice(0, 300).map((e) => html`<tr><td class="wb-small wb-num">${fmt.dateTime(e.ts)}</td><td><strong>${e.versionName || e.version}</strong></td><td class="wb-small">${LEVELS.find((l) => l.id === e.level)?.label || e.level} · ${e.targetName || e.target}</td>
-          <td class="wb-num">${e.rating ? '★'.repeat(e.rating) : '–'}${e.favorite ? ' ♥' : ''}${e.choose ? html` <${Badge} tone="accent" sq>Übernehmen<//>` : ''}</td><td class="wb-small" style="max-width:320px">${e.comment || ''}</td><td class="wb-small wb-muted">${e.device || ''}</td>
+          <td class="wb-num">${e.rating ? '★'.repeat(e.rating) : '–'}${e.favorite ? ' ♥' : ''}${e.choose ? html` <${Badge} tone="accent" sq>Übernehmen<//>` : ''}</td><td class="wb-small" style="max-width:320px">${e.comment || ''}${critText(e) && html`<div class="wb-xs wb-subtle">${critText(e)}</div>`}${e.scenario && e.scenario !== 'alltag' ? html`<div class="wb-xs wb-subtle">Szenario: ${e.scenario}${e.env ? ` · ${e.env}` : ''}</div>` : ''}</td><td class="wb-small wb-muted">${e.device || ''}</td>
           <td><${Badge} tone=${e.status === 'übernommen' ? 'success' : e.status === 'verworfen' ? null : 'warning'} sq>${e.status || 'neu'}<//></td>
           <td style="white-space:nowrap">${e.status !== 'übernommen' && html`<${Btn} size="sm" icon="check" onClick=${() => adopt(e)}>Übernehmen<//>`}<${IconBtn} icon="x" label="Verwerfen" onClick=${() => actions.setFeedbackStatus(e.id, 'verworfen')} /></td></tr>`)}</tbody></table>`}<//>
   </div>`;

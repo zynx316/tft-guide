@@ -185,7 +185,8 @@ function recommendDirection(s) {
   const fb = (s.feedback || []).filter((e) => String(e.version || '').startsWith('dir:'));
   const stats = dirs.map((d) => {
     const mine = fb.filter((e) => e.version === `dir:${d.id}`);
-    const ratings = mine.map((e) => e.rating).filter((x) => typeof x === 'number');
+    const crit = mine.flatMap((e) => Object.values(e.criteria || {})).filter((x) => typeof x === 'number' && x > 0);
+    const ratings = [...mine.map((e) => e.rating).filter((x) => typeof x === 'number' && x > 0), ...(crit.length ? [crit.reduce((a, b) => a + b, 0) / crit.length] : [])];
     const fs = s.features.filter((f) => !f.archived && f.variants.length);
     const own = fs.filter((f) => f.variants.some((v) => v.direction === d.id)).length;
     return { d, avg: ratings.length ? ratings.reduce((a, b) => a + b, 0) / ratings.length : null, n: ratings.length, fav: mine.filter((e) => e.favorite).length, choose: mine.filter((e) => e.choose).length, own, total: fs.length };

@@ -19,11 +19,19 @@ const errors = [], warnings = [];
 const walk = (d) => fs.readdirSync(d, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? walk(path.join(d, e.name)) : [path.join(d, e.name)]));
 const rel = (p) => path.relative(ROOT, p);
 
-// 1) Syntax
+// 1) Syntax – nur geänderte Dateien (Cache nach Größe+Zeitstempel), parallel in 4 Prozessen
 const jsFiles = walk(SRC).filter((f) => f.endsWith('.js'));
-for (const f of [...jsFiles, path.join(ROOT, 'server.mjs'), path.join(ROOT, 'qa/run-qa.mjs')]) {
-  try { execFileSync(process.execPath, ['--check', f], { stdio: 'pipe' }); } catch (e) { errors.push(`Syntax ${rel(f)}: ${String(e.stderr).split('\n').slice(0, 4).join(' ')}`); }
-}
+const CACHE = path.join(ROOT, '.cache', 'check-syntax.json');
+let cache = {}; try { cache = JSON.parse(fs.readFileSync(CACHE, 'utf8')); } catch { /* erster Lauf */ }
+const sig = (f) => { const st = fs.statSync(f); return `${st.size}:${Math.round(st.mtimeMs)}`; };
+const todo = [...jsFiles, path.join(ROOT, 'server.mjs'), path.join(ROOT, 'qa/run-qa.mjs')].filter((f) => cache[rel(f)] !== sig(f));
+const { execFile } = await import('node:child_process');
+const checkOne = (f) => new Promise((resolve) => execFile(process.execPath, ['--check', f], (err, _o, stderr) => {
+  if (err) { errors.push(`Syntax ${rel(f)}: ${String(stderr).split('\n').slice(0, 4).join(' ')}`); delete cache[rel(f)]; } else cache[rel(f)] = sig(f);
+  resolve();
+}));
+for (let i = 0; i < todo.length; i += 4) await Promise.all(todo.slice(i, i + 4).map(checkOne));
+try { fs.mkdirSync(path.dirname(CACHE), { recursive: true }); fs.writeFileSync(CACHE, JSON.stringify(cache)); } catch { /* nur Beschleunigung */ }
 
 // 1b) Referenztests Finanzmathematik
 try { execFileSync(process.execPath, [path.join(ROOT, 'tools/test-finmath.mjs')], { stdio: 'pipe' }); } catch (e) { errors.push(`Finanzmathematik-Tests: ${String(e.stdout).trim().split('\n').slice(-4).join(' | ')}`); }

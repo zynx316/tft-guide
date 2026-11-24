@@ -14,7 +14,9 @@
     "qa:e2e": "node qa/run-qa.mjs --only e2e",
     "qa:visual": "node qa/run-qa.mjs --only visual",
     "qa:baseline": "node qa/run-qa.mjs --only visual --update-baseline",
-    "check": "node tools/check.mjs"
+    "check": "node tools/check.mjs",
+    "test": "node --import ./tools/register.mjs --test tests/*.test.mjs",
+    "verify": "node tools/verify.mjs"
   },
   "devDependencies": {
     "pixelmatch": "^5.3.0",

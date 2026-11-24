@@ -16,6 +16,7 @@ import { Skeleton, ErrorState, Card, Button } from '../library/ui.js';
 import { Layout } from './layouts.js';
 import { runProbe } from './qa-probe.js';
 import { clone } from '../lib/util.js';
+import * as FMT from '../lib/format.js';
 import { isWorldRef, worldKey } from '../seed/world/index.js';
 
 const styleEl = document.createElement('style');
@@ -158,7 +159,7 @@ function Screen({ variant, demoData, cacheKey, cache, theme, today, forcedState,
     },
   };
   const ctx = {
-    bp, width, theme, today: new Date(today || DEFAULT_TODAY), emit, ui, privacy: !!privacy, env: env || {},
+    bp, width, theme, today: new Date(today || DEFAULT_TODAY), now: () => new Date(today || DEFAULT_TODAY), fmt: FMT, emit, ui, privacy: !!privacy, env: env || {},
     setUi: (k, v) => setUiState((u) => ({ ...u, [k]: v })),
     openDialog: overlays.openDialog, toast: overlays.toast,
   };

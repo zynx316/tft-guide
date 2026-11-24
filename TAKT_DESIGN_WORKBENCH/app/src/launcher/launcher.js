@@ -136,6 +136,25 @@ function commentDialog({ version, level, route, state }) {
   } });
 }
 
+/** Kriterien für den Versionsvergleich (Bauplan Abschnitt 4) – ohne Gewichtung, 1–5. */
+export const LAUNCHER_CRITERIA = [
+  { id: 'zeit', label: 'Zeit bis zur Aktion', hint: 'Wie schnell ist das Häufigste erledigt?' },
+  { id: 'einhand', label: 'Einhandbedienung', hint: 'Daumen erreicht alles Wichtige' },
+  { id: 'uebersicht', label: 'Übersicht', hint: 'Das Wichtige auf einen Blick' },
+  { id: 'ruhe', label: 'Ruhe / Dichte', hint: 'Angenehm ruhig, nicht überladen' },
+  { id: 'module20', label: 'Trägt 20+ Module', hint: 'Bleibt mit allen Modulen verständlich' },
+];
+
+function criteriaDialog({ version, level, route, state, current, onSave }) {
+  openDialog({ title: `Kriterien – „${version.name}“`, body: ({ close }) => {
+    const [c, setC] = useState({ ...(current || {}) }); const t = levelTarget(level, route, state);
+    return html`<p class="wb-small wb-muted">Bezug: ${LEVELS.find((l) => l.id === level)?.label} · ${t.targetName}. 1 = schwach, 5 = sehr gut.</p>
+      <div class="wb-col" style="gap:10px;margin:8px 0">${LAUNCHER_CRITERIA.map((k) => html`<div class="wb-row wb-wrap" style="gap:8px"><div class="wb-grow" style="min-width:150px"><strong class="wb-small">${k.label}</strong><div class="wb-xs wb-subtle">${k.hint}</div></div>
+        <div class="wb-score" role="radiogroup" aria-label=${k.label}>${[1, 2, 3, 4, 5].map((n) => html`<button type="button" role="radio" aria-checked=${String(c[k.id] === n)} class=${c[k.id] === n ? 'is-on' : ''} style="width:36px;height:36px" onClick=${() => setC({ ...c, [k.id]: c[k.id] === n ? undefined : n })}>${n}</button>`)}</div></div>`)}</div>
+      <div class="wb-row" style="justify-content:flex-end"><${Btn} onClick=${close}>Abbrechen<//><${Btn} variant="primary" icon="check" data-confirm onClick=${async () => { await onSave(c); toast('Kriterien gespeichert'); close(); }}>Speichern<//></div>`;
+  } });
+}
+
 function RatingBar({ state, version, level, route, compact }) {
   const t = levelTarget(level, route, state);
   const key = `${version.id}|${level}|${t.target}`;
@@ -143,11 +162,13 @@ function RatingBar({ state, version, level, route, compact }) {
   const r = ratings[key] || { rating: 0, favorite: false };
   const save = async (patch) => {
     const next = { ...r, ...patch }; const all = { ...ls.get(RATINGS_KEY, {}), [key]: next }; ls.set(RATINGS_KEY, all); setRatings(all);
-    await sendFeedback({ version: version.id, versionName: version.name, level, target: t.target, targetName: t.targetName, rating: next.rating, favorite: next.favorite });
+    await sendFeedback({ version: version.id, versionName: version.name, level, target: t.target, targetName: t.targetName, rating: next.rating, favorite: next.favorite, criteria: next.criteria });
   };
+  const nCrit = Object.values(r.criteria || {}).filter(Boolean).length;
   return html`<div class=${cx('ln-rate', compact && 'ln-rate--compact')}>
     <${Stars} value=${r.rating} onChange=${(n) => save({ rating: n })} size=${compact ? 22 : 18} />
     <button type="button" class=${cx('ln-fav', r.favorite && 'is-on')} aria-pressed=${String(!!r.favorite)} aria-label="Favorit" onClick=${() => save({ favorite: !r.favorite })}><${Icon} name="heart" size=${18} /></button>
+    <button type="button" class=${cx('ln-fav', nCrit > 0 && 'is-on')} aria-label=${`Kriterien bewerten${nCrit ? ` (${nCrit} von 5)` : ''}`} title="Kriterien bewerten" onClick=${() => criteriaDialog({ version, level, route, state, current: r.criteria, onSave: (criteria) => save({ criteria }) })} data-qa="ln-criteria"><${Icon} name="sliders-horizontal" size=${17} /></button>
     <${IconBtn} icon="message-square" label="Kommentar" onClick=${() => commentDialog({ version, level, route, state })} />
     <${Btn} size="sm" variant="primary" icon="check" onClick=${() => chooseDialog({ state, version, level, route })}>${compact ? 'Nehmen' : 'Übernehmen'}<//>
   </div>`;
