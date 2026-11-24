@@ -112,3 +112,7 @@
 - [x] Session 2, Mittag: Schrift 200 % in allen 348 Varianten (390/360/1440 px) ohne abgeschnittene Texte, zeichenweise Umbrüche
       oder zu schmale Spalten – 4 Modulgruppen mit Korrektur und unabhängiger Nachprüfung (alle „gut“), bei 100 % pixelgleich;
       Basisregeln für Chips, Badges, Reiter, Filterchips, Silbentrennung und Listenzeilen; `ctx.textScale`/`ctx.largeText`
+- [x] Session 2, Nachmittag: unabhängige Abschlussprüfung (Übergabe-Simulation, Doku gegen Code, Sichtprüfung) – 2 Blocker
+      behoben (visuelle QA-Stufe, Node/Playwright-Lockfile), 20 Doku-Stellen korrigiert; Gesamtlauf `npm run qa`; Schrift 200 %
+      auch bei 768/1024/1280 px (21 Komponenten in Seitenspalten, 2 Pakete mit Nachprüfung „gut“) – alle 348 Varianten in allen
+      sechs Breiten ohne Befund, bei 100 % pixelgleich

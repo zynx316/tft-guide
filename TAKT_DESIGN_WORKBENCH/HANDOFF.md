@@ -16,7 +16,8 @@ Die Workbench ist eine **vollständige Entscheidungs- und Designumgebung** für 
   (bereit/fertig), Scorecard, Arbeitsauftrag für Claude Code.
 - **Qualität:** `npm run check` (< 1 s, 0 Fehler/0 Hinweise), `npm test` (400 Node-Tests), `npm run qa` (Vertrag 0/0, 32 E2E-Tests,
   Screenshot-Matrix, Regression), QA-Sonde mit 11 Prüfungen inkl. Barrierefreiheit, Privatsphäre, Pflichthinweis und Geldformat.
-  Alle 348 Varianten sind bei **Schrift 200 %** (390/360/1440 px) ohne abgeschnittene Texte oder zeichenweise Umbrüche.
+  Alle 348 Varianten sind bei **Schrift 200 %** in allen sechs Breiten (360–1440 px) ohne abgeschnittene Texte oder
+  zeichenweise Umbrüche.
   Leitlinien für Gesundheit, Finanzen und Text.
 - **Ruhiger Erststart:** Szenario „Erster Start“ zeigt auf allen Startseiten Einladungen statt leerer Kennzahlen (Blockbedingungen
   `hideWhenEmpty`/`showWhenEmpty`, `quietEmpty` – siehe `app/src/library/CONTRACT.md`).

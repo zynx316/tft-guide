@@ -47,7 +47,7 @@ strukturell verschiedene Versionen, echte Interaktionen, realistische Daten und 
   verdreifacht Listen und verlängert Titel. Gezielte Werte optional per `export const scenarios = { erststart: {…}, stress: {…} }`
   in der Welt-Datei. Jede Startseite und jedes Tier-1-Feature muss in beiden Szenarien gut aussehen.
 - **Umgebung:** `&env=offline` (Hinweisleiste), `&env=privacy` (Beträge maskiert), `&scale=2` (Schrift 200 % – nichts
-  darf abgeschnitten werden oder überlappen). Komponenten erhalten `ctx.env`, `ctx.privacy`, `ctx.fmt`, `ctx.now()`.
+  darf abgeschnitten werden oder überlappen; auch bei 1024/1280 px prüfen, dort fallen schmale Seitenspalten auf). Komponenten erhalten `ctx.env`, `ctx.privacy`, `ctx.fmt`, `ctx.now()`.
 - **Formatieren & Rechnen:** `ctx.fmt` = `app/src/lib/format.js` (fmtMoney, fmtPercent, fmtPP, fmtNumber, fmtDate,
   fmtRelativeDay, fmtDuration, fmtWeight; de-DE, geschütztes Leerzeichen, echtes Minus). Beträge weiterhin über
   `money(ctx, …)` (Privatsphäre). Wiederholungen nur über `app/src/core/recurrence.js` (`nextOccurrences`, `describeRule`),

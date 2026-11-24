@@ -10,15 +10,16 @@ Der Bericht aus Session 1 (12 Module, 57 Varianten) ist durch diesen ersetzt; se
 | Statische Prüfung (`npm run check`) | 436 JS-Dateien, Seed-Integrität, Vertragsregeln, Begriffslisten (Gesundheit/Finanzen), Umlaute, `legal`-Felder, Welt-Schlüssel | **0 Fehler · 0 Hinweise** (auch mit CRLF-Zeilenenden) |
 | Node-Tests (`npm test`) | 400 Tests in 29 Dateien: Kern, Welt-Invarianten (33), Szenarien, Seed-Abgleich, Format, Wiederholung, Gesundheits- und Finanzmathematik, Module | **400/400** |
 | Vertragsprüfung (Browser) | 296 Komponenten, 197 Features, alle Varianten, Bindungen, Props-Schemata, Interaktions-Events | **0 Fehler · 0 Hinweise** |
-| E2E-Bedientests | 32 Tests: Workbench, Demo-Launcher (Versionen, Szenarien, Offline, Schrift 200 %), App-Rahmen, Runden, Gates, Spezifikation | **32/32** |
+| E2E-Bedientests | 32 Tests: Workbench, Demo-Launcher (Versionen, Szenarien, Offline, Schrift 200 %), App-Rahmen, Runden, Gates, Spezifikation | **32/32** (auch im Schlusslauf nach allen Korrekturen) |
 | Screenshot-Matrix (Gesamtlauf, 17 Min.) | bevorzugte Variante von 154 Features × 1440/1280/1024/768/390 · Graphite | **768/770**; 2 Befunde (`fitness.exercises/A`, Überlauf bei 1280/1024 px: Diagramm in der Seitenspalte) → behoben (`exercise-detail` 1.2), danach alle 348 Varianten bei 1024 und 1280 px: **0 Befunde** |
 | Szenario „Erster Start“ | bevorzugte Variante aller 154 Features mit Varianten · 390 px | **154/154** |
 | Szenario „Stress-Tag“ | dito | **154/154** |
 | Privatsphäre-Modus („Beträge ausblenden“) | dito | **154/154** (keine Beträge sichtbar) |
 | Themes Horizon und Intensiv | **alle 348 Varianten** × 2 Themes · 390 px | Sonde **696/696** (Kontrast, Layout, Barrierefreiheit); Pixelvergleich siehe unten |
-| Schrift 200 % (Sweep mit der QA-Sonde) | **alle 348 Varianten** × 390 / 360 / 1440 px | **0 Befunde** (vorher 57 Varianten mit abgeschnittenem Text) |
-| Schrift 130 % | alle 348 Varianten × 390 px | **0 Befunde** (auch Touch-Ziele) |
+| Schrift 200 % (Sweep mit der QA-Sonde) | **alle 348 Varianten** × 360 / 390 / 768 / 1024 / 1280 / 1440 px | **0 Befunde** (vorher 57 Varianten bei 390 px und 21 Komponenten in Seitenspalten bei 768–1280 px) |
+| Schrift 130 % | alle 348 Varianten × 390 / 1024 px | **0 Befunde** (auch Touch-Ziele) |
 | 100-%-Identität der 200-%-Kernregeln | alle 348 Varianten × 390 / 1440 px, alter gegen neuen Stand | **696/696 pixelgleich** (unabhängige Prüfung) |
+| 100-%-Identität der Zwischenbreiten-Korrekturen | alle 348 Varianten × 390 / 1024 / 1440 px, Stand davor gegen danach | **1044/1044 pixelgleich** (2 Abweichungen unter Last mit 26/44 px, in Einzelwiederholung je 5× gleich) |
 
 **Ergebnis:** Keine offenen Fehler der QA-Sonde in irgendeiner Variante, Größe, Szenario, Umgebung oder in irgendeinem Theme.
 Die einzigen Abweichungen sind Pixelvergleiche gegen Referenzbilder aus Session 1 – erklärt im Abschnitt „Pixelvergleich“.
@@ -64,6 +65,7 @@ der Workbench greift deshalb erst bei Freigaben über die Oberfläche.
 | Szenario-/200-%-Läufe überschrieben Standard-Baselines | Dateiname ohne Szenario/Skalierung | Zusatz `__sc-…`, `__env-…`, `__x2` |
 | `npm run check` meldete unter Windows 2 Fehlalarme | `split('\n')` bei CRLF | `/\r?\n/`, `.gitattributes` (LF) |
 | 57 Varianten mit abgeschnittenem Text bei Schrift 200 % | feste Spalten, `nowrap`, `rem`-Breiten | 4 Modulgruppen korrigiert und unabhängig nachgeprüft; Basisregeln für Chips, Badges, Reiter, Filter, Listen |
+| Seitenspalten bei 768–1280 px und 200 % gequetscht (Inhaltsverzeichnis, Belegbild, 4-Spalten-Board, Agenda, Satz-Logger …, 21 Komponenten) | Sweeps liefen nur bei 390/360/1440; Raster in px, Spalten nach Viewport statt Blockbreite | 2 Pakete mit Korrektur und Nachprüfung („gut“), Muster im Vertrag, `qa:scale` prüft jetzt auch 1024/1280 |
 | Wörter mit 8–9 Zeichen brachen hart („Dokume/nte“) | Silbentrennungsgrenze 10 zu streng | `hyphenate-limit-chars: 8 2 2` |
 | Chips in Scrollreihen streckten sich auf die Höhe des längsten | Umbruch im längsten Chip | Scrollreihen einzeilig (3 Komponenten) |
 | Mahlzeiten-Zeitleiste: „Schätzung“ Buchstabe für Buchstabe senkrecht (1440 px, 200 %) | Nebenzeile auf 0 px gequetscht (Altlast) | stapelt bei großer Schrift |
@@ -87,7 +89,7 @@ npm run qa                                                     # Vertrag + 32 E2
 npm run qa:scenarios                                           # Erster Start / Stress-Tag (eigene Baselines)
 npm run qa -- --only visual --viewports mobile --env privacy   # Beträge ausblenden
 npm run qa -- --only visual --all-variants --viewports mobile --themes horizon,intensiv
-npm run qa -- --only visual --all-variants --viewports mobile,mobile-s --scale 2   # Schrift 200 %
+npm run qa -- --only visual --all-variants --viewports mobile,mobile-s,tablet,tablet-l,notebook,desktop --scale 2   # Schrift 200 %
 npm run qa:changed                                             # nach Komponenten-Änderungen
 ```
 Bericht des letzten Laufs: `qa/results/latest.md`; Screenshots und Differenzbilder in `qa/results/<Zeitstempel>/`.

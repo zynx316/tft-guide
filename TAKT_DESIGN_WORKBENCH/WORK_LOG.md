@@ -225,3 +225,22 @@ Zeiten in UTC. Neue Einträge unten anhängen (Datum, Phase, Entscheidung/Änder
   Übungsalternativen) → dort einzeilig; Modul-Kacheln breiter, Ortsname im Wetter bleibt ganz, Mahlzeiten-Zeitleiste stapelt
   (Altlast: „Schätzung“ stand Buchstabe für Buchstabe senkrecht).
 
+
+### 15:10–18:30 – Gesamtlauf und Schrift 200 % in den Zwischenbreiten (Workflow, 2 Pakete, je Korrektur → Nachprüfung)
+- **1440 px bei 200 %:** Sparrechner-Regler, Kursalarm-Formular und Bestellkacheln quetschten Spalten → umbrechende Raster in `em`.
+- **Gesamtlauf `npm run qa`** (17 Min.): Vertrag 0/0, E2E 32/32, Matrix 768/770 – `fitness.exercises/A` lief bei 1024/1280 px über:
+  `exercise-detail` schaltete zwei Spalten nach Viewport (`.bp-desktop`), steht dort aber in der schmalen Seitenspalte →
+  Spalten jetzt nach `ctx.blockWidth` (ab 560 px), `exercise-detail` 1.2.
+- **Lücke im Prüfplan erkannt:** 200 % war nur bei 390/360/1440 px gesweept. Bei 1024 px meldete die Sonde 21 Komponenten
+  (Seitenspalten: Inhaltsverzeichnis von `kb-article`, Bildstreifen von `receipt-review`, 4-Spalten-Board `order-pipeline`,
+  Agenda, Sondertage, Satz-Logger, Körpermaße, Vermögen, Radar …), bei 1280 px zusätzlich `card-grid`.
+- **Workflow (4 Agenten, beide Pakete „gut“):** Paket A (Kalender, Start, Gewohnheiten, Wissen, Notizen, Belege, Verkauf) und
+  Paket B (Finanzen, Sparpläne, Trading, Fitness, Wetter) – nur Regeln unter `[data-tk-large-text]`, Raster in `em`,
+  Seitenspalten einspaltig. Nachprüfer mit Gegenprobe gegen HEAD (Sonde findet die alten Fehler) und eigenem 100-%-Vergleich.
+- **Hauptsession danach:** Versionen `habit-list` 1.3 / `habit-week-grid` 1.2 (Regeln aus `_habits.js`), drei optische
+  Restpunkte der Nachprüfer (Positionswert „18.036,55 €“ mit „€“ allein in der Zeile → kleinere Schrift; Notiz-Eingang brach
+  „Rückru|f“ mitten im Wort → Titelzeile umbrechend; Ring „96 %“ zweizeilig → Ring wächst mit `ctx.largeText`),
+  Vertrag um die Muster „Seitenspalten“ und „Spalten nach Blockbreite“ ergänzt, `qa:scale` prüft jetzt auch 1024/1280 px.
+- **Ergebnis:** alle 348 Varianten bei 200 % in 360/390/768/1024/1280/1440 px, bei 130 % (390/1024) und bei 100 % (1024)
+  ohne Befund der Sonde; bei 100 % 1044/1044 Vergleiche (390/1024/1440 px) pixelgleich zum Stand davor; Vertrag 0/0,
+  E2E 32/32, check 0/0, 400 Tests grün.
