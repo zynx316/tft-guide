@@ -2,7 +2,7 @@
 
 > Diese Datei lädt Claude Code automatisch. **Beim Sessionstart zuerst:** `/takt-start` (oder `HANDOFF.md`, `TASKS.md` und das
 > Ende von `WORK_LOG.md` lesen). Original-Auftrag: `docs/MISSION.md`. Bauplan mit allen Verträgen: `docs/BAUPLAN.md`.
-> Slash-Commands: `/takt-start`, `/takt-phase1`, `/takt-round-prep`, `/takt-work-order`, `/takt-feature <id>`, `/takt-qa`, `/takt-review`.
+> Slash-Commands: `/takt-start`, `/takt-phase1`, `/takt-round-prep`, `/takt-work-order`, `/takt-spec`, `/takt-feature <id>`, `/takt-qa`, `/takt-review`.
 
 ## Was ist das?
 Eine **eigenständige, lokal laufende Design-, Entscheidungs-, Vorschau- und QA-Umgebung**, mit der die App **TAKT V2.0**
@@ -42,7 +42,7 @@ app/src/
   library/        registry.js · CONTRACT.md · ui.js (Primitive) · helpers.js (money/percent → lib/format.js) · components/<bereich>/
   preview/        runtime.js (Renderer + App-Player) · launchpad.js (App-Rahmen tabs/launchpad/fokus) · layouts.js · qa-probe.js
   core/           schema · directions (Versionen, Meine Auswahl, Rahmen) · process (Inbox, Gates, Tiers) · world (Szenarien)
-                  seedpatch · workorder · spec · flutter · finmath · recurrence · health · preview-payload · versioning · impact
+                  seedpatch · workorder · spec (+ spec-json: JSON, specHash, Routen) · flutter · finmath · recurrence · health · preview-payload · versioning · impact
   seed/           index.js · catalog.js (Grundsatzfragen + Muster) · modules/*.js · world/*.js (Datenwelt)
   launcher/       Demo-Launcher (Versionen nebeneinander, Handy-Vollbild, Bewertung, Feedback)
   workbench/      store.js (EINZIGER Ort für Zustandsänderungen: actions.*; Konflikt-Rebase) · app.js · views/*
@@ -71,6 +71,7 @@ npm run qa                         Vertrag + E2E + Screenshot-Matrix + Regressio
 npm run qa:changed | qa:e2e | qa:scale | qa:scenarios | qa:baseline
 npm run qa -- --feature <id> --all-variants --themes graphite,horizon,intensiv --scenario stress --env privacy --scale 2
 node tools/work-order.mjs [--round latest|--feature a,b]      node tools/feature-ids.mjs
+npm run spec [-- --released]  Umsetzungsvorlagen JSON+MD+Routen → export/spec/   npm run spec:check  Änderungen seit letztem Export
 ```
 
 ## Agenten (siehe `.claude/agents/`)

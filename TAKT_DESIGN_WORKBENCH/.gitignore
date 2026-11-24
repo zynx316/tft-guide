@@ -10,3 +10,5 @@ Thumbs.db
 # Wer die Workbench als eigenes Repo führt und Baselines versionieren will: diese Zeilen entfernen.
 qa/baselines/*
 !qa/baselines/.gitkeep
+# Generierte Umsetzungsvorlagen (npm run spec) – bei Bedarf ins Flutter-Projekt kopieren oder bewusst einchecken
+export/

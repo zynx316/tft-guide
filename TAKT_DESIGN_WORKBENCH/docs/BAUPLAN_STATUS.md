@@ -17,7 +17,7 @@
 | INF-5 Tests, Check, verify | fertig | `npm test` (~275 Tests, Node-Loader für Preact), `npm run check` (Syntax mit Cache, Seed, Vertrag, Navigationsgraph, Begriffe, CSS-Kollisionen, Hinweise zu `Intl`/`Math.random`), `npm run verify` | Seed-Größen-Gate (1,6 MB) nicht als harte Prüfung |
 | INF-6 QA-Probe, CLI, E2E | teilweise | Sonde mit 9 Prüfungen (neu: Barrierefreiheits-Namen, Privatsphäre), Wiederholung bei fehlenden Blöcken, CLI mit `--scenario/--env/--scale`, 32 E2E-Tests inkl. Launcher, Runden, Gates, Vertragsprüfung der Events | Prüfungen `legal-present`, `money-format`, DOM-Knotenbudget; E2E nicht modular in `qa/e2e/` aufgeteilt |
 | INF-7 Workbench-Prozess | fertig | App-Ebene (Leitbild, Inbox, Muster, Gates, Annahmen), Entscheidungsrunden mit Zeitbox und Limit 2, Parken mit Wiedervorlage, Gates je Feature/Modul/App, Scorecard, Pins, Abnahmekriterien, Gerätetest-Tab, Ausbaustufen, Eingang vom Handy | Vererbungsbaum als Grafik |
-| INF-8 Flutter-Brücke light | teilweise | Feature-/Modul-Spezifikation als Markdown, Dart-Tokens, `flutter`-Feld im Komponentenvertrag, Arbeitsauftrag-Export (`tools/work-order.mjs`) | Spezifikation als JSON mit `specHash`, Routentabelle, Export-CLI mit Manifest |
+| INF-8 Flutter-Brücke light | fertig | Spezifikation als JSON `takt-feature-spec/1` mit `specHash` (`core/spec-json.js`), Routentabelle, Export-CLI `npm run spec` mit deterministischem Manifest und `spec:check`, Markdown-Spezifikation, Dart-Tokens, `flutter`-Feld, Arbeitsauftrag-Export | Entitäten-Dart, ARB, Widgetbook (bewusst nach Phase 1) |
 | INF-9 Querschnitt-Bausteine | fertig | Hinweis-, Offline-, Berechtigungs-, Erststart-, Rückgängig-, Wiederholungs- und Verknüpfungs-Bausteine (Tests `inf9-crosscut`) | – |
 
 ## Module (Phase 1 und 2)

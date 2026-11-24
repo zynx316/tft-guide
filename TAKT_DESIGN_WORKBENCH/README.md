@@ -64,14 +64,16 @@ Bilder, **Namen von Bedienelementen** und **Beträge im Privatsphäre-Modus**. E
 
 ## Mit Claude Code arbeiten
 `CLAUDE.md` lädt automatisch. Befehle: `/takt-start` (Lage), `/takt-phase1` (echtes TAKT-Projekt nur lesend abgleichen),
-`/takt-round-prep` (Runde mit Belegen vorbereiten), `/takt-work-order` (Arbeitsauftrag umsetzen), `/takt-feature <id>`,
+`/takt-round-prep` (Runde mit Belegen vorbereiten), `/takt-work-order` (Arbeitsauftrag umsetzen), `/takt-spec` (Umsetzungsvorlagen), `/takt-feature <id>`,
 `/takt-qa`, `/takt-review`. Leitlinien für Inhalte: `docs/HEALTH_GUIDELINES.md`, `docs/FINANCE_GUIDELINES.md`,
 `docs/TEXT_STIL.md`, `docs/DATENWELT.md`. Neue Module: `docs/WORKER_BRIEF.md`, `app/src/seed/SEED_FORMAT.md`.
 
 ## Export, Backup, Übertragung
 Export/Import (JSON, mit Prüfung und Sicherung), automatische Backups (`data/backups/`), **Seed abgleichen** übernimmt neue
 Seed-Stände ohne eigene Arbeit zu überschreiben, Design-Tokens als JSON und als Dart (`ThemeExtension`) für Flutter,
-Feature-Spezifikation als Markdown (je Feature/Modul).
+Feature-Spezifikation als Markdown (je Feature/Modul) und **für Flutter maschinenlesbar**: `npm run spec [-- --released]`
+schreibt `export/spec/` (JSON `takt-feature-spec/1` je Feature mit `specHash`, Routentabelle, deterministisches Manifest);
+`npm run spec:check` zeigt, welche Features sich seit dem letzten Export geändert haben.
 
 ## Weiterführend
 `HANDOFF.md` (Stand & Übergabe) · `TASKS.md` · `ARCHITECTURE.md` · `DESIGN_SYSTEM.md` · `QA_REPORT.md` · `WORK_LOG.md` ·

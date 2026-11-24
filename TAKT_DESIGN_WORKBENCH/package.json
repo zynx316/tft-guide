@@ -18,7 +18,9 @@
     "qa:scenarios": "node qa/run-qa.mjs --only visual --viewports mobile --scenario erststart && node qa/run-qa.mjs --only visual --viewports mobile --scenario stress",
     "check": "node tools/check.mjs",
     "test": "node --import ./tools/register.mjs --test tests/*.test.mjs",
-    "verify": "node tools/verify.mjs"
+    "verify": "node tools/verify.mjs",
+    "spec": "node --import ./tools/register.mjs tools/export-spec.mjs",
+    "spec:check": "node --import ./tools/register.mjs tools/export-spec.mjs --check"
   },
   "devDependencies": {
     "pixelmatch": "^5.3.0",
