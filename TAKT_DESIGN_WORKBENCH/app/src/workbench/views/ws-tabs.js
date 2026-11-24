@@ -3,7 +3,8 @@ import { html } from '../../lib/html.js';
 import { useState, useMemo, useCallback } from 'preact/hooks';
 import { Icon } from '../../lib/icons.js';
 import { Card, Btn, IconBtn, Badge, StatusBadge, Empty, Select, TextInput, Checkbox, Field, openDialog, confirmDialog, promptDialog, toast, useSortable, QaCell } from '../ui/kit.js';
-import { act, decisionDialog, REQUIREMENT_TYPES, PRIORITIES, toneVar } from './common.js';
+import { act, decisionDialog, decisionStatusLabel, decisionTone, REQUIREMENT_TYPES, PRIORITIES, toneVar } from './common.js';
+import { newRoundDialog } from './rounds.js';
 import { actions } from '../store.js';
 import { FEATURE_STATUSES, statusIndex, UI_STATES } from '../../core/schema.js';
 import { diffSnapshots, snapshotOf } from '../../core/versioning.js';
@@ -12,6 +13,7 @@ import { getComponent } from '../../library/registry.js';
 import { PreviewFrame } from '../ui/preview-frame.js';
 import { navigate, featureHref, studioHref } from '../router.js';
 import { fmt, uid } from '../../lib/util.js';
+import { GatesCard, PinsCard, AcceptanceCard } from './ws-process.js';
 
 const VIEWPORT_GROUPS = [{ id: 'desktop', label: 'Desktop', icon: 'monitor' }, { id: 'notebook', label: 'Notebook', icon: 'laptop' }, { id: 'tablet', label: 'Tablet', icon: 'tablet' }, { id: 'mobile', label: 'Mobile', icon: 'smartphone' }];
 
@@ -52,9 +54,11 @@ export function OverviewTab({ state, feature: f }) {
           : html`<div class="wb-small wb-subtle">Code-Stellen, frühere HTML-Prototypen, Konzepte (Phase 1).</div>`}<//>
         <${Card} title="Notizen" icon="sticky-note"><${TextInput} multiline rows="4" value=${f.notes} onCommit=${(v) => act(() => actions.updateFeature(f.id, { notes: v }, 'Notiz bearbeitet'))} placeholder="Offene Punkte, Ideen …" /><//>
       </div>
+      <${PinsCard} state=${state} feature=${f} />
     </div>
     <div class="wb-col" style="gap:14px">
       <${Card} title="Fortschritt"><${StatusStepper} status=${f.status} /><//>
+      <${GatesCard} state=${state} feature=${f} />
       <${Card} title=${sel ? `Bevorzugt: ${sel.id} – ${sel.name}` : 'Noch kein Design'} icon="palette" actions=${html`<a class="wb-small" href=${studioHref(f.id)}>Studio</a>`}>
         ${payload ? html`<div class="wb-canvas" style="border-radius:10px;padding:14px 6px"><${PreviewFrame} payload=${payload} device="mobile" maxHeight=${440} showMeta=${false} /></div>
           <p class="wb-small wb-muted" style="margin-top:10px">${sel.concept}</p>`
@@ -106,6 +110,7 @@ export function RequirementsTab({ state, feature: f }) {
         <${Select} size="sm" style="width:86px;flex:none" value=${draft.priority} onChange=${(v) => setDraft({ ...draft, priority: v })} options=${PRIORITIES.map((p) => ({ value: p.id, label: p.label }))} aria-label="Priorität neu" />
         <${Btn} size="sm" variant="primary" icon="plus" onClick=${add}>Hinzufügen<//></div>`}
     <//>
+    <${AcceptanceCard} feature=${f} />
   </div>`;
 }
 
@@ -187,9 +192,10 @@ export function DecisionsTab({ state, feature: f }) {
   const list = state.decisions.filter((d) => d.featureId === f.id);
   return html`<div class="wb-col" style="gap:14px">
     <div class="wb-row"><p class="wb-muted wb-grow">Warum wurde eine Variante gewählt? Welche Nachteile wurden bewusst akzeptiert? Entscheidungen werden bei der Freigabe mit der Version verknüpft.</p>
+      <${Btn} icon="timer" onClick=${() => newRoundDialog(state, `module:${f.moduleId}`)}>Runde fürs Modul<//>
       <${Btn} variant="primary" icon="plus" onClick=${() => decisionDialog({ featureId: f.id, moduleId: f.moduleId })}>Entscheidung<//></div>
     ${!list.length ? html`<${Card}><${Empty} icon="gavel" title="Noch keine Entscheidungen" text="Tipp: Im Tab „Vergleich“ eine Variante bevorzugen – die Begründung wird automatisch als Entscheidung dokumentiert." /><//>`
-    : list.map((d) => html`<${Card} title=${d.title} actions=${html`<div class="wb-row"><${Badge} tone=${d.status === 'open' ? 'warning' : d.status === 'decided' ? 'success' : null}>${{ open: 'Offen', decided: 'Entschieden', superseded: 'Überholt' }[d.status]}<//>
+    : list.map((d) => html`<${Card} title=${d.title} actions=${html`<div class="wb-row"><${Badge} tone=${decisionTone(d.status)}>${decisionStatusLabel(d.status)}<//>
         <${IconBtn} icon="pencil" label="Bearbeiten" onClick=${() => decisionDialog({ existing: d })} /><${IconBtn} icon="trash-2" label="Löschen" onClick=${async () => { if (await confirmDialog({ title: 'Entscheidung löschen?', text: d.title, danger: true, confirmLabel: 'Löschen' })) act(() => actions.deleteDecision(d.id)); }} /></div>`}>
       <div class="wb-grid wb-grid-2" style="gap:12px 20px">
         ${[['Entscheidung', d.decision], ['Begründung', d.rationale], ['Akzeptierte Nachteile', d.tradeoffs], ['Alternativen', d.alternatives]].filter(([, v]) => v).map(([l, v]) => html`<div><div class="wb-label" style="margin-bottom:4px">${l}</div><div style="white-space:pre-wrap">${v}</div></div>`)}</div>

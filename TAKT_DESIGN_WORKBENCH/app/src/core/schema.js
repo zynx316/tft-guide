@@ -109,7 +109,17 @@ export function createFeature(partial = {}) {
 }
 
 export function createDecision(partial = {}) {
-  return { id: uid('dec'), featureId: null, moduleId: null, level: partial.featureId ? 'feature' : partial.moduleId ? 'module' : 'app', title: '', decision: '', rationale: '', tradeoffs: '', alternatives: '', status: 'open', createdAt: nowIso(), decidedAt: null, ...partial };
+  // Entscheidungsmodell v2 (ADR): Ebene, Frage, Optionen, Empfehlung, Reversibilität, Evidenz, Wiedervorlage
+  return {
+    id: uid('dec'), featureId: null, moduleId: null, componentId: null,
+    level: partial.featureId ? 'feature' : partial.moduleId ? 'module' : 'app',
+    title: '', question: '', options: [], chosen: null, recommendation: null,
+    decision: '', rationale: '', tradeoffs: '', alternatives: '', consequences: '',
+    reversibility: null, evidence: [], status: 'open', // open | decided | parked | superseded
+    revisitAt: null, revisitIf: null, supersedes: null, supersededBy: null,
+    rounds: 0, assumption: false, decidedBy: null, createdAt: nowIso(), decidedAt: null,
+    ...partial,
+  };
 }
 
 export function emptyState() {
@@ -122,9 +132,21 @@ export function emptyState() {
     qa: { runs: [], latest: {}, cli: null },
     components: {},
     // Ebene 0 (App): gewählte Richtung + App-Shell-Entscheidungen
-    app: { directionId: null, decidedAt: null, nav: 'bottom', startFeatureId: 'home.today', notes: '', favorites: ['home', 'calendar', 'tasks', 'finance'] },
+    app: {
+      directionId: null, decidedAt: null, nav: 'bottom', startFeatureId: 'home.today', notes: '', favorites: ['home', 'calendar', 'tasks', 'finance'],
+      // Leitbild (Ebene 0) – speist Scorecard-Gewichte, Tier-Einstufung und Abläufe
+      vision: 'Ein ruhiger, schneller Begleiter für Tag, Geld und Gesundheit – alles Wichtige in einer App, in Sekunden erfasst und verstanden.',
+      contexts: ['Unterwegs, einhändig (Handy)', 'Morgens in 2 Minuten orientieren', 'Am Schreibtisch planen und auswerten', 'Abends kurz zurückblicken'],
+      principles: ['Höchstens 2 Tipps zum häufigsten Ziel', 'Erfassen in unter 5 Sekunden', 'Ruhe vor Reizen – keine Alarmfarben ohne echten Anlass', 'Jede Zahl ist herleitbar', 'Daten bleiben lokal und lassen sich ausblenden'],
+      nonGoals: ['Kein soziales Netzwerk / keine Ranglisten', 'Keine echte Orderausführung', 'Keine medizinischen Diagnosen'],
+      weights: { schnelligkeit: 3, lesbarkeit: 3, ueberblick: 2, optik: 2, aufwand: 1 },
+      phase1Done: false,
+    },
     directions: clone(DEFAULT_DIRECTIONS),
     feedback: [],                      // Bewertungen/Kommentare aus dem Demo-Launcher (auch vom Handy)
+    rounds: [],                        // Entscheidungsrunden (Zeitbox, Agenda, Ergebnis)
+    pins: [],                          // Anmerkungen an Varianten/Blöcken
+    scores: {},                        // Scorecard-Bewertungen { featureId: { variantId: { kriterium: 1–5 } } }
     world: clone(WORLD),               // gemeinsame Datenwelt (Persona „Ein Tag“), gebunden per '@world:<schlüssel>'
   };
 }
@@ -144,6 +166,10 @@ export function migrate(state) {
   s.app = { ...base.app, ...(state.app || {}) };
   s.directions = Array.isArray(state.directions) && state.directions.length ? state.directions : base.directions;
   s.feedback = Array.isArray(state.feedback) ? state.feedback : [];
+  s.rounds = Array.isArray(state.rounds) ? state.rounds : [];
+  s.pins = Array.isArray(state.pins) ? state.pins : [];
+  s.scores = state.scores || {};
+  s.decisions = (s.decisions || []).map((d) => createDecision(d));
   // Neue Welt-Schlüssel aus dem Seed ergänzen, vorhandene (ggf. bearbeitete) Werte behalten
   s.world = { ...clone(WORLD), ...(state.world || {}) };
   s.schemaVersion = SCHEMA_VERSION;

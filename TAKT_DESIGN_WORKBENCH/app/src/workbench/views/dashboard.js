@@ -2,7 +2,9 @@
 import { html } from '../../lib/html.js';
 import { Icon } from '../../lib/icons.js';
 import { Card, Kpi, Btn, Badge, StatusBadge, QaCell, Empty } from '../ui/kit.js';
-import { StatusPipeline, moduleProgress, newFeatureDialog, moduleDialog, decisionDialog } from './common.js';
+import { StatusPipeline, moduleProgress, newFeatureDialog, moduleDialog, decisionDialog, DecisionRow } from './common.js';
+import { newRoundDialog } from './rounds.js';
+import { rankDecisions, appDone, gateSummary } from '../../core/process.js';
 import { featureHref, moduleHref, studioHref } from '../router.js';
 import { fmt } from '../../lib/util.js';
 import { statusIndex } from '../../core/schema.js';
@@ -21,9 +23,10 @@ function nextSteps(state) {
   for (const f of fs.filter((x) => x.status === 'design' && x.variants.length > 1 && !state.decisions.some((d) => d.featureId === x.id && d.status === 'decided'))) {
     out.push({ prio: 2, icon: 'git-compare', tone: 'accent', text: `Varianten von „${f.name}“ vergleichen & entscheiden`, sub: `${f.variants.length} Varianten · ${mod(f.moduleId)?.name}`, href: featureHref(f.id, 'compare') });
   }
-  for (const d of state.decisions.filter((x) => x.status === 'open').slice(0, 3)) {
-    out.push({ prio: 3, icon: 'gavel', tone: 'warning', text: d.title, sub: 'Offene Entscheidung', href: d.featureId ? featureHref(d.featureId, 'decisions') : '#/versions/decisions' });
-  }
+  const ranked = rankDecisions(state);
+  if (!state.app.directionId) out.push({ prio: 0, icon: 'compass', tone: 'accent', text: 'App-Richtung wählen (Ebene 0)', sub: 'Im Demo-Launcher vergleichen, dann in einer Runde entscheiden', href: '#/decide' });
+  if (ranked.length >= 3) out.push({ prio: 2, icon: 'timer', tone: 'warning', text: `Entscheidungsrunde: ${Math.min(7, ranked.length)} Fragen in 20 Minuten`, sub: `Oben: ${ranked[0].d.title}`, href: '#/rounds' });
+  else for (const x of ranked) out.push({ prio: 3, icon: 'gavel', tone: 'warning', text: x.d.title, sub: x.reason, href: x.d.featureId ? featureHref(x.d.featureId, 'decisions') : '#/app/inbox' });
   for (const f of fs.filter((x) => x.status === 'analyzed' && !x.variants.length).slice(0, 3)) {
     out.push({ prio: 4, icon: 'palette', tone: 'info', text: `Erste Variante für „${f.name}“ entwerfen`, sub: `${mod(f.moduleId)?.name} · analysiert, noch kein Design`, href: studioHref(f.id) });
   }
@@ -42,13 +45,15 @@ export function Dashboard({ state }) {
   const qaVals = Object.entries(state.qa.latest).filter(([id]) => fs.some((f) => f.id === id)).map(([, v]) => v);
   const qa = { pass: qaVals.filter((x) => x.status === 'pass').length, warn: qaVals.filter((x) => x.status === 'warn').length, fail: qaVals.filter((x) => x.status === 'fail').length };
   const steps = nextSteps(state);
+  const ranked = rankDecisions(state);
+  const appGate = gateSummary(appDone(state));
   const recent = state.history.slice(0, 8);
   const variants = fs.reduce((n, f) => n + f.variants.length, 0);
 
   return html`<div class="wb-page">
     <div class="wb-row wb-wrap" style="align-items:flex-end;gap:14px">
       <div class="wb-grow"><div class="wb-label" style="margin-bottom:6px">${state.meta.project} · Designarbeit</div><h1 class="wb-h1">Übersicht</h1>
-        <p class="wb-muted" style="margin-top:4px">${released.length} von ${fs.length} Features freigegeben · ${inWork.length} in Arbeit · Stand ${fmt.dateTime(state.meta.updatedAt)}</p></div>
+        <p class="wb-muted" style="margin-top:4px">${released.length} von ${fs.length} Features freigegeben · ${inWork.length} in Arbeit · Stand ${fmt.dateTime(state.meta.updatedAt)} · <a href="#/app/gates">App-Gate ${appGate.passed}/${appGate.total}</a></p></div>
       <${Btn} icon="plus" onClick=${() => moduleDialog()}>Modul<//><${Btn} variant="primary" icon="plus" onClick=${() => newFeatureDialog()}>Feature<//>
     </div>
 
@@ -94,10 +99,9 @@ export function Dashboard({ state }) {
     </div>
 
     <div class="wb-grid wb-grid-2">
-      <${Card} title="Offene Entscheidungen" icon="gavel" actions=${html`<${Btn} size="sm" icon="plus" onClick=${() => decisionDialog({ preset: { status: 'open' } })}>Neu<//>`}>
-        ${openDec.length ? html`<div class="wb-col" style="gap:2px;margin:-6px -8px">${openDec.slice(0, 6).map((d) => html`<a class="wb-listrow is-click" style="border:0;border-radius:8px;color:inherit;text-decoration:none" href=${d.featureId ? featureHref(d.featureId, 'decisions') : '#/versions/decisions'}>
-          <span style="color:var(--wb-warning)"><${Icon} name="circle-help" size=${16} /></span><div class="wb-grow"><div class="wb-trunc" style="font-weight:550">${d.title}</div>
-          <div class="wb-small wb-subtle wb-trunc">${d.featureId ? state.features.find((f) => f.id === d.featureId)?.name : state.modules.find((m) => m.id === d.moduleId)?.name || 'Allgemein'}</div></div></a>`)}</div>`
+      <${Card} title=${`Entscheidungs-Inbox (${ranked.length})`} icon="inbox" sub="Nach Blockierwirkung sortiert" actions=${html`<div class="wb-row"><${Btn} size="sm" icon="plus" onClick=${() => decisionDialog({ preset: { status: 'open' } })}>Neu<//><${Btn} size="sm" variant="primary" icon="timer" disabled=${!ranked.length} onClick=${() => newRoundDialog(state, 'app')} data-qa="dash-round">Runde<//></div>`}>
+        ${ranked.length ? html`<div class="wb-col" style="gap:0;margin:-8px -16px -16px">${ranked.slice(0, 6).map((x) => html`<${DecisionRow} d=${x.d} state=${state} reason=${x.reason} />`)}
+          ${ranked.length > 6 && html`<a class="wb-listrow wb-small" href="#/app/inbox" style="justify-content:center">Alle ${ranked.length} anzeigen</a>`}</div>`
         : html`<${Empty} icon="gavel" title="Keine offenen Entscheidungen" />`}
       <//>
       <${Card} title="Letzte Änderungen" icon="history" actions=${html`<a class="wb-small" href="#/versions/log">Protokoll</a>`}>

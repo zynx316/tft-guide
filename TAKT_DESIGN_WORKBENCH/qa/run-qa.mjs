@@ -341,6 +341,56 @@ async function e2eStage(browser, base, log) {
     await go('#/data'); const [d2] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: /Flutter-Tokens/ }).click()]);
     const dart = path.join(OUT, 'takt_tokens.dart'); await d2.saveAs(dart); if (!/class TaktColors extends ThemeExtension/.test(fs.readFileSync(dart, 'utf8'))) throw new Error('Dart-Tokens fehlerhaft');
   });
+  await T('App-Ebene: Leitbild, Inbox, Muster und Gates', async () => {
+    await go('#/app/leitbild'); await page.getByRole('heading', { name: 'App-Ebene' }).waitFor();
+    const vision = page.locator('[data-qa="app-vision"]'); await vision.fill('QA-Vision: ruhig und schnell'); await vision.blur(); await page.waitForTimeout(300);
+    await eventually(async () => (await state()).app.vision === 'QA-Vision: ruhig und schnell', 'Vision nicht gespeichert');
+    await go('#/app/inbox'); await expect(page.locator('[data-qa="inbox"] [data-decision]').count().then((c) => c >= 5), 'Inbox leer');
+    await go('#/app/muster'); await expect(page.locator('[data-decision^="pattern-"]').count().then((c) => c >= 10), 'Pflichtfragen fehlen');
+    await go('#/app/gates'); await expect(page.locator('[data-gate]').count().then((c) => c >= 5), 'App-Gate fehlt');
+  });
+  await T('Entscheidungsrunde: Agenda, Empfehlung, Parken, Rundenlimit, Arbeitsauftrag', async () => {
+    await go('#/rounds'); await page.locator('[data-qa="new-round"]').click(); await page.waitForTimeout(300);
+    await confirm(); await page.locator('[data-qa="round-timer"]').waitFor({ timeout: 5000 });
+    let st = await state(); const r = st.rounds[0]; if (!r || r.agenda.length < 3) throw new Error('Runde ohne Agenda');
+    // Frage 1 ist die App-Richtung (höchste Blockierwirkung): Empfehlung fehlt → Option wählen und entscheiden
+    const first = st.decisions.find((d) => d.id === r.agenda[0]);
+    if (first.kind === 'app-direction') { await page.locator('[data-option-select]').first().click(); await page.locator('[data-qa="round-decide"]').click(); }
+    else await page.locator('[data-qa="accept-recommendation"]').click();
+    await page.waitForTimeout(300);
+    await page.locator('[data-qa="accept-recommendation"]').click(); await page.waitForTimeout(300);
+    await page.getByRole('button', { name: /Parken/ }).click(); await page.waitForTimeout(300);
+    st = await state(); const res = st.rounds[0].results;
+    await expect(res.filter((x) => x.outcome === 'entschieden').length === 2 && res.some((x) => x.outcome === 'geparkt'), `Ergebnisse falsch: ${JSON.stringify(res.map((x) => x.outcome))}`);
+    if (first.kind === 'app-direction') await expect(!!st.app.directionId && st.decisions.filter((d) => d.kind === 'app-direction' && d.status === 'open').length === 0, 'App-Richtung nicht übernommen');
+    await expect(st.decisions.find((d) => d.id === r.agenda[2]).status === 'parked' && !!st.decisions.find((d) => d.id === r.agenda[2]).revisitAt, 'Parken ohne Wiedervorlage');
+    await page.getByRole('button', { name: 'Runde abschließen' }).click(); await page.getByRole('heading', { name: 'Ergebnis' }).waitFor();
+    const [dl] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: /Arbeitsauftrag/ }).click()]);
+    const md = path.join(OUT, 'arbeitsauftrag.md'); await dl.saveAs(md); const txt = fs.readFileSync(md, 'utf8');
+    if (!/## 1\. Entschieden – umsetzen \(2\)/.test(txt) || !/Geparkt \(1\)/.test(txt)) throw new Error('Arbeitsauftrag unvollständig');
+    // Rundenlimit: zweite Runde mit einer offenen Frage, die schon in Runde 1 war (nicht behandelt) → nach Start Runde 2 = Limit
+    const leftover = r.agenda.slice(3)[0];
+    if (leftover) {
+      await go('#/rounds'); await page.locator('[data-qa="new-round"]').click(); await page.waitForTimeout(300);
+      await page.locator('.wb-dialog input[type="checkbox"]').evaluateAll((els) => els.forEach((e) => { if (e.checked) e.click(); }));
+      await page.locator('.wb-dialog label', { has: page.locator(`text=${st.decisions.find((d) => d.id === leftover).title}`) }).locator('input').first().check();
+      await confirm(); await page.locator('[data-qa="round-timer"]').waitFor();
+      await expect(page.getByText('Rundenlimit erreicht').first().isVisible(), 'Rundenlimit nicht angezeigt');
+      await expect(page.getByRole('button', { name: 'Änderung nötig' }).isDisabled(), '„Änderung nötig“ trotz Limit aktiv');
+      await page.getByRole('button', { name: 'Runde abschließen' }).click();
+    }
+  });
+  await T('Feature-Gates, Design-Tiefe, Akzeptanzkriterien, Anmerkungen und Scorecard', async () => {
+    const fid = 'calendar.week';
+    await go(`#/features/${encodeURIComponent(fid)}/overview`); await page.locator('[data-qa="tier-select"]').selectOption('1'); await page.waitForTimeout(200);
+    await page.locator('[data-qa="pin-input"]').fill('QA: Wochenstart prüfen'); await page.keyboard.press('Enter'); await page.waitForTimeout(200);
+    let st = await state(); const f = st.features.find((x) => x.id === fid);
+    await expect(f.tier === 1, 'Tier nicht gesetzt'); await expect(st.pins.some((p) => p.featureId === fid && p.text === 'QA: Wochenstart prüfen'), 'Anmerkung fehlt');
+    if (!f.locked) { await go(`#/features/${encodeURIComponent(fid)}/requirements`); await page.locator('[data-qa="acceptance-input"]').fill('Gegeben eine Woche mit Terminen, wenn ich nach links wische, dann sehe ich die Vorwoche'); await page.keyboard.press('Enter'); await page.waitForTimeout(200); }
+    await go(`#/features/${encodeURIComponent(fid)}/compare`); await page.locator('[data-qa="scorecard"]').waitFor();
+    await page.locator('[data-qa="scorecard"] [role="radio"]').nth(4).click(); await page.waitForTimeout(200);
+    st = await state(); await expect(Object.keys(st.scores[fid] || {}).length >= 1, 'Score nicht gespeichert');
+  });
   await T('Keine JavaScript-Fehler während der Bedienung', async () => { if (consoleErrors.length) throw new Error(consoleErrors.slice(0, 3).join(' | ')); });
   await ctx.close();
   return { total: tests.length, passed: tests.filter((t) => t.status === 'pass').length, failed: tests.filter((t) => t.status === 'fail').map((t) => t.name), tests };

@@ -3,13 +3,14 @@ import { html } from '../../lib/html.js';
 import { useState, useRef, useEffect } from 'preact/hooks';
 import { Icon } from '../../lib/icons.js';
 import { ICON_NAMES } from '../../lib/icons.js';
-import { Btn, Field, Select, TextInput, Badge, openDialog, confirmDialog, promptDialog, toast, openMenu, Checkbox, QaCell } from '../ui/kit.js';
+import { Btn, IconBtn, Field, Select, TextInput, Badge, openDialog, confirmDialog, promptDialog, toast, openMenu, Checkbox, QaCell } from '../ui/kit.js';
 import { actions, getState, tryAction } from '../store.js';
 import { FEATURE_STATUSES, MODULE_STATUSES, statusInfo, REQUIREMENT_TYPES, PRIORITIES } from '../../core/schema.js';
 import { THEME_IDS, themes } from '../../design-system/tokens.js';
 import { DEVICES } from '../../core/devices.js';
 import { runQa } from '../qa-runner.js';
 import { navigate, featureHref, moduleHref, studioHref } from '../router.js';
+import { REVERSIBILITY, MAX_ROUNDS, levelLabel } from '../../core/process.js';
 import { fmt, download } from '../../lib/util.js';
 import { featureSpecMarkdown, moduleSpecMarkdown } from '../../core/spec.js';
 import { getComponent } from '../../library/registry.js';
@@ -145,28 +146,66 @@ export function newWorkingVersionDialog(featureId) {
 }
 
 // ---------------------------------------------------- Entscheidungsdialog ---
+const STATUS_OPTS = [{ value: 'open', label: 'Offen' }, { value: 'decided', label: 'Entschieden' }, { value: 'parked', label: 'Geparkt' }, { value: 'superseded', label: 'Überholt' }];
+const REVISIT_TRIGGERS = ['', 'nach Phase 1', 'nach 1 Woche Nutzung', 'nach Gerätetest', 'wenn Komponente abgenommen'];
+export const decisionStatusLabel = (s) => ({ open: 'Offen', decided: 'Entschieden', parked: 'Geparkt', superseded: 'Überholt' }[s] || s);
+export const decisionTone = (s) => ({ open: 'warning', decided: 'success', parked: 'info', superseded: null }[s]);
+
+/** Entscheidungsdialog v2 (ADR): Frage, Optionen, Empfehlung, Wahl, Begründung, Nachteile, Reversibilität, Wiedervorlage. */
 export function decisionDialog({ existing, featureId, moduleId, preset } = {}) {
   openDialog({
-    title: existing ? 'Entscheidung bearbeiten' : 'Entscheidung dokumentieren', size: 'wide',
+    title: existing ? 'Entscheidung' : 'Entscheidung dokumentieren', size: 'wide',
     body: ({ close }) => {
-      const [d, setD] = useState(existing ? { ...existing } : { title: '', decision: '', rationale: '', tradeoffs: '', alternatives: '', status: 'decided', featureId, moduleId, ...preset });
+      const [d, setD] = useState(existing ? { ...existing, options: [...(existing.options || [])] } : { title: '', question: '', options: [], chosen: null, decision: '', rationale: '', tradeoffs: '', alternatives: '', consequences: '', reversibility: null, status: 'decided', featureId, moduleId, ...preset });
       const set = (k) => (e) => setD({ ...d, [k]: e.currentTarget.value });
+      const [newOpt, setNewOpt] = useState('');
       const save = () => {
         if (!d.title.trim()) return toast('Titel fehlt', 'danger');
-        if (existing) act(() => actions.updateDecision(existing.id, d)); else act(() => actions.addDecision(d));
+        const opt = d.options.find((o) => o.id === d.chosen);
+        const patch = { ...d, decision: d.decision || (opt ? opt.label : ''), decidedAt: d.status === 'decided' ? d.decidedAt || new Date().toISOString() : d.decidedAt };
+        if (existing) act(() => actions.updateDecision(existing.id, patch)); else act(() => actions.addDecision(patch));
         toast('Entscheidung gespeichert'); close();
       };
+      const rec = d.recommendation;
       return html`<div class="wb-col" style="gap:12px">
-        <div class="wb-grid" style="grid-template-columns:1fr 180px"><${Field} label="Frage / Titel *"><input class="wb-input" autofocus value=${d.title} onInput=${set('title')} placeholder="z. B. Welche Variante für die Wochenansicht?" /><//>
-          <${Field} label="Status"><${Select} value=${d.status} onChange=${(v) => setD({ ...d, status: v })} options=${[{ value: 'open', label: 'Offen' }, { value: 'decided', label: 'Entschieden' }, { value: 'superseded', label: 'Überholt' }]} /><//></div>
-        <${Field} label="Entscheidung"><textarea class="wb-textarea" rows="2" value=${d.decision} onInput=${set('decision')} placeholder="Was wurde entschieden?"></textarea><//>
-        <${Field} label="Begründung"><textarea class="wb-textarea" rows="3" value=${d.rationale} onInput=${set('rationale')} placeholder="Warum? Welche Anforderungen/Tests sprechen dafür?"></textarea><//>
+        <div class="wb-grid" style="grid-template-columns:1fr 170px 170px"><${Field} label="Titel *"><input class="wb-input" autofocus value=${d.title} onInput=${set('title')} placeholder="z. B. Variante der Wochenansicht" /><//>
+          <${Field} label="Status"><${Select} value=${d.status} onChange=${(v) => setD({ ...d, status: v })} options=${STATUS_OPTS} /><//>
+          <${Field} label="Reversibilität"><${Select} value=${d.reversibility || ''} onChange=${(v) => setD({ ...d, reversibility: v || null })} options=${[{ value: '', label: '–' }, ...REVERSIBILITY.map((r) => ({ value: r.id, label: r.label }))]} /><//></div>
+        <${Field} label="Frage"><input class="wb-input" value=${d.question || ''} onInput=${set('question')} placeholder="Was genau ist zu entscheiden?" /><//>
+        <div class="wb-col" style="gap:6px"><span class="wb-field__label">Optionen ${d.options.length ? '(anklicken = wählen)' : ''}</span>
+          ${d.options.map((o) => html`<div class=${`wb-var ${d.chosen === o.id ? 'is-active' : ''}`} onClick=${() => setD({ ...d, chosen: d.chosen === o.id ? null : o.id, status: d.chosen === o.id ? d.status : 'decided' })} data-option=${o.id}>
+            <span class="wb-var__letter">${d.chosen === o.id ? '✓' : ''}</span><div class="wb-grow"><strong>${o.label}</strong>${o.description && html`<div class="wb-small wb-muted">${o.description}</div>`}</div>
+            ${rec?.optionId === o.id && html`<${Badge} tone="accent" icon="sparkles" sq>Empfehlung<//>`}
+            <${IconBtn} icon="x" label="Option entfernen" onClick=${(e) => { e.stopPropagation(); setD({ ...d, options: d.options.filter((x) => x.id !== o.id), chosen: d.chosen === o.id ? null : d.chosen }); }} /></div>`)}
+          <div class="wb-row"><input class="wb-input wb-input--sm wb-grow" placeholder="Option hinzufügen … (Enter)" value=${newOpt} onInput=${(e) => setNewOpt(e.currentTarget.value)}
+            onKeyDown=${(e) => { if (e.key === 'Enter' && newOpt.trim()) { setD({ ...d, options: [...d.options, { id: `o${Date.now().toString(36)}`, label: newOpt.trim(), description: '' }] }); setNewOpt(''); } }} /></div></div>
+        ${rec && html`<div class="wb-banner wb-banner--info"><${Icon} name="sparkles" size=${16} /><div class="wb-grow"><strong>Empfehlung: ${d.options.find((o) => o.id === rec.optionId)?.label || '–'}</strong> <span class="wb-small wb-muted">(${rec.by || 'Vorschlag'}, Sicherheit ${rec.confidence || '–'})</span><div class="wb-small">${(rec.reasons || []).join(' · ')}</div></div>
+          ${d.chosen !== rec.optionId && html`<${Btn} size="sm" icon="check" onClick=${() => setD({ ...d, chosen: rec.optionId, status: 'decided', decidedBy: 'Empfehlung übernommen', rationale: d.rationale || (rec.reasons || []).join('; ') })}>Übernehmen<//>`}</div>`}
+        ${!d.options.length && html`<${Field} label="Entscheidung"><textarea class="wb-textarea" rows="2" value=${d.decision} onInput=${set('decision')} placeholder="Was wurde entschieden?"></textarea><//>`}
+        <${Field} label="Begründung"><textarea class="wb-textarea" rows="3" value=${d.rationale} onInput=${set('rationale')} placeholder="Warum? Welche Anforderungen, Tests, Bewertungen sprechen dafür?"></textarea><//>
         <div class="wb-grid wb-grid-2"><${Field} label="Bewusst akzeptierte Nachteile"><textarea class="wb-textarea" rows="2" value=${d.tradeoffs} onInput=${set('tradeoffs')}></textarea><//>
-          <${Field} label="Verworfene Alternativen"><textarea class="wb-textarea" rows="2" value=${d.alternatives} onInput=${set('alternatives')}></textarea><//></div>
-        <div class="wb-row" style="justify-content:flex-end"><${Btn} onClick=${close}>Abbrechen<//><${Btn} variant="primary" icon="gavel" onClick=${save} data-confirm>Speichern<//></div>
+          <${Field} label="Auswirkungen auf andere Ebenen"><textarea class="wb-textarea" rows="2" value=${d.consequences || ''} onInput=${set('consequences')}></textarea><//></div>
+        ${d.status === 'parked' && html`<div class="wb-grid wb-grid-2"><${Field} label="Wiedervorlage am"><input type="date" class="wb-input" value=${(d.revisitAt || '').slice(0, 10)} onInput=${(e) => setD({ ...d, revisitAt: e.currentTarget.value || null })} /><//>
+          <${Field} label="oder wenn"><${Select} value=${d.revisitIf || ''} onChange=${(v) => setD({ ...d, revisitIf: v || null })} options=${REVISIT_TRIGGERS.map((t) => ({ value: t, label: t || '–' }))} /><//></div>`}
+        <div class="wb-small wb-subtle">${levelLabel(d.level || 'feature')} · Runden: ${d.rounds || 0}/${MAX_ROUNDS}${d.supersedes ? ' · ersetzt eine frühere Entscheidung' : ''}${d.decidedBy ? ` · ${d.decidedBy}` : ''}</div>
+        <div class="wb-row" style="justify-content:flex-end">${existing && existing.status === 'decided' && html`<${Btn} variant="ghost" icon="rotate-ccw" onClick=${() => { const id = act(() => actions.reopenDecision(existing.id, 'neu aufgerollt')); if (id) toast('Neu aufgerollt – die alte Entscheidung bleibt als „überholt“ erhalten'); close(); }}>Neu aufrollen<//>`}
+          <span class="wb-grow"></span><${Btn} onClick=${close}>Abbrechen<//><${Btn} variant="primary" icon="gavel" onClick=${save} data-confirm>Speichern<//></div>
       </div>`;
     },
   });
+}
+
+/** Kompakte Entscheidungskarte (Listen in Workspace, Versionen, Inbox). */
+export function DecisionRow({ d, state, reason, onClick }) {
+  const opt = d.options?.find((o) => o.id === d.chosen);
+  const ref = d.featureId ? state.features.find((f) => f.id === d.featureId)?.name : d.moduleId ? state.modules.find((m) => m.id === d.moduleId)?.name : levelLabel(d.level);
+  return html`<div class="wb-listrow is-click" onClick=${onClick || (() => decisionDialog({ existing: d }))} data-decision=${d.id}>
+    <${Badge} tone=${decisionTone(d.status)} sq>${decisionStatusLabel(d.status)}<//><${Badge} outline sq>${levelLabel(d.level)}<//>
+    <div class="wb-grow"><div class="wb-trunc" style="font-weight:600">${d.title}</div>
+      <div class="wb-small wb-muted wb-trunc">${opt ? `→ ${opt.label}` : d.decision || d.question || d.rationale || '—'}${reason ? ` · ${reason}` : ''}</div></div>
+    ${d.recommendation && d.status === 'open' && html`<span class="wb-subtle" title="Empfehlung vorhanden"><${Icon} name="sparkles" size=${14} /></span>`}
+    ${(d.rounds || 0) >= MAX_ROUNDS && d.status === 'open' && html`<${Badge} tone="danger" sq title="Rundenlimit erreicht">${d.rounds} Runden<//>`}
+    <span class="wb-small wb-subtle wb-trunc" style="max-width:180px;text-align:right">${ref || ''}</span></div>`;
 }
 
 // --------------------------------------------------------- QA-Lauf-Dialog ---

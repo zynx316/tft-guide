@@ -25,6 +25,9 @@ import { VersionsView } from './views/versions.js';
 import { QualityView } from './views/quality.js';
 import { DataView } from './views/data.js';
 import { DecideView } from './views/decide.js';
+import { RoundsView } from './views/rounds.js';
+import { AppLevelView } from './views/app-level.js';
+import { rankDecisions } from '../core/process.js';
 
 // ---------------------------------------------------------------- Router ---
 import { navigate, featureHref, moduleHref } from './router.js';
@@ -42,6 +45,7 @@ function CommandPalette({ close, state }) {
   const items = useMemo(() => {
     const base = [
       { label: 'Übersicht', icon: 'layout-dashboard', href: '#/' }, { label: 'Demo & Entscheidung', icon: 'smartphone', href: '#/decide' }, { label: 'Demo-Launcher öffnen', icon: 'external-link', href: '#/decide', open: './launcher.html' }, { label: 'Module', icon: 'boxes', href: '#/modules' },
+      { label: 'Entscheidungsrunden', icon: 'timer', href: '#/rounds' }, { label: 'App-Ebene (Leitbild, Muster, Gates)', icon: 'target', href: '#/app' },
       { label: 'Features', icon: 'list-checks', href: '#/features' }, { label: 'Design Studio', icon: 'palette', href: '#/studio' },
       { label: 'Komponenten', icon: 'component', href: '#/library' }, { label: 'Versionen & Entscheidungen', icon: 'git-branch', href: '#/versions' },
       { label: 'Quality Center', icon: 'shield-check', href: '#/quality' }, { label: 'Daten & Backup', icon: 'save', href: '#/data' },
@@ -97,6 +101,8 @@ function Shell({ state, route, children, crumbs }) {
       <nav class="wb-nav">
         <${NavItem} href="#/" icon="layout-dashboard" label="Übersicht" active=${sec === ''} />
         <${NavItem} href="#/decide" icon="smartphone" label="Demo & Entscheidung" active=${sec === 'decide'} count=${state.feedback.filter((e) => !e.status || e.status === 'neu').length || null} />
+        <${NavItem} href="#/rounds" icon="timer" label="Entscheidungsrunden" active=${sec === 'rounds'} count=${rankDecisions(state).length || null} />
+        <${NavItem} href="#/app" icon="target" label="App-Ebene" active=${sec === 'app'} />
         <${NavItem} href="#/modules" icon="boxes" label="Module" active=${sec === 'modules' && !route[1]} count=${mods.length} />
         <${NavItem} href="#/features" icon="list-checks" label="Features" active=${sec === 'features'} count=${activeFeatures.length} />
         <${NavItem} href=${state.settings.lastFeatureId ? `#/studio/${encodeURIComponent(state.settings.lastFeatureId)}` : '#/studio'} icon="palette" label="Design Studio" active=${sec === 'studio'} count=${inWork || null} />
@@ -171,6 +177,8 @@ export function App() {
     case 'versions': crumbs.push({ label: 'Versionen & Entscheidungen' }); view = html`<${VersionsView} state=${state} tab=${a || 'releases'} />`; break;
     case 'quality': crumbs.push({ label: 'Quality Center' }); view = html`<${QualityView} state=${state} tab=${a || 'overview'} />`; break;
     case 'data': crumbs.push({ label: 'Daten & Backup' }); view = html`<${DataView} state=${state} />`; break;
+    case 'rounds': crumbs.push({ label: 'Entscheidungsrunden', href: '#/rounds' }); if (a) crumbs.push({ label: state.rounds.find((r) => r.id === a)?.title || a }); view = html`<${RoundsView} state=${state} roundId=${a} />`; break;
+    case 'app': crumbs.push({ label: 'App-Ebene' }); view = html`<${AppLevelView} state=${state} tab=${a || 'leitbild'} />`; break;
     case 'decide': crumbs.push({ label: 'Demo & Entscheidung' }); view = html`<${DecideView} state=${state} tab=${a || 'levels'} />`; break;
     default: crumbs.push({ label: 'Nicht gefunden' }); view = html`<div class="wb-page"><div class="wb-empty"><div class="wb-empty__title">Seite nicht gefunden</div><a href="#/">Zur Übersicht</a></div></div>`;
   }

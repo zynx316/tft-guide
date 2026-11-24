@@ -298,3 +298,20 @@ a:hover { text-decoration: underline; }
 
 @media (max-width: 1500px) { .wb-tabs button .icon { display: none; } }
 .wb-card__title .wb-card__sub { white-space: normal; font-weight: 400; }
+
+/* ---- Gates (Definition of Ready/Done) ---- */
+.wb-gates { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.wb-gate { display: flex; align-items: center; gap: 10px; padding: 6px 4px; border-radius: 8px; }
+.wb-gate__icon { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; flex: none; background: var(--wb-panel-3); color: var(--wb-subtle); }
+.wb-gate.is-ok .wb-gate__icon { background: var(--wb-success-soft, var(--wb-panel-3)); color: var(--wb-success); }
+.wb-gate.is-open > .wb-grow { color: var(--wb-text); }
+.wb-gate.is-ok > .wb-grow { color: var(--wb-muted); }
+
+/* ---- Scorecard ---- */
+.wb-score { display: inline-flex; gap: 2px; }
+.wb-score button { width: 22px; height: 22px; border-radius: 6px; border: 1px solid var(--wb-border); background: var(--wb-panel); color: var(--wb-muted); font-size: 11px; font-weight: 650; cursor: pointer; padding: 0; }
+.wb-score button.is-on { background: var(--wb-accent); border-color: var(--wb-accent); color: var(--wb-on-accent); }
+.wb-score button:focus-visible { outline: 2px solid var(--wb-focus, var(--wb-accent)); outline-offset: 1px; }
+
+.wb-radio-dot { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--wb-border-strong); display: grid; place-items: center; flex: none; color: var(--wb-on-accent); }
+.wb-card--selected .wb-radio-dot { background: var(--wb-accent); border-color: var(--wb-accent); }

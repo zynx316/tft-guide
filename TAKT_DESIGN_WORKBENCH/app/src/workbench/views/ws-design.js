@@ -12,6 +12,7 @@ import { layoutInfo, REGION_LABELS } from '../../preview/layouts.js';
 import { PreviewFrame, PreviewToolbar } from '../ui/preview-frame.js';
 import { navigate, studioHref } from '../router.js';
 import { cx } from '../../lib/util.js';
+import { Scorecard } from './ws-process.js';
 
 export function VariantChips({ feature: f, value, onChange, multi }) {
   return html`<div class="wb-row wb-wrap" style="gap:6px">${f.variants.map((v) => { const on = multi ? value.includes(v.id) : value === v.id; return html`<button type="button" class=${cx('wb-var', on && 'is-active')} style="padding:5px 10px 5px 6px"
@@ -61,7 +62,7 @@ export function preferDialog(f, v) {
       <${Field} label="Warum diese Variante?"><textarea class="wb-textarea" rows="3" autofocus value=${rationale} placeholder="z. B. Beste Lesbarkeit auf Mobile, kombiniert Termine und Aufgaben, wenigste Klicks" onInput=${(e) => setR(e.currentTarget.value)}></textarea><//>
       <${Field} label="Bewusst akzeptierte Nachteile"><textarea class="wb-textarea" rows="2" value=${tradeoffs} placeholder="z. B. Geringere Informationsdichte auf Desktop" onInput=${(e) => setT(e.currentTarget.value)}></textarea><//>
       <div class="wb-row" style="justify-content:flex-end"><${Btn} onClick=${close}>Abbrechen<//>
-        <${Btn} variant="primary" icon="star" data-confirm onClick=${() => { act(() => actions.selectVariant(f.id, v.id, rationale || tradeoffs ? { rationale, tradeoffs } : null)); toast(`Variante ${v.id} ist jetzt bevorzugt`); close(); }}>Bevorzugen${rationale ? ' & dokumentieren' : ''}<//></div>`;
+        <${Btn} variant="primary" icon="star" data-confirm onClick=${() => { act(() => actions.selectVariant(f.id, v.id, { rationale, tradeoffs })); toast(`Variante ${v.id} ist jetzt bevorzugt`); close(); }}>Bevorzugen${rationale ? ' & dokumentieren' : ''}<//></div>`;
   } });
 }
 
@@ -96,5 +97,6 @@ export function CompareTab({ state, feature: f }) {
       </div>`; })}
     </div>
     <div class="wb-small wb-subtle">Alle Vorschauen sind voll bedienbar (Filter, Dialoge, Eingaben). Jede Spalte hat einen eigenen Vorschau-Zustand.</div>
+    <${Scorecard} state=${state} feature=${f} variants=${sel} stats=${stats} />
   </div>`;
 }

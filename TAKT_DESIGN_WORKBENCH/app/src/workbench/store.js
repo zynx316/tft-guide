@@ -56,14 +56,41 @@ export async function initStore() {
   serverRev = serverState ? (serverState.meta?.rev || 0) : null;
   persistence.mode = persistence.server ? 'file' : 'browser';
   if (!serverState) schedulePersist();
+  // Mehrere Tabs (Workbench + Demo-Launcher): Stand eines anderen Tabs übernehmen – inkl. Revision, auf der er
+  // gespeichert wird, sonst liefe das nächste eigene Speichern in einen unnötigen Konflikt (409).
   window.addEventListener('storage', (e) => {
-    if (e.key === STORAGE_KEY && e.newValue && persistence.status !== 'saving') {
-      try { const s = JSON.parse(e.newValue); if (new Date(s.meta.updatedAt) > new Date(state.meta.updatedAt)) { state = migrate(s); notify(); } } catch { /* noop */ }
+    if (e.key === STORAGE_KEY && e.newValue && persistence.status !== 'saving' && persistence.status !== 'dirty') {
+      try {
+        const s = JSON.parse(e.newValue);
+        if (new Date(s.meta.updatedAt) > new Date(state.meta.updatedAt)) { state = migrate(s); if (persistence.server) adoptPending = state.meta.rev; notify(); }
+      } catch { /* noop */ }
     }
   });
+  // Zurück im Tab: Datei-Stand abgleichen, wenn hier nichts Ungespeichertes liegt (z. B. anderer Tab, CLI-Werkzeug).
+  const resync = () => { if (document.visibilityState === 'visible') syncFromServer(); };
+  document.addEventListener('visibilitychange', resync); window.addEventListener('focus', resync);
   window.addEventListener('beforeunload', () => { if (persistence.status === 'dirty') persistNow(true); });
   notify();
   return state;
+}
+
+// Revision eines aus einem anderen Tab übernommenen Stands: gilt als Server-Revision, sobald der Server sie bestätigt.
+let adoptPending = null;
+let syncing = false;
+/** Server-Stand übernehmen, falls er neuer ist und lokal nichts Ungespeichertes vorliegt. Rückgabe: true = übernommen. */
+export async function syncFromServer() {
+  if (!persistence.server || syncing || ['dirty', 'saving'].includes(persistence.status)) return false;
+  syncing = true;
+  try {
+    const r = await fetchJson('/api/state'); if (!r.ok) return false;
+    const srv = await r.json(); const rev = srv.meta?.rev || 0;
+    if (['dirty', 'saving'].includes(persistence.status)) return false;
+    if (rev === serverRev) { adoptPending = null; return false; }
+    if (persistence.status === 'conflict' && new Date(state.meta.updatedAt) > new Date(srv.meta?.updatedAt)) return false; // eigener neuerer Stand → Konflikt-Kopie bleibt maßgeblich
+    state = migrate(srv); state.meta.rev = rev; serverRev = rev; adoptPending = null;
+    if (persistence.status === 'conflict') { persistence.status = 'saved'; persistence.error = null; }
+    persistence.mode = 'file'; notify(); return true;
+  } catch { return false; } finally { syncing = false; }
 }
 
 async function persistNow(keepalive = false) {
@@ -73,6 +100,11 @@ async function persistNow(keepalive = false) {
   persistence.status = 'saving'; notify();
   try {
     const headers = { 'Content-Type': 'application/json' };
+    if (adoptPending != null) {
+      // Basis ist ein Stand aus einem anderen Tab: dessen Revision verwenden, sobald der Server sie hat.
+      try { const cur = await fetchJson('/api/state'); if (cur.ok) { const rev = (await cur.json()).meta?.rev || 0; if (rev === adoptPending) serverRev = rev; } } catch { /* noop */ }
+      adoptPending = null;
+    }
     if (serverRev != null) headers['X-Base-Rev'] = String(serverRev);
     const sentRev = state.meta.rev;
     const r = await fetch('/api/state', { method: 'PUT', headers, body: json, keepalive });
@@ -142,6 +174,30 @@ const STABLE = ['released', 'implemented', 'regression_ok'];
 export const featureMeta = (f) => ({ entity: 'feature', entityId: f.id, featureId: f.id, moduleId: f.moduleId });
 
 // ------------------------------------------------------------- Actions ---
+/**
+ * Empfehlung für die App-Richtung: zuerst Launcher-Bewertungen (Sterne/Favoriten auf App-Ebene oder je Version),
+ * sonst die Richtung mit der höchsten Variantenabdeckung (geringster Restaufwand). Bleibt eine Empfehlung – entschieden wird in der Runde.
+ */
+function recommendDirection(s) {
+  const dirs = s.directions || []; if (!dirs.length) return null;
+  const fb = (s.feedback || []).filter((e) => String(e.version || '').startsWith('dir:'));
+  const stats = dirs.map((d) => {
+    const mine = fb.filter((e) => e.version === `dir:${d.id}`);
+    const ratings = mine.map((e) => e.rating).filter((x) => typeof x === 'number');
+    const fs = s.features.filter((f) => !f.archived && f.variants.length);
+    const own = fs.filter((f) => f.variants.some((v) => v.direction === d.id)).length;
+    return { d, avg: ratings.length ? ratings.reduce((a, b) => a + b, 0) / ratings.length : null, n: ratings.length, fav: mine.filter((e) => e.favorite).length, choose: mine.filter((e) => e.choose).length, own, total: fs.length };
+  });
+  const rated = stats.filter((x) => x.n > 0 || x.choose > 0);
+  if (rated.length) {
+    const best = rated.sort((a, b) => (b.choose - a.choose) || ((b.avg || 0) - (a.avg || 0)) || (b.fav - a.fav))[0];
+    return { optionId: best.d.id, confidence: best.n + best.choose >= 3 ? 'hoch' : 'mittel', by: 'Launcher-Feedback',
+      reasons: [best.choose ? `${best.choose}× „Übernehmen“ im Launcher` : null, best.avg != null ? `Ø ${best.avg.toFixed(1)} Sterne aus ${best.n} Bewertungen` : null, best.fav ? `${best.fav}× Favorit` : null, `Abdeckung ${best.own}/${best.total} Features`].filter(Boolean) };
+  }
+  const best = [...stats].sort((a, b) => b.own - a.own)[0];
+  return { optionId: best.d.id, confidence: 'niedrig', by: 'Claude (Vorschlag)', reasons: [`Höchste Abdeckung: ${best.own}/${best.total} Features haben schon eine Variante dieser Richtung`, 'Noch keine Launcher-Bewertungen – erst im Demo-Launcher vergleichen, dann entscheiden'] };
+}
+
 export const actions = {
   // ---- Einstellungen (ohne Historie/Undo) ----
   setSetting(key, value) { mutate(null, (s) => { s.settings[key] = value; }, { history: false, undo: false }); },
@@ -280,7 +336,14 @@ export const actions = {
   selectVariant(featureId, variantId, decision) {
     mutate(`Variante ${variantId} als bevorzugt gewählt`, (s) => {
       const f = editable(F(s, featureId)); V(f, variantId); f.selectedVariantId = variantId;
-      if (decision) s.decisions.unshift(createDecision({ featureId, moduleId: f.moduleId, status: 'decided', decidedAt: nowIso(), title: decision.title || `Variante ${variantId} für „${f.name}“`, decision: decision.decision || `Variante ${variantId} („${V(f, variantId).name}“) wird weiterverfolgt.`, rationale: decision.rationale || '', tradeoffs: decision.tradeoffs || '', alternatives: decision.alternatives || f.variants.filter((v) => v.id !== variantId).map((v) => `${v.id} – ${v.name}`).join(', ') }));
+      // Jede Variantenwahl wird als Entscheidung (Ebene Feature) mit Optionen protokolliert; eine offene Variantenfrage wird geschlossen.
+      const open = s.decisions.find((d) => d.featureId === featureId && d.kind === 'variant' && d.status === 'open');
+      const options = f.variants.map((v) => ({ id: v.id, label: `${v.id} – ${v.name}`, description: v.concept || '', ref: { featureId, variantId: v.id } }));
+      const patch = { status: 'decided', decidedAt: nowIso(), chosen: variantId, options, decidedBy: decision?.byRecommendation ? 'Empfehlung übernommen' : 'ich',
+        decision: decision?.decision || `Variante ${variantId} („${V(f, variantId).name}“) wird weiterverfolgt.`, rationale: decision?.rationale || '', tradeoffs: decision?.tradeoffs || '',
+        alternatives: f.variants.filter((v) => v.id !== variantId).map((v) => `${v.id} – ${v.name}`).join(', ') };
+      if (open) Object.assign(open, patch);
+      else s.decisions.unshift(createDecision({ featureId, moduleId: f.moduleId, level: 'feature', kind: 'variant', title: decision?.title || `Variante für „${f.name}“`, question: `Welche Variante von „${f.name}“ wird weiterverfolgt?`, ...patch }));
     }, { ...featureMeta({ id: featureId }), type: 'variant.select' });
   },
 
@@ -435,7 +498,7 @@ export const actions = {
    * (falls vorhanden), überspringt gesperrte Features und dokumentiert die Entscheidung.
    * Rückgabe: { applied:[featureId], skippedLocked:[featureId], missing:[featureId] }
    */
-  applyDirection(scope, targetId, directionId, { rationale = '', tradeoffs = '' } = {}) {
+  applyDirection(scope, targetId, directionId, { rationale = '', tradeoffs = '', byRecommendation = false } = {}) {
     return mutate(`Richtung „${directionId}“ für ${scope === 'app' ? 'die App' : scope === 'module' ? `Modul ${targetId}` : `Feature ${targetId}`} gewählt`, (s) => {
       const dir = (s.directions || []).find((d) => d.id === directionId); if (!dir) throw new Error(`Richtung ${directionId} unbekannt`);
       const fs = s.features.filter((f) => !f.archived && f.variants.length && (scope === 'app' || (scope === 'module' ? f.moduleId === targetId : f.id === targetId)));
@@ -450,12 +513,17 @@ export const actions = {
       if (scope === 'app') { s.app.directionId = directionId; s.app.decidedAt = nowIso(); }
       if (scope === 'module') { const m = M(s, targetId); m.directionId = directionId; m.updatedAt = nowIso(); }
       const where = scope === 'app' ? 'App' : scope === 'module' ? `Modul „${M(s, targetId).name}“` : `Feature „${F(s, targetId).name}“`;
-      s.decisions.unshift(createDecision({
+      // Eine offene Richtungsfrage (App) wird geschlossen statt eine zweite Entscheidung anzulegen.
+      const openQ = scope === 'app' ? s.decisions.find((d) => d.kind === 'app-direction' && d.status === 'open') : null;
+      const rec = createDecision({
         featureId: scope === 'feature' ? targetId : null, moduleId: scope === 'module' ? targetId : scope === 'feature' ? F(s, targetId).moduleId : null,
         status: 'decided', decidedAt: nowIso(), level: scope,
         title: `Richtung „${dir.name}“ für ${where}`, decision: `${where} folgt der Richtung „${dir.name}“ (${dir.claim}). ${out.applied.length} Features umgestellt${out.skippedLocked.length ? `, ${out.skippedLocked.length} freigegebene unverändert` : ''}${out.missing.length ? `, ${out.missing.length} ohne passende Variante` : ''}.`,
         rationale, tradeoffs, alternatives: (s.directions || []).filter((d) => d.id !== directionId).map((d) => d.name).join(', '),
-      }));
+        kind: scope === 'app' ? 'app-direction' : 'direction', chosen: directionId, decidedBy: byRecommendation ? 'Empfehlung übernommen' : 'ich',
+        options: (s.directions || []).map((x) => ({ id: x.id, label: x.name, description: x.claim, ref: { directionId: x.id } })),
+      });
+      if (openQ) { const { id, createdAt, rounds, question, ...rest } = rec; Object.assign(openQ, rest); } else s.decisions.unshift(rec);
       return out;
     }, { entity: scope, entityId: targetId, type: 'direction.apply' });
   },
@@ -466,6 +534,83 @@ export const actions = {
   updateDirection(id, patch) { mutate(`Richtung „${id}“ bearbeitet`, (s) => { const d = s.directions.find((x) => x.id === id); delete patch.id; Object.assign(d, patch); }, { entity: 'direction', entityId: id, coalesce: `dir:${id}:${Object.keys(patch).join()}`, type: 'direction.update' }); },
   addDirection(d) { return mutate(`Richtung „${d.name}“ angelegt`, (s) => { const id = uniqueId(slug(d.name), (x) => s.directions.some((y) => y.id === x)); s.directions.push({ icon: 'sparkles', tone: 'neutral', claim: '', description: '', principles: [], nav: 'bottom', theme: 'graphite', ...d, id }); return id; }, { entity: 'direction', type: 'direction.add' }); },
   resetDirections() { mutate('Richtungen auf Standard zurückgesetzt', (s) => { s.directions = clone(DEFAULT_DIRECTIONS); }, { entity: 'direction', type: 'direction.reset' }); },
+
+  // ---- Entscheidungen v2: entscheiden, parken, wiedervorlegen ----
+  decide(id, { chosen = null, rationale = '', tradeoffs = '', byRecommendation = false } = {}) {
+    mutate('Entscheidung getroffen', (s) => {
+      const d = s.decisions.find((x) => x.id === id); if (!d) throw new Error('Entscheidung nicht gefunden');
+      const opt = d.options.find((o) => o.id === chosen);
+      Object.assign(d, { chosen, status: 'decided', decidedAt: nowIso(), decidedBy: byRecommendation ? 'Empfehlung übernommen' : 'ich',
+        decision: opt ? `${opt.label}${opt.description ? ` – ${opt.description}` : ''}` : d.decision, rationale: rationale || d.rationale || (byRecommendation ? (d.recommendation?.reasons || []).join('; ') : ''), tradeoffs: tradeoffs || d.tradeoffs });
+    }, { entity: 'decision', entityId: id, type: 'decision.decide' });
+  },
+  parkDecision(id, { revisitAt = null, revisitIf = null, note = '' } = {}) {
+    mutate('Entscheidung geparkt', (s) => { const d = s.decisions.find((x) => x.id === id); Object.assign(d, { status: 'parked', revisitAt, revisitIf, rationale: note ? `${d.rationale ? d.rationale + '\n' : ''}Geparkt: ${note}` : d.rationale }); }, { entity: 'decision', entityId: id, type: 'decision.park' });
+  },
+  reopenDecision(id, reason = '') {
+    return mutate('Entscheidung wiedervorgelegt', (s) => {
+      const old = s.decisions.find((x) => x.id === id);
+      if (old.status === 'parked') { old.status = 'open'; return old.id; }
+      const nd = createDecision({ ...clone(old), id: undefined, status: 'open', chosen: null, decidedAt: null, decidedBy: null, rounds: 0, supersedes: old.id, createdAt: nowIso(), rationale: reason ? `Neu aufgerollt: ${reason}` : '' });
+      nd.id = uid('dec'); old.status = 'superseded'; old.supersededBy = nd.id; s.decisions.unshift(nd); return nd.id;
+    }, { entity: 'decision', entityId: id, type: 'decision.reopen' });
+  },
+
+  /** Offene Variantenfrage für ein Feature anlegen (für Runden), falls noch keine existiert. */
+  ensureVariantDecision(featureId) {
+    return mutate(null, (s) => {
+      const f = F(s, featureId);
+      const ex = s.decisions.find((d) => d.featureId === featureId && d.kind === 'variant' && d.status === 'open'); if (ex) return ex.id;
+      const d = createDecision({ featureId, moduleId: f.moduleId, level: 'feature', kind: 'variant', status: 'open', reversibility: 'leicht', title: `Variante für „${f.name}“`, question: `Welche Variante von „${f.name}“ wird weiterverfolgt?`,
+        options: f.variants.map((v) => ({ id: v.id, label: `${v.id} – ${v.name}`, description: v.concept || '', ref: { featureId, variantId: v.id } })) });
+      s.decisions.unshift(d); return d.id;
+    }, { history: false });
+  },
+  /** Offene Frage nach der App-Richtung (Ebene 0) anlegen, falls noch keine existiert. */
+  ensureAppDirectionDecision() {
+    return mutate(null, (s) => {
+      const ex = s.decisions.find((d) => d.kind === 'app-direction' && d.status === 'open'); if (ex) return ex.id;
+      if (s.app.directionId) return null;
+      const d = createDecision({ level: 'app', kind: 'app-direction', status: 'open', reversibility: 'aufwendig', title: 'Richtung der ganzen App', question: 'Welche Grundrichtung bekommt TAKT V2.0?', recommendation: recommendDirection(s),
+        options: s.directions.map((x) => ({ id: x.id, label: x.name, description: x.claim, ref: { directionId: x.id } })), consequences: 'Je Feature wird die Variante dieser Richtung bevorzugt; Module können begründet abweichen.' });
+      s.decisions.unshift(d); return d.id;
+    }, { history: false });
+  },
+
+  /** Empfehlung der offenen Richtungsfrage neu berechnen (z. B. nach neuem Launcher-Feedback). */
+  refreshDirectionRecommendation() {
+    mutate(null, (s) => { const d = s.decisions.find((x) => x.kind === 'app-direction' && x.status === 'open'); if (d) d.recommendation = recommendDirection(s); }, { history: false, undo: false });
+  },
+
+  // ---- Entscheidungsrunden (Zeitbox, Agenda, Rundenlimit) ----
+  startRound({ title, level, scopeId, agenda, timeboxMin = 20 }) {
+    return mutate(`Entscheidungsrunde „${title}“ gestartet`, (s) => {
+      const r = { id: uid('rnd'), title, level, scopeId, agenda, timeboxMin, status: 'läuft', startedAt: nowIso(), closedAt: null, results: [] };
+      for (const id of agenda) { const d = s.decisions.find((x) => x.id === id); if (d) d.rounds = (d.rounds || 0) + 1; }
+      s.rounds.unshift(r); return r.id;
+    }, { entity: 'round', type: 'round.start' });
+  },
+  roundResult(roundId, decisionId, outcome, note = '') {
+    mutate(null, (s) => { const r = s.rounds.find((x) => x.id === roundId); r.results = [...r.results.filter((x) => x.decisionId !== decisionId), { decisionId, outcome, note, ts: nowIso() }]; }, { history: false, undo: false });
+  },
+  closeRound(roundId) {
+    mutate('Entscheidungsrunde abgeschlossen', (s) => { const r = s.rounds.find((x) => x.id === roundId); r.status = 'geschlossen'; r.closedAt = nowIso(); }, { entity: 'round', entityId: roundId, type: 'round.close' });
+  },
+
+  // ---- Anmerkungen (Pins) – auch an freigegebenen Features erlaubt (Beobachtung) ----
+  addPin(p) { return mutate('Anmerkung hinzugefügt', (s) => { const pin = { id: uid('pin'), status: 'offen', severity: 'soll', kind: 'mangel', author: 'ich', createdAt: nowIso(), ...p }; s.pins.unshift(pin); return pin.id; }, { entity: 'pin', featureId: p.featureId, type: 'pin.add' }); },
+  updatePin(id, patch) { mutate(null, (s) => { const p = s.pins.find((x) => x.id === id); Object.assign(p, patch); if (patch.status === 'erledigt') { const f = s.features.find((x) => x.id === p.featureId); p.doneIn = f ? `v${f.version}` : null; p.doneAt = nowIso(); } }, { history: false, undo: true }); },
+  deletePin(id) { mutate(null, (s) => { s.pins = s.pins.filter((x) => x.id !== id); }, { history: false }); },
+
+  // ---- Scorecard, Leitbild, Tier, Annahmen ----
+  setScore(featureId, variantId, criterion, value) {
+    mutate(null, (s) => { s.scores[featureId] = s.scores[featureId] || {}; s.scores[featureId][variantId] = { ...(s.scores[featureId][variantId] || {}), [criterion]: value }; }, { history: false, undo: false });
+  },
+  setTier(featureId, tier) { mutate(`Design-Tiefe → Tier ${tier}`, (s) => { const f = F(s, featureId); f.tier = tier ? Number(tier) : null; f.updatedAt = nowIso(); }, { ...featureMeta({ id: featureId }), type: 'feature.tier' }); },
+  setAcceptance(featureId, list) { mutate('Akzeptanzkriterien bearbeitet', (s) => { const f = editable(F(s, featureId)); f.acceptance = list; }, { ...featureMeta({ id: featureId }), coalesce: `acc:${featureId}`, type: 'feature.acceptance' }); },
+  setAssumption(moduleId, status, note = '') {
+    mutate(`Annahme ${status}`, (s) => { const m = M(s, moduleId); m.assumptionStatus = status; m.assumptionNote = note; m.assumptionAt = nowIso(); }, { entity: 'module', entityId: moduleId, moduleId, type: 'module.assumption' });
+  },
 
   // ---- Feedback (Demo-Launcher, auch vom Handy) ----
   importFeedback(entries) {
