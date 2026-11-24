@@ -29,7 +29,7 @@ export const savingsSliders = {
   name: 'Rechner-Regler',
   category: 'Sparpläne',
   description: 'Regler und Direkteingabe für Startbetrag, Monatsrate, Laufzeit, Rendite-Annahme, Kosten und Ratensteigerung. Schreibt den Rechner-Zustand (ui.calc), auf den Diagramm, Ergebnis und Tabelle reagieren. Optionen: Verzinsung (effektiv oder nominal), Inflation, Steuer-Schätzung.',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Eingaben' },
     { name: 'fields', label: 'Felder', type: 'list', default: ['initial', 'monthly', 'years', 'ratePa', 'costPa', 'dynamicPa'] },
@@ -50,6 +50,7 @@ export const savingsSliders = {
   .tk-svs__grid { display:grid; gap:var(--tk-space-5) var(--tk-space-6); grid-template-columns:minmax(0,1fr); } .bp-desktop .tk-svs__grid--2 { grid-template-columns:repeat(2, minmax(0,1fr)); }
   .tk-svs__f { display:flex; flex-direction:column; gap:2px; min-width:0; }
   .tk-svs__top { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+  [data-tk-large-text] .tk-svs__top { flex-wrap:wrap; row-gap:2px; } [data-tk-large-text] .tk-svs__lab { flex:1 1 8em; } /* Wert rutscht unter die Beschriftung statt sie zu quetschen */
   .tk-svs__lab { font-size:var(--tk-fs-sm); color:var(--tk-c-text-muted); font-weight:var(--tk-fw-medium); }
   .tk-svs__val { display:inline-flex; align-items:center; gap:6px; color:var(--tk-c-text-muted); font-size:var(--tk-fs-sm); }
   .tk-svs__num { width:max(92px, 6.4em); max-width:100%; box-sizing:border-box; height:34px; text-align:right; padding:0 10px; border-radius:var(--tk-radius-md); border:1px solid var(--tk-c-border-strong); background:var(--tk-c-surface2); color:var(--tk-c-text); font-weight:var(--tk-fw-semibold); font-size:var(--tk-fs-lg); font-variant-numeric:tabular-nums; outline:none; }

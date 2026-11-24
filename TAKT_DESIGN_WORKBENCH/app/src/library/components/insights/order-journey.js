@@ -13,7 +13,7 @@ export const orderJourney = {
   name: 'Bestell-Reise',
   category: 'Vertrieb',
   description: 'Die gewählte Bestellung (ctx.ui.selectedId) als Reise: große Gesamtsumme mit Kanal und Kunde, ein senkrechter Weg durch Neu, Bezahlt, Versendet und Zugestellt mit Zeitpunkten und der Aktion direkt am aktuellen Schritt, Positionen als Kacheln und ein Summenband aus Waren und Versand.',
-  version: '1.0',
+  version: '1.1',
   props: [{ name: 'showActions', label: 'Retoure und Rechnung zeigen', type: 'boolean', default: true }],
   data: [{ slot: 'orders', label: 'Bestellungen', default: 'orders', shape: '{id,number,customer,channel,channelId,status,date,lines:[{name,qty,price}],shipping,payment,email,address,carrier?,tracking?,history?}[]', required: true }],
   events: ['order.advance', 'channel.open', 'order.contact', 'order.return', 'order.invoice'],
@@ -35,6 +35,7 @@ export const orderJourney = {
   .tk-ordj__now { display:flex; flex-direction:column; gap:10px; padding:var(--tk-space-4); border-radius:var(--tk-radius-lg); background:color-mix(in srgb, var(--ts) 10%, var(--tk-c-surface)); border:1px solid color-mix(in srgb, var(--ts) 35%, transparent); }
   .tk-ordj__now .tk-btn { min-height:52px; justify-content:center; font-size:var(--tk-fs-lg); width:100%; }
   .tk-ordj__tiles { display:grid; grid-template-columns:repeat(auto-fill, minmax(min(100%, 14rem), 1fr)); gap:10px; }
+  [data-tk-large-text] .tk-ordj__tiles { grid-template-columns:repeat(auto-fill, minmax(min(100%, 20em), 1fr)); } /* rem wächst nicht mit der Schrift */
   .tk-ordj__tile { display:flex; gap:12px; align-items:center; padding:12px; border-radius:var(--tk-radius-lg); border:1px solid var(--tk-c-border); background:var(--tk-c-surface); min-width:0; }
   .tk-ordj__sw { flex:none; width:48px; height:48px; border-radius:var(--tk-radius-md); display:grid; place-items:center; background:color-mix(in srgb, var(--tc) 16%, transparent); color:var(--tc); }
   .tk-ordj__tn { font-weight:var(--tk-fw-semibold); overflow-wrap:break-word; line-height:1.25; } .tk-ordj__tq { font-size:var(--tk-fs-sm); color:var(--tk-c-text-muted); font-variant-numeric:tabular-nums; }

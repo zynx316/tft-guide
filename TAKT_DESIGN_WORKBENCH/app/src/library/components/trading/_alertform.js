@@ -35,4 +35,5 @@ export function AlertForm({ data, setData, ctx, compact, onDone }) {
     <${Button} variant="primary" type="submit" icon="bell">Alarm anlegen<//></form>`;
 }
 export const AF_CSS = `.tk-trd-af { display:grid; grid-template-columns:minmax(0,1.2fr) auto minmax(0,1fr) auto; gap:var(--tk-space-3); align-items:start; } .tk-trd-af .tk-btn[type="submit"] { align-self:end; }
-  .tk-trd-af--c, .bp-mobile .tk-trd-af, .bp-tablet .tk-trd-af { grid-template-columns:minmax(0,1fr); } .tk-trd-af--c .tk-btn[type="submit"] { width:100%; }`;
+  .tk-trd-af--c, .bp-mobile .tk-trd-af, .bp-tablet .tk-trd-af { grid-template-columns:minmax(0,1fr); } .tk-trd-af--c .tk-btn[type="submit"] { width:100%; }
+  [data-tk-large-text] .tk-trd-af { grid-template-columns:repeat(auto-fit, minmax(min(100%, 12em), 1fr)); } [data-tk-large-text] .tk-trd-af .tk-btn[type="submit"] { grid-column:1 / -1; }`;

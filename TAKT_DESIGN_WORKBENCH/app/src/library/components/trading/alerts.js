@@ -13,7 +13,7 @@ export const trdAlerts = {
   name: 'Kursalarme',
   category: 'Trading',
   description: 'Kursalarme je Wertpapier mit Richtung und Kursmarke: aktive und ausgelöste Alarme, Abstand zum aktuellen Kurs, pausieren, löschen mit Rückgängig. Als Liste, als Karten mit Abstandsbalken oder kompakt mit Schnell-Anlage.',
-  version: '1.2',
+  version: '1.3',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Kursalarme' },
     { name: 'style', label: 'Darstellung', type: 'select', options: ['list', 'cards', 'quick'], default: 'list' },
