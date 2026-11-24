@@ -28,7 +28,7 @@ export const finHints = {
   name: 'Finanz-Hinweise',
   category: 'Finanzen',
   description: 'Was jetzt Aufmerksamkeit braucht, nach Priorität: Budget über Plan, Kündigungsfristen, ungenutzte Abos, Deckung am Monatswechsel, Kreditkartenabrechnung. Jeder Hinweis führt mit einem Tipp zum passenden Bereich.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Als Nächstes' },
     { name: 'limit', label: 'Max. Hinweise', type: 'number', default: 3 },
@@ -42,7 +42,8 @@ export const finHints = {
   .tk-fnh__cards { display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap:var(--tk-space-3); }
   .tk-fnh__card { display:flex; flex-direction:column; gap:10px; padding:var(--tk-space-4); border-radius:var(--tk-radius-lg); border:1px solid var(--tk-c-border); background:var(--tk-c-surface2); }
   .tk-fnh__row { display:flex; align-items:center; gap:12px; padding:10px 0; min-height:56px; }
-  .tk-fnh__txt { flex:1 1 auto; min-width:0; line-height:var(--tk-lh-snug); }`,
+  .tk-fnh__txt { flex:1 1 auto; min-width:0; line-height:var(--tk-lh-snug); }
+  [data-tk-large-text] .tk-fnh__row { flex-wrap:wrap; row-gap:8px; } [data-tk-large-text] .tk-fnh__row > .tk-fnh__txt { flex:1 1 10ch; } [data-tk-large-text] .tk-fnh__row > .tk-btn { margin-left:auto; }`,
   example: { data: ex('budgets', 'transactions', 'subscriptions', 'subMeta', 'accounts', 'plans', 'events', 'prefs') },
   render: function FinHints({ props, data, ctx }) {
     const c = pctx(ctx, data), hide = Array.isArray(props.hide) ? props.hide : String(props.hide || '').split(',').map((x) => x.trim()), all = buildHints({ data, today: ctx.today, c }).filter((h) => !hide.includes(h.event)), list = all.slice(0, props.limit);

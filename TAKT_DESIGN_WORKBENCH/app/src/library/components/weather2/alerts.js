@@ -31,7 +31,7 @@ export const wxAlerts = {
   name: 'Warnungen (DWD-Stufen)',
   category: 'Wetter',
   description: 'Amtliche Warnungen mit Stufe 1–4, Zeitraum und Zeitleiste, Status („beginnt in …“), Verhaltenstipps, betroffenen Terminen und Quelle. Modi: voll, kompakt (Zeilen) oder Banner (wichtigste Warnung). Optional Warnungen aller gemerkten Orte.',
-  version: '1.3',
+  version: '1.4',
   props: [
     { name: 'mode', label: 'Modus', type: 'select', options: ['full', 'compact', 'banner'], default: 'full' },
     { name: 'title', label: 'Titel', type: 'text', default: 'Warnungen' },
@@ -64,6 +64,7 @@ export const wxAlerts = {
   .tk-wxa__row { display:flex; align-items:center; gap:var(--tk-space-3); width:100%; min-height:52px; padding:6px var(--tk-space-4); border:0; border-bottom:1px solid var(--tk-c-border); background:transparent; color:var(--tk-c-text); font:inherit; text-align:left; cursor:pointer; }
   .tk-wxa__row:hover { background:var(--tk-c-surface2); } .tk-wxa__row:last-child { border-bottom:0; }
   .tk-wxa__dot { width:10px; height:10px; border-radius:50%; flex:none; background:var(--wx-lv); }
+  [data-tk-large-text] .tk-wxa__banner { flex-wrap:wrap; row-gap:8px; } [data-tk-large-text] .tk-wxa__banner > .tk-grow { flex:1 1 10ch; } [data-tk-large-text] .tk-wxa__banner > .tk-btn { margin-left:auto; }
   [data-tk-large-text] .tk-wxa__row { flex-wrap:wrap; row-gap:2px; } [data-tk-large-text] .tk-wxa__row > .tk-grow { flex:1 1 12ch; } [data-tk-large-text] .tk-wxa__row > .tk-wxa__sub { order:3; flex:1 1 100%; margin:0 0 0 calc(10px + var(--tk-space-3)); }
   .tk-wxa__banner { display:flex; align-items:center; gap:var(--tk-space-3); padding:var(--tk-space-3) var(--tk-space-4); border-radius:var(--tk-radius-lg); border:1px solid color-mix(in srgb, var(--wx-lv) 45%, transparent); border-left:5px solid var(--wx-lv); background:var(--wx-soft); min-width:0; }
   .tk-wxa__lv { display:flex; gap:var(--tk-space-3); align-items:flex-start; width:100%; padding:var(--tk-space-3) var(--tk-space-4); border:0; border-bottom:1px solid var(--tk-c-border); background:transparent; color:var(--tk-c-text); font:inherit; text-align:left; cursor:pointer; min-height:56px; }
