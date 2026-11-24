@@ -18,6 +18,14 @@ function homeSummaryOf(taskList, eventList, habitKpi) {
   ] };
 }
 export const homeSummary = homeSummaryOf(tasks, events, habitsSummary.kpis[0]);
+/** Untertitel der Startseite (page-header, Slot `subtitle`): die wichtigste heute fällige Aufgabe mit Uhrzeit – „Heute zählt: …“. */
+export function homeHeadlineOf(taskList) {
+  const rank = { hoch: 0, mittel: 1, niedrig: 2 };
+  const timed = open(taskList).filter((t) => String(t.due || '').slice(0, 10) === TODAY && String(t.due).length > 10)
+    .sort((a, b) => (rank[a.priority] ?? 3) - (rank[b.priority] ?? 3) || String(a.due).localeCompare(String(b.due)));
+  return timed[0] ? `Heute zählt: ${timed[0].title} bis ${String(timed[0].due).slice(11, 16)} Uhr` : 'Dein Tag auf einen Blick';
+}
+export const homeHeadline = homeHeadlineOf(tasks);
 // Hinweiskarten der Startseite (Komponente hint-cards): eigene Regeln (mit `needs`: verschwinden, wenn der Anlass erledigt ist)
 // plus je Modul der dringendste Hinweis aus Dokumente & Verträge, Einkauf & Haushalt und Ziele – nur verlinkt, nicht kopiert:
 // Text, Ziel und Auswahl (`to`, `carry`) kommen aus `<modul>Hints`. Reihenfolge nach Dringlichkeit (Ton), sonst wie notiert.
@@ -46,4 +54,4 @@ export const homeSearch = [];
 export const homeNotifications = [
   { id: 'n-review', title: 'Wochenrückblick ist bereit', text: 'KW 47 in drei Zeilen: erledigt, gelernt, als Nächstes.', module: 'home', tone: 'neutral', priority: 'leise', time: at(-2, '18:00'), to: 'home.review' },
 ];
-export const scenarios = { erststart: { homeSummary: homeSummaryOf([], [], null), homeNotifications: [], homeHintCards: [] }, stress: { homeSummary: homeSummaryOf(tasks.concat(tasks, tasks), events.concat(events, events), habitsSummary.kpis[0]) } };
+export const scenarios = { erststart: { homeSummary: homeSummaryOf([], [], null), homeNotifications: [], homeHintCards: [], homeHeadline: homeHeadlineOf([]) }, stress: { homeSummary: homeSummaryOf(tasks.concat(tasks, tasks), events.concat(events, events), habitsSummary.kpis[0]) } };
