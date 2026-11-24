@@ -13,7 +13,7 @@ export const goalHero = {
   name: 'Ziel-Kopf',
   category: 'Ziele',
   description: 'Kopf eines Ziels: Bereich, Titel, „Warum?“, Fortschrittsring mit Stand, Zustand in Worten, Frist, ruhiger Prognose-Satz (Annahme genannt) und Quelle mit Link. Bei Körperzielen lassen sich die Zahlen ausblenden. Ziele lassen sich pausieren statt zu verlieren.',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'style', label: 'Darstellung', type: 'select', options: ['ring', 'compact'], default: 'ring' },
     { name: 'showPicker', label: 'Ziel per Chip wechseln', type: 'boolean', default: true },
@@ -26,6 +26,7 @@ export const goalHero = {
   css: `${GL_CSS}
   .tk-gl-hr { display:flex; flex-direction:column; gap:var(--tk-space-3); }
   .tk-gl-hr__pick { display:flex; gap:8px; overflow-x:auto; scrollbar-width:none; padding-bottom:2px; } .tk-gl-hr__pick > * { flex:none; }
+  [data-tk-large-text] .tk-gl-hr__pick > .tk-chip { white-space:nowrap; max-width:none; } /* Scrollreihe einzeilig */
   .tk-gl-hr__main { display:flex; gap:20px; align-items:center; flex-wrap:wrap; padding:18px; } .tk-gl-hr__txt { flex:1 1 240px; min-width:0; display:flex; flex-direction:column; gap:8px; }
   .tk-gl-hr__txt h2 { margin:0; font-size:var(--tk-fs-2xl); letter-spacing:var(--tk-ls-tight); line-height:var(--tk-lh-tight); overflow-wrap:anywhere; }
   .tk-gl-hr__ring { display:flex; flex-direction:column; align-items:center; gap:6px; flex:none; } .tk-gl-hr__big { font-size:var(--tk-fs-xl); font-weight:var(--tk-fw-semibold); letter-spacing:var(--tk-ls-tight); font-variant-numeric:tabular-nums; }

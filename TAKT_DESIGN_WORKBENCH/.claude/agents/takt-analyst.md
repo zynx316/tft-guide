@@ -1,6 +1,6 @@
 ---
 name: takt-analyst
-description: Phase-1-Analyst: untersucht das TAKT-Flutter-Projekt NUR LESEND (Modulregister, Navigation, Features, Themes, frühere HTML-Prototypen, Konzepte, Doku) und liefert eine belastbare Modul-/Feature-Struktur mit Quellenangaben.
+description: 'Phase-1-Analyst: untersucht das TAKT-Flutter-Projekt NUR LESEND (Modulregister, Navigation, Features, Themes, frühere HTML-Prototypen, Konzepte, Doku) und liefert eine belastbare Modul-/Feature-Struktur mit Quellenangaben.'
 tools: Read, Grep, Glob, Bash
 model: sonnet
 effort: high

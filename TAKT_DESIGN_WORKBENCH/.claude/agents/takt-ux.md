@@ -1,6 +1,6 @@
 ---
 name: takt-ux
-description: UX-/Informationsarchitektur-Prüfer für Workbench und TAKT-Features: Navigation, Hierarchie, Klickwege, Scrolltiefe, Mobile-Bedienbarkeit.
+description: 'UX-/Informationsarchitektur-Prüfer für Workbench und TAKT-Features: Navigation, Hierarchie, Klickwege, Scrolltiefe, Mobile-Bedienbarkeit.'
 tools: Read, Grep, Glob, Bash
 model: sonnet
 effort: high

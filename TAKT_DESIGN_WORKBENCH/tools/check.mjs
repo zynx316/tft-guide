@@ -51,7 +51,7 @@ const noteHits = (f, { fmt: fm, nondet }) => {
 for (const f of compFiles) {
   const s = fs.readFileSync(f, 'utf8');
   for (const m of s.matchAll(/^\s*id:\s*'([a-z0-9-]+)',?\s*$/gm)) { if (compIds.has(m[1])) errors.push(`Doppelte Komponenten-ID ${m[1]} (${rel(f)} / ${rel(compIds.get(m[1]))})`); compIds.set(m[1], f); }
-  const lines = s.split('\n');
+  const lines = s.split(/\r?\n/);
   if (lines.length > 450) warnings.push(`${rel(f)}: ${lines.length} Zeilen (Richtwert ≤ 450 – aufteilen)`);
   const hits = { fmt: [], nondet: [] };
   lines.forEach((line, i) => {
@@ -67,7 +67,7 @@ for (const f of compFiles) {
 // 2b) Datenwelt: Zufall und Systemzeit sind dort tabu (Szenarien und Screenshots müssen reproduzierbar sein)
 for (const f of walk(path.join(SRC, 'seed/world')).filter((x) => x.endsWith('.js'))) {
   const nondet = [];
-  fs.readFileSync(f, 'utf8').split('\n').forEach((line, i) => { if (!/^\s*(\*|\/\*)/.test(line) && NONDET_RULE.test(line.replace(/\/\/.*$/, ''))) nondet.push(i + 1); });
+  fs.readFileSync(f, 'utf8').split(/\r?\n/).forEach((line, i) => { if (!/^\s*(\*|\/\*)/.test(line) && NONDET_RULE.test(line.replace(/\/\/.*$/, ''))) nondet.push(i + 1); });
   noteHits(f, { fmt: [], nondet });
 }
 
@@ -160,14 +160,14 @@ const termBlock = (file, name) => {
   const f = path.join(ROOT, 'docs', file); if (!fs.existsSync(f)) return [];
   const block = (fs.readFileSync(f, 'utf8').match(new RegExp(`<!-- ${name}:start -->([\\s\\S]*?)<!-- ${name}:end -->`)) || [])[1] || '';
   // Format: je Zeile ein Teilwort (Groß/klein egal) oder /Regex/Flags; „#“ = Kommentar
-  return block.split('\n').map((l) => l.trim()).filter((l) => l && !l.startsWith('#') && !l.startsWith('```') && !l.startsWith('<!--')).map((l) => {
+  return block.split(/\r?\n/).map((l) => l.trim()).filter((l) => l && !l.startsWith('#') && !l.startsWith('```') && !l.startsWith('<!--')).map((l) => {
     const m = l.match(/^\/(.+)\/([a-z]*)$/);
     try { return m ? new RegExp(m[1], m[2].includes('u') ? m[2] : `${m[2]}u`) : new RegExp(l.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'iu'); } catch { return null; }
   }).filter(Boolean);
 };
 const filesOf = (areas, modules) => [...areas.flatMap((a) => (fs.existsSync(path.join(SRC, 'library/components', a)) ? walk(path.join(SRC, 'library/components', a)) : [])),
   ...modules.flatMap((m) => [path.join(SRC, 'seed/modules', `${m}.js`), path.join(SRC, 'seed/world', `${m}.js`)])].filter((f) => fs.existsSync(f) && f.endsWith('.js'));
-const scanTerms = (files, res, msg) => { for (const f of files) fs.readFileSync(f, 'utf8').split('\n').forEach((line, i) => {
+const scanTerms = (files, res, msg) => { for (const f of files) fs.readFileSync(f, 'utf8').split(/\r?\n/).forEach((line, i) => {
   if (/^\s*(\/\/|\*)/.test(line)) return;
   for (const raw of line.match(/(['`"])(?:(?!\1).)*\1/g) || []) { const st = raw.replace(/„[^“]*“/g, ''); for (const re of res) { const hit = st.match(re); if (hit) { warnings.push(`${rel(f)}:${i + 1}: „${hit[0].trim()}“ – ${msg}`); break; } } }
 }); };
@@ -195,7 +195,7 @@ if (clashes.length) warnings.push(`CSS-Klassen in mehreren Bereichen definiert (
 // 4) ASCII-Umlaute in sichtbaren Texten (häufige Fälle)
 const ascii = /\b(fuer|Fuer|ueber|Ueber|Uebersicht|waehl\w*|Waehl\w*|moeglich\w*|koennen|muessen|Aenderung\w*|aender\w*|Pruef\w*|pruef\w*|faellig|Faellig\w*|zurueck|Rueck\w*|Loesch\w*|loesch\w*|hinzufueg\w*|Hinzufueg\w*|Oeffn\w*|oeffn\w*|Groesse|groesser|naechst\w*|Naechst\w*|spaeter|Eintraege|Schluessel|Bestaetig\w*|bestaetig\w*)\b/;
 for (const f of [...compFiles, ...walk(path.join(SRC, 'seed')), ...walk(path.join(SRC, 'workbench'))].filter((x) => x.endsWith('.js'))) {
-  fs.readFileSync(f, 'utf8').split('\n').forEach((line, i) => { const code = line.replace(/^\s*\/\/.*$/, ''); const strs = code.match(/(['`"])(?:(?!\1).)*\1/g) || []; for (const st of strs) if (ascii.test(st)) warnings.push(`${rel(f)}:${i + 1}: Umlaut als ae/oe/ue im Text – echte Umlaute verwenden (${st.match(ascii)[0]})`); });
+  fs.readFileSync(f, 'utf8').split(/\r?\n/).forEach((line, i) => { const code = line.replace(/^\s*\/\/.*$/, ''); const strs = code.match(/(['`"])(?:(?!\1).)*\1/g) || []; for (const st of strs) if (ascii.test(st)) warnings.push(`${rel(f)}:${i + 1}: Umlaut als ae/oe/ue im Text – echte Umlaute verwenden (${st.match(ascii)[0]})`); });
 }
 
 const total = `${jsFiles.length} JS-Dateien · ${compIds.size} Komponenten · ${state.modules.length} Module · ${state.features.length} Features · ${state.features.reduce((n, f) => n + f.variants.length, 0)} Varianten`;

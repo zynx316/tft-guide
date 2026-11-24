@@ -68,7 +68,11 @@
       `_xc-css.js` von `overflow-wrap:anywhere` auf `break-word` (Versionssprung ~20 Komponenten); Sparplan-Ausführungsliste
       zweispaltig eng; Depot-Positionen und „Auch wichtig“ mit Icon-Kachel; Kursalarm-Aktionen nur als Symbol; Kalender-Woche
       kürzt Termine in schmalen Überlappungsspalten (`data-clip-ok`, Volltext per Tippen); Wochenleiste nutrition.home/B eng;
-      Notizkarten kürzen die Vorschau (line-clamp); `calendar/_cal.js › bigTextScale()` auf `ctx.textScale` umstellen
+      Notizkarten kürzen die Vorschau (line-clamp); `calendar/_cal.js › bigTextScale()` auf `ctx.textScale` umstellen;
+      umbrechende Reiter (`.tk-tabs`) haben nur unter der letzten Zeile eine Grundlinie (optional: Linie je Zeile)
+- [ ] Kleinigkeiten beim allerersten Start: `GET /api/state` antwortet 404, solange es noch keine `data/workbench.json` gibt
+      (harmlose rote Konsolenmeldung im Browser; Client erwartet heute genau das); `work-order --round latest` ohne Runde endet
+      mit Exit 1 (Hinweis steht in `/takt-work-order`)
 - [ ] Viewport 320 px bei 200 % (außerhalb der Zielbreiten 360/390): Fitness `records-list`, `set-logger`, `weight-entry`,
       `focus-set` haben noch enge Stellen
 - [ ] Launcher: Tageszeit-Stationen (07:30/12:30/18:30) für kontextabhängige Startseiten

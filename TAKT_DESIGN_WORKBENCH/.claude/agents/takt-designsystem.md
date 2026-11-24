@@ -1,6 +1,6 @@
 ---
 name: takt-designsystem
-description: Designsystem-Spezialist: Tokens, Themes, Primitive, Komponenten-Konsistenz, Kontrast, Flutter-Token-Mapping.
+description: 'Designsystem-Spezialist: Tokens, Themes, Primitive, Komponenten-Konsistenz, Kontrast, Flutter-Token-Mapping.'
 tools: Read, Grep, Glob, Bash, Edit, Write
 model: sonnet
 effort: high

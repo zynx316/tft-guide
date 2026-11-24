@@ -12,7 +12,7 @@ export const exerciseAlternatives = {
   name: 'Alternative finden',
   category: 'Fitness',
   description: 'Ersatz für eine Übung finden (gleiche Muskelgruppe, anderes Gerät) und direkt in der laufenden Einheit tauschen – bereits erledigte Sätze bleiben erhalten.',
-  version: '1.1',
+  version: '1.2',
   props: [{ name: 'title', label: 'Titel', type: 'text', default: 'Übung ersetzen' }],
   data: [
     { slot: 'items', label: 'Übungen', default: 'library', shape: 'Übungen[]', required: true },
@@ -23,6 +23,7 @@ export const exerciseAlternatives = {
   states: ['empty'],
   css: `
   .tk-alt { display:flex; flex-direction:column; gap:var(--tk-space-3); } .tk-alt__chips { display:flex; gap:var(--tk-space-2); overflow-x:auto; scrollbar-width:none; padding-bottom:2px; } .tk-alt__chips > * { flex:none; }
+  [data-tk-large-text] .tk-alt__chips > .tk-chip { white-space:nowrap; max-width:none; } /* Scrollreihe einzeilig */
   .tk-alt__row { display:flex; align-items:center; gap:var(--tk-space-3); padding:var(--tk-space-3); border:1px solid var(--tk-c-border); border-radius:var(--tk-radius-md); background:var(--tk-c-surface2); min-width:0; }
   .tk-alt__row > button.tk-fit-link { flex:1 1 auto; display:flex; flex-direction:column; gap:2px; }
   [data-tk-large-text] .tk-alt__row { flex-wrap:wrap; } [data-tk-large-text] .tk-alt__row > button.tk-fit-link { flex:1 1 100%; min-width:0; }`,

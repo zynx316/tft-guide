@@ -20,7 +20,7 @@ Quelle: `world/persona.js` (Schlüssel `persona`). **Annahme, bis der Nutzer bes
 | Name, Alter, Ort | Jonas Keller, 38, Bielefeld, mit Partnerin Jana |
 | Beruf | selbstständig, Online-Shop „Nordlicht Studio“ (nachhaltige Wohnaccessoires) auf Shopify, Etsy, Amazon |
 | Geld | ETF-Sparer (All-World, Emerging Markets, World IT), Notgroschen im Aufbau, spart auf Japan-Reise 2027 |
-| Körper | Krafttraining 3× pro Woche (Mo/Mi/Fr), Laufen am Wochenende, Ziel: 3 kg abnehmen (80 → 77 kg; `persona.health` schreibt „3 kg Fett verlieren“, die Messreihe misst Gewicht), ca. 2.400 kcal pro Tag, 140 g Eiweiß |
+| Körper | Krafttraining 3× pro Woche (Mo/Mi/Fr), Laufen am Wochenende, Ziel: 3 kg abnehmen (78,4 → 77 kg, 182 cm; `persona.health` und die Messreihe sind einheitlich, Befund B1), ca. 2.400 kcal pro Tag, 140 g Eiweiß |
 | Referenzmoment | Di, 24.11.2026, 09:30 Uhr, Bielefeld, 6 °C, leicht bewölkt, ab 14 Uhr Sturmböen |
 
 Persona-Aussagen sind Eigentum des Moduls **home** (`persona.js`). Andere Dateien dürfen sie lesen, nicht abweichend wiederholen (Abschnitt 8, Befund B1).
@@ -33,7 +33,7 @@ Eine Datei = ein Eigentümer-Paket. Jeder **benannte Export, der keine Funktion 
 
 | Datei | Eigentümer-Paket | Modul(e) | Stand |
 |---|---|---|---|
-| `index.js` | INF-3 / welt | Aggregation (`allKpis`, `allHints`, `searchIndex`, `allNotifications`), `scenarios` je Datei sammeln | vorhanden, 216 Schlüssel |
+| `index.js` | INF-3 / welt | Aggregation (`allKpis`, `allHints`, `searchIndex`, `allNotifications`), `scenarios` je Datei sammeln | vorhanden, 219 Schlüssel |
 | `persona.js` | MOD-HOME | home (Persona) | vorhanden, 1 Schlüssel |
 | `home.js` | MOD-HOME | home (Kennzahlen, Mitteilung Wochenrückblick) | vorhanden; Briefing und Tagesablauf bleiben abgeleitet in den Start-Komponenten |
 | `organisation.js` | MOD-CAL | calendar, tasks | vorhanden (Termine inkl. Trainingsserien, Aufgaben, Eingang, Fokus, Aggregate) |
@@ -51,7 +51,7 @@ Eine Datei = ein Eigentümer-Paket. Jeder **benannte Export, der keine Funktion 
 | `shopping.js` | MOD-REG | shopping (Listen, Läden, Vorräte, Haushaltswartung, Einkäufe; Lebensmittel-Liste noch in `nutShopping`, B5) | vorhanden (Abschnitt 4.15) |
 | `documents.js` | MOD-REG | documents (Dokumente, Ordner, Verträge abgeleitet aus Finanzen, Garantien, Steuerordner) | vorhanden (Abschnitt 4.16) |
 
-Die Welt enthält 216 Schlüssel (`Object.keys(WORLD)`); `searchIndex` hat 223 Einträge, `allNotifications` 24, `allHints` 36 (19 Module).
+Die Welt enthält 219 Schlüssel (`Object.keys(WORLD)`); `searchIndex` hat 223 Einträge, `allNotifications` 24, `allHints` 36 (19 Module).
 
 ### 3.2 Eigentümer je Datenobjekt (Bauplan 5.13)
 
@@ -461,9 +461,9 @@ Behobene Befunde bleiben als Verlauf stehen; ein Test sichert sie ab (`world-inv
 
 | Prüfung | Wo | Status |
 |---|---|---|
-| Invarianten W1 bis W17 (inkl. Szenarien, Referenzen W14, eindeutige IDs W15) | `tests/world-invariants.test.mjs`, `npm test` | umgesetzt (31 Tests). `tests/core-world.test.mjs` prüft zusätzlich die Szenario-Mechanik |
-| Unbekannter Welt-Schlüssel in `demoData` | `tests/world-invariants.test.mjs` (alle Manifeste) | umgesetzt; `tools/check.mjs` meldet es noch nicht (Wunsch) |
-| `Date.now()`, `new Date()` ohne Argument, `Math.random()` in `seed/world/**` | `tests/world-invariants.test.mjs` | umgesetzt (`tools/check.mjs` Wunsch) |
+| Invarianten W1 bis W17 (inkl. Szenarien, Referenzen W14, eindeutige IDs W15) | `tests/world-invariants.test.mjs`, `npm test` | umgesetzt (33 Tests). `tests/core-world.test.mjs` prüft zusätzlich die Szenario-Mechanik |
+| Unbekannter Welt-Schlüssel in `demoData` | `tests/world-invariants.test.mjs` (alle Manifeste) | umgesetzt; `tools/check.mjs` meldet es ebenfalls (validateState, Hinweis „Welt-Schlüssel … existiert nicht“) |
+| `Date.now()`, `new Date()` ohne Argument, `Math.random()` in `seed/world/**` | `tests/world-invariants.test.mjs` | umgesetzt (`tools/check.mjs` prüft `Math.random()`/`Date.now()` in `seed/world/**` ebenfalls) |
 | Aggregat-Form (`kpis`, `Hints`, `Search`, `Notifications`), Ziele existieren, Navigationsregeln in `system.*` | `tests/world-invariants.test.mjs` | umgesetzt |
 | `prefs` = `DEFAULT_PREFS` | `tests/world-invariants.test.mjs` | umgesetzt |
 | Seed-Größe unter 1,6 MB | `tests/world-invariants.test.mjs` (Welt als JSON) | umgesetzt (Welt rund 0,6 MB) |
@@ -475,6 +475,6 @@ Behobene Befunde bleiben als Verlauf stehen; ein Test sichert sie ab (`world-inv
 - **Abgrenzung Sparen/Trading/Finanz-Datei** (B9): Umzug der Daten, sobald `library/components/trading/_seeddata.js` nicht mehr aus `world/finance.js` importiert (Schlüssel bleiben).
 - **Suche über zur Laufzeit angelegte Objekte:** `global-search` indexiert nur seine festen Quellen (Aufgaben, Termine, Buchungen …). Eine per „Erfassen“ angelegte Notiz liegt zwar in `notes`, erscheint aber erst in der Suche, wenn die Komponente `notes`, `articles`, `habits`, `orders` direkt als Quelle bekommt (Wunsch an `crosscut`).
 - **Fokus-Rahmen „Erfassen“** (`preview/launchpad.js`, `CaptureSheet`) legt nur Aufgaben und Ausgaben an; Notizen (und Termine) sollten ebenfalls in die Welt (`notes`, `events`) schreiben.
-- **`tools/check.mjs`:** unbekannte `@world:`-Schlüssel, Aggregat-Form und `Date.now()` in `seed/world/**` auch dort prüfen (der Test deckt es ab).
+- **`tools/check.mjs`:** Aggregat-Form auch dort prüfen (unbekannte `@world:`-Schlüssel und `Date.now()`/`Math.random()` in `seed/world/**` prüft es bereits; der Test deckt alles ab).
 - **`SEED_VERSION`** (`seed/index.js`) erhöhen, damit „Neue Seed-Inhalte übernehmen“ die geänderten Bindungen (Notizen, Wissen, Picture to Text, Sales, Gewohnheiten, Trading, Kern, Einstellungen) in bestehende Stände übernimmt.
 - Statische Untertitel in einzelnen Startseiten (z. B. „9 Notizen · 3 im Eingang“ in Notizen, „3 von 5 Kanälen laufen“ in Sales) sind Text im Manifest und folgen den Szenarien nicht.

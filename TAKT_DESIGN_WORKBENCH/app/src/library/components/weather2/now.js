@@ -9,7 +9,7 @@ export const wxNow = {
   name: 'Jetzt (Ort & Zustand)',
   category: 'Wetter',
   description: 'Aktuelles Wetter des gewählten Ortes: Temperatur, Zustand, gefühlte Temperatur, Hoch/Tief und Kurztext. Als große Karte, kompakte Zeile oder einzeilige Leiste. Zeigt Offline-/Veraltet-Hinweis mit Stand und folgt den Einheiten.',
-  version: '1.2',
+  version: '1.3',
   props: [
     { name: 'layout', label: 'Darstellung', type: 'select', options: ['hero', 'compact', 'line'], default: 'hero' },
     { name: 'showSummary', label: 'Kurztext', type: 'boolean', default: true },
@@ -24,6 +24,7 @@ export const wxNow = {
   .tk-wxnow__top { display:flex; align-items:center; gap:var(--tk-space-2); min-width:0; }
   .tk-wxnow__loc { display:inline-flex; align-items:center; gap:6px; min-height:36px; padding:0 10px 0 6px; margin-left:-6px; border:0; border-radius:var(--tk-radius-md); background:transparent; color:var(--tk-c-text); font:inherit; font-weight:var(--tk-fw-semibold); cursor:pointer; min-width:0; }
   .tk-wxnow__loc:hover { background:var(--tk-c-surface2); }
+  [data-tk-large-text] .tk-wxnow__loc { flex-shrink:0; max-width:100%; } /* Ortsname bleibt ganz („Bielefeld“), der Zeitstempel bricht um */
   .tk-wxnow__main { display:flex; align-items:center; justify-content:space-between; gap:var(--tk-space-4); min-width:0; }
   .tk-wxnow__temp { font-size:76px; font-weight:var(--tk-fw-bold); letter-spacing:-0.045em; line-height:.95; font-variant-numeric:tabular-nums; }
   .tk-wxnow__cond { font-size:var(--tk-fs-xl); font-weight:var(--tk-fw-semibold); margin-top:6px; }

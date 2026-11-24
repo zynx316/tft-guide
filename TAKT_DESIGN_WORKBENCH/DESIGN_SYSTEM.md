@@ -76,9 +76,11 @@ Komponente das nicht selbst übernimmt.
 
 ## Komponenten
 Vollständiger, automatisch erzeugter Katalog mit Version, Zweck, Datenslots, Events, Verwendung und Flutter-Hinweis:
-**`docs/KOMPONENTEN.md`** (`node --import ./tools/register.mjs tools/component-catalog.mjs`). Bereiche: Kern (generisch),
-Querschnitt (Hinweise, Offline, Sync, Berechtigung, Wiederholung, Rückgängig, Verknüpfungen, Erststart), Kalender, Aufgaben,
-Inhalte, Einblicke, Finanzen, Sparpläne, Trading, Fitness, Ernährung, Wetter, Gewohnheiten/Start. CSS-Präfix je Bereich.
+**`docs/KOMPONENTEN.md`** (`node --import ./tools/register.mjs tools/component-catalog.mjs`). Kategorien (22): Struktur,
+Navigation, Daten, Diagramme, Formulare, Feedback (zusammen der generische Kern), Querschnitt (Hinweise, Offline, Sync,
+Berechtigung, Wiederholung, Rückgängig, Verknüpfungen, Erststart), Kalender, Aufgaben, Inhalte, Wetter, Vertrieb, Finanzen,
+Sparpläne, Trading, Fitness, Ernährung, Einkauf, Gewohnheiten, Ziele, Dokumente, Start. CSS-Präfix je Bereich (Liste in
+`app/src/library/CONTRACT.md`).
 
 ## Flutter-Überführung (Vorbereitung)
 - `Daten & Backup › Design-Tokens exportieren` liefert `takt-design-tokens.json` (Basis, Themes, Farbrollen).

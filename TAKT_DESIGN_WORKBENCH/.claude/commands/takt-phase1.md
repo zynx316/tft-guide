@@ -1,6 +1,6 @@
 ---
 description: Phase 1 – Bestandsaufnahme des echten TAKT-Projekts (nur lesen) und Abgleich mit der Workbench
-argument-hint: "[Pfad zum TAKT-Projekt, Standard G:\Projekte\97_Uebernahme\TAKT-Merge-Git]"
+argument-hint: '[Pfad zum TAKT-Projekt, Standard G:\Projekte\97_Uebernahme\TAKT-Merge-Git]'
 ---
 Führe Phase 1 gemäß `docs/PHASE1_BESTANDSAUFNAHME.md` aus. Projektpfad: $ARGUMENTS (leer = `G:\Projekte\97_Uebernahme\TAKT-Merge-Git`).
 

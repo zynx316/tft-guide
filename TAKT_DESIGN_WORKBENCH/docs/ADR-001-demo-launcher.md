@@ -9,7 +9,7 @@
 Der Nutzer will TAKT V2.0 (Flutter) als **ganze, bedienbare App** in mehreren Versionen (Kompakt, Visuell, Fokus) auf dem Laptop **und** auf dem Handy ansehen, vergleichen und entscheiden, bevor ein Modul in Flutter gebaut wird. Randbedingungen:
 
 - Die Entwicklungsumgebung der Workbench hat **kein Flutter-SDK und kein Android-SDK**. Prüfung läuft mit Node und Chromium (Playwright).
-- Es gibt bereits eine **Preview-Runtime** (Preact und htm ohne Build) mit 45+ Komponenten, Tokens, deklarativen Varianten, Navigationsregeln, einem App-Player und einer QA-Sonde.
+- Es gibt bereits eine **Preview-Runtime** (Preact und htm ohne Build) mit anfangs 45+, inzwischen 296 Komponenten, Tokens, deklarativen Varianten, Navigationsregeln, einem App-Player und einer QA-Sonde.
 - Der Rohbau des Launchers existiert (Versionskarten, Rahmen, gekoppelte Navigation, Bewertung, QR-Code, Feedback an die Workbench, Service Worker, Manifest).
 - Das Handy ist ein **Android-Gerät** (Annahme, `PERSONA.md`); das Netz ist ein Heim-WLAN.
 
@@ -23,7 +23,7 @@ Gründe: wiederverwendbare Komponenten und Tokens, deklarative Varianten bleiben
 
 | Option | Gründe | K.-o.-Kriterium oder Anwendungsfall |
 |---|---|---|
-| **Flutter Web** | Alle 45+ Komponenten müssten in Dart doppelt entstehen, die deklarative Variantenmechanik und die QA-Sonde gingen verloren, der Start ist durch die Engine groß (Größenordnung 2 MB, Annahme), kein SDK in der Umgebung | **K.-o.:** kein Flutter-SDK hier. Sinnvoll später als Abgleich zu Hause (Phase 1), nicht als Entscheidungswerkzeug |
+| **Flutter Web** | Alle (inzwischen 296) Komponenten müssten in Dart doppelt entstehen, die deklarative Variantenmechanik und die QA-Sonde gingen verloren, der Start ist durch die Engine groß (Größenordnung 2 MB, Annahme), kein SDK in der Umgebung | **K.-o.:** kein Flutter-SDK hier. Sinnvoll später als Abgleich zu Hause (Phase 1), nicht als Entscheidungswerkzeug |
 | **Electron oder Tauri** | Löst nur den Laptop-Fall, nicht das Handy. Tauri braucht eine Rust-Toolchain, Electron ist schwer und bringt Update-Pflichten | **K.-o.:** deckt das Handy nicht ab |
 | **Capacitor oder TWA** (Android-Hülle) | Braucht Android-SDK, JDK und für TWA HTTPS-Hosting; für Entscheidungen im Heimnetz Aufwand ohne Gewinn | **Später:** APK-Hülle um dieselbe Seite als Hausaufgabe auf dem eigenen Rechner, wenn die PWA-Installation nicht reicht |
 | **Nur Screenshots oder Wegwerf-HTML** | genau das, was die Workbench ersetzen soll (Mission) | **K.-o.:** nicht klickbar, nicht prüfbar |
@@ -72,8 +72,8 @@ Bewertung der gewählten Option gegen die Kriterien: Aufwand **gering** (Rohbau 
 | `sw.js` | Cache `takt-launcher-v1`, Vorab-Cache: `launcher.html`, `preview.html`, `manifest.webmanifest`, `icon.svg`; statische Dateien „Cache zuerst, im Hintergrund aktualisieren“, `/api/` „Netz zuerst“, `/api/state` wird zwischengespeichert; **kein Vorab-Cache der Module** | Dateiliste mit Hash, Update-Hinweis „Neuer Stand verfügbar“, sichtbarer Status „Offline nicht verfügbar: http im LAN“ |
 | `manifest.webmanifest` | `display: standalone`, `start_url: ./launcher.html`, Icon nur `icon.svg` (`any` und `maskable`) | PNG 192 und 512, `maskable`, Farben aus den Tokens |
 | MIME | erledigt: `server.mjs` liefert `.webmanifest` als `application/manifest+json` | – |
-| Server | Bindung standardmäßig 127.0.0.1; `npm run lan` = `--host 0.0.0.0`; im LAN nur `GET`, Schreiben nur lokal; `POST /api/feedback` ist die einzige Ausnahme (20 KB je Eintrag, gleicher Origin, Schema 2, Rate-Limit 60 pro Minute je IP, Deduplizierung nach `id`, Rotation der Datei ab 5 MB); `GET /api/feedback?since=`, `GET /api/ping`; `/api/network` liefert LAN-Adressen und `boundTo` | **offen:** PIN im Link (`?k=`, Header `X-Takt-Pin`), im Ist-Stand nicht vorhanden |
-| Frames | Launcher koppelt Iframes über `window.__taktPreview.navigate`, `render`; Nachrichten `ready`, `route`; die Preview-Runtime wird gerade von INF-1 umgebaut (Rahmen-Auswahl `shell`, `ctx.now`), der Stand kann abweichen | Nachrichtenvertrag nach Bauplan 5.4 |
+| Server | Bindung standardmäßig 127.0.0.1; `npm run lan` = `--host 0.0.0.0`; im LAN nur `GET`, Schreiben nur lokal; `POST /api/feedback` ist die einzige Ausnahme (20 KB je Eintrag, gleicher Origin, Schema 2, Rate-Limit 60 pro Minute je IP, Deduplizierung nach `id`, Rotation der Datei ab 5 MB); `GET /api/feedback?since=`, `GET /api/ping`; `/api/network` liefert LAN-Adressen, `boundTo` und (nur lokal) die PIN | **erledigt:** WLAN-PIN – `npm run lan` erzeugt bei jedem Start eine 6-stellige PIN (`--pin <n>` fest, `--no-pin` aus), im QR-Link als `?k=`, sonst Header `X-Takt-Pin`; ohne PIN beantwortet der Server anderen Geräten nur `/api/ping` (sonst 401); Test `server-pin` |
+| Frames | Launcher koppelt Iframes über `window.__taktPreview.navigate`, `render`; Nachrichten `ready`, `route`, `interaction`, `select-block`; Rahmen-Auswahl (`shell`: tabs/launchpad/fokus) und `ctx.now` sind umgesetzt (INF-1 fertig) | Nachrichtenvertrag nach Bauplan 5.4 |
 
 ## 6. Bekannte Schwächen gegenüber Flutter (und was wir dagegen tun)
 

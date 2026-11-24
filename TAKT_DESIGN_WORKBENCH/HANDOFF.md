@@ -38,17 +38,22 @@ Ohne Git: GitHub › Branch wählen › „Code › Download ZIP“, Ordner `TAK
 **Wichtig nach jedem Kopieren/Pull, wenn schon eine `data/workbench.json` existiert:** in der Workbench **Daten & Backup ›
 „Seed abgleichen …“** ausführen. Sonst fehlen im gespeicherten Stand neue Module, Varianten und Bindungen (der Launcher zeigt
 dann den alten Stand). Neues kommt hinzu, von dir unveränderte Features werden aktualisiert (vorher gesichert), Freigegebenes
-bleibt unberührt (erscheint als „Seed-Vorschlag“). Ohne eigene Arbeit: einfach „Zurücksetzen“ (Backup entsteht). Der
+bleibt unberührt (erscheint als „Seed-Vorschlag“). Ohne eigene Arbeit: einfach „Zurücksetzen“ (vorher wird automatisch ein
+Export heruntergeladen). Der
 SessionStart-Hook weist darauf hin, wenn der Seed neuer ist als der Live-Stand.
 
 ## 2. Einrichten & starten
+Voraussetzung: **Node.js 22 LTS oder neuer** (`node -v`; ältere Versionen scheitern an Playwright und am Test-Loader).
 ```powershell
 cd G:\Projekte\97_Uebernahme\TAKT_DESIGN_WORKBENCH
-git init; git add .; git commit -m "TAKT Design Workbench – Übernahme"   # optional, empfohlen
-npm install; npx playwright install chromium                            # nur für Tests
-npm start                       # Workbench → http://127.0.0.1:4317 · Launcher → /launcher.html
-npm run check; npm test; npm run qa                                     # erzeugt Baselines für diesen Rechner
+git init; git add .; git commit -m "TAKT Design Workbench - Uebernahme"   # optional, empfohlen
+npm install; npx playwright install chromium            # Playwright-Version ist per package-lock.json fest; Chromium nur für Tests
+npm run check; npm test                                 # < 10 s: 0 Fehler/0 Hinweise, 400 Tests grün
+npm run qa                                              # dauert länger (Vertrag, 32 E2E, Screenshot-Matrix) und legt die
+                                                        # Baselines für diesen Rechner an
 ```
+Danach in einem **eigenen Terminal** `npm start` (Workbench → http://127.0.0.1:4317 · Launcher → /launcher.html; der Server
+läuft im Vordergrund, Strg+C beendet ihn). `npm run qa` braucht den laufenden Server nicht, es startet einen eigenen.
 Danach **Claude Code im Workbench-Ordner starten** (`claude`). Nach der Bestätigung „Ordner vertrauen“ gibt ein SessionStart-Hook
 automatisch die Kurzlage aus (Live-Stand, offene Entscheidungen, nächste Aufgaben); **`/takt-start`** liefert die ausführliche Lage.
 Handy: `npm run lan`, im Launcher „Aufs Handy“ → QR-Code (gleiches WLAN, Windows-Firewall für Node erlauben). Der QR-Link enthält
@@ -81,7 +86,7 @@ eine WLAN-PIN (neu bei jedem Start, in der Konsole angezeigt); andere Geräte im
 - **Echtes Smartphone nicht getestet** (kein Gerät in der Cloud). Über LAN-HTTP gibt es keinen Service Worker (ADR-001).
 - **Simulationen:** Radar, Barcode-Scan, Texterkennung, Kurse, Orders sind simuliert; Datenquellen sind eine offene
   Grundsatzfrage.
-- **Workbench-Zustand** liegt in einer JSON-Datei (~1,8 MB); Rückgängig teilt Speicher strukturell. Offene Skalierungsmaßnahme
+- **Workbench-Zustand** liegt in einer JSON-Datei (`data/workbench.json`, ~3 MB eingerückt, Seed-Stand rund 2 MB kompakt); Rückgängig teilt Speicher strukturell. Offene Skalierungsmaßnahme
   (Versions-Snapshots je Feature auslagern) steht in TASKS.md.
 - **Abgeleitete Welt-Werte** (Zusammenfassungen, Start-Untertitel, Hinweiskarten) werden beim Laden berechnet und folgen
   Änderungen in der Demo erst nach Neuladen.
@@ -102,10 +107,13 @@ Alle liegen mit Empfehlung in der Workbench (Entscheidungs-Inbox, App-Ebene) bzw
 TAKT_DESIGN_WORKBENCH/
   CLAUDE.md HANDOFF.md TASKS.md WORK_LOG.md README.md ARCHITECTURE.md DESIGN_SYSTEM.md QA_REPORT.md
   package.json server.mjs
-  app/ index.html launcher.html preview.html manifest.webmanifest sw.js vendor/ src/
-  tests/ (Node-Tests)   qa/ (run-qa.mjs, results/)   tools/ (check, verify, register, work-order, feature-ids, component-catalog)
-  data/ (workbench.json, backups/, feedback.jsonl – entstehen beim Start)
-  docs/ BAUPLAN FEATURE_IDS KOMPONENTEN DATENWELT PERSONA HEALTH_GUIDELINES FINANCE_GUIDELINES TEXT_STIL ADR-001 ADR-002
-        GERAETETEST WORKER_BRIEF MISSION PHASE1_BESTANDSAUFNAHME brainstorm/ work-orders/
+  package-lock.json .gitattributes (LF-Zeilenenden auch unter Windows)
+  app/ index.html launcher.html preview.html manifest.webmanifest sw.js icon.svg vendor/ src/
+  tests/ (Node-Tests)   qa/ (run-qa.mjs, baselines/; results/ entsteht beim ersten QA-Lauf)
+  tools/ (check, verify, register, work-order, feature-ids, component-catalog, export-spec, session-brief, test-finmath)
+  data/ (workbench.json entsteht beim ersten Öffnen im Browser, backups/; feedback.jsonl beim ersten Launcher-Feedback)
+  docs/ BAUPLAN BAUPLAN_STATUS BAUPLAN_PAKETE.json FEATURE_IDS KOMPONENTEN DATENWELT PERSONA HEALTH_GUIDELINES
+        FINANCE_GUIDELINES TEXT_STIL ADR-001 ADR-002 GERAETETEST WORKER_BRIEF MISSION PHASE1_BESTANDSAUFNAHME brainstorm/
+        examples/ work-orders/ (wird bei Bedarf angelegt)
   .claude/ settings.json commands/ agents/
 ```

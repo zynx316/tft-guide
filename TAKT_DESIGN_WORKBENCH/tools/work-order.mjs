@@ -13,6 +13,10 @@ import { workOrderMarkdown } from '../app/src/core/workorder.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const args = process.argv.slice(2);
+if (args.includes('--help') || args.includes('-h')) {
+  console.log('Nutzung: node tools/work-order.mjs [--round latest|<id>] [--feature a,b] [--since JJJJ-MM-TT] [--out datei.md] [--file daten.json]\n  ohne Optionen: Gesamtstand (offene Umsetzungen, Anmerkungen, Feedback) auf die Konsole');
+  process.exit(0);
+}
 const opt = (name) => { const i = args.indexOf(`--${name}`); return i >= 0 ? args[i + 1] : null; };
 const file = opt('file') || path.join(root, 'data', 'workbench.json');
 

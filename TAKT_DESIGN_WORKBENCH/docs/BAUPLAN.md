@@ -57,7 +57,7 @@ Tier je Feature (`tier` 1 bis 3, `usage` täglich/wöchentlich/selten): Tier 1 b
 
 ## 4. Launcher-Konzept (zentrales Element)
 
-Technik (ADR-001): HTML/PWA auf der vorhandenen Preview-Runtime. Gründe: kein Flutter-SDK, 45+ Komponenten und Tokens wiederverwendbar, mit Playwright prüfbar, auf Handy und Laptop identisch. Verworfen: Flutter Web (alle Komponenten doppelt, Varianten-Mechanik verloren), Electron/Tauri (löst nur den Laptop), Capacitor/TWA (später als APK-Hülle um dieselbe Seite, Hausaufgabe). Bekannte Schwächen (Scroll-Physik, Ripple, Haptik, Schrift) werden in der Spezifikation je Komponente vermerkt. Über http im LAN gibt es keinen Secure Context und damit keinen Service Worker. Der Launcher erklärt das offen (Weg: `adb reverse tcp:4317 tcp:4317` und `http://localhost:4317`, später statischer HTTPS-Export).
+Technik (ADR-001): HTML/PWA auf der vorhandenen Preview-Runtime. Gründe: kein Flutter-SDK, (damals 45+, heute 296) Komponenten und Tokens wiederverwendbar, mit Playwright prüfbar, auf Handy und Laptop identisch. Verworfen: Flutter Web (alle Komponenten doppelt, Varianten-Mechanik verloren), Electron/Tauri (löst nur den Laptop), Capacitor/TWA (später als APK-Hülle um dieselbe Seite, Hausaufgabe). Bekannte Schwächen (Scroll-Physik, Ripple, Haptik, Schrift) werden in der Spezifikation je Komponente vermerkt. Über http im LAN gibt es keinen Secure Context und damit keinen Service Worker. Der Launcher erklärt das offen (Weg: `adb reverse tcp:4317 tcp:4317` und `http://localhost:4317`, später statischer HTTPS-Export).
 
 Versionen (Zwei-Achsen-Modell):
 - Richtung = Variantentag plus Dichte/Radius-Tokens (`DIRECTION_TOKENS` in tokens.js, Klasse `tk-dir-<id>` auf html) plus `componentPresets` für Fallbacks. Themes bleiben reine Farbe.

@@ -1,6 +1,6 @@
 ---
 name: takt-architect
-description: Kritischer Architektur-Reviewer (Worker G): sucht Überkomplexität, Kopplungen, Lücken in Sperr-/Versionslogik, Skalierungs- und Migrationsrisiken – ändert nichts.
+description: 'Kritischer Architektur-Reviewer (Worker G): sucht Überkomplexität, Kopplungen, Lücken in Sperr-/Versionslogik, Skalierungs- und Migrationsrisiken – ändert nichts.'
 tools: Read, Grep, Glob, Bash
 model: sonnet
 effort: high

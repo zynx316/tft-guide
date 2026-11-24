@@ -26,7 +26,7 @@ export const habitForm = {
   name: 'Gewohnheit-Formular',
   category: 'Gewohnheiten',
   description: 'Gewohnheit anlegen: Name, Symbol, Rhythmus (täglich, werktags, bestimmte Tage, X× pro Woche), Tageszeit, Ziel (abhaken oder zählen), Erinnerung, Gnadentag und Verknüpfung. Stile: Formular mit Vorlagen oder geführt in 4 Schritten – mit Vorschau.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Neue Gewohnheit' },
     { name: 'style', label: 'Stil', type: 'select', options: ['form', 'wizard'], default: 'form' },
@@ -39,6 +39,7 @@ export const habitForm = {
   css: `${HABIT_CSS}
   .tk-hf { display:flex; flex-direction:column; gap:var(--tk-space-4); } .tk-hf__sec { display:flex; flex-direction:column; gap:10px; } .tk-hf__lab { font-size:var(--tk-fs-xs); font-weight:var(--tk-fw-semibold); letter-spacing:var(--tk-ls-wide); text-transform:uppercase; color:var(--tk-c-text-subtle); }
   .tk-hf__tpl { display:flex; gap:8px; overflow-x:auto; scrollbar-width:none; padding-bottom:2px; } .tk-hf__tpl .tk-chip { flex:none; }
+  [data-tk-large-text] .tk-hf__tpl .tk-chip { white-space:nowrap; max-width:none; } /* Scrollreihe: einzeilig, sonst strecken sich alle Chips auf die Höhe des längsten */
   .tk-hf__icons { display:grid; grid-template-columns:repeat(auto-fill, minmax(44px, 1fr)); gap:6px; } .tk-hf__ico { height:44px; border-radius:var(--tk-radius-md); border:1px solid var(--tk-c-border); background:var(--tk-c-surface2); color:var(--tk-c-text-muted); display:grid; place-items:center; cursor:pointer; padding:0; }
   .tk-hf__ico[aria-pressed="true"] { border-color:var(--tk-c-accent); background:var(--tk-c-accent-soft); color:var(--tk-c-accent); } .tk-hf__tones { display:flex; gap:10px; flex-wrap:wrap; } .tk-hf__tone { width:36px; height:36px; border-radius:50%; border:2px solid transparent; padding:0; cursor:pointer; background:var(--c); box-shadow:inset 0 0 0 2px var(--tk-c-surface); } .tk-hf__tone[aria-pressed="true"] { border-color:var(--tk-c-text); }
   .tk-hf__days { display:flex; gap:6px; flex-wrap:wrap; } .tk-hf__days .tk-chip { min-width:44px; justify-content:center; } .tk-hf__row { display:flex; align-items:center; gap:12px; justify-content:space-between; min-height:44px; } .tk-hf__row > span:first-child { min-width:0; }

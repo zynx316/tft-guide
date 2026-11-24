@@ -21,7 +21,8 @@
 ```
 TAKT_DESIGN_WORKBENCH/
 ├─ server.mjs              Statischer Server + /api/state (Revisionen, 409) · /api/backups · /api/feedback (v2, append-only,
-│                          LAN-fähig, Ratenbegrenzung, Dubletten-Schutz) · /api/network · /api/ping · /api/qa/latest
+│                          LAN-fähig, Ratenbegrenzung, Dubletten-Schutz) · /api/network · /api/ping · /api/qa/latest ·
+│                          WLAN-PIN im LAN (`?k=` / Header `X-Takt-Pin`, nur mit `npm run lan`)
 ├─ app/
 │  ├─ index.html           Workbench            ├─ preview.html  Vorschau (Iframe-Ziel, auch Direktlinks)
 │  ├─ launcher.html        Demo-Launcher (PWA: manifest.webmanifest, sw.js, icon.svg)
@@ -31,18 +32,20 @@ TAKT_DESIGN_WORKBENCH/
 │     ├─ library/          registry.js · CONTRACT.md · ui.js (Primitive) · helpers.js · components/<bereich>/
 │     ├─ preview/          runtime.js (Renderer, App-Player) · launchpad.js (App-Rahmen) · layouts.js · qa-probe.js
 │     ├─ core/             rein, auch in Node: schema · versioning · impact · devices · directions · process · world ·
-│     │                    preview-payload · seedpatch · workorder · spec · flutter · finmath · recurrence · health
+│     │                    preview-payload · seedpatch · workorder · spec · spec-json · validate · flutter · finmath ·
+│     │                    recurrence · health
 │     ├─ seed/             index.js · catalog.js (App-Fragen, Muster) · modules/*.js · world/*.js (Datenwelt)
 │     ├─ launcher/         launcher.js · launcher.css · devices.js
 │     └─ workbench/        store.js · app.js · router.js · qa-runner.js · workbench.css · ui/* · views/*
 ├─ qa/run-qa.mjs           Vertrag · E2E (32) · Screenshot-Matrix (auch Szenario/Umgebung) · Pixel-Regression
-├─ tests/*.test.mjs        Node-Tests (node:test, ~190): Kern, Format, Wiederholung, Gesundheit, Finanzmathe, Welt, Seed-Patch
+├─ tests/*.test.mjs        Node-Tests (node:test, 400): Kern, Format, Wiederholung, Gesundheit, Finanzmathe, Welt, Seed-Patch, Ziele, Einkauf, Dokumente
 ├─ tools/                  check.mjs (statisch, Cache) · register.mjs (preact-Loader für Node) · verify.mjs ·
-│                          work-order.mjs (Arbeitsauftrag) · feature-ids.mjs (Katalog) · test-finmath.mjs
+│                          work-order.mjs (Arbeitsauftrag) · feature-ids.mjs (Katalog) · test-finmath.mjs ·
+│                          component-catalog.mjs (Komponentenkatalog) · export-spec.mjs (npm run spec) · session-brief.mjs (SessionStart-Hook)
 ├─ data/                   workbench.json (Live-Stand) · backups/ · feedback.jsonl
 ├─ docs/                   BAUPLAN · FEATURE_IDS · DATENWELT · Leitlinien (Gesundheit, Finanzen, Text) · ADRs · Gerätetest ·
 │                          PERSONA · WORKER_BRIEF · brainstorm/ · work-orders/
-└─ .claude/                commands/ (takt-start, -phase1, -feature, -qa, -review, -work-order, -round-prep) · agents/
+└─ .claude/                commands/ (takt-start, -phase1, -feature, -qa, -review, -work-order, -round-prep, -spec) · agents/
 ```
 **Schichten (nur nach unten):** `workbench/`, `launcher/` → `core/`, `preview/` (über Iframe) → `library/` → `design-system/`, `lib/`.
 `core/` und `seed/` sind browserfrei; mit `tools/register.mjs` ist auch `library/` in Node ladbar (Tests).

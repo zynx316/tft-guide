@@ -82,8 +82,9 @@ export const taskList = {
 - **Layout-Optionen:** `layout.stretch` (Raster: Karten einer Reihe gleich hoch), `layout.asideSticky` (Split: Seitenspalte
   läuft auf Desktop mit). Beide im Design Studio schaltbar – keine komponentenspezifischen CSS-Tricks dafür.
 - **Flutter-Feld (neue Komponenten):** `flutter: { widget, propMap: { prop: 'parameter' }, events: ['event'] }`.
-- **CSS-Präfixe:** je Bereich eindeutig (`tk-fit-…`, `tk-nut-…`, `tk-wx-…`, `tk-hab-…`, `tk-fin-…`, `tk-sav-…`, `tk-trd-…`,
-  `tk-cal-…`, `tk-task-…`, `tk-xc-…` für Querschnitt), um Kollisionen zwischen Bereichen auszuschließen.
+- **CSS-Präfixe:** je Bereich eindeutig (`tk-fit-…`, `tk-nu-…`, `tk-wx<kürzel>_…`, `tk-hb-…`, `tk-fn-…`, `tk-sv-…`, `tk-trd-…`,
+  `tk-cal-…`, `tk-tsk-…`, `tk-gl-…` für Ziele, `tk-shp…-` für Einkauf, `tk-dok-…` für Dokumente, `tk-note-…`/`tk-kb-…` für Notizen
+  und Wissen, `tk-xc-…` für Querschnitt), um Kollisionen zwischen Bereichen auszuschließen.
 - **Leitlinien:** Texte in Gesundheits- und Finanzkomponenten werden von `npm run check` gegen die Begriffslisten in
   `docs/HEALTH_GUIDELINES.md` und `docs/FINANCE_GUIDELINES.md` geprüft.
 - **Navigation aus Komponenten:** `ctx.emit(event, { id, to })` – liegt keine Navigationsregel (`interaction.to`) für das Event

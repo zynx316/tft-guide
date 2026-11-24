@@ -6,7 +6,9 @@ Arbeite einen Arbeitsauftrag der TAKT Design Workbench ab. Argument: `$ARGUMENTS
 
 1. Auftrag beschaffen:
    - Pfad zu einer `.md`-Datei → diese lesen (exportiert über Workbench › Entscheidungsrunde › „Arbeitsauftrag (.md)“).
-   - `latest` → `node tools/work-order.mjs --round latest --out docs/work-orders/<datum>-runde.md` und lesen.
+   - `latest` → `node tools/work-order.mjs --round latest --out docs/work-orders/<datum>-runde.md` und lesen. Meldet das Werkzeug
+     „Keine Entscheidungsrunde vorhanden.“, dem Nutzer sagen: erst Workbench › Entscheidungsrunden › „Neue Runde“ (vorbereiten mit
+     `/takt-round-prep`) – bis dahin mit dem Gesamtstand arbeiten (Argument leer).
    - Feature-IDs (kommagetrennt) → `node tools/work-order.mjs --feature <ids> --out docs/work-orders/<datum>-features.md`.
    - leer → `node tools/work-order.mjs` (Gesamtstand).
 2. Plan je Abschnitt (TaskCreate):

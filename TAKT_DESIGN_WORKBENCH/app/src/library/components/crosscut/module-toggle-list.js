@@ -21,6 +21,7 @@ const CSS = `
   .tk-xc-mod__row:last-child { border-bottom: 0; }
   .tk-xc-mod__row[data-off="true"] .tk-xc-main { opacity: .55; }
   .tk-xc-mod__tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 150px), 1fr)); gap: var(--tk-space-3); }
+  [data-tk-large-text] .tk-xc-mod__tiles { grid-template-columns: repeat(auto-fill, minmax(min(100%, 230px), 1fr)); }
   .tk-xc-mod__tile { position: relative; display: flex; flex-direction: column; gap: var(--tk-space-2); padding: var(--tk-space-4); min-height: 128px; border-radius: var(--tk-radius-xl); border: 1.5px solid var(--tk-c-accent); background: var(--tk-c-accent-soft); color: var(--tk-c-text); font: inherit; text-align: left; cursor: pointer; min-width: 0; }
   .tk-xc-mod__tile[aria-pressed="false"] { border-color: var(--tk-c-border); background: var(--tk-c-surface); color: var(--tk-c-text-muted); }
   .tk-xc-mod__tile .tk-xc-s { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
@@ -41,7 +42,7 @@ export const moduleToggleList = {
   name: 'Module & Navigation',
   category: 'Querschnitt',
   description: 'Alle Module auf einen Blick: ein- und ausschalten, bis zu vier Favoriten für die Navigationsleiste wählen und ordnen. Die Vorschau zeigt die Leiste sofort. Darstellung „slots“: vier Plätze der Leiste, je Platz ein Modul über „Ändern“ wählen (Tausch möglich), Module ein-/ausschalten erst auf Wunsch. Änderungen landen in den gemeinsamen Einstellungen (Favoriten, aktive Module).',
-  version: '1.3',
+  version: '1.4',
   props: [
     { name: 'style', label: 'Darstellung', type: 'select', options: ['list', 'tiles', 'slots'], default: 'list' },
     { name: 'maxFavorites', label: 'Höchstens Favoriten', type: 'number', default: 4 },

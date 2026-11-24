@@ -27,7 +27,7 @@ Die Pflichtfrage `pattern-offline` empfiehlt „Lokal zuerst: alles nutzbar, Syn
 |---|---|
 | **Revision** | Jede Änderung erhöht `meta.rev` (Zähler) im Client. Der Client merkt sich die zuletzt bekannte Revision der Server-Datei (`serverRev`). |
 | **Schreiben** | `PUT /api/state` mit Header `X-Base-Rev: <serverRev>`. Stimmt die Revision der Datei nicht überein, antwortet der Server **409 „Konflikt“**. Die Datei wird **atomar** geschrieben (Schreiben in `.tmp`, dann Umbenennen). |
-| **Bei 409** | Der Client setzt den Status `conflict`, legt den eigenen Stand als **Konflikt-Kopie** ab (`takt-workbench-conflict-copy` im Browser-Speicher, wiederherstellbar unter „Daten & Backup“) und überschreibt die Datei **nicht**. |
+| **Bei 409** | Der Client holt den Server-Stand, wendet seine noch nicht gespeicherten Änderungen als Rezepte darauf neu an (Rebase, bis zu zwei Versuche) und speichert erneut. Scheitert das (z. B. nach Rückgängig), setzt er den Status `conflict`, legt den eigenen Stand als **Konflikt-Kopie** ab (`takt-workbench-conflict-copy` im Browser-Speicher, wiederherstellbar unter „Daten & Backup“) und überschreibt die Datei **nicht**. |
 | **Start** | Die Server-Datei ist maßgeblich. Ist der Browser-Stand **neuer** (Zeitstempel `updatedAt`) und die Revision verschieden, wird er **nicht** still übernommen, sondern als Konflikt-Kopie gesichert. |
 | **Tab-Abgleich** | Mehrere Tabs (Workbench plus Launcher): `storage`-Ereignis übernimmt einen **neueren** Stand eines anderen Tabs samt Revision. Beim Zurückkehren in den Tab (`visibilitychange`, `focus`) gleicht `syncFromServer` mit der Datei ab, **wenn nichts Ungespeichertes** vorliegt. |
 | **LAN** | Im LAN ist die Workbench **schreibgeschützt** (Schreiben nur von 127.0.0.1, `Host` localhost, kein fremder Origin). Einzige Ausnahme ist `POST /api/feedback`. |
@@ -36,10 +36,10 @@ Die Pflichtfrage `pattern-offline` empfiehlt „Lokal zuerst: alles nutzbar, Syn
 ### 2.3 Feedback nur anhängen
 
 - Bewertungen, Kommentare und Wünsche aus dem Launcher gehen als **append-only** Zeilen in `data/feedback.jsonl` (kein Überschreiben, kein Löschen über die API). Eintrag höchstens 20 KB, gleicher Origin.
-- Die Workbench übernimmt sie **idempotent** über die `id` (`actions.importFeedback`, Obergrenze 2.000 Einträge) in den Feedback-Eingang der Workbench (Entscheiden › Reiter „Feedback“, im Bauplan „Eingang“). Dort werden sie **übernommen oder verworfen** (Ist: Status „übernommen“, „verworfen“; „vertagen“ ist Ziel, Bauplan 5.11). Übernehmen läuft über die bestehende Sperrlogik.
+- Die Workbench übernimmt sie **idempotent** über die `id` (`actions.importFeedback`, Obergrenze 2.000 Einträge) in den Feedback-Eingang der Workbench (Demo & Entscheidung › Reiter „Feedback“, im Bauplan „Eingang“). Dort werden sie **übernommen oder verworfen** (Ist: Status „übernommen“, „verworfen“; „vertagen“ ist Ziel, Bauplan 5.11). Übernehmen läuft über die bestehende Sperrlogik.
 - Offline am Handy: Einträge liegen in einer lokalen Warteschlange und werden später gesendet (Ist: `localStorage`, Ziel: IndexedDB). Wiederholtes Senden erzeugt keinen Doppeleintrag (`id`).
 - Feedback enthält **keine Gesundheits- oder Finanzwerte**, nur Bewertung, Route, Version, Kommentar.
-- Ist (`server.mjs`, am Stichtag geprüft): Rate-Limit 60 pro Minute je IP (Antwort 429), Rotation der Datei ab 5 MB (alte Datei bleibt als `feedback-<zeit>.jsonl`), Deduplizierung auf dem Server nach `id`, `GET /api/feedback?since=`, `GET /api/ping`, Schema 2 mit Feldbegrenzung. **Offen (Ziel):** PIN im Link (`?k=`).
+- Ist (`server.mjs`, am Stichtag geprüft): Rate-Limit 60 pro Minute je IP (Antwort 429), Rotation der Datei ab 5 MB (alte Datei bleibt als `feedback-<zeit>.jsonl`), Deduplizierung auf dem Server nach `id`, `GET /api/feedback?since=`, `GET /api/ping`, Schema 2 mit Feldbegrenzung. **Umgesetzt:** WLAN-PIN (`?k=` bzw. Header `X-Takt-Pin`; nur mit `npm run lan`, bei jedem Start neu, `--pin`/`--no-pin`); ohne PIN beantwortet der Server anderen Geräten nur `/api/ping`.
 
 ### 2.4 Backups
 

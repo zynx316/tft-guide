@@ -1,6 +1,6 @@
 ---
 name: takt-qa
-description: QA-Spezialist: erweitert/verbessert qa/run-qa.mjs und preview/qa-probe.js, analysiert QA-Läufe, findet Ursachen von Layoutfehlern.
+description: 'QA-Spezialist: erweitert/verbessert qa/run-qa.mjs und preview/qa-probe.js, analysiert QA-Läufe, findet Ursachen von Layoutfehlern.'
 tools: Read, Grep, Glob, Bash, Edit, Write
 model: sonnet
 effort: high

@@ -1,6 +1,6 @@
 // Node-Loader für die Testumgebung: bildet die Bare-Specifier der Importmap
 // (app/index.html, app/preview.html) auf app/vendor ab. Nutzung:
-//   node --import ./tools/register.mjs --test tests/
+//   node --import ./tools/register.mjs --test "tests/*.test.mjs"   (Node ≥ 22; npm test macht genau das)
 // Dadurch sind registry.js, spec.js, preview-payload.js und seed/index.js in Node importierbar.
 import { register } from 'node:module';
 import { pathToFileURL, fileURLToPath } from 'node:url';

@@ -37,6 +37,11 @@ const list = (n) => (opt(n) ? opt(n).split(',').map((s) => s.trim()).filter(Bool
 const ONLY = opt('only');
 const run = (stage) => !ONLY || ONLY.split(',').includes(stage);
 const THRESHOLD = Number(opt('threshold', 0.002));
+// Szenario der Datenwelt und Umgebung (z. B. --scenario erststart --env privacy,offline --scale 2): Query für die Vorschau und
+// Namenszusatz für Screenshots/Baselines – sonst überschreibt ein Szenario- oder 200-%-Lauf die Standard-Baselines.
+const extra = `${opt('scenario') ? `&scenario=${opt('scenario')}` : ''}${opt('env') ? `&env=${opt('env')}` : ''}${opt('scale') ? `&scale=${opt('scale')}` : ''}`;
+const ENV_TAG = [opt('scenario') && `sc-${opt('scenario')}`, opt('env') && `env-${opt('env').replace(/,/g, '+')}`, opt('scale') && `x${opt('scale')}`].filter(Boolean).join('__');
+const envSuffix = ENV_TAG ? `__${ENV_TAG}` : '';
 
 // ------------------------------------------------------------ Abhängigkeiten
 async function loadPlaywright() {
@@ -98,8 +103,6 @@ function plan(state, changed) {
   const vps = list('viewports') || ['desktop', 'notebook', 'tablet-l', 'tablet', 'mobile'];
   const themes = list('themes') || ['graphite'];
   const states = list('states') || ['default'];
-  // Szenario der Datenwelt und Umgebung (z. B. --scenario erststart --env privacy,offline --scale 2)
-  const extra = `${opt('scenario') ? `&scenario=${opt('scenario')}` : ''}${opt('env') ? `&env=${opt('env')}` : ''}${opt('scale') ? `&scale=${opt('scale')}` : ''}`;
   const jobs = [];
   for (const f of features) {
     const variants = flag('all-variants') || comps || changed ? f.variants.map((v) => v.id) : [f.selectedVariantId || f.variants[0].id];
@@ -463,13 +466,13 @@ async function visualStage(browser, base, jobs, pixel, log) {
     // Ganzseitig: Viewport auf Dokumenthöhe setzen, damit fixierte Elemente korrekt unten sitzen
     const full = Math.min(4000, await page.evaluate(() => document.documentElement.scrollHeight));
     if (full > h) { await page.setViewportSize({ width: w, height: full }); await page.waitForTimeout(150); }
-    const name = `${safe(j.f.id)}__${safe(j.v)}__${j.vp}__${j.theme}${j.st !== 'default' ? '__' + j.st : ''}.png`;
+    const name = `${safe(j.f.id)}__${safe(j.v)}__${j.vp}__${j.theme}${j.st !== 'default' ? '__' + j.st : ''}${envSuffix}.png`;
     const shot = path.join(OUT, 'shots', name);
     await page.screenshot({ path: shot });
     let visual = null;
     if (pixel) {
       const baseDir = path.join(QA, 'baselines', safe(j.f.id), safe(j.v)); fs.mkdirSync(baseDir, { recursive: true });
-      const baseFile = path.join(baseDir, `${j.vp}__${j.theme}${j.st !== 'default' ? '__' + j.st : ''}.png`);
+      const baseFile = path.join(baseDir, `${j.vp}__${j.theme}${j.st !== 'default' ? '__' + j.st : ''}${envSuffix}.png`);
       const strict = !!j.f.locked; // freigegebene Features: Abweichung = Regression
       if (!fs.existsSync(baseFile) || flag('update-baseline')) { fs.copyFileSync(shot, baseFile); visual = { status: fs.existsSync(baseFile) && flag('update-baseline') ? 'updated' : 'new', ratio: 0 }; }
       else {

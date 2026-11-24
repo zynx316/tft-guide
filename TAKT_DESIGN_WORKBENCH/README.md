@@ -6,7 +6,7 @@ nebeneinander oder auf dem Handy. Bewerten, vergleichen, in einer **Entscheidung
 verfeinern, prüfen, **freigeben und einfrieren** – mit automatischer QA statt Dauertests am Smartphone.
 
 ## Starten
-Voraussetzung: **Node.js ≥ 18** (Windows, macOS, Linux).
+Voraussetzung: **Node.js 22 LTS oder neuer** (Windows, macOS, Linux; `node -v`). Ältere Versionen scheitern an Playwright und am Test-Loader.
 ```powershell
 cd G:\Projekte\97_Uebernahme\TAKT_DESIGN_WORKBENCH
 npm start                  # Workbench → http://127.0.0.1:4317
@@ -53,7 +53,7 @@ Tastatur: **Strg+K** Suche · **Strg+Z / Strg+Umschalt+Z** · **Esc** · im Stud
 ## Qualitätssicherung
 ```powershell
 npm run check          # statisch: Syntax, Seed, Navigationsgraph, Leitlinien-Begriffe, Umlaute (< 1 s)
-npm test               # ~190 Node-Tests: Kern, Welt/Szenarien, Seed-Patch, Format, Wiederholung, Gesundheit, Finanzmathe
+npm test               # 400 Node-Tests (~5 s): Kern, Welt/Szenarien, Seed-Patch, Format, Wiederholung, Gesundheit, Finanzmathe, Ziele, Einkauf, Dokumente
 npm run qa             # Vertrag + 32 E2E-Bedientests + Screenshot-Matrix + Pixel-Regression → qa/results/latest.md
 npm run qa:changed     # nur betroffene Features
 npm run qa -- --only visual --scenario erststart --env privacy,offline --scale 2   # Datenwelt/Umgebung in der Matrix

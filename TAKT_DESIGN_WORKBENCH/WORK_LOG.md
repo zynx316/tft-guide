@@ -207,3 +207,21 @@ Zeiten in UTC. Neue Einträge unten anhängen (Datum, Phase, Entscheidung/Änder
 - Ergebnis: alle 348 Varianten bei 200 % ohne Befund der Sonde (390, 360 und 1440 px) und bei 130 %; check 0/0, 400 Tests grün.
 - Bewusst offen (Optik, kein Lesbarkeitsproblem): siehe TASKS.md › 4 „Große Schrift, Feinschliff“ und 320-px-Restpunkte.
 
+### 13:50–15:10 – Unabhängige Abschlussprüfung (Workflow, 3 rein lesende Prüfer) und Korrekturen
+- **Übergabe-Simulation** (frischer Klon, `npm install`, check, test, verify, Hook, Server, Launcher, Seed-Abgleich, alle
+  Slash-Commands): zwei Blocker gefunden und behoben – die visuelle QA-Stufe stürzte mit „extra is not defined“ ab (Variable
+  im falschen Gültigkeitsbereich; Vertrag und E2E liefen davor, deshalb unbemerkt), und `playwright ^1.49` löste ohne
+  Lockfile zu einer Version auf, die Node ≥ 20 verlangt, während `engines` ≥ 18 versprach → `engines` ≥ 22, Playwright
+  `~1.65.1`, `package-lock.json` eingecheckt, HANDOFF/README nennen Node 22 LTS.
+- Weitere Korrekturen: Screenshots/Baselines tragen Szenario/Umgebung/Skalierung im Namen (überschrieben sonst die
+  Standard-Baselines); `tools/check.mjs` CRLF-fest (Windows-Checkout: vorher 2 Fehlalarme) plus `.gitattributes` (LF);
+  YAML-Frontmatter von `/takt-phase1` und den 5 Agenten gültig; HANDOFF §2 ohne blockierendes `npm start` mitten im Block;
+  `work-order --help`; `/takt-start` ohne `sed`; Server meldet belegten Port verständlich.
+- **Doku gegen Code:** 20 veraltete Stellen korrigiert (Testzahlen, WLAN-PIN als erledigt in beiden ADRs, Rebase bei 409,
+  Welt 219 Schlüssel, 33 Invarianten-Tests, Persona-Gewicht, CSS-Präfixe, Kategorien, Verzeichnisbäume, Scorecard-Gewichte).
+- **Sichtprüfung:** bei 100 % alle 348 Varianten × 390/1440 pixelgleich zum Stand vor den Kernregeln (696 Vergleiche, 0
+  Abweichungen). Bei 200 %: Silbentrennungsgrenze war zu streng (Wörter mit 8–9 Zeichen brachen hart: „Dokume/nte“) →
+  `hyphenate-limit-chars: 8 2 2`; Chips in Scrollreihen streckten sich auf die Höhe des längsten (Gewohnheit anlegen, Ziel-Detail,
+  Übungsalternativen) → dort einzeilig; Modul-Kacheln breiter, Ortsname im Wetter bleibt ganz, Mahlzeiten-Zeitleiste stapelt
+  (Altlast: „Schätzung“ stand Buchstabe für Buchstabe senkrecht).
+

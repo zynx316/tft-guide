@@ -13,7 +13,7 @@ export const mealTimeline = {
   name: 'Mahlzeiten-Timeline',
   category: 'Ernährung',
   description: 'Das Tagebuch des Tages nach Mahlzeiten (oder Uhrzeit) mit Summen, „+“ je Gruppe, Bearbeiten, Kopieren und Löschen mit Rückgängig. Geplante Mahlzeiten stehen gedämpft dabei und lassen sich mit einem Tap als gegessen übernehmen.',
-  version: '1.2',
+  version: '1.3',
   props: [
     { name: 'quietEmpty', label: 'Im Erststart (noch nichts erfasst) nichts anzeigen', type: 'boolean', default: false },
     { name: 'title', label: 'Titel', type: 'text', default: 'Mahlzeiten' },
@@ -42,6 +42,7 @@ export const mealTimeline = {
   .tk-mt__txt { min-width:0; } .tk-mt__txt > span { min-width:0; max-width:100%; }
   .tk-mt--compact .tk-mt__txt { display:flex; align-items:baseline; gap:8px; } .tk-mt--compact .tk-mt__name { flex:0 1 auto; } .tk-mt--compact .tk-mt__sub { flex:1 1 0; min-width:0; font-size:var(--tk-nfs-xs); }
   .bp-mobile .tk-mt--compact .tk-mt__txt { flex-direction:column; gap:0; } .bp-mobile .tk-mt--compact .tk-mt__sub { flex:none; }
+  [data-tk-large-text] .tk-mt--compact .tk-mt__txt { flex-direction:column; gap:0; } [data-tk-large-text] .tk-mt--compact .tk-mt__sub { flex:none; } /* Nebenzeile nie auf 0 px gequetscht */
   .tk-mt__kcal { margin-left:auto; text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; flex:none; } .tk-mt__kcal small { display:block; font-size:var(--tk-nfs-xs); color:var(--tk-c-text-subtle); }
   .tk-mt__suggest { margin:2px 0 8px 46px; }
   .tk-mt__undo { display:flex; align-items:center; gap:10px; padding:8px 12px; border-radius:var(--tk-radius-md); background:var(--tk-c-surface2); border:1px solid var(--tk-c-border); margin-top:8px; font-size:var(--tk-nfs-sm); }

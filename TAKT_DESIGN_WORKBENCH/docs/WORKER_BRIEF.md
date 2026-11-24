@@ -63,7 +63,8 @@ strukturell verschiedene Versionen, echte Interaktionen, realistische Daten und 
 ## Gemeinsame Datenwelt (Persona „Ein Tag“)
 - `app/src/seed/world/`: `persona.js` (Jonas Keller, Bielefeld, Online-Shop „Nordlicht Studio“), `organisation.js`
   (Termine, Aufgaben), `finance.js` (Konten, Buchungen, Budgets, Abos, Sparpläne, Sparziele, Depot, Watchlist,
-  Dividenden; rechnerisch konsistent) sowie `fitness.js`, `nutrition.js` und `weather.js` (vom jeweiligen Worker zu befüllen).
+  Dividenden; rechnerisch konsistent) sowie je Modul eine eigene Datei (Liste und Eigentümer: `docs/DATENWELT.md` §3.1); neue
+  Module legen ihre Welt-Datei nach demselben Muster an.
 - **Binden statt kopieren:** `demoData: { plans: '@world:savingsPlans' }`. Lokale, rein featurebezogene Daten bleiben im Manifest.
 - **Konsistenz:** Zahlen, die in mehreren Modulen vorkommen (Depotwert, Sparrate, Trainingstage, Kalorienziel …),
   kommen aus der Welt. Abgeleitete Werte (Summen, Quoten) berechnet die Welt-Datei selbst, nicht von Hand.

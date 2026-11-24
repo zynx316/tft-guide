@@ -179,7 +179,12 @@ if (isMain) {
   const dataDir = path.resolve(arg('data', path.join(ROOT, 'data')));
   const lanMode = !/^(127\.|localhost$|::1$)/.test(host);
   const pin = process.argv.includes('--no-pin') || !lanMode ? null : String(arg('pin', '') || crypto.randomInt(100000, 1000000));
-  createServer({ dataDir, pin }).listen(port, host, () => {
+  const srv = createServer({ dataDir, pin });
+  srv.on('error', (e) => {
+    console.error(e.code === 'EADDRINUSE' ? `\n  Port ${port} ist belegt (läuft die Workbench schon?). Anderer Port: node server.mjs --port ${port + 1}\n` : `\n  Server-Fehler: ${e.message}\n`);
+    process.exit(1);
+  });
+  srv.listen(port, host, () => {
     const url = `http://${host === '0.0.0.0' ? 'localhost' : host}:${port}/`;
     console.log(`\n  TAKT Design Workbench laeuft:  ${url}\n  Daten: ${dataDir}\n  Beenden: Strg+C\n`);
     if (lanMode) console.log(`  Im WLAN erreichbar. Launcher → „Aufs Handy“ zeigt den QR-Code.${pin ? `  WLAN-PIN: ${pin} (steht im QR-Link)` : '  Ohne PIN (--no-pin).'}\n`);
