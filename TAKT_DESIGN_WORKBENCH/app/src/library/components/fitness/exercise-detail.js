@@ -10,7 +10,7 @@ export const exerciseDetail = {
   name: 'Übungs-Detail',
   category: 'Fitness',
   description: 'Eine Übung im Detail (ctx.ui.selectedId): Ausführung in Schritten, Muskeln, häufige Fehler, Atmung, Verlauf der geschätzten 1RM aus dem Training und Alternativen. Favorit und „Zum Plan“.',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'showChart', label: 'Verlauf zeigen', type: 'boolean', default: true },
     { name: 'showAlternatives', label: 'Alternativen zeigen', type: 'boolean', default: true },
@@ -23,7 +23,7 @@ export const exerciseDetail = {
   states: ['empty'],
   css: `${CHART_CSS}
   .tk-exd { display:flex; flex-direction:column; gap:var(--tk-space-5); } .tk-exd__top { display:flex; align-items:flex-start; gap:var(--tk-space-3); }
-  .tk-exd__cols { display:grid; gap:var(--tk-space-5); grid-template-columns:minmax(0,1fr); } .bp-desktop .tk-exd__cols { grid-template-columns:minmax(0,1.1fr) minmax(0,1fr); }
+  .tk-exd__cols { display:grid; gap:var(--tk-space-5); grid-template-columns:minmax(0,1fr); } .tk-exd__cols--2 { grid-template-columns:minmax(0,1.1fr) minmax(0,1fr); } /* nach Blockbreite, nicht nach Viewport (Seitenspalte bei 1024–1280 px lief über) */
   .tk-exd__steps { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:10px; counter-reset:s; } .tk-exd__steps li { display:flex; gap:12px; counter-increment:s; line-height:var(--tk-lh-snug); }
   .tk-exd__steps li::before { content:counter(s); width:26px; height:26px; border-radius:50%; background:var(--tk-c-accent-soft); color:var(--tk-c-accent); font-weight:var(--tk-fw-semibold); font-size:var(--tk-fs-sm); display:grid; place-items:center; flex:none; margin-top:-1px; }
   .tk-exd__facts { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:var(--tk-space-3); } .tk-exd h4 { margin:0 0 8px; font-size:var(--tk-fs-md); font-weight:var(--tk-fw-semibold); }
@@ -52,7 +52,7 @@ export const exerciseDetail = {
       <div class="tk-exd__facts"><div class="tk-fit-stat"><span>${kg ? 'Bestwert (1RM)' : 'Bestwert'}</span><strong>${best ? unitTxt(best[key]).replace(' kg', '') : '–'}<small>${best && kg ? ' kg' : ''}</small></strong></div>
         <div class="tk-fit-stat"><span>Letztes Mal</span><strong style="font-size:var(--tk-fs-lg)">${last ? (kg ? `${numAuto(last.kg)} × ${last.reps}` : unitTxt(last.reps)) : '–'}</strong><small>${last ? dayShort(last.date) : 'noch nicht trainiert'}</small></div>
         <div class="tk-fit-stat"><span>Einheiten</span><strong>${series.length}<small> in 8 Wo.</small></strong></div></div>
-      <div class="tk-exd__cols"><div class="tk-col" style="gap:var(--tk-space-4)">
+      <div class=${`tk-exd__cols${ctx.bp === 'desktop' && (ctx.blockWidth || ctx.width || 0) >= 560 ? ' tk-exd__cols--2' : ''}`}><div class="tk-col" style="gap:var(--tk-space-4)">
         <div><h4>Ausführung</h4>${(e.steps || []).length ? html`<ol class="tk-exd__steps">${e.steps.map((s) => html`<li><span>${s}</span></li>`)}</ol>` : html`<span class="tk-muted">Noch keine Anleitung hinterlegt.</span>`}</div>
         ${(e.mistakes || []).length > 0 && html`<div><h4>Häufige Fehler</h4><ul class="tk-exd__list">${e.mistakes.map((m) => html`<li>${m}</li>`)}</ul></div>`}
         ${e.breath && html`<div class="tk-row" style="gap:8px;align-items:flex-start"><span class="tk-subtle"><${Icon} name="wind" size=${16} /></span><span class="tk-muted" style="font-size:var(--tk-fs-sm)">${e.breath}</span></div>`}</div>
