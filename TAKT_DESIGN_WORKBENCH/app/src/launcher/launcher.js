@@ -274,6 +274,20 @@ function Launcher({ initialState }) {
   const routeText = (vid) => { const r = routes[vid]; if (r?.shellPage) return 'Übersicht (Launchpad)'; const f = state.features.find((x) => x.id === r?.featureId); const m = state.modules.find((x) => x.id === r?.moduleId); return f ? `${m?.name} › ${f.name}` : 'Start'; };
 
   // ---- Handy: Vollbild + schwebender Versionsschalter ----
+  // Handy: die schwebende Versionsauswahl weicht fixierten Leisten der App aus (Schnellerfassung, Laden-Modus-Leiste …)
+  const [fabBottom, setFabBottom] = useState(null);
+  useEffect(() => {
+    if (!mobile) return undefined;
+    const id = setInterval(() => {
+      const fr = frames.current[shown[0]?.id]; let next = null;
+      try {
+        const bars = [...(fr?.contentDocument?.querySelectorAll('.tk-region--bottom') || [])].map((el) => el.getBoundingClientRect()).filter((r) => r.height > 0 && r.top < window.innerHeight);
+        if (bars.length) next = Math.round(window.innerHeight - Math.min(...bars.map((r) => r.top)) + 8);
+      } catch { /* fremdes Dokument – Standardposition */ }
+      setFabBottom((b) => (b === next ? b : next));
+    }, 600);
+    return () => clearInterval(id);
+  }, [mobile, shown[0]?.id]);
   if (mobile) {
     const v = shown[0]; const n = selected.length;
     const sheet = () => openDialog({ title: 'Version & Bewertung', body: ({ close }) => html`<div class="wb-col" style="gap:12px">
@@ -291,7 +305,7 @@ function Launcher({ initialState }) {
         <${Btn} icon="rotate-ccw" onClick=${() => { setResetKey((k) => k + 1); close(); toast('Demo zurückgesetzt'); }}>Demo zurücksetzen<//></div></div>` });
     return html`<div class="ln-mobile">
       <${DeviceFrame} key=${v.id} bare device=${device} payload=${payloads[v.id]} onRoute=${onRoute(v.id)} frameRef=${(el) => { frames.current[v.id] = el; }} />
-      <div class="ln-fab">
+      <div class="ln-fab" style=${fabBottom ? `bottom:${fabBottom}px` : undefined}>
         ${n > 1 && html`<button type="button" aria-label="Vorherige Version" onClick=${() => setMobileIdx((i) => (i - 1 + n) % n)}><${Icon} name="chevron-left" size=${18} /></button>`}
         <button type="button" class="ln-fab__name" onClick=${sheet} aria-label="Version wählen und bewerten"><${Icon} name=${v.icon} size=${15} /><span>${v.name}</span></button>
         ${n > 1 && html`<button type="button" aria-label="Nächste Version" onClick=${() => setMobileIdx((i) => (i + 1) % n)}><${Icon} name="chevron-right" size=${18} /></button>`}
@@ -308,8 +322,8 @@ function Launcher({ initialState }) {
       <div class="ln-head__row">
         <div class="ln-brand"><span class="wb-brand__logo">T</span><div><div class="ln-brand__name">TAKT Demo-Launcher</div><div class="wb-xs wb-subtle">${state.meta.project} · ${Object.keys(payloads[shown[0]?.id]?.features || {}).length} Screens · ${state.modules.filter((m) => !m.archived).length} Module</div></div></div>
         <div class="ln-versions" role="group" aria-label="Versionen">${versions.map((v) => { const cov = versionCoverage(state, v.id); const on = selected.includes(v.id);
-          return html`<button type="button" class=${cx('ln-vchip', on && 'is-on')} aria-pressed=${String(on)} onClick=${() => toggleVersion(v.id)} title=${`${v.claim}${v.kind === 'direction' ? ` · ${cov.own}/${cov.total} Features mit eigener Variante` : ''}`} data-version=${v.id}>
-            <${Icon} name=${v.icon} size=${15} /><span>${v.name}</span>${v.kind === 'direction' && html`<span class=${cx('ln-vchip__cov', cov.ratio < 0.6 && 'is-low')} title=${cov.ratio < 0.6 ? 'Unter 60 % eigene Varianten – Vergleich nur eingeschränkt aussagekräftig' : ''}>${Math.round(cov.ratio * 100)} %</span>`}</button>`; })}</div>
+          return html`<button type="button" class=${cx('ln-vchip', on && 'is-on')} aria-pressed=${String(on)} onClick=${() => toggleVersion(v.id)} title=${`${v.claim}${v.kind === 'direction' ? ` · Kernfeatures ${cov.tier1.own}/${cov.tier1.total}, alle ${cov.own}/${cov.total} mit eigener Variante` : ''}`} data-version=${v.id}>
+            <${Icon} name=${v.icon} size=${15} /><span>${v.name}</span>${v.kind === 'direction' && html`<span class=${cx('ln-vchip__cov', cov.tier1.ratio < 0.6 && 'is-low')} title=${`Kernfeatures (Tier 1) mit eigener Variante: ${cov.tier1.own} von ${cov.tier1.total}${cov.tier1.ratio < 0.6 ? ' – unter 60 %, Vergleich nur eingeschränkt aussagekräftig' : ''} · alle Features: ${cov.own} von ${cov.total} (${Math.round(cov.ratio * 100)} %)`}>Kern ${Math.round(cov.tier1.ratio * 100)} %</span>`}</button>`; })}</div>
         <span class="wb-grow"></span>
         <${Btn} size="sm" icon="smartphone" onClick=${qrDialog}>Aufs Handy<//>
         ${LOCAL && html`<a class="wb-btn wb-btn--sm" href="./#/decide"><${Icon} name="layout-dashboard" size=${14} />Workbench<//>`}

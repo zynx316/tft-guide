@@ -119,8 +119,11 @@ export function resolveVariant(state, feature, versionId = 'arbeitsstand') {
 /** Abdeckung einer Version: wie viele Features haben eine eigene passende Variante? */
 export function versionCoverage(state, versionId, moduleId = null) {
   const fs = state.features.filter((f) => !f.archived && f.variants.length && (!moduleId || f.moduleId === moduleId));
-  const own = fs.filter((f) => resolveVariant(state, f, versionId).source !== 'fallback').length;
-  return { total: fs.length, own, ratio: fs.length ? own / fs.length : 0 };
+  const mine = (f) => resolveVariant(state, f, versionId).source !== 'fallback';
+  const own = fs.filter(mine).length;
+  // Tier 1 (täglich/kritisch) ist der Maßstab des Bauplan-Gates (≥ 60 % je Richtung); „alle“ zeigt den Gesamtausbau
+  const t1 = fs.filter((f) => f.tier === 1), t1own = t1.filter(mine).length;
+  return { total: fs.length, own, ratio: fs.length ? own / fs.length : 0, tier1: { total: t1.length, own: t1own, ratio: t1.length ? t1own / t1.length : 0 } };
 }
 
 /** Startseite eines Moduls: explizit gesetzt, sonst erstes Feature der Gruppe „Übersicht“, sonst erstes mit Variante. */

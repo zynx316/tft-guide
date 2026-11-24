@@ -83,7 +83,11 @@ test('resolveVariant: Freigabe nutzt den Snapshot, sonst Rückfall', () => {
 
 test('versionCoverage zählt Features mit eigener Variante der Richtung', () => {
   const s = synth();
-  assert.deepEqual(directions.versionCoverage(s, 'dir:kompakt'), { total: 3, own: 1, ratio: 1 / 3 });
+  const c = directions.versionCoverage(s, 'dir:kompakt');
+  assert.deepEqual([c.total, c.own, c.ratio], [3, 1, 1 / 3]);
+  assert.deepEqual(Object.keys(c.tier1), ['total', 'own', 'ratio'], 'Kernfeatures (Tier 1) getrennt gezählt');
+  const t1 = { ...s, features: s.features.map((f, i) => ({ ...f, tier: i === 0 ? 1 : 2 })) };
+  assert.equal(directions.versionCoverage(t1, 'dir:kompakt').tier1.total, 1);
   assert.equal(directions.versionCoverage(s, 'dir:kompakt', 'b').own, 0);
   assert.equal(directions.versionCoverage(s, 'arbeitsstand').own, 3);
 });
