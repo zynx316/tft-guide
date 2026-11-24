@@ -49,7 +49,7 @@ cd G:\Projekte\97_Uebernahme\TAKT_DESIGN_WORKBENCH
 git init; git add .; git commit -m "TAKT Design Workbench - Uebernahme"   # optional, empfohlen
 npm install; npx playwright install chromium            # Playwright-Version ist per package-lock.json fest; Chromium nur für Tests
 npm run check; npm test                                 # < 10 s: 0 Fehler/0 Hinweise, 400 Tests grün
-npm run qa                                              # dauert länger (Vertrag, 32 E2E, Screenshot-Matrix) und legt die
+npm run qa                                              # ~20 Min. (Vertrag, 32 E2E, 770 Screenshots) und legt die
                                                         # Baselines für diesen Rechner an
 ```
 Danach in einem **eigenen Terminal** `npm start` (Workbench → http://127.0.0.1:4317 · Launcher → /launcher.html; der Server

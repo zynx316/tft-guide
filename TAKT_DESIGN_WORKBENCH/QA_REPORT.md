@@ -11,7 +11,7 @@ Der Bericht aus Session 1 (12 Module, 57 Varianten) ist durch diesen ersetzt; se
 | Node-Tests (`npm test`) | 400 Tests in 29 Dateien: Kern, Welt-Invarianten (33), Szenarien, Seed-Abgleich, Format, Wiederholung, Gesundheits- und Finanzmathematik, Module | **400/400** |
 | Vertragsprüfung (Browser) | 296 Komponenten, 197 Features, alle Varianten, Bindungen, Props-Schemata, Interaktions-Events | **0 Fehler · 0 Hinweise** |
 | E2E-Bedientests | 32 Tests: Workbench, Demo-Launcher (Versionen, Szenarien, Offline, Schrift 200 %), App-Rahmen, Runden, Gates, Spezifikation | **32/32** |
-| Screenshot-Matrix (Gesamtlauf) | bevorzugte Variante von 154 Features × 1440/1280/1024/768/390 · Graphite | Lauf noch nicht abgeschlossen – Ergebnis folgt |
+| Screenshot-Matrix (Gesamtlauf, 17 Min.) | bevorzugte Variante von 154 Features × 1440/1280/1024/768/390 · Graphite | **768/770**; 2 Befunde (`fitness.exercises/A`, Überlauf bei 1280/1024 px: Diagramm in der Seitenspalte) → behoben (`exercise-detail` 1.2), danach alle 348 Varianten bei 1024 und 1280 px: **0 Befunde** |
 | Szenario „Erster Start“ | bevorzugte Variante aller 154 Features mit Varianten · 390 px | **154/154** |
 | Szenario „Stress-Tag“ | dito | **154/154** |
 | Privatsphäre-Modus („Beträge ausblenden“) | dito | **154/154** (keine Beträge sichtbar) |
