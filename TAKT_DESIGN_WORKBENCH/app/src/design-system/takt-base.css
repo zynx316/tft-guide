@@ -306,6 +306,9 @@ h1, h2, h3, h4, p { margin: 0; }
 /* Kartenkopf: Titel behält Lesebreite (mind. 8 Zeichen), Badge/Aktionen rutschen in die nächste Zeile statt den Titel zu quetschen */
 [data-tk-large-text] .tk-card__head { flex-wrap: wrap; row-gap: 4px; }
 [data-tk-large-text] .tk-card__title { flex: 1 1 8em; }
+/* Umschalter: bei großer Schrift umbrechen statt versteckt seitlich wischen (Pollen „November / Sommer“) */
+[data-tk-large-text] .tk-seg { flex-wrap: wrap; overflow-x: visible; }
+[data-tk-large-text] .tk-seg button { height: auto; min-height: 36px; white-space: normal; text-align: center; }
 /* Großbuchstaben-Labels ohne Versalien-Umwandlung (CSS macht aus „ß“ sonst „SS“, z. B. EIWEISS) */
 .tk-label--nocaps, .tk-nocaps { text-transform: none; letter-spacing: normal; }
 
