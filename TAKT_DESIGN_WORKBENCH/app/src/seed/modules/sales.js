@@ -72,11 +72,14 @@ export default {
           description: '+ Alles auf einen Blick, Sync pro Kanal  − Auf Mobile lange Seite, Fehler fallen nur über Farbe und Text der Karte auf',
           layout: { type: 'grid' },
           blocks: [
-            hdr({ eyebrow: 'Dienstag, 24. November', title: 'Übersicht', subtitle: 'Kanäle, Bestellungen und Umsatz', primaryLabel: 'Kanal verbinden', primaryIcon: 'plus', primaryEvent: 'channel.connect', secondaryLabel: 'Bestellungen', secondaryIcon: 'package' }),
-            { id: 'kpi', component: 'kpi-tiles', region: 'main', span: 12, bind: { metrics: 'metrics' } },
-            { id: 'cards', component: 'channel-cards', region: 'main', span: 12, bind: { channels: 'channels' }, props: { title: 'Verkaufskanäle', minWidth: 250 } },
-            { id: 'rev', component: 'chart', region: 'main', span: 7, spanTablet: 12, bind: { series: 'revenue' }, props: { title: 'Umsatz – letzte 7 Tage', type: 'bar', height: 190, format: 'currency' } },
-            { id: 'share', component: 'chart', region: 'main', span: 5, spanTablet: 12, bind: { series: 'shares' }, props: { title: 'Umsatzanteil (30 Tage)', type: 'donut', format: 'currency' } },
+            // Erststart (keine Kanäle): Kopf ohne Aktion, eine Einladung „Kanal verbinden“, keine leeren Karten (hideWhenEmpty/showWhenEmpty, quietEmpty)
+            { ...hdr({ eyebrow: 'Dienstag, 24. November', title: 'Übersicht', subtitle: 'Kanäle, Bestellungen und Umsatz', primaryLabel: 'Kanal verbinden', primaryIcon: 'plus', primaryEvent: 'channel.connect', secondaryLabel: 'Bestellungen', secondaryIcon: 'package' }), hideWhenEmpty: 'channels' },
+            { ...hdr({ eyebrow: 'Sales Channels', title: 'Übersicht', subtitle: 'Noch kein Kanal verbunden', primaryLabel: '' }), id: 'hdr0', showWhenEmpty: 'channels' },
+            { id: 'first', component: 'sales-firstrun', region: 'main', span: 12, bind: { channels: 'channels' } },
+            { id: 'kpi', component: 'kpi-tiles', region: 'main', span: 12, bind: { metrics: 'metrics' }, hideWhenEmpty: 'channels' },
+            { id: 'cards', component: 'channel-cards', region: 'main', span: 12, bind: { channels: 'channels' }, props: { title: 'Verkaufskanäle', minWidth: 250, quietEmpty: true } },
+            { id: 'rev', component: 'chart', region: 'main', span: 7, spanTablet: 12, bind: { series: 'revenue' }, props: { title: 'Umsatz – letzte 7 Tage', type: 'bar', height: 190, format: 'currency' }, hideWhenEmpty: 'channels' },
+            { id: 'share', component: 'chart', region: 'main', span: 5, spanTablet: 12, bind: { series: 'shares' }, props: { title: 'Umsatzanteil (30 Tage)', type: 'donut', format: 'currency' }, hideWhenEmpty: 'channels' },
           ],
         },
         {
@@ -84,7 +87,8 @@ export default {
           description: '+ Sortieren/Vergleichen, Sync und Fehler im Detail  − Nüchtern, Mobile zeigt Karten statt Tabelle',
           layout: { type: 'split' },
           blocks: [
-            hdr({ eyebrow: 'Sales Channels', title: 'Übersicht', subtitle: 'Letzte 30 Tage', primaryLabel: 'Kanal verbinden', primaryEvent: 'channel.connect', secondaryLabel: 'Bestellungen', secondaryIcon: 'package' }),
+            { ...hdr({ eyebrow: 'Sales Channels', title: 'Übersicht', subtitle: 'Letzte 30 Tage', primaryLabel: 'Kanal verbinden', primaryEvent: 'channel.connect', secondaryLabel: 'Bestellungen', secondaryIcon: 'package' }), hideWhenEmpty: 'channels' },
+            { ...hdr({ eyebrow: 'Sales Channels', title: 'Übersicht', subtitle: 'Noch kein Kanal verbunden', primaryLabel: '' }), id: 'hdr0', showWhenEmpty: 'channels' },
             { id: 'first', component: 'sales-firstrun', region: 'main', bind: { channels: 'channels' } },
             { id: 'tbl', component: 'channel-table', region: 'main', bind: { channels: 'channels' }, props: { title: '', quietEmpty: true } },
             { id: 'pipe', component: 'order-pipeline', region: 'main', bind: { orders: 'orders' }, props: { title: 'Offene Bestellungen', stages: 'new, paid', openIn: 'select', respectFilter: false, quietEmpty: true } },

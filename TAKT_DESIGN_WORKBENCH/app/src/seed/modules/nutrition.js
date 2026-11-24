@@ -60,7 +60,9 @@ const home = {
       description: '+ Alles auf einen Blick, Aktionen direkt in der Zeile, Zahlen exakt  − Wenig Raum für Bilder, Fortschritt nur als Balken',
       layout: { type: 'split' },
       blocks: [
-        hdr({ title: 'Heute', subtitle: 'Di, 24.11.', primaryLabel: 'Erfassen', primaryEvent: 'meal.add', secondaryLabel: 'Auswertung', secondaryIcon: 'bar-chart-3' }),
+        // Erststart (Tagebuch und Verlauf leer): Kopf ohne „Erfassen“, die Einladung trägt die eine Aktion
+        { ...hdr({ title: 'Heute', subtitle: 'Di, 24.11.', primaryLabel: 'Erfassen', primaryEvent: 'meal.add', secondaryLabel: 'Auswertung', secondaryIcon: 'bar-chart-3' }), hideWhenEmpty: ['diary', 'history'] },
+        { ...hdr({ title: 'Heute', subtitle: 'Di, 24.11.', primaryLabel: '' }), id: 'hdr0', showWhenEmpty: ['diary', 'history'] },
         { id: 'first', component: 'nut-start-invite', region: 'main', props: { mode: 'compact' } },
         { id: 'strip', component: 'day-strip', region: 'main', props: { quietEmpty: true } },
         { id: 'bal', component: 'calorie-budget', region: 'main', props: { style: 'formula', title: 'Kalorien', quietEmpty: true } },
@@ -78,7 +80,8 @@ const home = {
       description: '+ Fortschritt sofort sichtbar, viel Raum, ruhige Gesamtwirkung  − Mehr Scrollen, weniger Detail pro Eintrag',
       layout: { type: 'grid' },
       blocks: [
-        hdr({ title: 'Heute', subtitle: 'Di, 24.11.', primaryLabel: 'Erfassen', primaryEvent: 'meal.add' }),
+        { ...hdr({ title: 'Heute', subtitle: 'Di, 24.11.', primaryLabel: 'Erfassen', primaryEvent: 'meal.add' }), hideWhenEmpty: ['diary', 'history'] },
+        { ...hdr({ title: 'Heute', subtitle: 'Di, 24.11.', primaryLabel: '' }), id: 'hdr0', showWhenEmpty: ['diary', 'history'] },
         { id: 'strip', component: 'day-strip', region: 'main', span: 12, props: { framed: true, quietEmpty: true } },
         { id: 'first', component: 'nut-start-invite', region: 'main', span: 7, props: { mode: 'hero' } },
         { id: 'bal', component: 'calorie-budget', region: 'main', span: 5, props: { style: 'ring', size: 200, title: 'Kalorien', quietEmpty: true } },

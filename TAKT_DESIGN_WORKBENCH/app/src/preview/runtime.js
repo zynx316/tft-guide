@@ -52,12 +52,21 @@ class Boundary extends Component {
 
 const emptyOf = (v) => (Array.isArray(v) ? [] : v && typeof v === 'object' ? (v.segments ? { segments: [] } : v.series ? { ...v, series: [] } : {}) : v);
 
+const isEmptyData = (v) => v == null || v === '' || (Array.isArray(v) ? v.length === 0 : typeof v === 'object' && Object.keys(v).length === 0);
 function BlockBody({ block, def, store, ctx, forcedState }) {
   const [localState, setLocalState] = useState(null);
   const state = localState || forcedState || 'default';
   const handles = def.states || [];
   if (state === 'loading' && !handles.includes('loading')) return html`<${Card}><${Skeleton} lines=${4} /><//>`;
   if (state === 'error' && !handles.includes('error')) return html`<${Card}><${ErrorState} onRetry=${() => { setLocalState('default'); ctx.emit('state.retry', { block: block.id }); }} /><//>`;
+  // Sichtbarkeit nach Daten (Manifest): hideWhenEmpty/showWhenEmpty = Datenschlüssel des Features (auch '@world:'-gebunden).
+  // So zeigt ein Erststart genau eine Einladung statt mehrerer leerer Karten – ohne Sonderkomponenten.
+  if (block.hideWhenEmpty || block.showWhenEmpty) {
+    // ein Schlüssel oder eine Liste: „leer“ heißt, alle genannten Daten sind leer
+    const empty = (k) => state === 'empty' || [].concat(k).every((x) => isEmptyData(store.get(x)));
+    if (block.hideWhenEmpty && empty(block.hideWhenEmpty)) return null;
+    if (block.showWhenEmpty && !empty(block.showWhenEmpty)) return null;
+  }
   const slots = def.data || [];
   const keyOf = (slot) => block.bind?.[slot] ?? slots.find((s) => s.slot === slot)?.default ?? slot;
   const data = {};

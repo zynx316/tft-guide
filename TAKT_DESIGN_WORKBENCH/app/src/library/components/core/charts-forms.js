@@ -11,12 +11,13 @@ export const chart = {
   name: 'Diagramm',
   category: 'Diagramme',
   description: 'SVG-Diagramm: Balken, Linie, Fläche oder Ring. Mehrere Serien, Tooltip per Hover/Tap, Zeitraum-Umschalter optional.',
-  version: '1.2', // 1.1: Beträge/Prozente über money()/percent() (Privatsphäre, de-DE-Format); 1.2: Summe 0 ehrlich, Achsen bei Nullreihen, Achsenwerte im Privatsphäre-Modus maskiert
+  version: '1.3', // 1.3: quietEmpty; 1.1: Beträge/Prozente über money()/percent() (Privatsphäre, de-DE-Format); 1.2: Summe 0 ehrlich, Achsen bei Nullreihen, Achsenwerte im Privatsphäre-Modus maskiert
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Verlauf' },
     { name: 'type', label: 'Typ', type: 'select', options: ['bar', 'line', 'area', 'donut'], default: 'bar' },
     { name: 'height', label: 'Höhe (px)', type: 'number', default: 200 },
     { name: 'format', label: 'Werteformat', type: 'select', options: ['number', 'currency', 'percent'], default: 'number' },
+    { name: 'quietEmpty', label: 'Ohne Daten ausblenden (Erststart)', type: 'boolean', default: false },
     { name: 'ranges', label: 'Zeiträume (optional)', type: 'list', default: [] },
     { name: 'showLegend', label: 'Legende', type: 'boolean', default: true },
   ],
@@ -47,6 +48,7 @@ export const chart = {
     const f = (v) => (props.format === 'currency' ? money(ctx, v) : props.format === 'percent' ? percent(ctx, v, { sign: false }) : fmt.number(v, v % 1 ? 1 : 0));
     const head = ranges.length ? html`<${Segmented} value=${range} options=${ranges.map((r) => ({ value: r, label: r }))} onChange=${(r) => { setRange(r); ctx.emit('chart.range', { range: r }); }} />` : null;
     const empty = !d || (d.segments ? !d.segments.length : !(d.series || []).some((s) => s.values?.length));
+    if (empty && props.quietEmpty) return null;
     if (empty) return html`<${Card} title=${props.title}><${EmptyState} icon="bar-chart-3" title="Keine Daten" text="Für diesen Zeitraum liegen keine Werte vor." /><//>`;
 
     if (props.type === 'donut') {

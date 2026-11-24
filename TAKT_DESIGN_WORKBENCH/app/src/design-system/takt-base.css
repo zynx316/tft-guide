@@ -296,6 +296,9 @@ h1, h2, h3, h4, p { margin: 0; }
 .tk-layout--stretch.tk-layout--grid .tk-region--main > .tk-block > * { flex: 1 1 auto; }
 .bp-desktop .tk-layout--aside-sticky .tk-region--aside { position: sticky; top: var(--tk-space-4); align-self: start; max-height: calc(100vh - 2 * var(--tk-space-4)); overflow: auto; }
 
+/* Blöcke, die nichts rendern (quietEmpty, hideWhenEmpty/showWhenEmpty), nehmen keinen Platz und keine Rasterlücke ein */
+.tk-block:empty { display: none !important; }
+
 /* ---- Große Schrift (≥ 125 %): Beschriftungen umbrechen statt abschneiden/überlaufen ---- */
 [data-tk-large-text] .tk-btn, .tk-btn--wrap { white-space: normal; height: auto; min-height: var(--tk-size-control); padding-top: 6px; padding-bottom: 6px; text-align: center; line-height: 1.25; }
 [data-tk-large-text] .tk-chip { height: auto; min-height: 32px; white-space: normal; }

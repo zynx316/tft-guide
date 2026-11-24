@@ -85,7 +85,7 @@ export default {
             hdr({ eyebrow: 'Picture to Text', title: 'Übersicht', subtitle: 'Was möchtest du erkennen?', primaryLabel: '', secondaryLabel: 'Verlauf', secondaryIcon: 'history' }),
             { id: 'launch', component: 'capture-launcher', region: 'main', span: 12, props: { style: 'tiles' } },
             { id: 'kpi', component: 'kpi-tiles', region: 'main', span: 8, spanTablet: 12, bind: { metrics: 'metrics' }, props: { columns: 4, showSpark: false } },
-            { id: 'src', component: 'chart', region: 'main', span: 4, spanTablet: 12, bind: { series: 'bySource' }, props: { title: 'Quellen', type: 'donut' } },
+            { id: 'src', component: 'chart', region: 'main', span: 4, spanTablet: 12, bind: { series: 'bySource' }, props: { title: 'Quellen', type: 'donut', quietEmpty: true } },
             { id: 'gal', component: 'card-grid', region: 'main', span: 12, bind: { items: 'captures' }, props: { title: 'Zuletzt erkannt', cover: true, minWidth: 230 } },
           ],
         },

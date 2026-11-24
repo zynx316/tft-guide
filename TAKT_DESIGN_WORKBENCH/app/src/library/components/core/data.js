@@ -10,12 +10,13 @@ export const metricRow = {
   name: 'Kennzahlen-Reihe',
   category: 'Daten',
   description: 'KPI-Kacheln mit Wert, Einheit, Trend und optionaler Sparkline. Desktop als Reihe, Mobile als 2er-Raster oder horizontal scrollbar. `sensitive` maskiert Wert und Veränderung im Privatsphäre-Modus, `neutral` zeigt die Veränderung ohne Grün/Rot (Gesundheit).',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'columns', label: 'Spalten (Desktop)', type: 'number', default: 4 },
     { name: 'mobileLayout', label: 'Mobile', type: 'select', options: ['grid', 'scroll'], default: 'grid' },
     { name: 'showSpark', label: 'Sparklines', type: 'boolean', default: true },
     { name: 'variant', label: 'Stil', type: 'select', options: ['card', 'plain'], default: 'card' },
+    { name: 'quietEmpty', label: 'Ohne Daten ausblenden (Erststart)', type: 'boolean', default: false },
   ],
   data: [{ slot: 'metrics', label: 'Kennzahlen', default: 'metrics', shape: '{label,value,unit?,delta?,invert?,neutral?,sensitive?,icon?,tone?,spark?:number[]}[]', required: true }],
   events: ['metric.open'],
@@ -42,6 +43,7 @@ export const metricRow = {
   ] } },
   render: ({ props, data, ctx }) => {
     const ms = data.metrics || [];
+    if (!ms.length && props.quietEmpty) return null;
     if (!ms.length) return html`<${Card}><${EmptyState} icon="activity" title="Keine Kennzahlen" text="Sobald Daten vorliegen, erscheinen hier die wichtigsten Werte." /><//>`;
     return html`<div class=${`tk-metric-row tk-metric-row--${props.mobileLayout}`} style=${`--cols:${props.columns}`}>
       ${ms.map((m) => html`<button type="button" class=${`tk-metric ${props.variant === 'plain' ? 'tk-metric--plain' : ''}`} onClick=${() => ctx.emit('metric.open', { label: m.label })}>
@@ -58,7 +60,7 @@ export const itemList = {
   name: 'Liste',
   category: 'Daten',
   description: 'Universelle Liste (Titel, Untertitel, Meta, Badge, optional Checkbox). Respektiert Suche/Filter, wählt Elemente für Master-Detail (ctx.ui.selectedId).',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: '' },
     { name: 'checkable', label: 'Abhakbar', type: 'boolean', default: false },
@@ -69,6 +71,7 @@ export const itemList = {
     { name: 'respectFilter', label: 'Suche/Filter beachten', type: 'boolean', default: true },
     { name: 'emptyTitle', label: 'Leerzustand Titel', type: 'text', default: 'Keine Einträge' },
     { name: 'emptyText', label: 'Leerzustand Text', type: 'text', default: 'Lege den ersten Eintrag an.' },
+    { name: 'quietEmpty', label: 'Ohne Daten ausblenden (Erststart)', type: 'boolean', default: false },
   ],
   data: [{ slot: 'items', label: 'Einträge', default: 'items', shape: '{id,title,subtitle?,meta?,badge?,tone?,icon?,done?,group?}[]', required: true }],
   events: ['item.open', 'item.toggle'],
@@ -91,6 +94,7 @@ export const itemList = {
   render: ({ props, data, setData, ctx }) => {
     let items = applyUiFilter(data.items, ctx.ui, { respect: props.respectFilter });
     const total = items.length;
+    if (!total && props.quietEmpty && !ctx.ui.query) return null;
     if (props.limit > 0) items = items.slice(0, props.limit);
     const toggle = (it) => { setData('items', (all) => all.map((x) => (x.id === it.id ? { ...x, done: !x.done } : x))); ctx.emit('item.toggle', { id: it.id }); };
     const open = (it) => { if (props.selectable) ctx.setUi('selectedId', it.id); ctx.emit('item.open', { id: it.id }); };
@@ -115,7 +119,7 @@ export const cardGrid = {
   name: 'Kartenraster',
   category: 'Daten',
   description: 'Raster aus Inhaltskarten (Notizen, Artikel, Kanäle …) mit Icon/Farbfeld, Text-Auszug und Tags. Spaltenzahl responsiv.',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: '' },
     { name: 'minWidth', label: 'Min. Kartenbreite (px)', type: 'number', default: 240 },
@@ -124,6 +128,7 @@ export const cardGrid = {
     { name: 'respectFilter', label: 'Suche/Filter beachten', type: 'boolean', default: true },
     { name: 'emptyTitle', label: 'Leerzustand Titel', type: 'text', default: 'Keine Inhalte' },
     { name: 'emptyText', label: 'Leerzustand Text', type: 'text', default: 'Hier erscheinen deine Inhalte.' },
+    { name: 'quietEmpty', label: 'Ohne Daten ausblenden (Erststart)', type: 'boolean', default: false },
   ],
   data: [{ slot: 'items', label: 'Karten', default: 'items', shape: '{id,title,text?,tags?,icon?,tone?,meta?,pinned?}[]', required: true }],
   events: ['card.open'],
@@ -143,6 +148,7 @@ export const cardGrid = {
   ] } },
   render: ({ props, data, ctx }) => {
     const items = applyUiFilter(data.items, ctx.ui, { respect: props.respectFilter });
+    if (!items.length && props.quietEmpty && !ctx.ui.query) return null;
     const grid = !items.length ? html`<${Card}><${EmptyState} icon="layout-grid" title=${props.emptyTitle || 'Keine Inhalte'} text=${ctx.ui.query ? `Keine Treffer für „${ctx.ui.query}“.` : props.emptyText || 'Hier erscheinen deine Inhalte.'} /><//>`
       : html`<div class="tk-card-grid" style=${`--minw:${props.minWidth}px`}>
         ${items.map((it) => html`<button type="button" class="tk-card tk-card--interactive tk-card-grid__card" onClick=${() => { ctx.setUi('selectedId', it.id); ctx.emit('card.open', { id: it.id }); }}
