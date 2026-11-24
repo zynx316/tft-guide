@@ -40,13 +40,13 @@ export const Toggle = ({ checked, onChange, label }) => html`<button type="butto
 export const MuscleDot = ({ muscle }) => html`<span class="tk-fit-mus"><i style=${`background:${muscleColor(muscle)}`}></i>${muscle}</span>`;
 
 /** Takt der Live-Einheit: genau EINE gemountete Komponente zählt Dauer und Pause herunter. */
-let tickOwner = null;
+let tickOwner = null; let tickSeq = 0;
 export function useSessionTicker(session, setSession, ctx) {
   const ref = useRef(session); ref.current = session;
   const cx = useRef(ctx); cx.current = ctx;
   useEffect(() => {
     if (!cx.current.live) return undefined; // Uhr läuft nur im Launcher (ctx.live), in QA/Workbench bleibt sie fest
-    const me = Math.random();
+    const me = ++tickSeq;
     const t = setInterval(() => {
       if (!tickOwner) tickOwner = me;
       if (tickOwner !== me) return;

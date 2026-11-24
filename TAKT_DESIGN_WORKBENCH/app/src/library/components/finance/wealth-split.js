@@ -2,7 +2,7 @@
 import { html } from '../../../lib/html.js';
 import { Card, Icon, EmptyState, toneColor } from '../../ui.js';
 import { wealth, arr } from './_calc.js';
-import { slots, pctx, eur, eur0, Tile } from './_fin.js';
+import { SlimEmpty, slots, pctx, eur, eur0, Tile } from './_fin.js';
 import { fmtPercent } from '../../../lib/format.js';
 import { ex } from './_example.js';
 
@@ -22,7 +22,7 @@ export const finWealthSplit = {
   states: ['empty'],
   css: `
   .tk-fnw__donut { display:flex; align-items:center; gap:var(--tk-space-5); flex-wrap:wrap; } .tk-fnw__donut > div:last-child { flex:1 1 170px; min-width:0; }
-  .tk-fnw__leg { display:flex; align-items:center; gap:10px; padding:6px 4px; min-height:40px; } .tk-fnw__leg i { width:10px; height:10px; border-radius:3px; flex:none; }
+  .tk-fnw__leg { display:flex; align-items:center; flex-wrap:wrap; gap:2px 10px; padding:6px 4px; min-height:40px; min-width:0; max-width:100%; } .tk-fnw__leg > .tk-fn-grow { flex:1 1 5.5em; } .tk-fnw__leg i { width:10px; height:10px; border-radius:3px; flex:none; }
   .tk-fnw__bridge { display:flex; flex-direction:column; gap:var(--tk-space-3); } .tk-fnw__seg { display:flex; height:30px; border-radius:var(--tk-radius-md); overflow:hidden; gap:2px; }
   .tk-fnw__seg > span { min-width:6px; } .tk-fnw__steps { display:grid; grid-template-columns:repeat(auto-fit, minmax(calc(92px * var(--tk-text-scale, 1)), 1fr)); gap:var(--tk-space-2); }
   .tk-fnw__step { text-align:left; border:1px solid var(--tk-c-border); border-radius:var(--tk-radius-md); background:var(--tk-c-surface2); color:inherit; font:inherit; padding:var(--tk-space-3); cursor:pointer; min-height:44px; display:flex; flex-direction:column; gap:2px; min-width:0; }
@@ -30,7 +30,7 @@ export const finWealthSplit = {
   example: { data: ex('accounts', 'prefs') },
   render: function FinWealthSplit({ props, data, ctx }) {
     const c = pctx(ctx, data), w = wealth(data.accounts);
-    if (!arr(data.accounts).length) return html`<${Card} title=${props.title} icon="landmark"><${EmptyState} icon="landmark" title="Noch kein Vermögen erfasst" text="Lege Konten an, dann siehst du die Aufteilung." /><//>`;
+    if (!arr(data.accounts).length) return SlimEmpty({ props, icon: "landmark", title: "Noch kein Vermögen erfasst", text: "Lege Konten an, dann siehst du die Aufteilung." });
     const open = (id) => ctx.emit('wealth.open', { id });
     const total = props.showDebt ? w.net : w.gross;
     const pc = (v) => (c.privacy ? '•• %' : fmtPercent(v, { digits: 0 }));

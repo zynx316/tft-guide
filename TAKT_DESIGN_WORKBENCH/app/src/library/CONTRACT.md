@@ -96,3 +96,5 @@ export const taskList = {
 - **Einstellungen wirken in der Demo:** `ctx.setPrefs(patch)`, `ctx.setTheme(id)`, `ctx.setPrivacy(on)` schreiben in den
   Welt-Schlüssel `prefs` (Format: `crosscut/_system.js › DEFAULT_PREFS`). Der App-Modus wendet geänderte Werte sofort an:
   Favoriten der Leiste, ausgeschaltete Module (`enabled[id] === false`), Theme, Schriftgröße, Beträge ausblenden.
+- **Blockbreite:** `ctx.blockWidth` (gemessene Breite des eigenen Blocks, folgt Größenänderungen) – für Diagramme und SVG
+  statt eigenem ResizeObserver. Große Schrift: Attribut `data-tk-large-text` am Root (≥ 125 %), Variable `--tk-text-scale`.

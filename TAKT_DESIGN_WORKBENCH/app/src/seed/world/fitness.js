@@ -259,3 +259,18 @@ export const scenarios = {
     fitnessToday: { ...fitnessToday, kind: 'rest', headline: 'Noch kein Plan', text: 'Wähle ein Programm – dann erscheint hier deine nächste Einheit.', nextDayId: null, nextExercises: [], weekSessions: 0 },
   },
 };
+
+// --- Kennzahlen der Features „Fortschritt“ und „Körperwerte“ (aus den Daten oben berechnet, im Erststart leer) ---------
+const lastOf = (id) => bodyMeasurements.find((m) => m.id === id)?.points.at(-1)?.value;
+export const fitnessProgressMetrics = [
+  { label: 'Einheiten (8 Wochen)', value: workoutHistory.length, icon: 'dumbbell', tone: 'accent' },
+  { label: 'Volumen gesamt', value: num(Math.round(sum(workoutHistory.map((h) => h.volume)) / 100) / 10, 1), unit: 't', icon: 'weight', tone: 'info' },
+  { label: 'Bestwerte (14 Tage)', value: personalRecords.filter((r) => r.recent).length, icon: 'trophy', tone: 'success' },
+  { label: 'Ø Dauer', value: Math.round(sum(workoutHistory.map((h) => h.durationMin)) / workoutHistory.length), unit: 'Min.', icon: 'timer', tone: 'warning' },
+];
+export const fitnessBodyMetrics = [
+  { label: 'Gewicht heute', value: num(bodySummary.weightKg, 1), unit: 'kg', icon: 'scale', tone: 'info' },
+  { label: 'Trend', value: num(bodySummary.trendKg, 1), unit: 'kg', icon: 'trending-down', tone: 'accent', delta: bodySummary.weekDeltaKg, suffix: ' kg', invert: true },
+  { label: 'Zum Ziel', value: num(bodySummary.toGoalKg, 1), unit: `kg bis ${fitnessProfile.goalKg}`, icon: 'goal', tone: 'success' },
+  { label: 'Körperfett (Waage)', value: num(lastOf('bodyfat'), 1), unit: '%', icon: 'activity', tone: 'warning' },
+];

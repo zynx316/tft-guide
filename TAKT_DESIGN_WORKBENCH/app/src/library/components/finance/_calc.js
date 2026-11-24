@@ -134,12 +134,13 @@ export const catMeta = (cats, name) => arr(cats).find((c) => c.id === name || c.
 export const ruleHits = (rule, txs) => arr(txs).filter((t) => (t.title || '').toLowerCase().includes(rule.match.toLowerCase())).length;
 /** Kategorie aus Regeln (erste aktive Regel, deren Text im Titel steckt). */
 export const matchRule = (rules, title) => { const t = String(title || '').toLowerCase(); return t ? arr(rules).find((r) => r.active && t.includes(r.match.toLowerCase())) : null; };
-/** Vorschläge für die Erfassung: Regeltreffer zuerst, dann häufigste Ausgabekategorien der letzten 60 Tage. */
+/** Vorschläge für die Erfassung: Regeltreffer zuerst, dann häufigste variable Ausgabekategorien der letzten 60 Tage (Fixkosten laufen über Abos). */
 export function suggestCategories({ txs, cats, rules, title, today, limit = 5 }) {
   const out = [], hit = matchRule(rules, title);
   if (hit) out.push(hit.category);
   const cnt = {}, from = addDays(dayStart(today), -60);
-  for (const t of arr(txs)) if (t.type === 'expense' && toDate(t.date) >= from) cnt[t.category] = (cnt[t.category] || 0) + 1;
+  const fixed = new Set(arr(cats).filter((c) => c.kind === 'fix').map((c) => c.id));
+  for (const t of arr(txs)) if (t.type === 'expense' && !fixed.has(t.category) && toDate(t.date) >= from) cnt[t.category] = (cnt[t.category] || 0) + 1;
   Object.keys(cnt).sort((a, b) => cnt[b] - cnt[a]).forEach((c) => !out.includes(c) && out.push(c));
   arr(cats).filter((c) => c.kind === 'variabel').forEach((c) => !out.includes(c.id) && out.push(c.id));
   return out.slice(0, limit);

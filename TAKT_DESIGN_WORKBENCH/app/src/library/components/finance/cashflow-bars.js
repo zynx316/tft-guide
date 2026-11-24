@@ -3,7 +3,7 @@ import { html } from '../../../lib/html.js';
 import { useState } from 'preact/hooks';
 import { Card, Icon, EmptyState, toneColor } from '../../ui.js';
 import { monthsSeries, catMeta, arr, r2 } from './_calc.js';
-import { slots, pctx, eur, eur0 } from './_fin.js';
+import { SlimEmpty, slots, pctx, eur, eur0 } from './_fin.js';
 import { fmtPercent } from '../../../lib/format.js';
 import { ex } from './_example.js';
 
@@ -51,7 +51,7 @@ export const finCashflowBars = {
     const c = pctx(ctx, data);
     const ser = monthsSeries(data.months, data.transactions, ctx.today, props.months);
     const [sel, setSel] = useState(null);
-    if (!ser.length) return html`<${Card} title=${props.title} icon="bar-chart-3"><${EmptyState} icon="bar-chart-3" title="Noch keine Auswertung" text="Sobald Buchungen vorliegen, erscheint hier der Cashflow." /><//>`;
+    if (!ser.length) return SlimEmpty({ props, icon: "bar-chart-3", title: "Noch keine Auswertung", text: "Sobald Buchungen vorliegen, erscheint hier der Cashflow." });
     const cur = ser.find((m) => m.key === sel) || ser[ser.length - 1];
     const pick = (m) => { setSel(m.key); ctx.emit('cashflow.month', { key: m.key }); };
     const rate = (m) => (c.privacy ? '•• %' : fmtPercent(m.rate, { digits: 0 }));

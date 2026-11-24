@@ -3,7 +3,7 @@ import { html } from '../../../lib/html.js';
 import { useState } from 'preact/hooks';
 import { Card, Icon, EmptyState } from '../../ui.js';
 import { monthsSeries, subStats, arr, r2 } from './_calc.js';
-import { FIN_CSS, slots, pctx, eur, eur0, Tile } from './_fin.js';
+import { SlimEmpty, FIN_CSS, slots, pctx, eur, eur0, Tile } from './_fin.js';
 import { fmtPercent, fmtNumber } from '../../../lib/format.js';
 import { ex } from './_example.js';
 
@@ -31,7 +31,7 @@ export const finFinanceCheck = {
   render: function FinFinanceCheck({ props, data, ctx }) {
     const c = pctx(ctx, data), [open, setOpen] = useState(null);
     const accs = arr(data.accounts), ser = monthsSeries(data.months, data.transactions, ctx.today, 12).filter((m) => !m.partial);
-    if (!accs.length || !ser.length) return html`<${Card} title=${props.title} icon="stethoscope"><${EmptyState} icon="gauge" title="Noch zu wenig Daten" text="Nach dem ersten vollen Monat zeigt der Check deine Kennzahlen." /><//>`;
+    if (!accs.length || !ser.length) return SlimEmpty({ props, icon: "gauge", title: "Noch zu wenig Daten", text: "Nach dem ersten vollen Monat zeigt der Check deine Kennzahlen." });
     const avgExp = r2(ser.reduce((s, m) => s + m.expenses, 0) / ser.length), avgInc = r2(ser.reduce((s, m) => s + m.income, 0) / ser.length);
     const avgRate = ser.reduce((s, m) => s + m.rate, 0) / ser.length;
     const reserve = r2(accs.filter((a) => a.type === 'savings').reduce((s, a) => s + a.balance, 0));

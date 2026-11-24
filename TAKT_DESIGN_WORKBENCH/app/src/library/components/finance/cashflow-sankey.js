@@ -2,7 +2,7 @@
 import { html } from '../../../lib/html.js';
 import { Card, Icon, EmptyState, toneColor } from '../../ui.js';
 import { flow, monthTx, spentByCategory, catMeta, arr, r2 } from './_calc.js';
-import { slots, pctx, eur, eur0 } from './_fin.js';
+import { SlimEmpty, slots, pctx, eur, eur0 } from './_fin.js';
 import { fmtPercent } from '../../../lib/format.js';
 import { ex } from './_example.js';
 
@@ -32,7 +32,7 @@ export const finCashflowSankey = {
   example: { data: ex('transactions', 'categories', 'prefs') },
   render: function FinCashflowSankey({ props, data, ctx }) {
     const c = pctx(ctx, data), cur = monthTx(data.transactions, ctx.today), f = flow(cur), spent = spentByCategory(cur, ctx.today);
-    if (!cur.length || (!f.income && !f.expenses)) return html`<${Card} title=${props.title} icon="git-branch"><${EmptyState} icon="git-branch" title="Noch kein Geldfluss" text="Erfasse Einnahmen und Ausgaben, dann siehst du, wohin das Geld fließt." /><//>`;
+    if (!cur.length || (!f.income && !f.expenses)) return SlimEmpty({ props, icon: "git-branch", title: "Noch kein Geldfluss", text: "Erfasse Einnahmen und Ausgaben, dann siehst du, wohin das Geld fließt." });
     let cats = Object.entries(spent).map(([k, v]) => ({ key: k, label: catMeta(data.categories, k).label, v, col: toneColor(catMeta(data.categories, k).tone) })).sort((a, b) => b.v - a.v);
     if (cats.length > props.limit) { const rest = cats.slice(props.limit); cats = [...cats.slice(0, props.limit), { key: 'rest', label: 'Weitere', v: r2(rest.reduce((s, x) => s + x.v, 0)), col: 'var(--tk-c-text-subtle)' }]; }
     const dst = [...cats, ...(f.saved > 0 ? [{ key: 'saved', label: 'Gespart', v: f.saved, col: 'var(--tk-c-accent)' }] : []), ...(f.rest > 0 ? [{ key: 'rest0', label: 'Übrig', v: f.rest, col: 'var(--tk-c-success)' }] : [])];

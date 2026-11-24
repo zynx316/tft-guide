@@ -3,7 +3,7 @@ import { html } from '../../../lib/html.js';
 import { useState } from 'preact/hooks';
 import { Card, Chip, EmptyState, toneColor } from '../../ui.js';
 import { wealth, arr, r2 } from './_calc.js';
-import { slots, pctx, eur, eur0 } from './_fin.js';
+import { SlimEmpty, slots, pctx, eur, eur0 } from './_fin.js';
 import { fmtPercent } from '../../../lib/format.js';
 import { ex } from './_example.js';
 
@@ -36,7 +36,7 @@ export const finNetworthChart = {
     const W = ctx.bp === 'mobile' ? 340 : 640, c = pctx(ctx, data), hist = data.history || {}, labels = arr(hist.labels), series = arr(hist.series);
     const [range, setRange] = useState(String(props.range));
     const [pick, setPick] = useState(null);
-    if (!labels.length || !series.length) return html`<${Card} title=${props.title} icon="trending-up"><${EmptyState} icon="trending-up" title="Noch kein Verlauf" text="Nach dem ersten Monat mit Kontoständen erscheint hier dein Vermögensverlauf." /><//>`;
+    if (!labels.length || !series.length) return SlimEmpty({ props, icon: "trending-up", title: "Noch kein Verlauf", text: "Nach dem ersten Monat mit Kontoständen erscheint hier dein Vermögensverlauf." });
     const n = Math.min(Number(range), labels.length), from = labels.length - n;
     const live = wealth(data.accounts);
     // letzter Punkt = aktuelle Kontostände

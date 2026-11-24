@@ -1,6 +1,5 @@
 // Modul "Fitness" – Training, Aktivität, Körperwerte, Erholung und Ziele. Referenzmodul: maßgebliche Konzepte liegen im TAKT-Projekt.
 // Demo-Daten kommen aus der gemeinsamen Welt (seed/world/fitness.js, Persona Jonas Keller, Referenztag Di, 24.11.2026 09:30).
-import { workoutHistory, weeklyTraining, personalRecords, bodySummary, exerciseLibrary, fitnessProfile } from '../world/fitness.js';
 
 const W = (key) => `@world:${key}`;
 const ALL_VP = ['desktop', 'notebook', 'tablet', 'mobile'];
@@ -14,22 +13,6 @@ const D = {
   sleep: W('sleepLog'), checkins: W('recoveryCheckins'), streak: W('fitnessStreak'), goals: W('fitnessGoals'), milestones: W('fitnessMilestones'), recap: W('weeklyRecap'), metrics: W('fitnessMetrics'), volume: W('volumeSeries'),
 };
 const pick = (...keys) => Object.fromEntries(keys.map((k) => [k, D[k]]));
-
-// Lokale, rein featurebezogene Kennzahlen (aus der Welt berechnet)
-const sum = (a) => a.reduce((s, x) => s + x, 0);
-const tons = (kg) => String(Math.round(kg / 100) / 10).replace('.', ',');
-const progressMetrics = [
-  { label: 'Einheiten (8 Wochen)', value: workoutHistory.length, icon: 'dumbbell', tone: 'accent' },
-  { label: 'Volumen gesamt', value: tons(sum(workoutHistory.map((h) => h.volume))), unit: 't', icon: 'weight', tone: 'info' },
-  { label: 'Bestwerte (14 Tage)', value: personalRecords.filter((r) => r.recent).length, icon: 'trophy', tone: 'success' },
-  { label: 'Ø Dauer', value: Math.round(sum(workoutHistory.map((h) => h.durationMin)) / workoutHistory.length), unit: 'Min.', icon: 'timer', tone: 'warning' },
-];
-const bodyMetrics = [
-  { label: 'Gewicht heute', value: '78,4', unit: 'kg', icon: 'scale', tone: 'info' },
-  { label: 'Trend', value: String(bodySummary.trendKg).replace('.', ','), unit: 'kg', icon: 'trending-down', tone: 'accent', delta: bodySummary.weekDeltaKg, suffix: ' kg', invert: true },
-  { label: 'Zum Ziel', value: String(bodySummary.toGoalKg).replace('.', ','), unit: `kg bis ${fitnessProfile.goalKg}`, icon: 'goal', tone: 'success' },
-  { label: 'Körperfett (Waage)', value: '18,2', unit: '%', icon: 'activity', tone: 'warning' },
-];
 
 const REF = 'Referenzmodul – mit bestehendem TAKT-Fitnesskonzept in Phase 1 abgleichen (Konzepte liegen im TAKT-Projekt, hier steht ein Gestaltungsvorschlag).';
 
@@ -102,7 +85,7 @@ export default {
         {
           id: 'A', name: 'Kompakt', direction: 'kompakt', concept: 'Zahlen und Listen: Kennzahlenreihe, nächstes Training und Wochenliste nebeneinander, darunter Rekorde und Wochenziele als dichte Listen.',
           description: '+ Alles exakt und auf einen Blick, Aktionen direkt in der Zeile  − Wenig Raum, Atmosphäre eher nüchtern',
-          layout: { type: 'grid' },
+          layout: { type: 'grid', stretch: true },
           blocks: [
             { id: 'hdr', component: 'page-header', region: 'header', props: { eyebrow: 'Gesundheit', title: 'Fitness', subtitle: 'Di, 24.11. · Erholungstag', primaryLabel: 'Training', primaryIcon: 'play', primaryEvent: 'workout.open', secondaryLabel: 'Fortschritt', secondaryIcon: 'trending-up' } },
             { id: 'kpi', component: 'metric-row', region: 'main', span: 12, bind: { metrics: 'metrics' } },
@@ -117,7 +100,7 @@ export default {
         {
           id: 'B', name: 'Visuell', direction: 'visuell', concept: 'Eine Botschaft pro Karte: Tagesringe, das nächste Training als große Karte, Volumen der Wochen als Diagramm, Serie mit Wochenpunkten und drei Bestwert-Karten.',
           description: '+ Ruhig und leicht erfassbar, Fortschritt sichtbar  − Weniger Details, mehr Scrollen',
-          layout: { type: 'grid' },
+          layout: { type: 'grid', stretch: true },
           blocks: [
             { id: 'hdr', component: 'page-header', region: 'header', props: { eyebrow: 'Gesundheit', title: 'Fitness', subtitle: 'Dein Tag auf einen Blick', primaryLabel: '', secondaryLabel: 'Fortschritt', secondaryIcon: 'trending-up' } },
             { id: 'rings', component: 'activity-rings', region: 'main', span: 5, bind: { rings: 'rings' }, props: { title: 'Heute', size: 170, layout: 'stacked' } },
@@ -133,7 +116,7 @@ export default {
           description: '+ Klare nächste Handlung, Erfassen ohne Umweg, Kontext aus dem Kalender  − Weniger Überblick über Zahlen',
           layout: { type: 'stack', narrow: true },
           blocks: [
-            { id: 'hdr', component: 'page-header', region: 'header', props: { eyebrow: 'Gesundheit', title: 'Heute', subtitle: 'Erholungstag – ein kurzer Check-in genügt', primaryLabel: '', secondaryLabel: 'Fortschritt', secondaryIcon: 'trending-up' } },
+            { id: 'hdr', component: 'page-header', region: 'header', props: { eyebrow: 'Gesundheit', title: 'Heute', subtitle: 'Ein kurzer Check-in, dann weiter', primaryLabel: '', secondaryLabel: 'Fortschritt', secondaryIcon: 'trending-up' } },
             { id: 'ready', component: 'readiness-card', region: 'main', props: { layout: 'decision', title: 'Erholung heute', openEvent: 'recovery.open', showFactors: false } },
             { id: 'next', component: 'next-workout', region: 'main', props: { style: 'hero', contextNote: 'Mittwoch: Sturmböen ab Mittag – im Studio bist du drinnen gut aufgehoben.' } },
             { id: 'wt', component: 'weight-entry', region: 'main', props: { title: 'Heute wiegen', layout: 'card', openEvent: 'body.open' } },
@@ -184,7 +167,7 @@ export default {
         {
           id: 'A', name: 'Tabelle', direction: 'kompakt', concept: 'Alle Übungen als dichte Satztabelle (Satz, Vorher, kg, Wdh., ✓); Pause-Timer als Leiste in der Seitenspalte, auf Mobile direkt über der Tabelle.',
           description: '+ Alles im Blick, wenige Taps, ideal für Routine  − Viele Elemente, kleinere Ziele',
-          layout: { type: 'split', asideFirstOnMobile: true },
+          layout: { type: 'split', asideFirstOnMobile: true, asideSticky: true },
           blocks: [
             { id: 'head', component: 'session-header', region: 'header', props: { layout: 'compact' } },
             { id: 'logger', component: 'set-logger', region: 'main', props: { mode: 'rows' } },
@@ -404,7 +387,7 @@ export default {
         'Tipp auf eine Muskelgruppe öffnet die Übungen mit gesetztem Filter.',
       ],
       flows: [{ id: 'f-prog', name: 'Bestwert nachvollziehen', steps: [{ featureId: 'fitness.progress', action: 'Rekord antippen' }, { featureId: 'fitness.exercise', action: 'Verlauf und Anleitung ansehen' }] }],
-      viewports: ALL_VP, demoData: { ...pick('history', 'library', 'program', 'volume'), pmetrics: progressMetrics },
+      viewports: ALL_VP, demoData: { ...pick('history', 'library', 'program', 'volume'), pmetrics: W('fitnessProgressMetrics') },
       variants: [
         {
           id: 'A', name: 'Liste + Kennzahlen', direction: 'kompakt', concept: 'Kennzahlen oben, links die Rekordliste und das Wochenvolumen, rechts die Muskelgruppen-Balance als Balken.',
@@ -470,7 +453,7 @@ export default {
         'Ein Eintrag mit mehr als 3 kg Abstand zum letzten Wert löst eine Rückfrage aus.',
       ],
       flows: [{ id: 'f-weigh', name: 'Morgens wiegen', steps: [{ featureId: 'fitness.body', action: 'Wert mit Stepper einstellen, speichern' }, { featureId: 'fitness.body', action: 'Trend ansehen – Tageswert ist nur ein Punkt' }] }],
-      viewports: ALL_VP, demoData: { ...pick('log', 'summary', 'measures'), bmetrics: bodyMetrics },
+      viewports: ALL_VP, demoData: { ...pick('log', 'summary', 'measures'), bmetrics: W('fitnessBodyMetrics') },
       variants: [
         {
           id: 'A', name: 'Erfassen + Trend + Tabelle', direction: 'kompakt', concept: 'Trenddiagramm und Erfassen links, die Umfänge als Tabelle mit Mini-Verläufen rechts.',

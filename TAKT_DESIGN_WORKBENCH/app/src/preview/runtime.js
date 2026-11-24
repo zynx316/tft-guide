@@ -8,7 +8,7 @@
 // * QA-Sonde: window.__taktQA.run() (genutzt von Workbench UND CLI/Playwright)
 // ============================================================================
 import { html, render, Component } from '../lib/html.js';
-import { useState, useEffect, useCallback, useRef } from 'preact/hooks';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'preact/hooks';
 import { Icon } from '../lib/icons.js';
 import { tokensStylesheet } from '../design-system/tokens.js';
 import { getComponent, defaultProps, allComponentCss } from '../library/registry.js';
@@ -68,14 +68,29 @@ function BlockBody({ block, def, store, ctx, forcedState }) {
   return html`<${Render} props=${props} data=${data} setData=${setData} ctx=${{ ...ctx, state, block }} />`;
 }
 
+/** Breite des Blocks (ctx.blockWidth) – für Diagramme/SVG ohne eigenen ResizeObserver. */
+function useBlockWidth() {
+  const ref = useRef(null); const [w, setW] = useState(0);
+  useEffect(() => {
+    const el = ref.current; if (!el) return undefined;
+    const measure = () => setW(Math.round(el.getBoundingClientRect().width));
+    measure();
+    if (typeof ResizeObserver === 'undefined') return undefined;
+    const ro = new ResizeObserver(measure); ro.observe(el); return () => ro.disconnect();
+  }, []);
+  return [ref, w];
+}
+
 function Block({ block, store, ctx, forcedState }) {
   const def = getComponent(block.component);
   const hide = block.hideOn || [];
   const style = block.span ? `--span:${block.span};--span-tablet:${block.spanTablet || (block.span >= 6 ? 12 : 6)}` : '';
-  return html`<div class="tk-block" data-block-id=${block.id} data-component=${block.component} style=${style}
+  const [ref, blockWidth] = useBlockWidth();
+  const bctx = useMemo(() => ({ ...ctx, blockWidth: blockWidth || ctx.width }), [ctx, blockWidth]);
+  return html`<div ref=${ref} class="tk-block" data-block-id=${block.id} data-component=${block.component} style=${style}
       data-hide-mobile=${hide.includes('mobile') ? 'true' : undefined} data-hide-tablet=${hide.includes('tablet') ? 'true' : undefined} data-hide-desktop=${hide.includes('desktop') ? 'true' : undefined}>
     ${!def ? html`<div class="tk-block-error" data-qa="render-error">Unbekannte Komponente „${block.component}“ – in der Library nicht registriert.</div>`
-      : html`<${Boundary} key=${JSON.stringify(block)} blockId=${block.id} label=${def.name}><${BlockBody} block=${block} def=${def} store=${store} ctx=${ctx} forcedState=${forcedState} /><//>`}
+      : html`<${Boundary} key=${JSON.stringify(block)} blockId=${block.id} label=${def.name}><${BlockBody} block=${block} def=${def} store=${store} ctx=${bctx} forcedState=${forcedState} /><//>`}
   </div>`;
 }
 

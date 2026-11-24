@@ -2,7 +2,7 @@
 import { html } from '../../../lib/html.js';
 import { Card, Icon, EmptyState } from '../../ui.js';
 import { monthsSeries, arr } from './_calc.js';
-import { slots, pctx, eur, eur0, Tile } from './_fin.js';
+import { SlimEmpty, slots, pctx, eur, eur0, Tile } from './_fin.js';
 import { fmtPercent, fmtPP } from '../../../lib/format.js';
 import { ex } from './_example.js';
 
@@ -33,7 +33,7 @@ export const finMonthKpis = {
   render: function FinMonthKpis({ props, data, ctx }) {
     const c = pctx(ctx, data);
     const ser = monthsSeries(data.months, data.transactions, ctx.today, 3), cur = ser[ser.length - 1], prev = ser.length > 1 ? ser[ser.length - 2] : null;
-    if (!arr(data.transactions).length || !cur) return html`<${Card} title=${props.title} icon="bar-chart-3"><${EmptyState} icon="receipt" title="Noch keine Buchungen" text="Erfasse Ausgaben und Einnahmen, dann siehst du hier den Monat." /><//>`;
+    if (!arr(data.transactions).length || !cur) return SlimEmpty({ props, icon: "receipt", title: "Noch keine Buchungen", text: "Erfasse Ausgaben und Einnahmen, dann siehst du hier den Monat." });
     const mon = MONTHS[ctx.today.getMonth()], pm = prev ? MONTHS[(ctx.today.getMonth() + 11) % 12] : '';
     const open = (id) => ctx.emit('kpi.open', { id });
     const items = [

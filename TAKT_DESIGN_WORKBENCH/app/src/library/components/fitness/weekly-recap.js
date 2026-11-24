@@ -11,7 +11,7 @@ export const weeklyRecap = {
   name: 'Wochenrückblick',
   category: 'Fitness',
   description: 'Rückblick auf die letzte Woche in drei Zeilen (geschafft, gelernt, Vorschlag). Als Karte oder als geführter Assistent in drei Schritten. Wohlwollend und konkret, ohne Vorwürfe.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'style', label: 'Darstellung', type: 'select', options: ['card', 'steps'], default: 'card' },
     { name: 'title', label: 'Titel', type: 'text', default: 'Wochenrückblick' },
@@ -26,7 +26,7 @@ export const weeklyRecap = {
   example: { data: { recap: { week: 'KW 47', range: '16.–22.11.', done: ['3 von 3 Einheiten – Wochenziel erreicht', '24,8 t Volumen', '2 Läufe, 15,5 km'], learned: 'Bankdrücken: 60 kg × 10 bei allen Sätzen – die Obergrenze ist erreicht.', next: 'Bankdrücken auf 62,5 kg erhöhen und bei 8 Wiederholungen beginnen.' } } },
   render: function WeeklyRecap({ props, data, ctx }) {
     const r = data.recap; const [i, setI] = useState(0); const [applied, setApplied] = useState(false);
-    if (!r || !r.done) return html`<${Card} title=${props.title}><${EmptyState} icon="calendar-check" title="Noch kein Rückblick" text="Am Sonntagabend fasst TAKT die Woche in drei Zeilen zusammen." /><//>`;
+    if (!r || !r.done || (!r.done.length && !r.learned && !r.next)) return html`<${Card} title=${props.title}><${EmptyState} icon="calendar-check" title="Noch kein Rückblick" text="Am Sonntagabend fasst TAKT die Woche in drei Zeilen zusammen." /><//>`;
     const apply = () => { setApplied(true); ctx.emit('recap.apply', { week: r.week }); ctx.toast('Vorschlag für die nächste Woche übernommen'); };
     const sec = (s) => html`<div class="tk-rc__sec"><span class="tk-rc__ico" style=${`background:var(--tk-c-${s.tone}-soft);color:var(--tk-c-${s.tone})`}><${Icon} name=${s.icon} size=${18} /></span><div class="tk-grow"><div class="tk-label">${s.label}</div>
       ${s.id === 'done' ? html`<ul class="tk-rc__list">${r.done.map((d) => html`<li><${Icon} name="check" size=${16} /><span>${d}</span></li>`)}</ul>` : html`<p style="margin-top:6px">${r[s.id]}</p>`}</div></div>`;

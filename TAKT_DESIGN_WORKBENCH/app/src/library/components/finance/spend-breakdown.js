@@ -2,7 +2,7 @@
 import { html } from '../../../lib/html.js';
 import { Card, Icon, EmptyState, toneColor } from '../../ui.js';
 import { monthsSeries, spentByCategory, catMeta, arr, r2 } from './_calc.js';
-import { slots, pctx, eur, eur0, Tile } from './_fin.js';
+import { SlimEmpty, slots, pctx, eur, eur0, Tile } from './_fin.js';
 import { fmtPercent } from '../../../lib/format.js';
 import { ex } from './_example.js';
 
@@ -32,7 +32,7 @@ export const finSpendBreakdown = {
     const spent = spentByCategory(data.transactions, ctx.today), ser = monthsSeries(data.months, data.transactions, ctx.today, 2), prev = ser.length > 1 ? ser[0].byCat || {} : {};
     let rows = Object.entries(spent).map(([cat, v]) => ({ cat, v, meta: catMeta(data.categories, cat), prev: prev[cat] })).sort((a, b) => b.v - a.v);
     const total = r2(rows.reduce((s, r) => s + r.v, 0));
-    if (!rows.length) return html`<${Card} title=${props.title} icon="pie-chart"><${EmptyState} icon="receipt" title="Noch keine Ausgaben" text="Sobald du Ausgaben erfasst, siehst du hier die Verteilung." /><//>`;
+    if (!rows.length) return SlimEmpty({ props, icon: "receipt", title: "Noch keine Ausgaben", text: "Sobald du Ausgaben erfasst, siehst du hier die Verteilung." });
     if (rows.length > props.limit) { const rest = rows.slice(props.limit - 1); rows = [...rows.slice(0, props.limit - 1), { cat: 'Weitere', v: r2(rest.reduce((s, r) => s + r.v, 0)), meta: { icon: 'more-horizontal', tone: 'neutral', label: 'Weitere' }, rest: true }]; }
     const open = (r) => !r.rest && ctx.emit('category.open', { id: r.cat, ui: { filter: r.cat } });
     const max = Math.max(...rows.map((r) => Math.max(r.v, r.prev || 0)), 1);

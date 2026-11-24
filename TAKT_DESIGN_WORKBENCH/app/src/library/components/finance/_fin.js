@@ -1,6 +1,6 @@
 // Finanzen – gemeinsame UI-Bausteine, Datenslots und Basis-CSS (Präfix tk-fn-).
 import { html } from '../../../lib/html.js';
-import { Icon, toneColor } from '../../ui.js';
+import { Icon, Card, toneColor } from '../../ui.js';
 import { money } from '../../helpers.js';
 import { fmtDate, fmtRelativeDay } from '../../../lib/format.js';
 import { arr, r2, isoLocal } from './_calc.js';
@@ -33,6 +33,9 @@ export const txColor = (t) => (t.type === 'transfer' ? 'var(--tk-c-text-muted)' 
 
 export const Tile = ({ icon, tone = 'accent', size = 36 }) => html`<span class="tk-fn-ico" style=${`width:${size}px;height:${size}px;background:color-mix(in srgb, ${toneColor(tone)} 16%, transparent);color:${toneColor(tone)}`}><${Icon} name=${icon} size=${Math.round(size * 0.5)} /></span>`;
 
+/** Schlanker Leerzustand für Karten in Übersichten (Erststart: keine sechs hohen Leerkarten untereinander). */
+export const SlimEmpty = ({ props, icon, title, text, action }) => html`<${Card} title=${props.title} icon=${icon}><div class="tk-fn-row tk-fn-slim"><div class="tk-fn-grow"><div class="tk-fn-title" style="white-space:normal">${title}</div><div class="tk-fn-sub">${text}</div></div>${action || null}</div><//>`;
+
 /** Datum als „Di, 01.12.“, relativ („in 7 Tagen“) und kurz – bezogen auf ctx.today. */
 export const dayLabel = (ctx, d) => fmtDate(d, { style: 'weekday' });
 export const relDay = (ctx, d) => fmtRelativeDay(d, ctx.today);
@@ -59,6 +62,7 @@ export const buildTx = (ctx, list, f) => ({
 export const FIN_CSS = `
   .tk-layout--grid .tk-block[data-component^="fin-"] > .tk-card { height:100%; }
   [data-component^="fin-"] .tk-btn { white-space:normal; height:auto; min-height:var(--tk-size-control); text-align:left; max-width:100%; }
+  .tk-fn-slim { padding:2px 0 4px; flex-wrap:wrap; }
   .tk-fn-ico { border-radius:11px; display:grid; place-items:center; flex:none; }
   .tk-fn-row { display:flex; align-items:center; gap:12px; min-width:0; }
   .tk-fn-grow { flex:1 1 auto; min-width:0; }

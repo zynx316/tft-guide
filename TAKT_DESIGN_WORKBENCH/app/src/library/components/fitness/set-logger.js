@@ -32,7 +32,7 @@ function ExerciseBlock({ ex, cur, ops, props }) {
     ${props.mode === 'cards' && html`<${Dots} ex=${ex} />`}<span class="tk-subtle tk-num" style="font-size:var(--tk-fs-sm)">${done}/${ex.sets.length}</span>
     ${!ops.locked && html`<${Button} variant="ghost" size="sm" icon="refresh-cw" aria-label=${`${ex.name} ersetzen`} onClick=${() => ops.swap(ex)} /><${Button} variant="ghost" size="sm" icon="x" aria-label=${`${ex.name} auslassen`} onClick=${() => ops.skip(ex)} />`}</div>`;
   if (ex.skipped) return html`<section class="tk-sl-ex tk-sl-ex--skipped"><div class="tk-sl-head"><span class="tk-grow tk-truncate tk-muted">${ex.name} – ausgelassen</span><${Button} size="sm" icon="undo-2" onClick=${() => ops.skip(ex, false)}>Rückgängig<//></div></section>`;
-  return html`<section class=${`tk-sl-ex ${cur ? 'tk-sl-ex--current' : ''}`}>${head}<div class="tk-row" style="gap:10px;flex-wrap:wrap"><${MuscleDot} muscle=${ex.muscle} /><span class="tk-subtle" style="font-size:var(--tk-fs-sm)">${ex.equipment} · ${ex.sets.filter((x) => x.type === 'work').length} × ${ex.repLo}–${ex.repHi}${ex.unit === 's' ? ' Sek.' : ''}</span>
+  return html`<section class=${`tk-sl-ex ${cur ? 'tk-sl-ex--current' : ''}`}>${head}<div class="tk-row" style="gap:10px;flex-wrap:wrap"><${MuscleDot} muscle=${ex.muscle} /><span class="tk-subtle" style="font-size:var(--tk-fs-sm)">${ex.equipment} · ${ex.sets.filter((x) => x.type === 'work').length} × ${ex.repLo}–${ex.repHi}${ex.unit === 's' ? ' Sek.' : ''}</span>${prevText(ex) && html`<span class="tk-sl-last tk-subtle">Letztes Mal ${prevText(ex)}</span>`}
       ${props.mode === 'cards' && html`<button type="button" class="tk-fit-link tk-subtle" style="margin-left:auto;font-size:var(--tk-fs-sm)" aria-expanded=${String(open)} onClick=${() => setOpen(!open)}>${open ? 'Einklappen' : 'Sätze zeigen'}</button>`}</div>
     ${props.showHints && hint.length > 0 && (open || cur) && html`<div class="tk-sl-hint"><${Icon} name="lightbulb" size=${15} /><span>${hint.join(' · ')}</span></div>`}
     ${open && html`<div class="tk-sl-rows">${html`<div class="tk-sl-cols"><span></span><span>Vorher</span>${ex.unit === 'kg' && html`<span>kg</span>`}<span>${unitLabel(ex)}</span><span></span></div>`}
@@ -46,7 +46,7 @@ export const setLogger = {
   name: 'Satz-Logger',
   category: 'Fitness',
   description: 'Alle Übungen der Einheit mit Sätzen: Vorgabe aus dem letzten Training, „Vorher“-Werte, kg- und Wiederholungs-Stepper (Dezimalkomma), 1-Tap-Haken, Übung tauschen oder auslassen, Bestwert-Hinweis. Modus „rows“ (dicht) oder „cards“ (Karte je Übung mit Fortschrittspunkten).',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'mode', label: 'Darstellung', type: 'select', options: ['rows', 'cards'], default: 'rows' },
     { name: 'showHints', label: 'Vorschläge zeigen', type: 'boolean', default: true },
@@ -71,7 +71,8 @@ export const setLogger = {
   .tk-sl-row[data-done="true"] { background:var(--tk-c-success-soft); } .tk-sl-row .tk-fit-step { width:100%; } .tk-sl-row .tk-fit-step input { flex:1 1 0; width:auto; }
   .tk-sl-cols { font-size:var(--tk-fs-xs); text-transform:uppercase; letter-spacing:var(--tk-ls-wide); color:var(--tk-c-text-subtle); font-weight:var(--tk-fw-semibold); text-align:center; } .tk-sl-cols span:nth-child(2) { text-align:left; }
   .tk-sl-nr { text-align:center; font-weight:var(--tk-fw-semibold); color:var(--tk-c-text-muted); } .tk-sl-row[data-warm="true"] .tk-sl-nr { color:var(--tk-c-warning); }
-  .tk-sl-prev { font-size:var(--tk-fs-sm); color:var(--tk-c-text-subtle); white-space:nowrap; font-variant-numeric:tabular-nums; }
+  .tk-sl-last { display:none; font-size:var(--tk-fs-sm); font-variant-numeric:tabular-nums; } .bp-mobile .tk-sl-last { display:inline; }
+  .tk-sl-prev { font-size:var(--tk-fs-sm); color:var(--tk-c-text-muted); white-space:nowrap; font-variant-numeric:tabular-nums; }
   .tk-sl-dots { display:inline-flex; gap:5px; } .tk-sl-dots i { width:9px; height:9px; border-radius:50%; border:1.5px solid var(--tk-c-border-strong); display:block; } .tk-sl-dots i[data-done="true"] { background:var(--tk-c-success); border-color:var(--tk-c-success); }
   .bp-mobile .tk-sl-row, .bp-mobile .tk-sl-cols { grid-template-columns:24px minmax(0,1fr) minmax(0,1fr) 44px; gap:6px; } .bp-mobile .tk-sl-row--one { grid-template-columns:24px minmax(0,1fr) 44px; }
   .bp-mobile .tk-sl-prev, .bp-mobile .tk-sl-cols span:nth-child(2) { display:none; } .bp-mobile .tk-sl-ex { padding:var(--tk-space-3); }

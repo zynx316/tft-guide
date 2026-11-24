@@ -3,7 +3,7 @@ import { html } from '../../../lib/html.js';
 import { useState } from 'preact/hooks';
 import { Card, Button, Icon, EmptyState, Field, Input, Select } from '../../ui.js';
 import { envelope, spentByCategory, arr, r2 } from './_calc.js';
-import { FIN_CSS, slots, pctx, eur, eur0, Tile } from './_fin.js';
+import { SlimEmpty, FIN_CSS, slots, pctx, eur, eur0, Tile } from './_fin.js';
 import { ex } from './_example.js';
 
 const STAT = { ok: { icon: 'check-circle-2', col: 'var(--tk-c-accent)' }, warn: { icon: 'alert-triangle', col: 'var(--tk-c-warning)' }, over: { icon: 'alert-triangle', col: 'var(--tk-c-warning)' } };
@@ -37,11 +37,12 @@ export const finBudgetEnvelopes = {
   events: ['budget.open', 'budget.edit', 'budget.add', 'budget.remove'],
   states: ['empty'],
   css: `
-  .tk-fnb__rows > * + * { border-top:1px solid var(--tk-c-border); }
+  .tk-fnb__rows { container-type:inline-size; } .tk-fnb__rows > * + * { border-top:1px solid var(--tk-c-border); }
   .tk-fnb__line { display:flex; align-items:center; gap:4px; } .tk-fnb__line .tk-btn--icon { flex:none; }
-  .tk-fnb__row { flex:1 1 auto; min-width:0; padding:10px 0; display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,1.4fr) auto; gap:4px 14px; align-items:center; cursor:pointer; background:none; border:0; color:inherit; font:inherit; text-align:left; min-height:48px; }
+  .tk-fnb__row { flex:1 1 auto; min-width:0; padding:10px 0; display:flex; flex-wrap:wrap; gap:6px 12px; align-items:center; cursor:pointer; background:none; border:0; color:inherit; font:inherit; text-align:left; min-height:48px; }
+  .tk-fnb__row > .tk-fn-row { flex:1 1 150px; } .tk-fnb__row .tk-fnb__track { flex:1 1 100%; order:2; } .tk-fnb__row .tk-fnb__stat { order:1; flex:0 0 auto; }
+  @container (min-width:480px) { .tk-fnb__row { display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,1.4fr) auto; gap:4px 14px; } .tk-fnb__row .tk-fnb__track, .tk-fnb__row .tk-fnb__stat { order:0; } }
   .tk-fnb__row:hover { background:var(--tk-c-surface2); }
-  .bp-mobile .tk-fnb__row { display:flex; flex-wrap:wrap; gap:6px 12px; } .bp-mobile .tk-fnb__row > .tk-fn-row { flex:1 1 150px; } .bp-mobile .tk-fnb__row .tk-fnb__track { flex:1 1 100%; order:2; } .bp-mobile .tk-fnb__row .tk-fnb__stat { order:1; flex:0 0 auto; }
   .tk-fnb__track { position:relative; } .tk-fnb__track .tk-fn-bar > i { border-radius:4px; }
   .tk-fnb__tick { position:absolute; top:-3px; bottom:-3px; width:2px; background:var(--tk-c-text); opacity:.55; border-radius:1px; }
   .tk-fnb__grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(min(100%, 210px), 1fr)); gap:var(--tk-space-3); }
@@ -66,7 +67,7 @@ export const finBudgetEnvelopes = {
         onSave=${({ target, cat }) => { if (b) setData('budgets', (l) => arr(l).map((x) => (x.id === b.id ? { ...x, target } : x))); else { const m = arr(data.categories).find((x) => x.id === cat); setData('budgets', (l) => [...arr(l), { id: `b-${cat}`.toLowerCase(), label: m?.label || cat, category: cat, target, icon: m?.icon || 'tag', value: 0 }]); } ctx.emit(b ? 'budget.edit' : 'budget.add', { id: b?.id || cat }); ctx.toast('Gespeichert'); close(); }}
         onRemove=${() => { setData('budgets', (l) => arr(l).filter((x) => x.id !== b.id)); ctx.emit('budget.remove', { id: b.id }); ctx.toast(`${b.label} entfernt`); close(); }} />` });
     }
-    if (!all.length) return html`<${Card} title=${props.title} icon="wallet" actions=${addBtn}><${EmptyState} icon="wallet" title="Noch keine Budgets" text="Lege für Kategorien wie Lebensmittel eine Hülle an, dann siehst du jederzeit, was übrig ist." action=${props.editable && html`<${Button} variant="primary" icon="plus" onClick=${() => edit(null)}>Budget anlegen<//>`} /><//>`;
+    if (!all.length) return SlimEmpty({ props, icon: "wallet", title: "Noch keine Budgets", text: "Lege für Kategorien wie Lebensmittel eine Hülle an, dann siehst du jederzeit, was übrig ist.", action: props.editable && html`<${Button} variant="primary" icon="plus" onClick=${() => edit(null)}>Budget anlegen<//>` });
     if (!list.length) return html`<${Card} title=${props.title} icon="wallet"><${EmptyState} icon="check-circle-2" title="Alle Budgets im Plan" text="Keine Hülle ist über 85 % gefüllt." /><//>`;
     const shown = props.limit > 0 ? list.slice(0, props.limit) : list;
     const open = (b) => ctx.emit('budget.open', { id: b.id, ui: { filter: b.category } });
