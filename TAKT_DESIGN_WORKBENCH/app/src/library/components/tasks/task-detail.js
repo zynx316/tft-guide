@@ -10,7 +10,7 @@ export const taskDetail = {
   name: 'Aufgaben-Detail',
   category: 'Aufgaben',
   description: 'Detailpanel zur gewählten Aufgabe (ctx.ui.selectedId): Titel, Priorität, Status, Fälligkeit, Projekt, Wiederholung, Unteraufgaben mit Fortschritt und Notiz. Änderungen wirken sofort in allen Listen.',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'fallbackFirst', label: 'Ohne Auswahl erste Aufgabe zeigen', type: 'boolean', default: true },
     { name: 'showNote', label: 'Notiz', type: 'boolean', default: true },
@@ -23,7 +23,7 @@ export const taskDetail = {
   css: `${TASK_CSS}
   .tk-td .tk-input, .tk-td .tk-select { height:auto; min-height:var(--tk-size-control); padding-block:6px; }
   .tk-td { display:flex; flex-direction:column; gap:var(--tk-space-4); }
-  .tk-td__title { font-size:var(--tk-fs-xl); font-weight:var(--tk-fw-semibold); background:transparent; border:1px solid transparent; border-radius:var(--tk-radius-sm); padding:4px 8px; margin:-4px -8px; width:calc(100% + 16px); color:var(--tk-c-text); font-family:inherit; text-overflow:ellipsis; }
+  .tk-td__title { font-size:var(--tk-fs-xl); font-weight:var(--tk-fw-semibold); background:transparent; border:1px solid transparent; border-radius:var(--tk-radius-sm); padding:4px 8px; margin:-4px -8px; width:calc(100% + 16px); color:var(--tk-c-text); font-family:inherit; display:block; resize:none; overflow:hidden; field-sizing:content; line-height:1.3; }
   .tk-td__title:hover { border-color:var(--tk-c-border); } .tk-td__title:focus { outline:none; border-color:var(--tk-c-accent); background:var(--tk-c-surface2); }
   .tk-td__grid { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:var(--tk-space-3); }
   .bp-mobile .tk-td__grid { grid-template-columns:minmax(0,1fr); }
@@ -45,7 +45,7 @@ export const taskDetail = {
     const del = () => { setData('tasks', (a) => a.filter((x) => x.id !== t.id)); ctx.setUi('selectedId', null); ctx.emit('task.delete', { id: t.id }); ctx.toast('Aufgabe gelöscht'); };
     return html`<${Card} key=${t.id}><div class="tk-td" data-qa="task-detail">
       <div class="tk-row" style="align-items:flex-start;gap:12px"><${Check} checked=${t.done} onChange=${() => toggleTask(ctx, setData, t)} label="Erledigt" />
-        <div class="tk-grow"><input class="tk-td__title" value=${t.title} aria-label="Titel" onChange=${(e) => upd({ title: e.currentTarget.value.trim() || t.title }, 'title')} />
+        <div class="tk-grow"><textarea class="tk-td__title" rows="1" value=${t.title} aria-label="Titel" onKeyDown=${(e) => { if (e.key === 'Enter') { e.preventDefault(); e.currentTarget.blur(); } }} onChange=${(e) => upd({ title: e.currentTarget.value.replace(/\s+/g, ' ').trim() || t.title }, 'title')} />
           <div class="tk-row" style="margin-top:6px;flex-wrap:wrap"><${Badge} tone=${di.overdue ? 'danger' : di.tone === 'warning' ? 'warning' : 'neutral'} icon="calendar">${di.text}<//>${t.project && html`<${Badge} tone="accent">${t.project}<//>`}${t.repeat && t.repeat !== 'Keine' && html`<${Badge} icon="repeat">${t.repeat}<//>`}</div></div>
         <${Button} variant="ghost" icon="trash-2" aria-label="Aufgabe löschen" style="flex:none" onClick=${del} /></div>
       ${props.showFocus && !t.done && html`<div><${Button} variant="primary" icon="play" onClick=${() => { ctx.setUi('selectedId', t.id); ctx.emit('focus.open', { id: t.id }); }}>Fokus starten<//></div>`}

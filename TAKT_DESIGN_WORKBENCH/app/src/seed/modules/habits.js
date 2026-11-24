@@ -21,7 +21,7 @@ const withLegal = (features, only) => features.map((f) => ((only && !only.includ
 
 export default {
   module: {
-    id: 'habits', name: 'Gewohnheiten', icon: 'repeat', status: 'active', area: 'Tag & Organisation', theme: 'graphite', designVersion: '0.2', homeFeatureId: 'habits.home',
+    id: 'habits', name: 'Gewohnheiten', icon: 'repeat', status: 'active', area: 'Tag & Organisation', theme: 'graphite', designVersion: '0.2', legal: ['gesundheit'], homeFeatureId: 'habits.home',
     description: 'Kleine Gewohnheiten abhaken, Serien mit Gnadentag, Routinen als Abfolge und ein ruhiger Wochenrückblick – ohne Punkte und ohne Druck.',
     source: 'Workbench V2 (Bauplan Brainstorming 24.11.2026) – in Phase 1 gegen das TAKT-Modulregister verifizieren',
     infoArchitecture: 'Einstieg „Heute“ (Gewohnheiten des Tages, nach Tageszeit, abhaken oder hochzählen). Von dort: Gewohnheit antippen → Detail (Serie, Heatmap, Statistik); „Neue Gewohnheit“ → Anlegen; Routinen (Morgen/Abend); Wochenrückblick. Gewohnheiten sind wiederkehrend und strikt von einmaligen Aufgaben getrennt. Verknüpfungen: Fitness (Training zählt), Ernährung (Wasser), Kalender (Tagesplanung), Start (Kachel und Tagesabschluss).',
