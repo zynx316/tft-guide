@@ -427,6 +427,7 @@ const subscriptions = {
     { trigger: 'Vertrag antippen', result: 'Details des Vertrags (Laufzeit, Frist)', event: 'sub.open' },
     { trigger: '„Kündigung vormerken“ antippen', result: 'Erinnerung gesetzt, Toast bestätigt', event: 'sub.cancel' },
     { trigger: '„Vorgemerkt“ antippen', result: 'Vormerkung zurückgenommen', event: 'sub.keep' },
+    { trigger: '„Vorlage“ bei einer Frist', result: 'Vertrag in „Dokumente & Verträge“ mit Kündigungsvorlage und Unterlagen (Ziel kommt aus dem Event)', event: 'sub.contract' },
   ],
   acceptance: [
     'Die Jahressumme entspricht 12 × Monatssumme der privaten Verträge (16.703,52 €).',

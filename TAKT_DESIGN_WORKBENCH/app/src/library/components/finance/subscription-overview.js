@@ -9,8 +9,8 @@ export const finSubscriptionOverview = {
   id: 'fin-subscription-overview',
   name: 'Abos und Fixkosten',
   category: 'Finanzen',
-  description: 'Laufende Kosten auf einen Blick: Monats- und Jahressumme, Kündigungsfristen, ungenutzte Abos. „Kündigung vormerken“ erinnert rechtzeitig – gekündigt wird beim Anbieter.',
-  version: '1.1',
+  description: 'Laufende Kosten auf einen Blick: Monats- und Jahressumme, Kündigungsfristen, ungenutzte Abos. „Kündigung vormerken“ erinnert rechtzeitig – gekündigt wird beim Anbieter. Bei Fristen führt „Vorlage“ zum Vertrag in „Dokumente & Verträge“ (Kündigungsvorlage, Unterlagen).',
+  version: '1.2',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Abos und Fixkosten' },
     { name: 'style', label: 'Darstellung', type: 'select', options: ['list', 'cards', 'callouts'], default: 'list' },
@@ -18,7 +18,7 @@ export const finSubscriptionOverview = {
     { name: 'limit', label: 'Max. Zeilen in der Liste (0 = alle)', type: 'number', default: 0 },
   ],
   data: slots('subs', 'subMeta', 'prefs'),
-  events: ['sub.open', 'sub.cancel', 'sub.keep'],
+  events: ['sub.open', 'sub.cancel', 'sub.keep', 'sub.contract'],
   states: ['empty'],
   css: `
   .tk-fnsub__sum { display:grid; grid-template-columns:repeat(auto-fit, minmax(calc(120px * var(--tk-text-scale, 1)), 1fr)); gap:var(--tk-space-3); margin-bottom:var(--tk-space-4); }
@@ -42,13 +42,15 @@ export const finSubscriptionOverview = {
     const toggle = (s) => { const next = !s.cancelPlanned; setData('subscriptions', (l) => arr(l).map((x) => (x.id === s.id ? { ...x, cancelPlanned: next } : x))); ctx.emit(next ? 'sub.cancel' : 'sub.keep', { id: s.id }); ctx.toast(next ? `Kündigung von ${s.name} vorgemerkt. Gekündigt wird bei deinem Anbieter.` : `Vormerkung für ${s.name} zurückgenommen`); };
     const open = (s) => ctx.emit('sub.open', { id: s.id });
     const btn = (s) => (s.cancelable ? html`<${Button} size="sm" variant=${s.cancelPlanned ? 'primary' : 'default'} icon=${s.cancelPlanned ? 'check' : 'bell'} onClick=${() => toggle(s)} aria-pressed=${String(!!s.cancelPlanned)}>${s.cancelPlanned ? 'Vorgemerkt' : 'Kündigung vormerken'}<//>` : null);
+    // Fristen und Kündigungsvorlage gehören „Dokumente & Verträge“ (Vertrag ct-<Abo-ID>, aus diesen Abos abgeleitet): Sprung dorthin
+    const tpl = (s) => html`<${Button} size="sm" variant="ghost" icon="file-text" onClick=${() => ctx.emit('sub.contract', { id: `ct-${s.id}`, to: 'documents.contract', ui: { selectedId: `ct-${s.id}` } })}>Vorlage<//>`;
     const dl = (s) => meta[s.id]?.cancelBy;
     const frist = (s) => { const d = st.deadline(s); return html`<span class="tk-fn-pill tk-fn-pill--warning"><${Icon} name="clock" size=${11} />Kündigung bis ${shortDate(c, dl(s))} · ${d === 0 ? 'heute' : d === 1 ? 'morgen' : `in ${d} Tagen`}</span>`; };
     const row = (s) => html`<div class="tk-fnsub__row"><button type="button" class="tk-fn-tap" onClick=${() => open(s)} aria-label=${`${s.name}, ${eur(c, s.amount)} im Monat`}><${Tile} icon=${s.icon} tone=${subKind(s) === 'fix' ? 1 : 4} size=${34} />
       <span class="tk-fn-grow"><span class="tk-fn-title" style="display:block">${s.name}</span><span class="tk-fn-sub tk-fn-title" style="display:block">${meta[s.id]?.term || `${s.interval} am ${s.day}.`}${s.business ? ' · Betrieb' : ''}</span></span>
       <span style="text-align:right"><span class="tk-fn-num" style="display:block;font-weight:600">${eur(c, s.amount)}</span><span class="tk-fn-sub tk-fn-num">${eur(c, yearly(s))} / Jahr</span></span></button>${props.style === 'list' ? btn(s) : null}</div>`;
     const callout = (s, kind) => html`<div class=${`tk-fnsub__call ${kind === 'unused' ? 'tk-fnsub__call--info' : ''}`}><div class="tk-fn-row"><${Tile} icon=${kind === 'unused' ? 'eye-off' : 'clock'} tone=${kind === 'unused' ? 'info' : 'warning'} size=${32} />
-      <div class="tk-fn-grow"><div class="tk-fn-title">${s.name}</div><div class="tk-fn-sub">${kind === 'unused' ? `${s.lastUsedDays} Tage nicht genutzt · ${eur(c, yearly(s))} im Jahr` : meta[s.id]?.note || meta[s.id]?.term}</div></div></div>${kind === 'frist' && frist(s)}<div>${btn(s)}</div></div>`;
+      <div class="tk-fn-grow"><div class="tk-fn-title">${s.name}</div><div class="tk-fn-sub">${kind === 'unused' ? `${s.lastUsedDays} Tage nicht genutzt · ${eur(c, yearly(s))} im Jahr` : meta[s.id]?.note || meta[s.id]?.term}</div></div></div>${kind === 'frist' && frist(s)}<div class="tk-fn-row" style="gap:6px;flex-wrap:wrap">${btn(s)}${kind === 'frist' && s.cancelable && tpl(s)}</div></div>`;
     const frists = st.deadlines, unused = st.unused.filter((s) => !frists.includes(s));
     const calls = (frists.length || unused.length) && html`<div class="tk-fnsub__calls" data-qa="sub-callouts">${frists.map((s) => callout(s, 'frist'))}${unused.map((s) => callout(s, 'unused'))}</div>`;
     if (props.style === 'callouts') return html`<${Card} title=${props.title} icon="repeat" actions=${html`<span class="tk-fn-meta tk-fn-num">${eur(c, st.monthly)} / Monat</span>`}>${calls || html`<${EmptyState} icon="check-circle-2" title="Nichts zu prüfen" text="Keine Frist in den nächsten 45 Tagen, kein ungenutztes Abo." />`}<//>`;
