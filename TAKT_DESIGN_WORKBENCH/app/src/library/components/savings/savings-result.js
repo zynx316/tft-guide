@@ -3,7 +3,7 @@ import { html } from '../../../lib/html.js';
 import { Card, Button, Badge, Icon } from '../../ui.js';
 import { fmtPercent, fmtDate } from '../../../lib/format.js';
 import { todayOf, eur, spanLabel, SV_CSS } from './_savings.js';
-import { getCalc, runCalc, milestones, SCENARIO_NAMES, INFLATION } from './_calc.js';
+import { getCalc, runCalc, milestones, conventionNote, SCENARIO_NAMES, INFLATION } from './_calc.js';
 import { CHART_CSS } from './_chart.js';
 
 const pc = (r) => fmtPercent(r, { digits: Number.isInteger(Math.round(r * 1000) / 10) ? 0 : 1 });
@@ -13,7 +13,7 @@ export const savingsResult = {
   name: 'Rechner-Ergebnis',
   category: 'Sparpläne',
   description: 'Ergebnis der Modellrechnung als Spanne (Annahme ± 2 PP): Endwert in drei Annahmen, Einzahlungen und Erträge getrennt, Meilensteine und Aktionen (vergleichen, als Sparplan anlegen). Liest ui.calc.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Ergebnis' },
     { name: 'style', label: 'Darstellung', type: 'select', options: ['cards', 'compact'], default: 'cards' },
@@ -51,7 +51,7 @@ export const savingsResult = {
     const actions = props.showActions && html`<div class="tk-sv-btnrow">
       <${Button} icon="git-compare" onClick=${() => ctx.emit('compare.open', { ui: { calc: c } })}>Szenarien vergleichen<//>
       <${Button} variant="primary" icon="plus" onClick=${() => ctx.emit('calc.create', { ui: { draft: { monthly: c.monthly, dynamicPa: c.dynamicPa, ratePa: c.ratePa } } })}>Als Sparplan anlegen<//></div>`;
-    const note = html`<p class="tk-sv-note"><${Icon} name="calculator" size=${14} /><span>Annahme: ${pc(c.ratePa)} Rendite p. a. abzüglich ${fmtPercent(c.costPa, { digits: 2 })} Kosten, monatlich umgerechnet, Einzahlung am Monatsende. Stand ${fmtDate(today)}. Kein Versprechen, keine Prognose.</span></p>`;
+    const note = html`<p class="tk-sv-note"><${Icon} name="calculator" size=${14} /><span>Annahme: ${pc(c.ratePa)} Rendite p. a. abzüglich ${fmtPercent(c.costPa, { digits: 2 })} Kosten, Stand ${fmtDate(today)}. ${conventionNote(c)} Kein Versprechen, keine Prognose.</span></p>`;
     if (props.style === 'compact') {
       return html`<${Card} title=${props.title} icon="calculator" actions=${tag.length ? html`<${Badge}>${tag[0]}<//>` : null}><div style="overflow-x:auto" data-scroll-x><table class="tk-svr__tbl"><thead><tr><th>Annahme</th><th>Wert</th><th>Ertrag</th></tr></thead><tbody>
         ${keys.map((k) => html`<tr><td>${SCENARIO_NAMES[k]} · ${pc(run.nominal[k])}</td><td><strong>${eur(ctx, val(k))}</strong></td><td>${eur(ctx, run[k].gain, { sign: true })}</td></tr>`)}</tbody></table></div>

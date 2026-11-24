@@ -308,3 +308,8 @@ h1, h2, h3, h4, p { margin: 0; }
 /* Große Schrift: Eingabefelder wachsen mit; Icon-Buttons werden in Zeilen nie gestaucht */
 [data-tk-large-text] .tk-input, [data-tk-large-text] .tk-select, [data-tk-large-text] .tk-search input { height: auto; min-height: var(--tk-size-control); padding-top: 6px; padding-bottom: 6px; }
 .tk-btn--icon { flex: none; }
+
+/* Launchpad: Beschriftungen nie über den Rand; bei großer Schrift einspaltig */
+.tk-lptile > strong { display: block; max-width: 100%; overflow-wrap: anywhere; }
+.bp-mobile[data-tk-large-text] .tk-lpgrid { grid-template-columns: minmax(0, 1fr); }
+[data-tk-large-text] .tk-lptile > strong, [data-tk-large-text] .tk-lptile__kpi { white-space: normal; }

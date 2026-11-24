@@ -4,7 +4,7 @@ import { useState, useEffect } from 'preact/hooks';
 import { Card, Button, Badge, Icon, EmptyState, Input, toneColor } from '../../ui.js';
 import { fmtPercent } from '../../../lib/format.js';
 import { arr, obj, eur, Stepper, SV_CSS, sid } from './_savings.js';
-import { CALC_DEFAULT, runCalc } from './_calc.js';
+import { CALC_DEFAULT, runCalc, conventionNote } from './_calc.js';
 import { LinesChart, CHART_CSS } from './_chart.js';
 
 const MAX = 4;
@@ -16,7 +16,7 @@ export const savingsCompare = {
   name: 'Szenario-Vergleich',
   category: 'Sparpläne',
   description: 'Bis zu vier Szenarien (Rate, Startbetrag, Laufzeit, Rendite-Annahme, Ratensteigerung) als Linien und Tabelle nebeneinander, mit Unterschied zum ersten Szenario. Übernimmt auf Wunsch die Werte aus dem Rechner.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Szenarien im Vergleich' },
     { name: 'height', label: 'Diagramm-Höhe', type: 'number', default: 260 },
@@ -41,7 +41,7 @@ export const savingsCompare = {
     const list = arr(data.scenarios), calc = obj(ctx.ui.calc);
     useEffect(() => { if (calc.monthly != null && list.length && !list.some((s) => s.fromCalc)) setData('scenarios', (l) => [mk(arr(l).length + 1, { name: 'Aus dem Rechner', fromCalc: true, monthly: calc.monthly, initial: calc.initial ?? CALC_DEFAULT.initial, years: calc.years ?? CALC_DEFAULT.years, ratePa: calc.ratePa ?? CALC_DEFAULT.ratePa, costPa: calc.costPa ?? CALC_DEFAULT.costPa, dynamicPa: calc.dynamicPa || 0 }), ...arr(l)].slice(0, MAX)); }, [calc.monthly, list.length]);
     if (!list.length) return html`<${Card} title=${props.title} icon="git-compare"><${EmptyState} icon="git-compare" title="Noch kein Szenario" text="Lege ein Szenario an und vergleiche, wie Rate, Laufzeit und Rendite-Annahme wirken." action=${html`<${Button} variant="primary" icon="plus" onClick=${() => setData('scenarios', [mk(1, { name: 'Basis' })])}>Szenario anlegen<//>`} /><//>`;
-    const runs = list.map((s) => runCalc({ ...CALC_DEFAULT, ...s, real: false, tax: false }));
+    const conv = calc.compounding || CALC_DEFAULT.compounding, runs = list.map((s) => runCalc({ ...CALC_DEFAULT, compounding: conv, ...s, real: false, tax: false }));
     const patch = (id, p) => setData('scenarios', (l) => arr(l).map((s) => (s.id === id ? { ...s, ...p } : s)));
     const add = (src) => { if (list.length >= MAX) return; setData('scenarios', (l) => [...arr(l), mk(arr(l).length + 1, src ? { ...src, id: sid('sc-', ctx), name: `${src.name} (Kopie)`, fromCalc: false } : { ...list[0], id: sid('sc-', ctx), name: `Szenario ${list.length + 1}`, fromCalc: false })]); ctx.emit('compare.add'); };
     const remove = (s) => { setData('scenarios', (l) => arr(l).filter((x) => x.id !== s.id)); setLast(s); setOpenId(null); ctx.emit('compare.remove', { id: s.id }); };
@@ -58,7 +58,7 @@ export const savingsCompare = {
         ${open && html`<div class="tk-svx2__edit"><label class="tk-field"><span class="tk-field__label">Name</span><${Input} value=${s.name} onInput=${(v) => patch(s.id, { name: v })} /></label>
           ${FIELDS.map(([k, l, step, min, max, unit, dg]) => html`<label class="tk-field"><span class="tk-field__label">${l}</span><${Stepper} label=${l} value=${unit === '%' ? Math.round(s[k] * 1000) / 10 : s[k]} step=${unit === '%' ? step * 100 : step} min=${unit === '%' ? min * 100 : min} max=${unit === '%' ? max * 100 : max} unit=${unit} digits=${dg} onChange=${(v) => { patch(s.id, { [k]: unit === '%' ? v / 100 : v }); ctx.emit('compare.change', { id: s.id, field: k }); }} /></label>`)}
           <div class="tk-btnrow"><${Button} size="sm" icon="copy" disabled=${list.length >= MAX} onClick=${() => add(s)}>Duplizieren<//><${Button} size="sm" variant="danger" icon="trash-2" disabled=${list.length <= 1} onClick=${() => remove(s)}>Entfernen<//></div></div>`}</div>`; })}
-      <p class="tk-sv-note"><${Icon} name="info" size=${14} /><span>Alle Szenarien sind Modellrechnungen mit gleichbleibender Rendite-Annahme (Spanne ± 2 PP). Kein Versprechen. Unterschiede beziehen sich auf das erste Szenario.</span></p></div><//>`;
+      <p class="tk-sv-note"><${Icon} name="info" size=${14} /><span>Alle Szenarien sind Modellrechnungen mit gleichbleibender Rendite-Annahme (Spanne ± 2 PP). ${conventionNote({ ratePa: list[0].ratePa, compounding: conv })} Kein Versprechen. Unterschiede beziehen sich auf das erste Szenario.</span></p></div><//>`;
   },
 };
 export default [savingsCompare];

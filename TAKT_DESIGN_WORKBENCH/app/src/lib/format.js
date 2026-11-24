@@ -25,8 +25,10 @@ const valid = (v) => typeof v === 'number' && Number.isFinite(v);
 const clampDigits = (n, dflt) => (Number.isInteger(n) && n >= 0 && n <= 20 ? n : dflt);
 
 /** Formatiert |v| mit fester Nachkommastellenzahl; zero ist wahr, wenn der gerundete Wert 0 ist. */
+/** Kaufmännisch runden (halbe Werte weg von null) mit Gleitkomma-Korrektur: 1,005 → 1,01; −2,675 → −2,68. */
+const roundHalfAway = (x, d) => { const f = 10 ** d; return Math.round((Math.abs(x) * f) * (1 + Number.EPSILON * 4)) / f; };
 function body(v, digits) {
-  const str = nf(digits, digits).format(Math.abs(v));
+  const str = nf(digits, digits).format(roundHalfAway(v, digits));
   const zero = !/[1-9]/.test(str);
   return { str, zero };
 }

@@ -138,10 +138,14 @@ function ReceiptForm({ rc, props, setData, ctx, dupe }) {
   const err = { total: !(total > 0) ? 'Diese Angabe passt nicht. Prüfe den Betrag.' : '', date: !f.date || f.date > today ? 'Das Datum liegt in der Zukunft oder fehlt.' : '', merchant: !f.merchant.trim() ? 'Händler fehlt.' : '' };
   const booked = rc.status === 'gebucht'; const valid = !err.total && !err.date && !err.merchant;
   const vat = total > 0 ? Math.round((total / (1 + rc.vatRate / 100)) * (rc.vatRate / 100) * 100) / 100 : 0;
+  // Vorbelegung für „Schnell erfassen“ (Finanzen): Betrag positiv, Konto als ID, Uhrzeit vom Beleg.
+  const prefill = { kind: 'expense', title: f.merchant.trim(), amount: total > 0 ? total : 0, date: f.date, time: rc.time, category: f.cat, account: ACCOUNTS[f.acc] || 'acc-giro', receiptId: rc.id };
   const book = () => {
+    // App: Schnell erfassen öffnet mit den Angaben, gebucht wird dort nach „Speichern“. Einzel-Screen (kein Ziel erreichbar): direkt buchen.
+    if (ctx.emit('receipt.book', { id: rc.id, to: 'finance.quickadd', ui: { prefill } })) return;
     setData('transactions', (a) => [{ id: `t-${rc.id}`, date: `${f.date}T${rc.time || '12:00'}:00`, title: f.merchant.trim(), category: f.cat, amount: -total, account: ACCOUNTS[f.acc] || 'acc-giro', type: 'expense', icon: 'receipt', receiptId: rc.id }, ...(Array.isArray(a) ? a : [])]);
     setData('receipts', (a) => a.map((x) => (x.id === rc.id ? { ...x, status: 'gebucht', merchant: f.merchant, date: f.date, total, category: f.cat, account: f.acc } : x)));
-    ctx.emit('receipt.book', { id: rc.id }); ctx.toast(`Gebucht: ${money(ctx, -total)} · ${f.merchant.trim()}`);
+    ctx.toast(`Gebucht: ${money(ctx, -total)} · ${f.merchant.trim()}`);
   };
   const lines = rc.lines || [];
   return html`<div class=${`tk-rcpt ${props.showImage ? 'tk-rcpt--img' : ''}`}>
@@ -159,8 +163,8 @@ function ReceiptForm({ rc, props, setData, ctx, dupe }) {
         <div class="tk-rcpt__vat"><span class="tk-subtle">Darin MwSt ${rc.vatRate} %</span><strong class="tk-num">${money(ctx, vat)}</strong></div></div>
       ${props.showItems && lines.length > 0 && html`<div class="tk-rcpt__lines"><div class="tk-label">Positionen</div>${lines.map((l) => html`<div class="tk-rcpt__line"><span class="tk-truncate">${l.qty} × ${l.name}</span><span class="tk-num">${money(ctx, l.total)}</span></div>`)}</div>`}
       <div class="tk-ocr__actions"><${Button} variant="primary" icon=${booked ? 'check' : 'wallet'} disabled=${booked || !valid} onClick=${book}>${booked ? 'Gebucht' : 'Als Ausgabe buchen'}<//>
-        <${Button} icon="arrow-up-right" onClick=${() => ctx.emit('receipt.finance', { id: rc.id, ui: { prefill: { kind: 'expense', title: f.merchant.trim(), amount: -(total > 0 ? total : 0), date: f.date, category: f.cat, account: f.acc, receiptId: rc.id } } })}>In Finanzen prüfen<//></div>
-      <div class="tk-subtle" style="font-size:var(--tk-fs-xs)">Die Buchung wird nur vorgeschlagen und erst nach „Als Ausgabe buchen“ angelegt. Beträge stammen aus der Erkennung, bitte vergleiche sie mit dem Beleg.</div>
+        <${Button} icon="arrow-up-right" onClick=${() => ctx.emit('receipt.finance', { id: rc.id, ui: { prefill } })}>In Finanzen prüfen<//></div>
+      <div class="tk-subtle" style="font-size:var(--tk-fs-xs)">${ctx.mode === 'app' ? 'Die Buchung wird in Finanzen vorgeschlagen und erst nach „Speichern“ dort angelegt.' : 'Die Buchung wird nur vorgeschlagen und erst nach „Als Ausgabe buchen“ angelegt.'} Beträge stammen aus der Erkennung, bitte vergleiche sie mit dem Beleg.</div>
     </div></div>`;
 }
 
@@ -168,8 +172,8 @@ export const receiptReview = {
   id: 'receipt-review',
   name: 'Beleg erkennen',
   category: 'Inhalte',
-  description: 'Erkannter Beleg als prüfbares Formular (Händler, Datum, Betrag, MwSt, Kategorie, Konto) mit Konfidenz-Hinweisen, Dublettenprüfung gegen vorhandene Buchungen und „Als Ausgabe buchen“ (schreibt in die Buchungen der Datenwelt). Auch als Belegliste und als „Nächster Beleg“-Karte.',
-  version: '1.0',
+  description: 'Erkannter Beleg als prüfbares Formular (Händler, Datum, Betrag, MwSt, Kategorie, Konto) mit Konfidenz-Hinweisen, Dublettenprüfung gegen vorhandene Buchungen und „Als Ausgabe buchen“: in der App öffnet Schnell erfassen (Finanzen) mit den Angaben als Vorbelegung, im Einzel-Screen schreibt es direkt in die Buchungen der Datenwelt. Auch als Belegliste und als „Nächster Beleg“-Karte.',
+  version: '1.1',
   props: [
     { name: 'mode', label: 'Darstellung', type: 'select', options: ['review', 'list', 'next'], default: 'review' },
     { name: 'title', label: 'Titel', type: 'text', default: 'Beleg prüfen' },

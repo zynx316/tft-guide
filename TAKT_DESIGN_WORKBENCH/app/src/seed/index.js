@@ -29,7 +29,7 @@ import nutrition from './modules/nutrition.js';
 import habits from './modules/habits.js';
 import system from './modules/system.js';
 
-export const SEED_VERSION = '2026-11-24.3';
+export const SEED_VERSION = '2026-11-24.4';
 export const MANIFESTS = [home, calendar, tasks, habits, finance, savings, trading, fitness, nutrition, notes, knowledge, pictureToText, weather, sales, system, settings];
 
 function buildModule(manifest, order) {

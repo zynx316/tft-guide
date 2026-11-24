@@ -1,6 +1,6 @@
 // Finanzen – Rechenhelfer (rein, ohne DOM, auch in Node nutzbar).
 // Grundregel (FINANCE_GUIDELINES 5): Umbuchungen sind weder Einnahme noch Ausgabe. Sparquote über core/finmath.js.
-import { savingsRate, nextExecutions } from '../../../core/finmath.js';
+import { savingsRate, nextExecutions, safeToSpend as safeToSpendCore } from '../../../core/finmath.js';
 import { toDate, dayStart, addDays, dayDiff, endOfMonth, daysInMonth } from '../../../lib/date.js';
 
 export const arr = (v) => (Array.isArray(v) ? v : []);
@@ -84,13 +84,11 @@ export function safeToSpend({ accounts, txs, subs, plans, events, today, reserve
   const typeOf = (id) => arr(accounts).find((a) => a.id === id)?.type;
   const end = endOfMonth(today), horizon = addDays(end, 1);
   const items = upcomingItems({ subs, plans, events, txs, today, days: dayDiff(today, horizon) }).filter((i) => !i.business);
-  const balance = r2(sum(giro, (a) => a.balance));
-  const cardOpen = r2(-sum(arr(accounts).filter((a) => a.type === 'credit' && a.balance < 0), (a) => a.balance));
-  const fixedUpcoming = r2(-sum(items.filter((i) => i.kind === 'abo' && typeOf(i.account) === 'giro'), (i) => i.amount));
-  const plannedSavings = r2(-sum(items.filter((i) => i.kind === 'sparplan'), (i) => i.amount));
-  const free = r2(balance - cardOpen - fixedUpcoming - plannedSavings - reserve);
-  const daysLeft = dayDiff(today, end) + 1;
-  return { balance, cardOpen, fixedUpcoming, plannedSavings, reserve, free, daysLeft, perDay: free > 0 ? r2(free / daysLeft) : 0, end, horizon, items };
+  const balance = sum(giro, (a) => a.balance);
+  const cardOpen = -sum(arr(accounts).filter((a) => a.type === 'credit' && a.balance < 0), (a) => a.balance);
+  const fixedUpcoming = -sum(items.filter((i) => i.kind === 'abo' && typeOf(i.account) === 'giro'), (i) => i.amount);
+  const plannedSavings = -sum(items.filter((i) => i.kind === 'sparplan'), (i) => i.amount);
+  return { ...safeToSpendCore({ balance, cardOpen, fixedUpcoming, plannedSavings, reserve, today }), horizon, items };
 }
 
 // --- Abos & Fixkosten -----------------------------------------------------------------------------------------

@@ -2,7 +2,7 @@
 import { html } from '../../../lib/html.js';
 import { useState } from 'preact/hooks';
 import { Card, Badge, Icon, Check, EmptyState, Sparkline, Delta, Progress, Button, toneColor } from '../../ui.js';
-import { applyUiFilter, groupBy, toList } from '../../helpers.js';
+import { applyUiFilter, groupBy, toList, money, percent } from '../../helpers.js';
 import { fmt } from '../../../lib/util.js';
 
 export const metricRow = {
@@ -197,7 +197,7 @@ export const dataTable = {
   name: 'Tabelle',
   category: 'Daten',
   description: 'Sortierbare Tabelle. Spalten per "key:Label:typ" (typ: text|number|currency|percent|date|badge|spark). Mobile: wird zu Karten-Liste (keine horizontale Scrollbar).',
-  version: '1.0',
+  version: '1.1', // 1.1: Beträge/Prozente über money()/percent() (Privatsphäre, de-DE-Format)
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: '' },
     { name: 'columns', label: 'Spalten', type: 'list', default: ['title:Name:text', 'value:Wert:number'] },
@@ -233,8 +233,8 @@ export const dataTable = {
       if (v == null) return '–';
       switch (c.type) {
         case 'number': return fmt.number(v, Number.isInteger(v) ? 0 : 2);
-        case 'currency': return fmt.currency(v);
-        case 'percent': return html`<span style=${`color:var(--tk-c-${v >= 0 ? 'success' : 'danger'});font-weight:600`}>${v > 0 ? '+' : ''}${fmt.percent(v)}</span>`;
+        case 'currency': return money(ctx, v);
+        case 'percent': return html`<span style=${`color:var(--tk-c-${v >= 0 ? 'success' : 'danger'});font-weight:600`}>${percent(ctx, v)}</span>`;
         case 'date': return fmt.date(v);
         case 'badge': return html`<${Badge} tone=${r.tone || 'neutral'}>${v}<//>`;
         case 'spark': return html`<${Sparkline} values=${v} width=${80} height=${22} tone=${v[v.length - 1] >= v[0] ? 'success' : 'danger'} />`;
@@ -297,7 +297,7 @@ export const progressList = {
   name: 'Fortschrittsliste',
   category: 'Daten',
   description: 'Beschriftete Fortschrittsbalken (Budgets, Ziele, Kapazitäten) mit Ist/Soll und Warnfarbe bei Überschreitung.',
-  version: '1.0',
+  version: '1.1', // 1.1: Beträge/Prozente über money()/percent() (Privatsphäre, de-DE-Format)
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Fortschritt' },
     { name: 'unit', label: 'Einheit', type: 'text', default: '' },
@@ -313,7 +313,7 @@ export const progressList = {
     { id: 'c', label: 'Mobilität', value: 88, target: 150, icon: 'car' },
   ] } },
   render: ({ props, data, ctx }) => {
-    const f = (v) => (props.format === 'currency' ? fmt.currency(v) : props.format === 'percent' ? fmt.percent(v) : `${fmt.number(v)}${props.unit ? ' ' + props.unit : ''}`);
+    const f = (v) => (props.format === 'currency' ? money(ctx, v) : props.format === 'percent' ? percent(ctx, v, { sign: false }) : `${fmt.number(v)}${props.unit ? ' ' + props.unit : ''}`);
     const items = data.items || [];
     return html`<${Card} title=${props.title}>${!items.length ? html`<${EmptyState} icon="target" title="Keine Ziele" />` : html`<div class="tk-progress-list">
       ${items.map((it) => { const r = it.target ? it.value / it.target : 0; const over = r > 1; return html`<div class="tk-progress-list__row" onClick=${() => ctx.emit('progress.open', { id: it.id })}>

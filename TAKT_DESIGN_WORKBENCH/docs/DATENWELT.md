@@ -1,9 +1,9 @@
 # Datenwelt der Persona „Ein Tag“ (Verträge, Schlüssel, Eigentümer)
 
-> **Stand:** 24.11.2026 (Lektüre der Welt-Dateien am Stichtag; mehrere Module bauen sie gerade aus, Zahlen und Schlüsselanzahl können sich ändern) · **Referenztag:** Di, 24.11.2026, 09:30 Uhr (`DEFAULT_TODAY`)
+> **Stand:** 24.11.2026, Integration „Datenwelt“ (Paket welt): alle Module haben eine Welt-Datei, die Invarianten W1 bis W17 sind als Test umgesetzt (`tests/world-invariants.test.mjs`), die Befunde B2, B3, B8, B10, B11 und B12 sind behoben · **Referenztag:** Di, 24.11.2026, 09:30 Uhr (`DEFAULT_TODAY`)
 > **Gültigkeit:** verbindlich für `app/src/seed/world/**` und für jede Bindung `'@world:<schlüssel>'`. Gilt, bis eine Entscheidung im Entscheidungslog sie ändert. Die Persona ist ein **Platzhalter**, bis der Nutzer sie bestätigt (Abschnitt 2).
-> **Zugehörige Dateien:** `app/src/seed/world/*.js` · `app/src/core/world.js` (`getWorld`, `applyScenario`, `SCENARIOS`, `hasWorldKey`) · `app/src/core/preview-payload.js` (`worldFor`, `buildAppPayload`) · `app/src/preview/runtime.js` (`useWorld`, Screen-Kontext) · `app/src/core/schema.js` (`worldOverrides`) · `docs/PERSONA.md` · `docs/BAUPLAN.md` (5.5, 5.7, 5.13, 12) · `docs/HEALTH_GUIDELINES.md`, `docs/FINANCE_GUIDELINES.md` · `docs/TEXT_STIL.md`.
-> **Ist und Ziel:** „Ist“ ist der Code am Stichtag, „Ziel“ der Vertrag für neue Arbeit. Abweichungen stehen in Abschnitt 8 und, wo sie eine Invariante betreffen, in Abschnitt 7.
+> **Zugehörige Dateien:** `app/src/seed/world/*.js` (Hilfen in `_util.js`, kein Welt-Teil) · `app/src/core/world.js` (`getWorld`, `applyScenario`, `SCENARIOS`, `hasWorldKey`) · `app/src/core/preview-payload.js` (`worldFor`, `buildAppPayload`) · `app/src/preview/runtime.js` (`useWorld`, Screen-Kontext) · `app/src/core/schema.js` (`worldOverrides`) · `docs/PERSONA.md` · `docs/BAUPLAN.md` (5.5, 5.7, 5.13, 12) · `docs/HEALTH_GUIDELINES.md`, `docs/FINANCE_GUIDELINES.md` · `docs/TEXT_STIL.md`.
+> **Ist und Ziel:** „Ist“ ist der Code nach der Integration, „Ziel“ der Vertrag für neue Arbeit. Bewusste Abweichungen stehen in Abschnitt 8 (offene Befunde) und Abschnitt 11.
 
 ## 1. Zweck
 
@@ -29,31 +29,27 @@ Persona-Aussagen sind Eigentum des Moduls **home** (`persona.js`). Andere Dateie
 
 ### 3.1 Welt-Dateien
 
-Eine Datei = ein Eigentümer-Paket. Jeder **benannte Export, der keine Funktion ist**, wird ein Welt-Schlüssel (`pick()` in `world/index.js` filtert Funktionen heraus). Funktionen dürfen für Hilfen exportiert werden und sind keine Schlüssel.
+Eine Datei = ein Eigentümer-Paket. Jeder **benannte Export, der keine Funktion ist**, wird ein Welt-Schlüssel (`pick()` in `world/index.js` filtert Funktionen heraus). Funktionen dürfen für Hilfen exportiert werden und sind keine Schlüssel. `_util.js` enthält gemeinsame Hilfen (`triple`, `at`, `eventsOn`, `eur` …) und wird von `index.js` nicht als Welt-Teil geladen.
 
-| Datei | Eigentümer-Paket | Modul(e) | Ist am Stichtag |
+| Datei | Eigentümer-Paket | Modul(e) | Stand |
 |---|---|---|---|
-| `index.js` | INF-3 | Aggregation (`allKpis`, `allHints`, `searchIndex`, `allNotifications`), `scenarios` zusammenführen | vorhanden, **nur `pick`/`WORLD`/`isWorldRef`/`worldKey`**; Aggregate fehlen |
+| `index.js` | INF-3 / welt | Aggregation (`allKpis`, `allHints`, `searchIndex`, `allNotifications`), `scenarios` je Datei sammeln | vorhanden, 190 Schlüssel |
 | `persona.js` | MOD-HOME | home (Persona) | vorhanden, 1 Schlüssel |
-| `organisation.js` | MOD-CAL | calendar, tasks | vorhanden, 2 Schlüssel (`events`, `tasks`) |
-| `finance.js` | MOD-FIN | finance (**enthält heute zusätzlich Sparen und Depot**) | vorhanden, 17 Schlüssel |
-| `savings.js` | MOD-SAV | savings | **fehlt** (Daten liegen in `finance.js`) |
-| `trading.js` | MOD-TRD | trading | **fehlt** (Daten liegen in `finance.js`) |
-| `fitness.js` | MOD-FIT | fitness | vorhanden, 27 Schlüssel |
-| `nutrition.js` | MOD-NUT | nutrition | vorhanden, 11 Schlüssel |
-| `weather.js` | MOD-WET | weather | vorhanden, 6 Schlüssel |
-| `knowledge.js` | MOD-KB | knowledge, notes | **fehlt** |
-| `scans.js` | MOD-PTT | picture-to-text | **fehlt** |
-| `sales.js` | MOD-SAL | sales | **fehlt** |
-| `habits.js` | MOD-HAB | habits | **fehlt** |
-| `goals.js` | MOD-HAB | goals | **fehlt** |
-| `documents.js` | MOD-REG | documents | **fehlt** |
-| `shopping.js` | MOD-REG | shopping | **fehlt** |
-| `system.js` | MOD-SYS | system | **fehlt** |
-| `settings.js` | MOD-SET | settings (`prefs`) | **fehlt** |
-| `home.js` | MOD-HOME | home (Briefing, Tagesablauf, Erste Schritte) | **fehlt** |
+| `home.js` | MOD-HOME | home (Kennzahlen, Mitteilung Wochenrückblick) | vorhanden; Briefing und Tagesablauf bleiben abgeleitet in den Start-Komponenten |
+| `organisation.js` | MOD-CAL | calendar, tasks | vorhanden (Termine inkl. Trainingsserien, Aufgaben, Eingang, Fokus, Aggregate) |
+| `finance.js` | MOD-FIN | finance (**enthält bis zum Umzug B9 zusätzlich Sparen und Depot**) | vorhanden |
+| `savings.js` | MOD-SAV | savings (Aggregate; Daten noch in `finance.js`) | vorhanden |
+| `trading.js` | MOD-TRD | trading (Alarme, Orders, Käufe, Soll-Anteile, Vergleichsindex, Aggregate) | vorhanden |
+| `fitness.js`, `nutrition.js`, `weather.js` | MOD-FIT, MOD-NUT, MOD-WET | fitness, nutrition, weather | vorhanden |
+| `knowledge.js` | MOD-KB | knowledge **und** notes (`notes`, `articles`) | vorhanden |
+| `scans.js` | MOD-PTT | picture-to-text (Erfassungen, Belege, Visitenkarten) | vorhanden |
+| `sales.js` | MOD-SAL | sales (Kanäle, Bestellungen, Sync-Protokoll) | vorhanden |
+| `habits.js` | MOD-HAB | habits (Gewohnheiten, Routinen; Start bindet dieselben) | vorhanden |
+| `system.js` | MOD-SYS | system (Papierkorb, Kennzahlen) | vorhanden |
+| `settings.js` | MOD-SET | settings (`prefs`, Sicherungen) | vorhanden |
+| `goals.js`, `documents.js`, `shopping.js` | MOD-HAB, MOD-REG | goals, documents, shopping | fehlen (Module noch nicht gebaut) |
 
-Beim Stand dieser Lektüre enthält `WORLD` 64 Schlüssel. Fehlende Dateien legt INF-3 als Stubs an (Bauplan 6, Dateibesitz-Liste); die Eigentümer-Pakete befüllen sie.
+Die Welt enthält 190 Schlüssel (`Object.keys(WORLD)`); `searchIndex` hat 154 Einträge, `allNotifications` 16, `allHints` 27.
 
 ### 3.2 Eigentümer je Datenobjekt (Bauplan 5.13)
 
@@ -69,9 +65,17 @@ Beim Stand dieser Lektüre enthält `WORLD` 64 Schlüssel. Fehlende Dateien legt
 | Depot, Positionen, Watchlist, Dividenden | trading | finance rechnet `depotValue` aus trading |
 | Termine, Aufgaben | organisation-Welt (calendar, tasks) | Training und Mahlzeiten erzeugen Termine/Aufgaben nur über Welt-Einträge mit gleichen IDs |
 | Persona | home (`persona.js`) | |
-| Einstellungen (`prefs`) | settings | Runtime liest `prefs.favorites` für die Navigation |
+| Einstellungen (`prefs`), Sicherungen | settings | Runtime liest `prefs.favorites` für die Navigation |
+| Notizen | knowledge (`notes`) | Erfassen legt Notizen hier an (`inbox: true`), Bildtext-Erkennung, Suche und Start lesen |
+| Artikel | knowledge (`articles`) | |
+| Erfassungen, Belege, Visitenkarten | picture-to-text (`captures`, `receipts`, `businessCards`) | Buchung entsteht in Finanzen, Notiz in `notes` |
+| Kanäle, Bestellungen | sales (`channels`, `orders`) | Finanzen sieht nur die Auszahlungen als Buchungen |
+| Gewohnheiten, Routinen | habits (`habits`, `routines`) | Start bindet dieselben Listen; Training zählt aus Fitness, Wasser aus Ernährung |
+| Kursalarme, simulierte Orders, Käufe, Soll-Anteile, Vergleichsindex | trading (`tradingAlerts`, `tradingOrders`, `tradingTrades`, `tradingTargets`, `tradingBenchmark`) | |
+| Papierkorb | system (`trash`) | |
+| Eingang (unsortierte Erfassungen) | tasks (`taskInbox`) | system zählt ihn in `systemSummary`; Notizen aus Erfassen gehen nicht dorthin |
 
-### 3.3 Pflicht-Exporte je Welt-Datei (Ziel)
+### 3.3 Pflicht-Exporte je Welt-Datei
 
 Für **jedes** Modul, das eine Datei besitzt, exportiert die Datei (camelCase der Modul-ID, z. B. `pictureToText`):
 
@@ -93,14 +97,14 @@ Für **jedes** Modul, das eine Datei besitzt, exportiert die Datei (camelCase de
 | `fitness.js` | `fitnessSummary` (Ist: flach, Ziel: zusätzlich `kpis`), `fitnessHints/Search/Notifications`, `scenarios` |
 | `nutrition.js` | `nutritionSummary/Hints/Search/Notifications` (Ist: `nutSummary`, bleibt), `scenarios` |
 | `weather.js` | `weatherSummary/Hints/Search/Notifications`, `scenarios` |
-| `knowledge.js` | `knowledgeSummary/…`, `notesSummary/…` |
+| `knowledge.js` | `knowledgeSummary/Hints/Search/Notifications`, `notesSummary/Hints/Search/Notifications`, `scenarios` |
 | `scans.js` | `pictureToTextSummary/…` |
 | `sales.js` | `salesSummary/…`, `scenarios` (Fehlerzustand „Etsy-Token abgelaufen“) |
 | `habits.js` / `goals.js` | `habitsSummary/…` / `goalsSummary/…` |
 | `documents.js` / `shopping.js` | `documentsSummary/…` / `shoppingSummary/…` |
-| `system.js` | `systemSummary/…` (Befehle, Eingang) |
+| `system.js` | `systemSummary/Hints/Search/Notifications`, `trash` |
 | `settings.js` | `settingsSummary/…`, `prefs` |
-| `home.js` | `homeSummary/…`, `homeBriefing`, `homeTimeline` (Tagesablauf aus anderen Schlüsseln abgeleitet, keine Kopien) |
+| `home.js` | `homeSummary/Hints/Search/Notifications` (Briefing und Tagesablauf bleiben abgeleitet in den Komponenten, keine Kopien) |
 
 ## 4. Schlüsselkatalog (Ist)
 
@@ -116,7 +120,7 @@ Struktur und je ein Beispiel. „abgeleitet“ = in der Datei berechnet. Anzahl 
 
 | Schlüssel | Struktur | Beispiel |
 |---|---|---|
-| `events` (31) | `{id, title, start, end, category, tone, location?, repeat?, note?, allDay?}`, ISO ohne Zone | `e5` „Mittag mit Jana“, 12:30–13:30, Café Moll. Am Referenztag: `e-standup` 09:45 (werktags), `e4` 10:30, `e3` 11:00, `e5` 12:30, `e6` 15:00. |
+| `events` (53) | `{id, title, start, end, category, tone, location?, repeat?, note?, allDay?}`, ISO ohne Zone | `e5` „Mittag mit Jana“, 12:30–13:30, Café Moll. Am Referenztag: `e-standup` 09:45 (werktags), `e4` 10:30, `e3` 11:00 (Überschneidung gewollt, in `note` benannt), `e5` 12:30, `e6` 15:00. Krafttraining als drei Wochenserien `e-fit-lower`, `e-fit-upperA`, `e-fit-full` (Mo/Mi/Fr 18:30, FitX Bielefeld) aus `trainingProgram`. `legacyEvents()` liefert den ursprünglichen Stand der freigegebenen Features unverändert. |
 | `tasks` (21) | `{id, title, due?, priority hoch/mittel/niedrig, project, category, status Offen/In Arbeit/Review/Erledigt, estimate?, done?, repeat?, note?, subtasks[{id,title,done}]}` | `t1` „Angebot Müller GmbH finalisieren“, fällig 24.11. 14:00, hoch, 1 von 3 Unteraufgaben erledigt. 18 offene, 4 heute fällig, 2 überfällig (`t2`, `t8`). |
 
 ### 4.3 `finance.js` (MOD-FIN; Sparen und Depot ziehen später um, Schlüsselnamen bleiben)
@@ -125,7 +129,7 @@ Struktur und je ein Beispiel. „abgeleitet“ = in der Datei berechnet. Anzahl 
 |---|---|---|
 | `accounts` (5) | `{id, name, bank, type giro/business/savings/credit/depot, balance, icon, tone, spark[], iban?, interestPa?, limit?}` | `acc-giro` 3.842,17 €; `acc-depot` 30.097,73 € |
 | `netWorth` | Zahl, abgeleitet (Σ Kontostände) | 55.508,15 |
-| `transactions` (26) | `{id, date, title, category, amount (negativ = Abfluss), account, type income/expense/transfer, to?, subscriptionId?, icon}` | `t1` 24.11. 08:12 REWE −38,47 € |
+| `transactions` (26) | `{id, date, title, category, amount (negativ = Abfluss), account, type income/expense/transfer, to?/from? (Gegenkonto einer Umbuchung), subscriptionId?, icon}` | `t1` 24.11. 08:12 REWE −38,47 €; `t16`/`t17` Privatentnahme: beide Seiten `transfer`; `t10` Sparplan EM IMI am Mo 16.11. (nicht am Sonntag) |
 | `budgets` (5) | `{id, label, category, target, icon, value}`, `value` abgeleitet (Σ Ausgaben je Kategorie im November) | Freizeit 164,50 von 150 € |
 | `subscriptions` (9) | `{id, name, amount, interval, day, category, icon, cancelable, noticeDays?, renewal?, lastUsedDays?, business?}` | `sub-miete` 1.150 € am 1. |
 | `fixedCostsMonthly` | Zahl, abgeleitet (ohne `business`) | 1.391,96 |
@@ -135,11 +139,11 @@ Struktur und je ein Beispiel. „abgeleitet“ = in der Datei berechnet. Anzahl 
 | `depotHistory` | `{labels[12], series[{name, values[12]}]}` Dez bis Nov, „Depotwert“ und „Eingezahlt“ | letzter Wert 30.098 |
 | `savingsPlans` (5) | `{id, name, positionId? oder accountId?, isin?, monthly, day, intervalMonths, startDate, active, pausedUntil?, dynamicPa, expectedReturnPa, goalId, tone}` | `sp-allworld` 300 € am 1. |
 | `savingsMonthlyTotal` | Zahl, abgeleitet (Σ aktive `monthly`) | 575 |
-| `savingsGoals` (4) | `{id, name, target, current, icon, tone, due, monthly, paused?}` | `g-notgroschen` 9.500 von 15.000 € |
+| `savingsGoals` (4) | `{id, name, target, current, icon, tone, due, monthly (= Σ Raten der Pläne mit dieser goalId, abgeleitet), paused?}` | `g-notgroschen` 9.500 von 15.000 €; `g-rente` 425 € pro Monat (All-World 300 + EM 75 + World IT 50) |
 | `watchlist` (5) | `{id, title, type, price, change, trend[], alert?{above/below}}` | `w-btc` Bitcoin 84.120 |
 | `dividends` (3) | `{id, positionId, title, exDate, payDate, perShare, quantity, amount, status erwartet/gezahlt}` | Apple 1,92 €, gezahlt 13.11. |
 | `taxAllowance` | `{total, used, bank, stand}` | 1.000 €, davon 312,40 € genutzt |
-| `financeSummary` | flaches Objekt, abgeleitet: `netWorth, depotValue, income, expenses, saved, savingsRate, fixedCostsMonthly, savingsMonthlyTotal` | `saved` 575, `income` 7.152,40 (siehe Befund B3) |
+| `financeSummary` | flaches Objekt, abgeleitet (Funktion `summaryOfFinance`): `netWorth, depotValue, income, expenses, saved, savingsRate, fixedCostsMonthly, savingsMonthlyTotal`, zusätzlich `kpis` | `income` 2.952,40 €, `expenses` 1.975,52 €, `saved` 575 €, `savingsRate` 33 % (Umbuchungen zählen nicht, W4) |
 
 ### 4.4 `fitness.js` (MOD-FIT)
 
@@ -174,11 +178,11 @@ Struktur und je ein Beispiel. „abgeleitet“ = in der Datei berechnet. Anzahl 
 
 | Schlüssel | Struktur | Beispiel |
 |---|---|---|
-| `nutFoods` (48) | `{id, name, category, kcal, protein, carbs, fat, fiber, sugar, satFat, salt (je 100 g/ml), unit, portions[{label, g}], brand, barcode, allergens[], tags[], fav, piece?, eur100, source}` | `f-skyr` 63 kcal, 11 g Eiweiß, Allergen `Milch` |
+| `nutFoods` (48) | `{id, name, category, kcal, protein, carbs (verfügbar), fat, fiber, sugar, satFat, salt, alcohol? (g je 100 g/ml, 7 kcal je g), je 100 g/ml, unit, portions[{label, g}], brand, barcode, allergens[], tags[], fav, piece?, eur100, source}` | `f-skyr` 63 kcal, 11 g Eiweiß, Allergen `Milch` |
 | `nutRecipes` (8) | `{id, title, subtitle, meal, servings, prepMin, cookMin, level, tags[], fav, tone, icon, ingredients[{foodId, g}], steps[], perServing}` | `r-lachs` Lachs mit Ofengemüse |
 | `nutDiary` (44) | `{id 'd001…', date, meal, time, foodId, name, amount, grams, kcal, protein, carbs, fat, …, source, prelogged?, eventId?}` | 24.11. 07:40 Skyr natur 158 kcal |
 | `nutWater` | `{goal 2500, vessels[4], entries[3], week[6]}` | heute 1.000 ml |
-| `nutGoals` | `{kcal, protein, carbs, fat, fiber, water, trainingDays, trainingBonus, useTrainingBonus, includeActivity, showNumbers, setOn}` | 2.400 kcal, 140 g Eiweiß |
+| `nutGoals` | `{kcal, protein, carbs, fat, fiber, water, trainingDays, trainingBonus, useTrainingBonus, includeActivity, showNumbers, setOn}` | 2.400 kcal, 140 g Eiweiß; `trainingDays` aus `trainingProgram.days` (Mo, Mi, Fr) |
 | `nutProfile` | `{sex, age, heightCm, weightKg, goalWeightKg, activity, goalType, pace, preset, bmr, tdee, weightTrend[]}` | 78,4 kg, 182 cm, Ziel 77 kg, BMR 1.737, TDEE 2.692, Tempo 0,27 kg pro Woche |
 | `nutPlan` (23) | `{id, date, meal, kind recipe/food/out, recipeId?, foodId?, label?, servings, status planned/done, eventId?, kcal, protein, carbs, fat}` | heute Abend Lachs, 636 kcal |
 | `nutShopping` | `{rangeDays, pantry[], checked{}, manual[], recipeAdds[], budgetMonth, spentMonth}` | Budget 450 €, ausgegeben 262,90 € |
@@ -195,9 +199,86 @@ Struktur und je ein Beispiel. „abgeleitet“ = in der Datei berechnet. Anzahl 
 | `wxAlertLevels` (4) | `{level 1–4, name, color, meaning, action}` (DWD-Schema, fiktiv) | Stufe 2 „Markante Wetterwarnung“ |
 | `wxSettings` | `{units, clock, sensitivity, allergens[], offline, refreshMin, source, alerts{minLevel, scope, quiet…}, notify{…}}` | Allergene Birke, Gräser |
 | `wxVenues` | Objekt: Ortsname → `{mode Fuß/Rad/Auto, min, outdoor, stayOutdoor?}` | Café Moll: Fuß, 8 Min. |
-| `wxTraining` (4) | `{id, date, start, end, title, where, outdoor, kind}` | siehe Befund B2 |
+| `wxTraining` (5) | `{id, eventId, date, start, end, title, where, outdoor, kind}`, aus `trainingProgram` abgeleitet; `eventId` zeigt auf die Kalenderserie (`e-fit-…`) bzw. `e20` (Wanderung) | Mi 25.11. 18:30 Oberkörper A, FitX Bielefeld |
 
 Wetterfakt am Referenztag: Böen-Warnung Stufe 2 `wx-a1`, 14:00 bis 23:00 Uhr, Böen bis 72 km/h, ausgegeben 08:52 Uhr; `wx-a2` Stufe 1 Mi 06:00 bis 12:00; `wx-a3` Frost Do 22:00 bis Fr 09:00.
+
+### 4.7 `savings.js`, `trading.js` (Aggregate und Trading-Daten)
+
+| Schlüssel | Struktur | Beispiel |
+|---|---|---|
+| `savingsSummary`, `savingsHints`, `savingsSearch`, `savingsNotifications` | Vertrag 5.2, aus `savingsPlans` und `savingsGoals` abgeleitet | „4 von 5 Sparpläne aktiv“, nächste Ausführung 01.12. (500 € an diesem Tag) |
+| `tradingAlerts` (6) | `{id, securityId, dir above/below, price, status aktiv/ausgelöst/pausiert, created, triggeredAt?}` | `al1` NVIDIA unter 115 |
+| `tradingOrders` (3) | `{id, securityId, side, type markt/limit/stop, qty, limit?/stop?, price, fee, total, status offen/simuliert, validity, created}` | `o1` Allianz Limit 280 (Simulation) |
+| `tradingTrades` (4) | `{id, date, side buy/sell, securityId, qty, price, buyPrice?, fee}` | `tr-sap-v` Verkauf SAP am 14.08. |
+| `tradingTargets` | `{ <positionId oder cash>: Prozent }`, Summe 100 | All-World 60 % |
+| `tradingBenchmark` | `{name, labels[12], values[12]}` | Welt-Index (fiktiv), Start 100 |
+| `tradingSummary`, `tradingHints`, `tradingSearch`, `tradingNotifications` | Vertrag 5.2 | „5 Positionen im Depot“, Alarm „nah“ bei höchstens 3 % Abstand |
+
+### 4.8 `knowledge.js` (Notizen und Wissen)
+
+| Schlüssel | Struktur | Beispiel |
+|---|---|---|
+| `notes` (13) | `{id, title, body (Markdown), tags[], pinned?, archived?, inbox?, updated}` | `n1` „Ideen TAKT V2“; 3 Notizen im Eingang (`inbox: true`); „Erfassen › Notiz“ legt hier an |
+| `notesHistory` (4), `notesLinks` (3) | Verlauf, Verknüpfungen (Aufgabe, Termin, Artikel) | |
+| `notesMetrics` (4), `notesTagChart` | abgeleitet aus `notes` | 9 Notizen, 12 offene Punkte |
+| `knowledgeAreas` (3) | `{id, name, icon, tone}`, Grundstruktur (bleibt im Ersten Start) | Technik, Arbeit & Prozesse, Persönlich |
+| `articles` (14) | `{id, area, category, title, author, tags[], updated, related[], body, bookmarked?, lastRead?, readProgress?, status? draft}` | `kb1` Git-Workflow im Team; Trainingsplan (`kb10`) nennt Mo Unterkörper, Mi Oberkörper A, Fr Ganzkörper |
+| `articleCards`, `articleItems`, `articleRecent`, `articleBookmarkCards`, `articleBookmarkItems`, `articleDrafts`, `knowledgeAreaChart`, `knowledgeMetrics` | abgeleitet aus `articles` (Karten, Listen, Diagramm, Kennzahlen) | 12 veröffentlicht, 4 Lesezeichen, 2 Entwürfe, 2 „zu prüfen“ |
+| `notesSummary`, `knowledgeSummary` + Hints/Search/Notifications | Vertrag 5.2 | |
+
+### 4.9 `scans.js` (Picture to Text)
+
+| Schlüssel | Struktur | Beispiel |
+|---|---|---|
+| `captures` (11) | `{id, title, source camera/file/clipboard, text, lang, confidence, uncertain[{word, alt, conf}], created, kind text/receipt/card/document, receiptId?, cardId?}`, neueste zuerst | `c1` Quittung Bäckerei Hoffmann, 97 % |
+| `captureSamples` (4) | Beispielbilder für „Text erkennen“ (Simulation, Referenzdaten) | |
+| `receipts` (4) | `{id, captureId, merchant, date, time, total, vatRate, category, account, payment, status offen/gebucht, lines[]}`; `r3` (Thalia) ist **bewusst** eine Dublette zur Buchung `t9` (Dublettenprüfung) | `r1` 4,50 € offen |
+| `businessCards` (2) | `{id, captureId, name, title, company, phone, email, …}` | `k2` Tim Brandt, Kanzlei Brandt (Steuerberater im Kalender `e17`) |
+| `capturesToReview`, `capturesMetrics`, `capturesBySource` | abgeleitet | 6 Erfassungen mit unsicheren Wörtern |
+| `pictureToTextSummary` + Hints/Search/Notifications | Vertrag 5.2 | |
+
+### 4.10 `sales.js`
+
+| Schlüssel | Struktur | Beispiel |
+|---|---|---|
+| `channels` (5) | `{id, name, status connected/error/paused, lastSync, revenue (30 Tage), orders, delta, trend[], log[], error?}` | Etsy: Zugriffstoken abgelaufen (bewusster Fehlerzustand) |
+| `orders` (11) | `{id, number, customer, channel, channelId, status new/paid/shipped/delivered, lines[], shipping, total, date, history[]}`; `total` = Σ Positionen + Versand | `o1` #4185, 69,60 € |
+| `salesMetrics`, `salesMetricsRevenue`, `salesRevenue`, `salesShares`, `salesRows`, `salesStageChart`, `salesSyncLog` | abgeleitet aus `orders` und `channels` | Umsatz heute 281,89 € (3 Bestellungen) |
+| `salesSummary` + Hints/Search/Notifications | Vertrag 5.2 | „6 Bestellungen offen“ |
+
+### 4.11 `habits.js`
+
+| Schlüssel | Struktur | Beispiel |
+|---|---|---|
+| `habits` (7) | `{id, name, icon, tone, daypart, time, rhythm{type daily/weekdays/perWeek}, goal?{target, unit, step}, since, link?, log{ISO-Tag: Zahl}, note}` | Wasser heute 4 von 10 Gläsern (= 1.000 ml aus `nutWater`); Krafttraining ab 05.10. aus `workoutHistory` |
+| `routines` (2) | `{id, name, icon, time, steps[{id, title, minutes, habitId?}], log}` | Morgenroutine, Abendroutine |
+| `habitHintCards` (3) | Hinweiskarten der Gewohnheiten (Format der Komponente `hint-cards`) | |
+| `habitsSummary` + Hints/Search/Notifications | Vertrag 5.2 | „2 von 7 heute erledigt“ |
+
+Start und Gewohnheiten binden **dieselben** Schlüssel (`@world:habits`, `@world:routines`): ein Haken auf „Start“ erscheint in „Gewohnheiten – Heute“ (Test `world-invariants`).
+
+### 4.12 `home.js`, `system.js`, `settings.js`
+
+| Schlüssel | Struktur | Beispiel |
+|---|---|---|
+| `homeSummary`, `homeHints`, `homeSearch`, `homeNotifications` | Vertrag 5.2 | „4 Aufgaben heute fällig“ |
+| `trash` (7) | `{id, title, module, kind, deletedAt, detail?, payload?}` (30 Tage Aufbewahrung) | `tr1` Altes Angebot Schmidt |
+| `systemSummary` + Hints/Search/Notifications | Vertrag 5.2 | „10 im Eingang“ (7 Aufgaben-Eingang + 3 Notizen) |
+| `prefs` | `{favorites, enabled, theme, density, textScale, reduceMotion, privacy, quietHours, notify, region}` – **identisch** mit `DEFAULT_PREFS` in `crosscut/_system.js` (Test) | Favoriten Start, Kalender, Aufgaben, Finanzen |
+| `backups` (5) | `{id, at, size, kind auto/manual}` | heute 03:00, 6,9 MB |
+| `settingsSummary` + Hints/Search/Notifications | Vertrag 5.2 | „16 von 16 Module aktiv“ |
+
+### 4.13 Aggregate (`index.js`)
+
+| Schlüssel | Struktur |
+|---|---|
+| `allKpis` | `{ <modul-id>: kpis[] }` für alle 16 Module |
+| `allHints` | alle `<m>Hints`, in Modulreihenfolge |
+| `searchIndex` | alle `<m>Search`, IDs `<sammlung>:<id>`, eindeutig |
+| `allNotifications` | alle `<m>Notifications`, neueste zuerst |
+
+Dublettenschutz in der Suche: Die Komponente `global-search` baut Aufgaben, Termine, Buchungen, Konten, Sparpläne, Depot, Rezepte und Lebensmittel selbst aus den Sammlungen (Slots). Darum nennen `tasksSearch`, `calendarSearch`, `financeSearch`, `savingsSearch`, `tradingSearch` und `nutritionSearch` nur **weitere** Objekte (Eingang, Kalenderquellen, Abos, Budgets, Sparziele, Watchlist, Alarme, Vorlagen). Notizen, Artikel, Gewohnheiten, Bestellungen, Erfassungen, Übungen und Orte kommen über `searchIndex`. Neu zur Laufzeit angelegte Objekte (z. B. eine erfasste Notiz) erscheinen erst in der Suche, wenn die Komponente ihre Quelle direkt indexiert (Wunsch in Abschnitt 11).
 
 ## 5. Bindung und Zugriff
 
@@ -241,11 +322,11 @@ Beispiele (Ziel, aus Ist-Daten):
 { label: 'Kalorien übrig', value: 910, unit: 'kcal', tone: 'accent', icon: 'flame', to: 'nutrition.today' }
 ```
 
-**Ist:** Es gibt keine `…Hints/Search/Notifications` und keine Aggregate. Drei flache Objekte tragen den Namen `financeSummary`, `fitnessSummary`, `nutSummary`, aber **nicht** die Form `{kpis: […]}`. Empfehlung (Annahme, Entscheidung bei INF-3 und den Modul-Eigentümern): Bestehende Objekte werden **additiv** um ein Feld `kpis` ergänzt (Exportnamen bestehender Dateien bleiben); für Ernährung kommt `nutritionSummary` neu hinzu, `nutSummary` bleibt.
+**Ist:** Alle 16 Module liefern `<m>Summary` mit `kpis` (bestehende flache Objekte `financeSummary`, `fitnessSummary` wurden **additiv** erweitert, `nutSummary` bleibt, dazu `nutritionSummary`), dazu `<m>Hints`, `<m>Search` und `<m>Notifications` (leere Listen erlaubt). `world/index.js` sammelt sie zu `allKpis`, `allHints`, `searchIndex`, `allNotifications` (Abschnitt 4.13). Das Launchpad liest `<m>Summary.kpis[0]` (`preview/launchpad.js`), `system.notifications` bindet `allNotifications`, `system.search` bindet `searchIndex`. Jedes `to` in Hints, Suche und Mitteilungen ist eine vorhandene Feature-ID (Test) und in `system.notifications` bzw. `system.search` als Navigationsregel eingetragen.
 
 ### 5.3 `prefs` (Eigentümer settings)
 
-`prefs = { favorites, units, privacy, quietHours, textScale }`. Die Runtime nutzt `prefs.favorites` für die Navigation, falls gesetzt (Ziel: erste vier Favoriten plus „Mehr“). Ziel-Erweiterung für Gesundheit: `prefs.health = { hideWeight, hideKcal, habitMode }` (`HEALTH_GUIDELINES.md` Abschnitte 4 und 5). Ist: nicht vorhanden; `nutGoals.showNumbers` ist der einzige Schalter.
+`prefs = { favorites, enabled, theme, density, textScale, reduceMotion, privacy, quietHours, notify, region }` (früher als `units` geplant: jetzt `region`). Die Runtime nutzt `prefs.favorites` für die Navigation, falls gesetzt (Ziel: erste vier Favoriten plus „Mehr“). Ziel-Erweiterung für Gesundheit: `prefs.health = { hideWeight, hideKcal, habitMode }` (`HEALTH_GUIDELINES.md` Abschnitte 4 und 5). Ist: `prefs` liegt in `settings.js` und entspricht Wert für Wert `DEFAULT_PREFS` (`crosscut/_system.js`; Test), damit die Runtime Standardwerte nicht als Änderung wertet. Das Format ist `{favorites, enabled, theme, density, textScale, reduceMotion, privacy{…}, quietHours{…}, notify{…}, region{…}}`. `prefs.health` ist nicht vorhanden; `nutGoals.showNumbers` ist der einzige Schalter.
 
 ## 6. Szenario-Vertrag
 
@@ -263,6 +344,8 @@ Szenarien: **alltag** (Standard), **erststart**, **stress** (`SCENARIOS` in `cor
 - `WORLD.scenarios[id]` aus den Welt-Dateien überschreibt gezielt (`Object.assign`). Jede Welt-Datei darf dazu `export const scenarios = { erststart: {schlüssel: wert}, stress: {schlüssel: wert} }` liefern (Bauplan 5.5).
 - Auswahl per Launcher, `preview.html?scenario=…` und Payload-Feld `scenario`.
 
+**Umsetzung (Ist):** Jede Welt-Datei mit abgeleiteten Werten liefert `scenarios`. `index.js` sammelt sie je Datei (Liste `WORLD_SCENARIOS`), `applyScenario` wendet sie in Reihenfolge an; plain Objekte werden dabei **flach über** die generische Umformung gelegt (ein leeres Objekt leert also kein Objekt, das schon umgeformt wurde). Erster Start: Kennzahlen `<m>Summary` zeigen Zähler 0 oder eine Einladung („Konten verbunden 0“), Katalog- und Wetterdaten bleiben, `wxTraining` ist leer (noch kein Plan), Soll-Anteile (`tradingTargets`) bleiben als Konfiguration stehen. Stress-Tag: Listen ×3, abgeleitete Werte werden **aus den verdreifachten Listen neu berechnet** (Depotwert, Vermögen, Budgets, Sparraten, Tagebuch-Summen, Kennzahlen); der Stress-Kontostand 9.999.999,99 € und das Kalorien-Plus sind bewusste Extremwerte. Aggregate (`searchIndex`, `allNotifications`, …) folgen generisch (leer bzw. ×3).
+
 **Anforderungen (Ziel):**
 
 1. **Referenzdaten sind keine Nutzerdaten.** Bibliotheken (`exerciseLibrary`, `nutFoods`, `nutRecipes`), Orte (`wxPlaces`, `wxActive`), Warnstufen, Konten-Stammdaten und Einstellungen bleiben im Erststart erhalten. Welt-Dateien schützen sie über `scenarios.erststart` (Rückgabe des vollen Wertes) oder INF-3 ergänzt eine Schutzliste je Datei (Wunsch im Bericht).
@@ -271,48 +354,50 @@ Szenarien: **alltag** (Standard), **erststart**, **stress** (`SCENARIOS` in `cor
 4. **Erststart zeigt den Pfad in die App:** Erststart-Checkliste und Einladungen kommen aus `home.js`/`system.js` (`firstrun`-Zustand), nicht aus den Fachdaten.
 5. Szenarien ändern **nie** `persona`, `prefs` und IDs bestehender Schlüssel.
 
-## 7. Konsistenz-Invarianten (Test: `tests/world-*.test.mjs`, Eigentümer INF-5)
+## 7. Konsistenz-Invarianten (Test: `tests/world-invariants.test.mjs`)
 
-Jede Invariante gilt für `alltag` **und** nach `applyScenario(WORLD, 'erststart' | 'stress')`.
+Jede Invariante gilt für `alltag`; W1 bis W3, W5, W6, W9, W14 und W15 prüft der Test zusätzlich nach `applyScenario(WORLD, 'erststart' | 'stress')` (W17). Der Test erweitert W14 um alle Referenzen der Welt und prüft die Aggregate (Vertragsformat, Ziele, Navigationsregeln).
 
-| Nr. | Invariante | Ist (24.11.2026) |
+| Nr. | Invariante | Ist (nach Integration „Datenwelt“) |
 |---|---|---|
-| W1 | Depotkonto = Positionssumme + Verrechnung: `accounts[acc-depot].balance` = Σ `positions.value` + `depotCash` (±0,01 €) und gleich `depotValue` | erfüllt (30.097,73 = 28.847,73 + 1.250,00) |
-| W2 | `netWorth` = Σ `accounts.balance` (±0,01 €) | erfüllt (55.508,15) |
-| W3 | Budget-Ist = Σ Beträge der Buchungen `type: 'expense'` je Kategorie im Monat | erfüllt (z. B. Lebensmittel 262,90 €) |
-| W4 | **Umbuchung neutral:** `type: 'transfer'` zählt nicht in Einnahmen, Ausgaben, Budgets, Sparquote; beide Seiten haben denselben Typ | **verletzt** (Befund B3) |
-| W5 | **Sparraten = Planraten:** Σ aktive `savingsPlans.monthly` = Σ Umbuchungen der Kategorie `Sparen` im Monat = `savingsMonthlyTotal` | erfüllt (575 €) |
-| W6 | Sparziele: `g-notgroschen.current` = Kontostand Tagesgeld, `g-rente.current` = `depotValue`, `monthly` je Ziel = Σ Raten der Pläne mit dieser `goalId` | erfüllt |
-| W7 | Position: `value` = `quantity × price`, `gain` = `value − cost` (±0,01 €) | erfüllt |
-| W8 | **kcal aus Makros ±12 %** (`atwaterPlausible` in `core/health.js`: 4·Eiweiß + 4·KH + 9·Fett + 7·Alkohol, Toleranz 12 %, mindestens 5 kcal) für `nutFoods` (je 100 g) und `nutDiary` | **3 von 48** Lebensmitteln und **3 von 44** Einträgen melden (Befund B8) |
-| W9 | Mahlzeitensummen = Tagessumme: `nutSummary.eatenKcal` = Σ `nutDiary` des Tages = `nutHistory[heute].kcal` | erfüllt (1.490 kcal) |
+| W1 | Depotkonto = Positionssumme + Verrechnung: `accounts[acc-depot].balance` = Σ `positions.value` + `depotCash` (±0,01 €) und gleich `depotValue` | erfüllt, auch in Erster Start und Stress-Tag (30.097,73 = 28.847,73 + 1.250,00; Stress: Positionen ×3) |
+| W2 | `netWorth` = Σ `accounts.balance` (±0,01 €) | erfüllt in allen Szenarien (55.508,15) |
+| W3 | Budget-Ist = Σ Beträge der Buchungen `type: 'expense'` je Kategorie im Monat | erfüllt in allen Szenarien (Lebensmittel 262,90 €; Stress: Budgets aus den verdreifachten Buchungen) |
+| W4 | **Umbuchung neutral:** `type: 'transfer'` zählt nicht in Einnahmen, Ausgaben, Budgets, Sparquote; beide Seiten haben denselben Typ | erfüllt (Privatentnahme `t16`/`t17` beide `transfer`; Einnahmen 2.952,40 €, Sparquote 33 %; Befund B3 behoben) |
+| W5 | **Sparraten = Planraten:** Σ aktive `savingsPlans.monthly` = Σ Umbuchungen der Kategorie `Sparen` im Monat = `savingsMonthlyTotal` | erfüllt in allen Szenarien (575 €; Stress 1.725 €) |
+| W6 | Sparziele: `g-notgroschen.current` = Kontostand Tagesgeld, `g-rente.current` = `depotValue`, `monthly` je Ziel = Σ Raten der Pläne mit dieser `goalId` | erfüllt (`g-rente.monthly` 425 € aus den Plänen abgeleitet, Befund B12 behoben) |
+| W7 | Position: `value` = `quantity × price`, `gain` = `value − cost` (±0,01 €) | erfüllt (Rundung je Wert auf Cent, Toleranz 0,011 € beim Gewinn) |
+| W8 | **kcal aus Makros ±12 %** (`atwaterPlausible` in `core/health.js`: 4·Eiweiß + 4·KH + 9·Fett + 7·Alkohol, Toleranz 12 %, mindestens 5 kcal) für `nutFoods` (je 100 g) und `nutDiary` | erfüllt: 48 von 48 Lebensmitteln und 44 von 44 Einträgen plausibel (Bier mit Feld `alcohol`, Brokkoli und Spinat nachgezogen; Befund B8 behoben) |
+| W9 | Mahlzeitensummen = Tagessumme: `nutSummary.eatenKcal` = Σ `nutDiary` des Tages = `nutHistory[heute].kcal` | erfüllt in allen Szenarien (1.490 kcal; Erster Start 0; Stress ×3) |
 | W10 | Ziel: `nutSummary.goalKcal` = `nutGoals.kcal`; `nutGoals.kcal` ≥ Grundumsatz des Profils (`HEALTH_GUIDELINES.md` K1) | erfüllt (2.400 ≥ 1.737) |
-| W11 | **Gleiche Termine in Kalender und Start:** jede `eventId` in Tagebuch, Plan, Training zeigt auf ein vorhandenes Ereignis in `events`; Start (`home.js`) liest `events`, keine Kopie | `eventId: 'e5'` erfüllt; Training verletzt (Befund B2); `home.js` fehlt |
-| W12 | **Training einheitlich:** Wochenplan (`trainingProgram.days`), Kalender-Termine, `wxTraining`, `nutGoals.trainingDays` nennen dieselben Tage, Zeiten, Orte | **verletzt** (Befund B2) |
-| W13 | **Profil einheitlich:** Gewicht, Größe, Zielgewicht in `persona`, `fitnessProfile`/`bodySummary`, `nutProfile`, `nutSummary` identisch | erfüllt (78,4 kg, 182 cm, Ziel 77 kg; war verletzt, Befund B1 behoben) |
-| W14 | Referenzen auflösbar: `account`, `to`, `subscriptionId`, `positionId`, `savingsPlanId`, `goalId`, `foodId`, `recipeId`, `eventId`, `exerciseId` zeigen auf vorhandene Einträge | erfüllt (am Stichtag geprüft: keine Referenzfehler) |
-| W15 | IDs je Sammlung eindeutig | erfüllt (`events`, `tasks`, `transactions`, `nutDiary`); sammlungsübergreifend nicht (Befund B4) |
-| W16 | Zeiten relativ zum Referenztag; Einträge nach 09:30 am Referenztag sind nur geplant oder vorab erfasst | erfüllt (z. B. `prelogged: true` für das Mittagessen) |
-| W17 | Szenarien erhalten W1 bis W3, W5, W9 | **verletzt** (Befund B6) |
+| W11 | **Gleiche Termine in Kalender und Start:** jede `eventId` in Tagebuch, Plan, Training zeigt auf ein vorhandenes Ereignis in `events`; Start (`home.js`) liest `events`, keine Kopie | erfüllt (Training: Kalenderserien `e-fit-…`, Wanderung `e20`) |
+| W12 | **Training einheitlich:** Wochenplan (`trainingProgram.days`), Kalender-Termine, `wxTraining`, `nutGoals.trainingDays` nennen dieselben Tage, Zeiten, Orte | erfüllt: Mo/Mi/Fr 18:30 im FitX Bielefeld in Plan, Kalender, Wetter und Ernährung (Befund B2 behoben) |
+| W13 | **Profil einheitlich:** Gewicht, Größe, Zielgewicht in `persona`, `fitnessProfile`/`bodySummary`, `nutProfile`, `nutSummary` identisch | erfüllt (78,4 kg, 182 cm, Ziel 77 kg) |
+| W14 | Referenzen auflösbar: `account`, `to`, `subscriptionId`, `positionId`, `savingsPlanId`, `goalId`, `foodId`, `recipeId`, `eventId`, `exerciseId` zeigen auf vorhandene Einträge | erfüllt in allen Szenarien (Test prüft Konten, Abos, Positionen, Pläne, Ziele, Lebensmittel, Rezepte, Termine, Übungen, Erfassungen, Gewohnheiten, Trading) |
+| W15 | IDs je Sammlung eindeutig | erfüllt in allen Szenarien für alle Sammlungen mit `id`; sammlungsübergreifend nicht (Befund B4: Suche und Hints verwenden `<sammlung>:<id>`) |
+| W16 | Zeiten relativ zum Referenztag; Einträge nach 09:30 am Referenztag sind nur geplant oder vorab erfasst | erfüllt (Test prüft Buchungen, Notizen, Erfassungen, Bestellungen, Papierkorb, Mitteilungen, Einheiten, Alarme; Mittagessen nur vorab erfasst) |
+| W17 | Szenarien erhalten W1 bis W3, W5, W9 | erfüllt: W1 bis W3, W5, W9 (und W6, W14, W15) gelten nach `applyScenario(WORLD, 'erststart' | 'stress')` (Befund B6 behoben) |
 
-## 8. Befunde am Stichtag (Ist ≠ Vertrag)
+## 8. Befunde (Stand nach Integration)
 
-Diese Befunde sind nicht in meiner Datei-Liste behebbar. Sie gehen als Wünsche an die Eigentümer (Abschlussbericht).
+Behobene Befunde bleiben als Verlauf stehen; ein Test sichert sie ab (`world-invariants`). Offene Befunde gehen als Wünsche an die Eigentümer (Abschlussbericht).
 
-| Nr. | Befund | Vorschlag | Eigentümer |
-|---|---|---|---|
-| B1 | **Profil (behoben am Stichtag):** Die Ernährung führte zunächst 82,4 kg, 183 cm, Ziel 79 kg (Grundumsatz 1.783 kcal), Fitness 78,4 kg, 182 cm, Ziel 77 kg (1.737 kcal). MOD-NUT hat `nutProfile` und `nutSummary` auf die Messreihe von `fitnessProfile` umgestellt. Rest: `persona.health` sagt „3 kg Fett verlieren“, die Daten messen Gewicht (80 → 77 kg). | Wortlaut zu „3 kg abnehmen“ ändern, sobald die Persona bestätigt wird. Kalorienziel 2.400 kcal bleibt (Tempo 0,27 kg pro Woche, `planTarget`). | MOD-HOME |
-| B2 | **Training:** Fitness: Mo Unterkörper, Mi Oberkörper A, Fr Ganzkörper, 18:30, FitX Bielefeld. Kalender: `e-fitness` „Krafttraining Oberkörper“ **wöchentlich donnerstags** (Serienstart Do 05.11.), Studio Kraftwerk; kein Eintrag für Mo/Mi/Fr. Wetter (`wxTraining`): Mi 25.11. „Unterkörper“, Fr 27.11. „Oberkörper“, Studio Kraftwerk. Dazu am Mi 25.11. Physiotherapie 16:30 bis 17:30 (`e9`). | Trainingstermine entstehen aus `trainingProgram` mit gleichen IDs (`tr-<datum>`) in `events` und `wxTraining`; Studio „FitX Bielefeld“; `e-fitness` entfällt oder wird Mo/Mi/Fr. | MOD-CAL, MOD-WET, MOD-FIT |
-| B3 | **Privatentnahme:** `t16` (Giro, +4.200 €) hat `type: 'income'`, die Gegenbuchung `t17` `type: 'transfer'`. `financeSummary.income` = 7.152,40 € und Sparquote 72,4 % (ohne Privatentnahme etwa 33 %). | Beide Seiten `transfer` (Gesamtsicht), Sicht benennen (`FINANCE_GUIDELINES.md` Abschnitt 5). | MOD-FIN |
-| B4 | **ID-Überschneidung:** Aufgaben `t1`…`t21` und Buchungen `t1`…`t26`. | Bestehende IDs bleiben. Neue Sammlungen mit Präfix (`tx-`, `evt-`, `task-`). Suche, Hints und Deep-Links verwenden `<sammlung>:<id>`. | alle |
-| B5 | **Einkaufsliste:** `nutShopping` liegt in `nutrition.js`, Eigentümer der Liste ist `shopping`. | `nutShopping` bleibt als Zutaten-Brücke; `shopping.js` besitzt die Liste und übernimmt per `carry`. | MOD-REG, MOD-NUT |
-| B6 | **Szenarien (am Stichtag exportiert keine Welt-Datei `scenarios`):** Das generische `erststart` leert auch Referenzdaten (`exerciseLibrary`, `nutFoods`, `wxActive.hours`, `accounts` werden leer) und lässt abgeleitete Schlüssel stehen (`financeSummary.income` 7.152,40, `depotValue` 30.097,73, `nutSummary.eatenKcal` 1.490 bei leeren Listen). | `scenarios.erststart` je Datei (Abschnitt 6) oder Schutzliste in `core/world.js`. | alle Welt-Dateien, INF-3 |
-| B7 | **Index:** `world/index.js` übernimmt per `pick` alle Exporte. Exportieren mehrere Dateien `scenarios`, **überschreibt die letzte** die anderen; `core/world.js` liest `WORLD.scenarios[id]`. | `scenarios` je Szenario und Schlüssel zusammenführen, nicht ersetzen; Aggregate ergänzen. | INF-3 |
-| B8 | **Atwater:** `Brokkoli` und `Blattspinat` liegen knapp außerhalb der Toleranz (Ballaststoffe, Rundung), `Bier (Pils)` fehlt das Alkoholfeld (Alkohol 7 kcal pro g); die 3 Tagebucheinträge sind Bier. | Nährwerte nachziehen und für Alkohol ein Feld `alcohol` (g je 100 ml) ergänzen. | MOD-NUT |
-| B9 | **Dateizuschnitt:** Sparen und Depot liegen in `finance.js`. | Verschieben nach `savings.js` und `trading.js`, Schlüsselnamen unverändert. | MOD-SAV, MOD-TRD |
-| B10 | **Terminüberschneidung:** `e4` „Fokus: Workbench-Review“ (10:30 bis 12:00) und `e3` „Sprint-Planung“ (11:00 bis 11:45). | Absichtliche Überschneidung für `calendar.conflicts` mit `note` kennzeichnen. | MOD-CAL |
-| B11 | **Sparplan am Sonntag:** `t10` „Sparplan EM IMI“ am So 15.11. gebucht. | Auf den nächsten Handelstag (Mo 16.11.) legen (`FINANCE_GUIDELINES.md` Abschnitt 8). | MOD-FIN, MOD-SAV |
-| B12 | **Sparplan ohne Ziel:** `sp-tech` (World IT, 50 €) hat `goalId: null`, die Positionen von All-World und Emerging Markets führen zu `g-rente` (375 €). Die Altersvorsorge zeigt damit 375 € statt 425 € pro Monat, obwohl alle drei Positionen im Depot liegen. | Entscheiden, ob World IT zur Altersvorsorge zählt (`goalId: 'g-rente'`, Rate 425 €) oder bewusst ohne Ziel bleibt (dann im Ziel-Text erwähnen). W5 ist davon nicht berührt. | MOD-SAV |
+| Nr. | Befund | Status | Umsetzung oder Vorschlag | Eigentümer |
+|---|---|---|---|---|
+| B1 | Profil (Gewicht, Größe, Zielgewicht) | **behoben** | einheitlich 78,4 kg, 182 cm, Ziel 77 kg; `persona.health` sagt jetzt „3 kg abnehmen“ | MOD-HOME |
+| B2 | Training: Kalender Donnerstag im Studio Kraftwerk, Wetter Mi/Fr Studio Kraftwerk, Fitness Mo/Mi/Fr im FitX Bielefeld | **behoben** | Wochenplan (Fitness) führt. Kalender: drei Serien `e-fit-lower`, `e-fit-upperA`, `e-fit-full` (Mo/Mi/Fr 18:30, FitX Bielefeld, `legacyEvents()` bleibt für das freigegebene Feature unverändert); `wxTraining` mit `eventId`; `nutGoals.trainingDays` aus dem Programm; Wissensartikel „Trainingsplan Grundlagen“ und Habit-Verlauf folgen. Abweichung vom ersten Vorschlag: Serien statt Einzeltermine `tr-<datum>`, weil die Wetter-Komponenten Termine und Training zusammenführen und Serien dort nicht doppelt erscheinen | MOD-CAL, MOD-WET, MOD-FIT |
+| B3 | Privatentnahme: `t16` `income`, `t17` `transfer` | **behoben** | beide Seiten `transfer`, Kategorie „Umbuchung“; Einnahmen 2.952,40 €, Sparquote 33 % | MOD-FIN |
+| B4 | ID-Überschneidung Aufgaben und Buchungen (`t1`…) | offen (bewusst) | bestehende IDs bleiben; Suche, Hints und Mitteilungen verwenden `<sammlung>:<id>` | alle |
+| B5 | `nutShopping` in `nutrition.js`, Eigentümer der Liste ist `shopping` | offen | Modul `shopping` fehlt noch | MOD-REG, MOD-NUT |
+| B6 | Szenarien leeren Referenzdaten und lassen abgeleitete Werte stehen | **behoben** | `scenarios` in allen Dateien mit abgeleiteten Werten; Test W17 | alle |
+| B7 | `scenarios` mehrerer Dateien überschreiben sich | **behoben** | `index.js` sammelt je Datei (`WORLD_SCENARIOS`), `applyScenario` wendet sie an; Aggregate in `index.js` | INF-3 |
+| B8 | Atwater: Brokkoli, Spinat, Bier | **behoben** | Nährwerte nachgezogen, Feld `alcohol` (g je 100 ml) bei Bier und in den Tagebucheinträgen | MOD-NUT |
+| B9 | Sparen und Depot liegen in `finance.js` | offen (bewusst) | Aggregate und Trading-Daten haben eigene Dateien (`savings.js`, `trading.js`). `positions`, `watchlist`, `savingsPlans` … bleiben in `finance.js`, weil `library/components/trading/_seeddata.js` sie von dort importiert; Umzug sobald die Bibliothek umgestellt ist (Schlüssel bleiben) | MOD-SAV, MOD-TRD |
+| B10 | Terminüberschneidung `e3` und `e4` | **behoben** | als gewollt in `note` gekennzeichnet, `calendarHints` nennt sie | MOD-CAL |
+| B11 | Sparplan am Sonntag gebucht | **behoben** | `t10` am Mo 16.11. (nächster Handelstag) | MOD-FIN |
+| B12 | `sp-tech` ohne Ziel | **behoben** | `goalId: 'g-rente'`, Rate der Altersvorsorge 425 €, `monthly` je Ziel wird aus den Plänen abgeleitet | MOD-SAV |
+| B13 | Bildtext-Erkennung: Belege und Visitenkarten verwiesen auf nicht vorhandene Erfassungen (`c8`…`c11`) | **behoben** | Erfassungen ergänzt (W14); Visitenkarte „Dr. Müller“ ist jetzt Rechtsanwältin, der Steuerberater ist durchgängig Tim Brandt (Kalender `e17`, Karte `k2`) | MOD-PTT |
+| B14 | Mitteilungstexte widersprachen den Daten (Eingang „4“ statt 7, „Oberkörper A: 5 Übungen, 60 Min.“ statt 6, 55 Min., Sparplan „575 €“ am 01.12. statt 500 €, Kursalarm „Bitcoin über 84.000 €“ ohne Alarm) | **behoben** | Mitteilungen sind aus den Daten abgeleitet (`<m>Notifications`) | system, alle |
 
 ## 9. Regeln für neue Daten
 
@@ -331,16 +416,20 @@ Diese Befunde sind nicht in meiner Datei-Liste behebbar. Sie gehen als Wünsche 
 
 | Prüfung | Wo | Status |
 |---|---|---|
-| Invarianten W1 bis W17 | `tests/world-*.test.mjs` (Namensraum von INF-5), `npm test` | Ziel; Ist: Stichproben am Stichtag per Wegwerf-Skript geprüft (Ergebnis in Abschnitt 7). `tests/core-world.test.mjs` prüft nur die Szenario-Mechanik (leer, verdreifacht, eindeutige IDs), nicht die Invarianten |
-| Unbekannter Welt-Schlüssel in `demoData` | `tools/check.mjs` (`hasWorldKey`) | Ziel |
-| `Date.now()`, `new Date()` ohne Argument, `Math.random()` in `seed/world/**` | `tools/check.mjs` | Ziel |
-| Aggregat-Form (`kpis`, `Hints`, `Search`, `Notifications`) | `tools/check.mjs` und Test | Ziel |
-| Szenarien: W1 bis W3, W5, W9 nach `applyScenario` | `tests/world-scenarios.test.mjs` | Ziel |
-| Seed-Größe unter 1,6 MB | `tools/check.mjs` | Ziel (Bauplan 10) |
+| Invarianten W1 bis W17 (inkl. Szenarien, Referenzen W14, eindeutige IDs W15) | `tests/world-invariants.test.mjs`, `npm test` | umgesetzt (31 Tests). `tests/core-world.test.mjs` prüft zusätzlich die Szenario-Mechanik |
+| Unbekannter Welt-Schlüssel in `demoData` | `tests/world-invariants.test.mjs` (alle Manifeste) | umgesetzt; `tools/check.mjs` meldet es noch nicht (Wunsch) |
+| `Date.now()`, `new Date()` ohne Argument, `Math.random()` in `seed/world/**` | `tests/world-invariants.test.mjs` | umgesetzt (`tools/check.mjs` Wunsch) |
+| Aggregat-Form (`kpis`, `Hints`, `Search`, `Notifications`), Ziele existieren, Navigationsregeln in `system.*` | `tests/world-invariants.test.mjs` | umgesetzt |
+| `prefs` = `DEFAULT_PREFS` | `tests/world-invariants.test.mjs` | umgesetzt |
+| Seed-Größe unter 1,6 MB | `tests/world-invariants.test.mjs` (Welt als JSON) | umgesetzt (Welt rund 0,6 MB) |
+| Browser: Startseiten aller Module in Kompakt, Visuell, Fokus × Alltag, Erster Start, Stress | Playwright-Probe `window.__taktQA.run()` bei 390 × 844 | 126 Läufe ohne fail und warn; 136 Varianten der Module notes, knowledge, picture-to-text, sales, habits, trading, system, settings, home in allen drei Szenarien (390) und Alltag (390, 1440) ohne fail und warn |
 
 ## 11. Offene Punkte
 
 - **Persona bestätigen oder ändern** (Entscheidung offen). Bis dahin alle Persona-Daten Platzhalter.
-- **Führende Werte** für Studio und Trainingstage (Befund B2): Vorschlag steht in Abschnitt 8. Gewicht, Größe und Zielgewicht sind seit dem Stichtag einheitlich (B1 behoben).
-- **Aggregate und `prefs`**: Zuständigkeit INF-3 (Aggregation) und MOD-SET (`prefs`).
-- **Abgrenzung Sparen/Trading/Finanz-Datei** (B9): Reihenfolge der Verschiebung, ohne Schlüssel zu ändern.
+- **Abgrenzung Sparen/Trading/Finanz-Datei** (B9): Umzug der Daten, sobald `library/components/trading/_seeddata.js` nicht mehr aus `world/finance.js` importiert (Schlüssel bleiben).
+- **Suche über zur Laufzeit angelegte Objekte:** `global-search` indexiert nur seine festen Quellen (Aufgaben, Termine, Buchungen …). Eine per „Erfassen“ angelegte Notiz liegt zwar in `notes`, erscheint aber erst in der Suche, wenn die Komponente `notes`, `articles`, `habits`, `orders` direkt als Quelle bekommt (Wunsch an `crosscut`).
+- **Fokus-Rahmen „Erfassen“** (`preview/launchpad.js`, `CaptureSheet`) legt nur Aufgaben und Ausgaben an; Notizen (und Termine) sollten ebenfalls in die Welt (`notes`, `events`) schreiben.
+- **`tools/check.mjs`:** unbekannte `@world:`-Schlüssel, Aggregat-Form und `Date.now()` in `seed/world/**` auch dort prüfen (der Test deckt es ab).
+- **`SEED_VERSION`** (`seed/index.js`) erhöhen, damit „Neue Seed-Inhalte übernehmen“ die geänderten Bindungen (Notizen, Wissen, Picture to Text, Sales, Gewohnheiten, Trading, Kern, Einstellungen) in bestehende Stände übernimmt.
+- Statische Untertitel in einzelnen Startseiten (z. B. „9 Notizen · 3 im Eingang“ in Notizen, „3 von 5 Kanälen laufen“ in Sales) sind Text im Manifest und folgen den Szenarien nicht.

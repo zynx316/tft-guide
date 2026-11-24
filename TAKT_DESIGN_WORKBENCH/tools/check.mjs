@@ -39,17 +39,36 @@ try { execFileSync(process.execPath, [path.join(ROOT, 'tools/test-finmath.mjs')]
 // 2) Komponenten-IDs (statisch aus den Quelltexten)
 const compFiles = walk(path.join(SRC, 'library/components')).filter((f) => f.endsWith('.js'));
 const compIds = new Map();
+// Hinweise (keine Fehler): Zahlen-/Geldformatierung gehört in lib/format.js (money()/percent() aus library/helpers.js, ctx.fmt);
+// Zufall und Systemzeit machen Screenshots und Szenarien unreproduzierbar (ctx.now(), ctx.newId()).
+const FORMAT_RULE = /Intl\.NumberFormat|\.toLocale(?:Date|Time)?String\s*\(/;
+const NONDET_RULE = /Math\.random\s*\(|Date\.now\s*\(/;
+const spans = (ls) => `${ls.length > 1 ? 'Zeilen' : 'Zeile'} ${ls.slice(0, 5).join(', ')}${ls.length > 5 ? ` … (${ls.length}×)` : ''}`;
+const noteHits = (f, { fmt: fm, nondet }) => {
+  if (fm.length) warnings.push(`${rel(f)}: Intl.NumberFormat/toLocaleString (${spans(fm)}) – Formatierung gehört in lib/format.js (money(), percent(), ctx.fmt)`);
+  if (nondet.length) warnings.push(`${rel(f)}: Math.random()/Date.now() (${spans(nondet)}) – nicht deterministisch: ctx.now() bzw. ctx.newId() verwenden`);
+};
 for (const f of compFiles) {
   const s = fs.readFileSync(f, 'utf8');
   for (const m of s.matchAll(/^\s*id:\s*'([a-z0-9-]+)',?\s*$/gm)) { if (compIds.has(m[1])) errors.push(`Doppelte Komponenten-ID ${m[1]} (${rel(f)} / ${rel(compIds.get(m[1]))})`); compIds.set(m[1], f); }
   const lines = s.split('\n');
   if (lines.length > 450) warnings.push(`${rel(f)}: ${lines.length} Zeilen (Richtwert ≤ 450 – aufteilen)`);
+  const hits = { fmt: [], nondet: [] };
   lines.forEach((line, i) => {
     const code = line.replace(/\/\/.*$/, '');
+    if (!/^\s*(\*|\/\*)/.test(line)) { if (FORMAT_RULE.test(code)) hits.fmt.push(i + 1); if (NONDET_RULE.test(code)) hits.nondet.push(i + 1); }
     if (/(color|background|border|fill|stroke|shadow|outline)[^;'"`]*#[0-9a-fA-F]{3,8}\b/i.test(code)) warnings.push(`${rel(f)}:${i + 1}: Hex-Farbe – Token-Variable (--tk-…) verwenden`);
     if (/new Date\(\)/.test(code) && !/=\s*new Date\(\)\s*[,)]/.test(code)) warnings.push(`${rel(f)}:${i + 1}: new Date() – für "jetzt" ctx.today verwenden (deterministische Screenshots)`);
     if (/toISOString\(\)\.slice\(0,\s*10\)/.test(code)) warnings.push(`${rel(f)}:${i + 1}: toISOString().slice(0,10) ist UTC – isoDay() aus lib/util.js verwenden`);
   });
+  noteHits(f, hits);
+}
+
+// 2b) Datenwelt: Zufall und Systemzeit sind dort tabu (Szenarien und Screenshots müssen reproduzierbar sein)
+for (const f of walk(path.join(SRC, 'seed/world')).filter((x) => x.endsWith('.js'))) {
+  const nondet = [];
+  fs.readFileSync(f, 'utf8').split('\n').forEach((line, i) => { if (!/^\s*(\*|\/\*)/.test(line) && NONDET_RULE.test(line.replace(/\/\/.*$/, ''))) nondet.push(i + 1); });
+  noteHits(f, { fmt: [], nondet });
 }
 
 // 3) Seed-Integrität

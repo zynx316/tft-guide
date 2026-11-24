@@ -3,7 +3,7 @@ import { html } from '../../../lib/html.js';
 import { useState } from 'preact/hooks';
 import { Card, Button, Icon, Input, Segmented, Select } from '../../ui.js';
 import { arr, r2, pressKey, digitsToNumber, numberToDigits, suggestCategories, frequentExpenses, catMeta, safeToSpend, spentByCategory, matchRule } from './_calc.js';
-import { FIN_CSS, slots, pctx, eur, Tile, bookTx, unbookTx, buildTx } from './_fin.js';
+import { FIN_CSS, slots, pctx, eur, Tile, bookTx, unbookTx, buildTx, readPrefill, prefillDate, PrefillNote, prefillAmountText, markReceiptBooked } from './_fin.js';
 import { ex } from './_example.js';
 
 const MODES = [{ value: 'expense', label: 'Ausgabe', icon: 'minus' }, { value: 'income', label: 'Einnahme', icon: 'plus' }, { value: 'transfer', label: 'Umbuchung', icon: 'arrow-left-right' }];
@@ -14,8 +14,8 @@ export const finNumpadCapture = {
   id: 'fin-numpad-capture',
   name: 'Numpad-Erfassung',
   category: 'Finanzen',
-  description: 'Buchung in wenigen Taps erfassen: Betrag über das Numpad, Kategorie aus Vorschlägen, Konto, optional Titel. Ausgabe, Einnahme oder Umbuchung; die Wirkung auf „frei verfügbar“ und das Budget ist vorab sichtbar, Rückgängig inklusive.',
-  version: '1.0',
+  description: 'Buchung in wenigen Taps erfassen: Betrag über das Numpad, Kategorie aus Vorschlägen, Konto, optional Titel. Ausgabe, Einnahme oder Umbuchung; die Wirkung auf „frei verfügbar“ und das Budget ist vorab sichtbar, Rückgängig inklusive. Kommt die Buchung aus einem Beleg (ctx.ui.prefill), sind Betrag, Titel, Kategorie, Konto und Datum vorbelegt und mit „aus Beleg“ gekennzeichnet.',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Erfassen' },
     { name: 'defaultMode', label: 'Startart', type: 'select', options: ['expense', 'income', 'transfer'], default: 'expense' },
@@ -24,7 +24,7 @@ export const finNumpadCapture = {
     { name: 'framed', label: 'In Karte', type: 'boolean', default: true },
   ],
   data: slots('transactions', 'accounts', 'cats', 'rules', 'budgets', 'subs', 'plans', 'events', 'prefs'),
-  events: ['capture.save', 'capture.undo', 'capture.mode'],
+  events: ['capture.save', 'capture.undo', 'capture.mode', 'capture.prefill-discard'],
   states: ['empty'],
   css: `
   .tk-fnp { display:flex; flex-direction:column; gap:var(--tk-space-3); min-width:0; max-width:520px; margin-inline:auto; width:100%; }
@@ -40,13 +40,16 @@ export const finNumpadCapture = {
   example: { props: { showImpact: true }, data: ex('transactions', 'accounts', 'categories', 'rules', 'budgets', 'subscriptions', 'plans', 'events', 'prefs') },
   render: function FinNumpadCapture({ props, data, setData, ctx }) {
     const c = pctx(ctx, data);
-    const [mode, setMode] = useState(props.defaultMode), [digits, setDigits] = useState(''), [cat, setCat] = useState(null), [accId, setAcc] = useState(null), [toId, setTo] = useState(null), [title, setTitle] = useState(''), [last, setLast] = useState(null);
+    // Vorbelegung (z. B. aus einem Beleg) füllt Art, Betrag, Titel, Kategorie und Konto; Verwerfen setzt alles zurück.
+    const [pf, setPf] = useState(() => readPrefill(ctx, { accounts: data.accounts, categories: data.categories }));
+    const [mode, setMode] = useState(() => pf?.kind || props.defaultMode), [digits, setDigits] = useState(() => (pf?.amount ? prefillAmountText(pf) : '')), [cat, setCat] = useState(() => pf?.category || null), [accId, setAcc] = useState(() => pf?.account || null), [toId, setTo] = useState(null), [title, setTitle] = useState(() => pf?.title || ''), [last, setLast] = useState(null);
     const accs = arr(data.accounts).filter((a) => a.type !== 'depot'), txs = arr(data.transactions);
     const wrap = (b) => (props.framed ? html`<${Card} title=${props.title} icon="keyboard">${b}<//>` : b);
     if (!accs.length) return wrap(html`<div class="tk-state"><div class="tk-state__title">Noch kein Konto</div><div class="tk-state__text">Lege ein Konto an, dann kannst du Buchungen erfassen.</div><div style="margin-top:8px"><${Button} variant="primary" icon="plus" onClick=${() => ctx.emit('account.add')}>Konto anlegen<//></div></div>`);
     const amount = digitsToNumber(digits), from = accId || accs.find((a) => a.type === 'giro')?.id || accs[0].id;
     const dest = toId && toId !== from ? toId : (accs.find((a) => a.type === 'savings' && a.id !== from) || accs.find((a) => a.id !== from))?.id;
-    const sug = mode === 'income' ? ['Einnahmen Shop', 'Einnahmen'] : suggestCategories({ txs, cats: data.categories, rules: data.rules, title, today: ctx.today, limit: 6 });
+    const sugBase = mode === 'income' ? ['Einnahmen Shop', 'Einnahmen'] : suggestCategories({ txs, cats: data.categories, rules: data.rules, title, today: ctx.today, limit: 6 });
+    const sug = pf?.category && mode !== 'transfer' && !sugBase.includes(pf.category) ? [pf.category, ...sugBase.slice(0, 5)] : sugBase; // vorbelegte Kategorie bleibt sichtbar
     const chosen = cat && sug.includes(cat) ? cat : cat || sug[0];
     const destAcc = accs.find((a) => a.id === dest), tcat = destAcc?.type === 'savings' ? 'Sparen' : 'Umbuchung';
     const key = (k) => setDigits((d) => pressKey(d, k));
@@ -54,11 +57,12 @@ export const finNumpadCapture = {
     const save = () => {
       if (!valid) return;
       const cc = mode === 'transfer' ? tcat : chosen, meta = catMeta(data.categories, cc);
-      const tx = buildTx(ctx, txs, { type: mode, amount, account: from, to: mode === 'transfer' ? dest : undefined, category: cc, title: title.trim(), icon: mode === 'transfer' ? 'arrow-left-right' : meta.icon });
-      bookTx(setData, tx); setLast(tx); setDigits(''); setTitle(''); setCat(null);
-      ctx.emit('capture.save', { id: tx.id, type: mode, amount }); ctx.toast(`${mode === 'transfer' ? 'Umbuchung' : 'Buchung'} gespeichert`);
+      const tx = buildTx(ctx, txs, { type: mode, amount, account: from, to: mode === 'transfer' ? dest : undefined, category: cc, title: title.trim(), icon: mode === 'transfer' ? 'arrow-left-right' : meta.icon, date: pf ? prefillDate(ctx, pf) : undefined, receiptId: pf?.receiptId });
+      bookTx(setData, tx); setLast({ ...tx, restore: pf?.receiptId ? markReceiptBooked(ctx, pf.receiptId, tx) : null }); setDigits(''); setTitle(''); setCat(null); setPf(null); ctx.setUi('prefill', null);
+      ctx.emit('capture.save', { id: tx.id, type: mode, amount, ...(pf?.receiptId ? { receiptId: pf.receiptId } : {}) }); ctx.toast(pf?.receiptId ? 'Beleg gebucht' : `${mode === 'transfer' ? 'Umbuchung' : 'Buchung'} gespeichert`);
     };
-    const undo = () => { if (!last) return; unbookTx(setData, last); ctx.emit('capture.undo', { id: last.id }); setLast(null); };
+    const undo = () => { if (!last) return; unbookTx(setData, last); last.restore?.(); ctx.emit('capture.undo', { id: last.id }); setLast(null); };
+    const discard = () => { setPf(null); setDigits(''); setTitle(''); setCat(null); setAcc(null); setMode(props.defaultMode); ctx.setUi('prefill', null); ctx.emit('capture.prefill-discard'); };
     const onKey = (e) => { if (/INPUT|SELECT|TEXTAREA|BUTTON/.test(e.target.tagName)) return; if (/^\d$/.test(e.key)) key(e.key); else if (e.key === ',' || e.key === '.') key(','); else if (e.key === 'Backspace') key('back'); else if (e.key === 'Enter') save(); };
     // Wirkung vorab: frei verfügbar und Budget der Kategorie
     let impact = null;
@@ -72,6 +76,7 @@ export const finNumpadCapture = {
     const fill = (f) => { setTitle(f.title); setCat(f.category); setAcc(f.account); setDigits(numberToDigits(f.amount)); };
     const selOpts = (skip) => accs.filter((a) => a.id !== skip).map((a) => ({ value: a.id, label: a.name }));
     return wrap(html`<div class="tk-fnp" tabindex="0" onKeyDown=${onKey} data-qa="numpad">
+      ${pf && html`<${PrefillNote} pf=${pf} onDiscard=${discard} />`}
       <${Segmented} label="Art der Buchung" value=${mode} onChange=${(v) => { setMode(v); setCat(null); ctx.emit('capture.mode', { mode: v }); }} options=${MODES} />
       <div class="tk-fnp__disp" aria-live="polite"><span class="tk-fnp__amt" data-empty=${String(!digits)} data-qa="amount">${mode === 'income' ? '+' : mode === 'expense' ? '−' : ''}${c.privacy ? '•••• ' : digits || '0'}</span><span class="tk-fn-meta" style="font-size:var(--tk-fs-xl)">€</span></div>
       ${mode !== 'transfer' ? html`<div><p class="tk-fnp__lab">Kategorie</p><div class="tk-fnp__chips" role="group" aria-label="Kategorie">${sug.map((id) => { const m = catMeta(data.categories, id); return html`<button type="button" class="tk-chip" aria-pressed=${String(chosen === id)} onClick=${() => setCat(id)}><${Icon} name=${m.icon} size=${14} />${m.label}</button>`; })}</div></div>` : null}

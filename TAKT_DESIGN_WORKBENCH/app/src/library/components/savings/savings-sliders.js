@@ -1,10 +1,11 @@
 // Sparpläne: Regler für den Rechner – Startbetrag, Rate, Laufzeit, Rendite, Kosten, Ratensteigerung (schreibt ui.calc).
 import { html } from '../../../lib/html.js';
 import { useState } from 'preact/hooks';
-import { Card, Button, Chip, Switch, Select } from '../../ui.js';
+import { Card, Button, Chip, Switch, Select, Segmented } from '../../ui.js';
 import { fmtNumber } from '../../../lib/format.js';
 import { arr, parseDe, clamp, SV_CSS } from './_savings.js';
-import { CALC_DEFAULT, CALC_LIMITS, INFLATION, getCalc, setCalc } from './_calc.js';
+import { COMPOUNDING } from '../../../core/finmath.js';
+import { CALC_DEFAULT, CALC_LIMITS, COMPOUNDING_OPTIONS, INFLATION, getCalc, setCalc } from './_calc.js';
 import { planPosition } from './_plans.js';
 
 const PCT = { ratePa: 1, costPa: 2, dynamicPa: 1 };
@@ -27,8 +28,8 @@ export const savingsSliders = {
   id: 'savings-sliders',
   name: 'Rechner-Regler',
   category: 'Sparpläne',
-  description: 'Regler und Direkteingabe für Startbetrag, Monatsrate, Laufzeit, Rendite-Annahme, Kosten und Ratensteigerung. Schreibt den Rechner-Zustand (ui.calc), auf den Diagramm, Ergebnis und Tabelle reagieren. Optionen: Inflation, Steuer-Schätzung.',
-  version: '1.0',
+  description: 'Regler und Direkteingabe für Startbetrag, Monatsrate, Laufzeit, Rendite-Annahme, Kosten und Ratensteigerung. Schreibt den Rechner-Zustand (ui.calc), auf den Diagramm, Ergebnis und Tabelle reagieren. Optionen: Verzinsung (effektiv oder nominal), Inflation, Steuer-Schätzung.',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Eingaben' },
     { name: 'fields', label: 'Felder', type: 'list', default: ['initial', 'monthly', 'years', 'ratePa', 'costPa', 'dynamicPa'] },
@@ -42,7 +43,7 @@ export const savingsSliders = {
     { slot: 'plans', label: 'Sparpläne', default: 'plans', shape: '{id,name,monthly,dynamicPa,expectedReturnPa,positionId?}[]' },
     { slot: 'positions', label: 'Positionen', default: 'positions', shape: '{id,value}[]' },
   ],
-  events: ['calc.change', 'calc.preset', 'calc.reset', 'calc.source', 'calc.option'],
+  events: ['calc.change', 'calc.preset', 'calc.reset', 'calc.source', 'calc.option', 'calc.compounding'],
   states: [],
   css: `${SV_CSS}
   .tk-svs { display:flex; flex-direction:column; gap:var(--tk-space-4); min-width:0; }
@@ -61,6 +62,7 @@ export const savingsSliders = {
   .tk-svs__range::-moz-range-thumb { width:20px; height:20px; border-radius:50%; background:var(--tk-c-accent); border:3px solid var(--tk-c-surface); box-shadow:0 0 0 1px var(--tk-c-accent); }
   .tk-svs__range:focus-visible { outline:2px solid var(--tk-c-focus); outline-offset:2px; border-radius:6px; }
   .tk-svs__opts { display:flex; flex-direction:column; gap:10px; padding-top:var(--tk-space-3); border-top:1px solid var(--tk-c-border); }
+  .tk-svs__conv { display:flex; flex-direction:column; align-items:flex-start; gap:6px; } .tk-svs__convt { color:var(--tk-c-text-subtle); font-size:var(--tk-fs-xs); line-height:var(--tk-lh-snug); }
   .tk-svs__opt { display:flex; align-items:center; justify-content:space-between; gap:12px; min-height:36px; font-size:var(--tk-fs-sm); color:var(--tk-c-text); } .tk-svs__opt small { display:block; color:var(--tk-c-text-subtle); }
   .tk-svs__chips { display:flex; flex-wrap:wrap; gap:6px; align-items:center; } .tk-svs__chips > span { font-size:var(--tk-fs-sm); color:var(--tk-c-text-muted); margin-right:4px; }`,
   example: { data: { plans: [{ id: 'sp1', name: 'All-World Sparplan', monthly: 300, dynamicPa: 0.03, expectedReturnPa: 0.06, positionId: 'p1' }], positions: [{ id: 'p1', value: 18036.55 }] } },
@@ -75,6 +77,9 @@ export const savingsSliders = {
       ${props.showPresets && fields.includes('ratePa') && html`<div class="tk-svs__chips" role="group" aria-label="Rendite-Annahme wählen"><span>Annahme</span>${[0.03, 0.05, 0.07].map((r) => html`<${Chip} active=${Math.abs(c.ratePa - r) < 1e-9} onClick=${() => { set({ ratePa: r }); ctx.emit('calc.preset', { ratePa: r }); }}>${fmtNumber(r * 100, { digits: 0 })} %<//>`)}</div>`}
       <div class=${`tk-svs__grid ${props.columns === '2' ? 'tk-svs__grid--2' : ''}`}>${fields.map((k) => html`<${Slider} key=${k} k=${k} value=${c[k]} onChange=${(v) => set({ [k]: v })} onCommit=${(v) => ctx.emit('calc.change', { field: k, value: v })} />`)}</div>
       ${props.showOptions && html`<div class="tk-svs__opts">
+        <div class="tk-svs__conv" data-qa="calc-convention"><span class="tk-svs__lab" id="svs-conv-l">Verzinsung</span>
+          <${Segmented} label="Verzinsungskonvention" value=${c.compounding} onChange=${(v) => { set({ compounding: v }); ctx.emit('calc.compounding', { compounding: v }); }} options=${COMPOUNDING_OPTIONS} />
+          <small class="tk-svs__convt">${COMPOUNDING[c.compounding]?.kurz}</small></div>
         <div class="tk-svs__opt"><span>In heutiger Kaufkraft<small>Rendite abzüglich ${fmtNumber(INFLATION * 100, { digits: 0 })} % Inflation p. a. (Annahme)</small></span><${Switch} checked=${c.real} label="In heutiger Kaufkraft rechnen" onChange=${(v) => { set({ real: v }); ctx.emit('calc.option', { real: v }); }} /></div>
         <div class="tk-svs__opt"><span>Nach Steuern schätzen<small>Vereinfacht, Aktienfonds, ohne Kirchensteuer</small></span><${Switch} checked=${c.tax} label="Nach Steuern schätzen" onChange=${(v) => { set({ tax: v }); ctx.emit('calc.option', { tax: v }); }} /></div></div>`}
       <div class="tk-sv-btnrow"><${Button} size="sm" variant="ghost" icon="rotate-ccw" onClick=${() => { ctx.setUi('calc', { ...CALC_DEFAULT }); ctx.emit('calc.reset'); }}>Zurücksetzen<//></div></div>`;

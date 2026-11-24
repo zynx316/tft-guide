@@ -144,9 +144,16 @@ async function contractStage(page, base) {
         }
       }
       if (f.selectedVariantId && !f.variants.some((v) => v.id === f.selectedVariantId)) errors.push(`${f.id}: bevorzugte Variante ${f.selectedVariantId} fehlt`);
-      for (const i of f.interactions) if (i.to && !state.features.some((x) => x.id === i.to)) errors.push(`${f.id}: Navigationsziel „${i.to}“ existiert nicht`);
-      const events = new Set(f.variants.flatMap((v) => v.blocks.flatMap((b) => reg.getComponent(b.component)?.events || [])));
-      for (const i of f.interactions) if (i.event && f.variants.length && !events.has(i.event) && !/^(nav|dialog|state)\./.test(i.event)) warnings.push(`${f.id}: Interaktion „${i.event}“ wird von keiner verwendeten Komponente ausgelöst`);
+      for (const i of f.interactions) if (i.to && !(i.to.startsWith('module:') ? state.modules.some((m) => m.id === i.to.slice(7)) : state.features.some((x) => x.id === i.to))) errors.push(`${f.id}: Navigationsziel „${i.to}“ existiert nicht`);
+      // Ausgelöste Events: statische Liste der Komponenten + konfigurierbare Events (Props wie primaryEvent, Event-Felder in Demo-Daten)
+      const evName = (e) => (typeof e === 'string' ? e : e?.name);
+      const isEv = (x) => typeof x === 'string' && /^[a-z][\w-]*\.[a-z][\w.-]*$/i.test(x);
+      const events = new Set(f.variants.flatMap((v) => v.blocks.flatMap((b) => (reg.getComponent(b.component)?.events || []).map(evName))));
+      for (const v of f.variants) for (const b of v.blocks) for (const [k, x] of Object.entries(b.props || {})) if (/event/i.test(k) && isEv(x)) events.add(x);
+      const scan = (o, depth = 0) => { if (!o || typeof o !== 'object' || depth > 4) return; for (const [k, x] of Object.entries(o)) { if (/^(event|.*Event)$/.test(k) && isEv(x)) events.add(x); else if (typeof x === 'object') scan(x, depth + 1); } };
+      scan(f.demoData || {});
+      const wild = [...events].filter((e) => e && e.endsWith('*')).map((e) => e.slice(0, -1));
+      for (const i of f.interactions) if (i.event && f.variants.length && !events.has(i.event) && !wild.some((w) => i.event.startsWith(w)) && !/^(nav|dialog|state)\./.test(i.event) && !/^open:[a-z0-9-]+(\.[a-z0-9-]+)?$/.test(i.event)) warnings.push(`${f.id}: Interaktion „${i.event}“ wird von keiner verwendeten Komponente ausgelöst`);
     }
     return { components: reg.COMPONENTS.length, features: state.features.length, errors, warnings };
   });
@@ -359,9 +366,12 @@ async function e2eStage(browser, base, log) {
     await eventually(async () => (await ap.locator('[data-qa="launchpad"]').count()) === 0 && (await ap.locator('[data-nav-module="calendar"][aria-current="page"]').count()) === 1, 'Launchpad öffnet das Modul nicht', 6000);
     await ap.locator('[data-nav-launchpad]').click(); await ap.locator('[data-qa="launchpad"]').waitFor({ timeout: 5000 });
     await ap.goto(base + '/preview.html?app=1&version=dir:fokus'); await ap.waitForSelector('body[data-ready]');
-    await ap.locator('[data-qa="nav-capture"]').click(); await ap.locator('[data-qa="capture-input"]').fill('QA-Aufgabe aus dem Erfassen');
-    await ap.locator('[data-qa="capture-save"]').click();
-    await ap.getByText(/Erfasst als Aufgabe/).first().waitFor({ timeout: 4000 });
+    await ap.locator('[data-qa="nav-capture"]').click(); await ap.locator('[data-qa="capture-input"]').first().fill('!QA-Aufgabe aus dem Erfassen');
+    await ap.locator('[data-qa="capture-save"]').first().click();
+    // Fokus-Knopf öffnet „Schnell erfassen“ (system.capture) bzw. – ohne dieses Feature – das Erfassen-Blatt der Runtime
+    await ap.getByText(/Erfasst als Aufgabe|Aufgabe erfasst/).first().waitFor({ timeout: 6000 });
+    await ap.evaluate(() => window.__taktPreview.navigate('tasks.overview'));
+    await eventually(async () => (await ap.getByText('QA-Aufgabe aus dem Erfassen').count()) > 0, 'Erfasste Aufgabe erscheint nicht in Aufgaben (gemeinsame Welt)', 6000);
     await ap.close();
   });
   await T('Demo & Entscheidung: Ebenen-Leiter und Feedback-Eingang', async () => {

@@ -78,6 +78,14 @@ export function CaptureSheet({ close, world, today, toast, emit }) {
   const save = () => {
     const t = text.trim(); if (!t) return;
     if (eff === 'task' && world) world.setData('tasks', (list) => [{ id: `t-neu-${(list || []).length + 1}`, title: t.replace(/^!\s*/, ''), due: day(today), priority: t.startsWith('!') ? 'hoch' : 'mittel', status: 'Offen', category: 'Eingang', subtasks: [] }, ...(list || [])]);
+    if (eff === 'note' && world) world.setData('notes', (list) => [{ id: `n-neu-${(list || []).length + 1}`, title: t.slice(0, 60), body: t, inbox: true, updated: `${day(today)}T09:30:00`, tags: [] }, ...(Array.isArray(list) ? list : [])]);
+    if (eff === 'event' && world) {
+      const tm = t.match(/(\d{1,2})(?::(\d{2}))?\s*uhr/i); const tomorrow = /morgen/i.test(t) && !/übermorgen/i.test(t);
+      const d = new Date(today); if (tomorrow) d.setDate(d.getDate() + 1);
+      const hh = String(tm ? Number(tm[1]) : 9).padStart(2, '0'), mm = tm?.[2] || '00';
+      const title = t.replace(/\b(morgen|heute)\b/ig, '').replace(/\d{1,2}(:\d{2})?\s*uhr/i, '').trim() || 'Termin';
+      world.setData('events', (list) => [{ id: `e-neu-${(list || []).length + 1}`, title, start: `${day(d)}T${hh}:${mm}:00`, end: `${day(d)}T${String(Number(hh) + 1).padStart(2, '0')}:${mm}:00`, category: 'Privat', tone: 'accent' }, ...(Array.isArray(list) ? list : [])]);
+    }
     if (eff === 'expense' && world) {
       // „-12,50 Rewe“ → Ausgabe vom Girokonto (Finanzen rechnen live aus der Welt: Frei verfügbar, Budgets, Saldo)
       const m = t.match(/[-−]?\s*(\d{1,3}(?:\.\d{3})*(?:,\d{1,2})?|\d+(?:[.,]\d{1,2})?)\s*€?/);
@@ -89,7 +97,7 @@ export function CaptureSheet({ close, world, today, toast, emit }) {
       }
     }
     emit('capture.add', { type: eff, text: t });
-    toast(`Erfasst als ${CAPTURE_TYPES.find((c) => c.id === eff).label}${eff === 'task' ? ' – erscheint in Aufgaben und Heute' : eff === 'expense' ? ' – gebucht vom Girokonto' : ''}`);
+    toast(`Erfasst als ${CAPTURE_TYPES.find((c) => c.id === eff).label}${{ task: ' – erscheint in Aufgaben und Heute', expense: ' – gebucht vom Girokonto', note: ' – im Notizen-Eingang', event: ' – im Kalender' }[eff] || ''}`);
     close();
   };
   return html`<div class="tk-col" style="gap:var(--tk-space-3)">

@@ -1,8 +1,8 @@
 // Modul "Trading" – Seed-Manifest. Referenztag: Di, 24.11.2026 09:30 (ctx.today). ALLES IST SIMULATION: Kurse fiktiv, keine Orderausführung.
 // Depot, Watchlist, Dividenden und Sparpläne kommen aus der gemeinsamen Finanzwelt (seed/world/finance.js, Eigentümer: Finanzen) per '@world:'.
-// Lokal im Modul liegen nur die Kursverläufe (fiktiv, auf den Welt-Kursen verankert), Kursalarme, simulierte Orders, gebuchte Käufe/Verkäufe,
-// Soll-Anteile und der Vergleichsindex. Rechnen: library/components/trading/_calc.js über core/finmath.js.
-import { buildInstruments, SEED } from '../../library/components/trading/_seeddata.js';
+// Kursalarme, simulierte Orders, gebuchte Käufe/Verkäufe, Soll-Anteile und der Vergleichsindex liegen in seed/world/trading.js (`@world:trading…`).
+// Lokal im Modul liegen nur die Kursverläufe (fiktiv, auf den Welt-Kursen verankert). Rechnen: library/components/trading/_calc.js über core/finmath.js.
+import { buildInstruments } from '../../library/components/trading/_seeddata.js';
 
 const ALL_VP = ['desktop', 'notebook', 'tablet', 'mobile'];
 const FULL = buildInstruments();
@@ -12,7 +12,8 @@ const WORLD = {
   positions: '@world:positions', cash: '@world:depotCash', history: '@world:depotHistory', watchlist: '@world:watchlist', dividends: '@world:dividends',
   plans: '@world:savingsPlans', transactions: '@world:transactions', accounts: '@world:accounts', allowance: '@world:taxAllowance',
 };
-const demo = (keep = []) => ({ ...WORLD, instruments: slim(keep), alerts: SEED.alerts, orders: SEED.orders, trades: SEED.trades, targets: SEED.targets, benchmark: SEED.benchmark });
+const TRD = { alerts: '@world:tradingAlerts', orders: '@world:tradingOrders', trades: '@world:tradingTrades', targets: '@world:tradingTargets', benchmark: '@world:tradingBenchmark' };
+const demo = (keep = []) => ({ ...WORLD, ...TRD, instruments: slim(keep) });
 
 const hdr = (props) => ({ id: 'hdr', component: 'page-header', region: 'header', props: { eyebrow: 'Trading', primaryLabel: '', ...props } });
 const blk = (id, component, region, props = {}, extra = {}) => ({ id, component, region, props, ...extra });

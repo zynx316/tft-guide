@@ -7,7 +7,7 @@ import { cap } from './_system.js';
 export const KINDS = {
   task: { label: 'Aufgabe', icon: 'list-checks', to: 'tasks.list', view: 'In Aufgaben ansehen', placeholder: 'z. B. !Angebot Müller schicken' },
   event: { label: 'Termin', icon: 'calendar', to: 'calendar.agenda', view: 'In der Agenda ansehen', placeholder: 'z. B. morgen 14 Uhr Zahnarzt' },
-  note: { label: 'Notiz', icon: 'sticky-note', to: 'tasks.inbox', view: 'Im Eingang ansehen', placeholder: 'z. B. Notiz: Idee für Newsletter-Betreff' },
+  note: { label: 'Notiz', icon: 'sticky-note', to: 'notes.inbox', view: 'Im Notizen-Eingang ansehen', placeholder: 'z. B. Notiz: Idee für Newsletter-Betreff' },
   expense: { label: 'Buchung', icon: 'wallet', to: 'finance.transactions', view: 'In den Umsätzen ansehen', placeholder: 'z. B. −12,50 Rewe' },
   meal: { label: 'Mahlzeit', icon: 'utensils', to: 'nutrition.log', view: 'Im Tagebuch ansehen', placeholder: 'z. B. Mittag Linsensuppe 450 kcal' },
   shopping: { label: 'Einkauf', icon: 'shopping-basket', to: 'nutrition.shopping', view: 'Auf der Einkaufsliste ansehen', placeholder: 'z. B. Milch kaufen' },
@@ -124,7 +124,11 @@ export function commitCapture(p, { setData, ctx, kind = p.kind }) {
     const item = { id, name: p.title, aisle: 'Sonstiges', qty: '' };
     setData('shopping', (s) => ({ ...obj(s), manual: [...(obj(s).manual || []), item] }));
     restore = () => setData('shopping', (s) => ({ ...obj(s), manual: (obj(s).manual || []).filter((x) => x.id !== id) }));
-  } else restore = add('inbox', { id, title: p.title, source: kind === 'note' ? 'Notiz' : 'Erfassen', at: iso(today), suggest: kind === 'note' ? { kind: 'note' } : {} });
+  } else if (kind === 'note') {
+    // Notizen legt „Erfassen“ als eigenes Objekt in `notes` an (Eingang der Notizen), nicht im Aufgaben-Eingang.
+    const full = String(p.title || '').trim(), short = full.length > 60 ? `${full.slice(0, 60).replace(/\s+\S*$/, '')} …` : full;
+    restore = add('notes', { id, title: short, body: full.length > 60 ? full : '', tags: [], inbox: true, updated: iso(today) });
+  } else restore = add('inbox', { id, title: p.title, source: 'Erfassen', at: iso(today), suggest: {} });
   return { id, restore, label: `${KINDS[kind].label}: ${p.title}` };
 }
 

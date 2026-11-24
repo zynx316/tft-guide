@@ -3,35 +3,15 @@
 // Demo-Daten kommen aus der gemeinsamen Datenwelt ('@world:…'): Erfassen schreibt in Aufgaben, Termine, Buchungen, Mahlzeiten und Einkauf,
 // Mitteilungen werden aus Aufgaben und Terminen abgeleitet, die Suche liest alle Sammlungen. Einstellungen (`prefs`) sind gemeinsamer Zustand.
 
+import { WORLD } from '../world/index.js';
+
 const ALL_VP = ['desktop', 'notebook', 'tablet', 'mobile'];
 const I = (trigger, result, event, to) => ({ trigger, result, event, ...(to ? { to } : {}) });
 /** Navigation per `open:<Ziel>`: die Komponente meldet genau dieses Event, die Runtime öffnet das Ziel. */
 const go = (to, trigger, result) => I(trigger, result || 'Zielscreen öffnet sich', `open:${to}`, to);
 
 // ------------------------------------------------------------------ Demo-Daten (lokal) ---
-/** Mitteilungen der Module (Aufgaben und Termine leitet die Komponente live aus der Welt ab; Finanzen kommt aus der Finanz-Welt). */
-const NOTIFICATIONS = [
-  { id: 'n-wx', module: 'weather', tone: 'warning', priority: 'wichtig', time: '2026-11-24T08:52:00', title: 'Böen-Warnung ab 14:00 Uhr', text: 'Stufe 2, bis 72 km/h bis 23:00 Uhr. Draußen-Termine prüfen.', to: 'weather.alerts' },
-  { id: 'n-sales', module: 'sales', tone: 'danger', priority: 'wichtig', time: '2026-11-24T07:48:00', title: 'Etsy: Anmeldung abgelaufen', text: 'Bestellungen werden nicht mehr abgeglichen. Verbinde den Kanal neu.', to: 'sales.connect' },
-  { id: 'n-inbox', module: 'tasks', tone: 'info', priority: 'normal', time: '2026-11-24T08:12:00', title: '4 Einträge im Eingang', text: '„Rückruf Spedition wegen Palette“ und 3 weitere warten auf Sortierung.', to: 'tasks.inbox' },
-  { id: 'n-trade', module: 'trading', tone: 'info', priority: 'normal', time: '2026-11-24T06:40:00', title: 'Kursalarm: Bitcoin über 84.000 €', text: 'Watchlist, Simulation. Aktueller Kurs 84.120 €.', to: 'trading.watchlist' },
-  { id: 'n-fit', module: 'fitness', tone: 'success', priority: 'normal', time: '2026-11-23T20:30:00', title: 'Morgen 18:30: Oberkörper A', text: 'Fünf Übungen, etwa 60 Minuten. Dein Plan steht bereit.', to: 'fitness.home' },
-  { id: 'n-sav', module: 'savings', tone: 'info', priority: 'normal', time: '2026-11-23T18:00:00', title: 'Sparpläne werden am 01.12. ausgeführt', text: '575 € bei deinem Broker. Das Girokonto deckt die Raten.', to: 'savings.calendar' },
-  { id: 'n-habit', module: 'habits', tone: 'neutral', priority: 'leise', time: '2026-11-23T21:00:00', title: 'Abendroutine um 21:00 Uhr', text: 'Drei Schritte, etwa 10 Minuten.', to: 'habits.home' },
-  { id: 'n-nut', module: 'nutrition', tone: 'neutral', priority: 'leise', time: '2026-11-24T08:30:00', title: 'Wasser: 1.000 von 2.500 ml', text: 'Mit einem Tipp trägst du ein Glas ein.', to: 'nutrition.water' },
-  { id: 'n-backup', module: 'settings', tone: 'neutral', priority: 'leise', time: '2026-11-24T03:00:00', title: 'Sicherung erstellt', text: 'Heute 03:00 Uhr, 6,9 MB. Die automatische Sicherung läuft jede Nacht.', to: 'settings.data' },
-  { id: 'n-review', module: 'home', tone: 'neutral', priority: 'leise', time: '2026-11-22T18:00:00', title: 'Wochenrückblick ist bereit', text: 'KW 47 in drei Zeilen: erledigt, gelernt, als Nächstes.', to: 'home.review' },
-];
-/** Papierkorb: Löschzeitpunkte relativ zum Referenztag (30 Tage Aufbewahrung). */
-const TRASH = [
-  { id: 'tr1', title: 'Altes Angebot Schmidt prüfen', module: 'tasks', kind: 'task', deletedAt: '2026-11-23T16:20:00', detail: 'Vertrieb', payload: { id: 't-trash-1', title: 'Altes Angebot Schmidt prüfen', due: '2026-11-20', priority: 'mittel', project: 'Vertrieb', category: 'Arbeit', status: 'Offen', subtasks: [] } },
-  { id: 'tr2', title: 'Zahnreinigung', module: 'calendar', kind: 'event', deletedAt: '2026-11-21T09:10:00', detail: 'Do, 26.11., 08:30', payload: { id: 'e-trash-1', title: 'Zahnreinigung', start: '2026-11-26T08:30:00', end: '2026-11-26T09:15:00', category: 'Gesundheit', tone: 'danger', reminders: ['1 Tag vorher'] } },
-  { id: 'tr3', title: 'Idee: Newsletter-Betreff Winter', module: 'notes', kind: 'note', deletedAt: '2026-11-16T11:00:00' },
-  { id: 'tr4', title: 'Doppelbuchung Amazon', module: 'finance', kind: 'transaction', deletedAt: '2026-11-10T19:45:00', detail: '23,99 €' },
-  { id: 'tr5', title: 'Meditation (Gewohnheit)', module: 'habits', kind: 'habit', deletedAt: '2026-11-02T08:05:00', detail: '12 Tage Serie' },
-  { id: 'tr6', title: 'Kartons bestellen', module: 'tasks', kind: 'task', deletedAt: '2026-10-28T14:00:00', detail: 'erledigt' },
-  { id: 'tr7', title: 'Reiseplan Japan, Entwurf', module: 'notes', kind: 'note', deletedAt: '2026-10-26T21:30:00' },
-];
+// Mitteilungen aller Module (`@world:allNotifications`) und der Papierkorb (`@world:trash`) kommen aus der gemeinsamen Datenwelt (world/index.js, world/system.js).
 const OFFLINE_QUEUE = [
   { id: 'q1', label: 'Aufgabe „Angebot Müller“ abgehakt', time: '09:12' },
   { id: 'q2', label: 'Buchung „REWE“ erfasst', time: '09:08' },
@@ -76,10 +56,12 @@ const LOCK_GROUPS = [
 ];
 
 const baseModuleHome = ['calendar.home', 'tasks.home', 'weather.home', 'sales.overview', 'fitness.home', 'savings.home', 'habits.home', 'trading.portfolio', 'nutrition.home', 'settings.home', 'home.today', 'finance.home'];
-const NOTIF_TARGETS = ['weather.alerts', 'sales.connect', 'tasks.inbox', 'trading.watchlist', 'fitness.home', 'savings.calendar', 'habits.home', 'nutrition.water', 'settings.data', 'home.review', 'tasks.list', 'tasks.detail', 'calendar.event', 'finance.subscriptions', 'finance.budgets', 'finance.transaction'];
-const SEARCH_TARGETS = ['tasks.detail', 'calendar.event', 'finance.transaction', 'finance.accounts', 'savings.plan', 'trading.detail', 'nutrition.recipe', 'nutrition.foods', 'system.capture', 'calendar.create', 'finance.quickadd', 'nutrition.log', 'settings.appearance', 'system.lock', 'system.trash', 'settings.data', 'settings.home',
+// Ziele der Mitteilungen und Suchtreffer aus den Aggregaten der Datenwelt (jede Navigation braucht eine Regel mit `to`), dazu die abgeleiteten Ziele
+const targetsOf = (list) => list.map((x) => x.to).filter(Boolean);
+const NOTIF_TARGETS = [...new Set([...targetsOf(WORLD.allNotifications), 'tasks.list', 'tasks.detail', 'calendar.event'])];
+const SEARCH_TARGETS = [...new Set([...targetsOf(WORLD.searchIndex), 'tasks.detail', 'calendar.event', 'finance.transaction', 'finance.accounts', 'savings.plan', 'trading.detail', 'nutrition.recipe', 'nutrition.foods', 'system.capture', 'calendar.create', 'finance.quickadd', 'nutrition.log', 'settings.appearance', 'system.lock', 'system.trash', 'settings.data', 'settings.home',
   'home.today', 'calendar.home', 'tasks.home', 'habits.home', 'notes.home', 'knowledge.home', 'picture-to-text.home', 'finance.home', 'savings.home', 'trading.portfolio', 'fitness.home', 'nutrition.home', 'weather.home', 'sales.overview',
-  'settings.region', 'settings.modules', 'settings.notifications', 'settings.accounts', 'system.help', 'settings.about'];
+  'settings.region', 'settings.modules', 'settings.notifications', 'settings.accounts', 'system.help', 'settings.about'])];
 
 const worldData = { tasks: '@world:tasks', events: '@world:events' };
 
@@ -150,7 +132,7 @@ export default {
         { id: 'fl-ruhe', name: 'Ruhezeiten anpassen', steps: [{ featureId: 'system.notifications', action: '„Regeln“ im Ruhezeiten-Hinweis' }, { featureId: 'settings.notifications', action: 'Von und Bis ändern' }] },
       ],
       viewports: ALL_VP,
-      demoData: { ...worldData, notifications: NOTIFICATIONS, financeNotifications: '@world:financeNotifications', prefs: '@world:prefs' },
+      demoData: { ...worldData, notifications: '@world:allNotifications', prefs: '@world:prefs' },
       variants: [
         {
           id: 'A', name: 'Liste nach Zeit', direction: 'kompakt',
@@ -282,7 +264,8 @@ export default {
       interactions: [
         go('tasks.list', '„Ansehen“ bei einer erfassten Aufgabe', 'Aufgabenliste öffnet sich'),
         go('calendar.agenda', '„Ansehen“ bei einem erfassten Termin', 'Agenda öffnet sich'),
-        go('tasks.inbox', '„Ansehen“ bei Notiz oder Eingang', 'Eingang öffnet sich'),
+        go('tasks.inbox', '„Ansehen“ bei Eingang', 'Eingang öffnet sich'),
+        go('notes.inbox', '„Ansehen“ bei Notiz', 'Notizen-Eingang öffnet sich'),
         go('finance.transactions', '„Ansehen“ bei einer erfassten Buchung', 'Umsätze öffnen sich'),
         go('nutrition.log', '„Ansehen“ bei einer erfassten Mahlzeit', 'Tagebuch öffnet sich'),
         go('nutrition.shopping', '„Ansehen“ bei einem Einkauf', 'Einkaufsliste öffnet sich'),
@@ -305,7 +288,7 @@ export default {
         { id: 'fl-eingang', name: 'Unklares sortieren', steps: [{ featureId: 'system.capture', action: '„Rückruf Spedition“ eingeben, Art „Aufgabe“ wählen' }, { featureId: 'tasks.list', action: 'Aufgabe prüfen' }] },
       ],
       viewports: ALL_VP,
-      demoData: { ...worldData, transactions: '@world:transactions', nutDiary: '@world:nutDiary', nutShopping: '@world:nutShopping', taskInbox: '@world:taskInbox', nutFoods: '@world:nutFoods' },
+      demoData: { ...worldData, transactions: '@world:transactions', nutDiary: '@world:nutDiary', nutShopping: '@world:nutShopping', taskInbox: '@world:taskInbox', notes: '@world:notes', nutFoods: '@world:nutFoods' },
       variants: [
         {
           id: 'A', name: 'Eine Zeile mit Erkennung', direction: 'kompakt',
@@ -343,7 +326,7 @@ export default {
         },
       ],
       selectedVariantId: 'A',
-      links: ['system.search', 'tasks.inbox', 'calendar.create', 'finance.quickadd', 'nutrition.log'],
+      links: ['system.search', 'tasks.inbox', 'notes.inbox', 'calendar.create', 'finance.quickadd', 'nutrition.log'],
     },
     // ------------------------------------------------------------ Willkommen (Onboarding)
     {
@@ -419,7 +402,7 @@ export default {
       ],
       flows: [{ id: 'fl-wieder', name: 'Aus Versehen gelöscht', steps: [{ featureId: 'system.trash', action: 'Aufgabe „Altes Angebot Schmidt prüfen“ wiederherstellen' }, { featureId: 'tasks.list', action: 'Aufgabe ist wieder in der Liste' }] }],
       viewports: ALL_VP,
-      demoData: { trash: TRASH, ...worldData },
+      demoData: { trash: '@world:trash', ...worldData },
       variants: [{
         id: 'A', name: 'Liste nach Restzeit', direction: 'kompakt',
         concept: 'Liste nach Restzeit gruppiert („Läuft bald ab“ zuerst), Filter nach Modul, Wiederherstellen und Löschen in der Zeile, Hinweis zur Aufbewahrung.',

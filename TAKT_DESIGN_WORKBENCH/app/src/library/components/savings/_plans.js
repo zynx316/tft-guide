@@ -1,20 +1,15 @@
 // Sparpläne – Plan-Logik: Ausführungstermine (Handelstage), Status, Verlauf, Ziele-Prognose, Bestätigen.
 // Rechenkern ist core/finmath.js; hier steht nur Zuordnung, Terminlogik und Formulierung.
-import { projectSavings, monthsToGoal, requiredMonthly, nextExecutions } from '../../../core/finmath.js';
-import { toDate, dayStart, addDays, addMonths, dayDiff, toIsoDay, daysInMonth } from '../../../lib/date.js';
+import { projectSavings, monthsToGoal, requiredMonthly, nextExecutions, isTradingDay, nextTradingDay, nonTradingReason } from '../../../core/finmath.js';
+import { toDate, dayStart, addMonths, dayDiff, toIsoDay, daysInMonth } from '../../../lib/date.js';
 import { fmtDate } from '../../../lib/format.js';
 import { arr, r2, sum, sid, clamp } from './_savings.js';
 
-// --- Handelstage -------------------------------------------------------------
-// Annahme (Stand 2026): Xetra-Schließtage und Bankfeiertage; Wochenenden sowieso. Vorerst lokal, Wunsch an den Kern.
-const HOLIDAYS = new Set([
-  '2026-12-24', '2026-12-25', '2026-12-26', '2026-12-31',
-  '2027-01-01', '2027-03-26', '2027-03-29', '2027-05-01', '2027-12-24', '2027-12-25', '2027-12-26', '2027-12-31',
-  '2028-01-01', '2028-04-14', '2028-04-17', '2028-05-01', '2028-12-24', '2028-12-25', '2028-12-26', '2028-12-31',
-]);
-export const isTradingDay = (d) => { const w = toDate(d).getDay(); return w !== 0 && w !== 6 && !HOLIDAYS.has(toIsoDay(d)); };
-export const nextTradingDay = (d) => { let x = dayStart(d); while (!isTradingDay(x)) x = addDays(x, 1); return x; };
-export const holidayName = (d) => (HOLIDAYS.has(toIsoDay(d)) ? 'Feiertag' : [0, 6].includes(toDate(d).getDay()) ? 'Wochenende' : '');
+// --- Handelstage -------------------------------------------------------------------------------
+// Wochenenden und Börsenfeiertage (Annahme mit Stand, siehe HANDELSTAGE) kommen aus dem Kern; hier nur die Namen der bisherigen Aufrufer.
+export { isTradingDay, nextTradingDay };
+/** Grund, warum der Tag kein Handelstag ist: „Wochenende“, Name des Feiertags (z. B. „Karfreitag“) oder leer. */
+export const holidayName = (d) => nonTradingReason(d);
 
 // --- Zuordnung ------------------------------------------------------------------
 export const planPosition = (plan, positions) => arr(positions).find((p) => p.id === plan?.positionId) || null;
@@ -68,7 +63,7 @@ export function planExecutions(plan, from, count = 6, confirmed = new Set()) {
     const date = nextTradingDay(r), iso = toIsoDay(date);
     if (confirmed.has(`${plan.id}|${iso}`)) continue;
     const nominal = nominalOf(plan, r);
-    out.push({ planId: plan.id, plan, date, iso, nominal, shifted: toIsoDay(nominal) !== iso, why: holidayName(nominal) || holidayName(addDays(date, -1)), amount: perExecution(plan) });
+    out.push({ planId: plan.id, plan, date, iso, nominal, shifted: toIsoDay(nominal) !== iso, why: holidayName(nominal), amount: perExecution(plan) });
     if (out.length >= count) break;
   }
   return out;

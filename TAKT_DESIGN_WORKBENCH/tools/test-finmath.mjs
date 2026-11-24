@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Referenztests für app/src/core/finmath.js – Werte unabhängig nachgerechnet (Formeln/Tabellenkalkulation).
-import { projectSavings, fvAnnuityNominal, monthsToGoal, requiredMonthly, loanSchedule, cagr, positionReturn, estimateTax, savingsRate, nextExecutions, TAX_DE } from '../app/src/core/finmath.js';
+import { projectSavings, fvAnnuityNominal, monthsToGoal, requiredMonthly, loanSchedule, cagr, positionReturn, estimateTax, savingsRate, nextExecutions, nextTradingDay, isTradingDay, annualEffective, safeToSpend, BOERSENFEIERTAGE, TAX_DE } from '../app/src/core/finmath.js';
 
 let fail = 0, n = 0;
 const near = (a, b, tol = 0.01) => Math.abs(a - b) <= tol;
@@ -36,9 +36,33 @@ const tx = estimateTax({ gain: 2000 }); t('Steuer nach Freibetrag', tx.tax === 2
 const tf = estimateTax({ gain: 2000, equityFund: true }); t('Teilfreistellung 30 %', tf.taxable === 400 && tf.tax === 105.5, tf);
 // 13) Sparquote: Umbuchung zählt nicht als Ausgabe
 const sr = savingsRate([{ amount: 4000 }, { amount: -2500 }, { amount: -500, type: 'transfer' }]); t('Sparquote ohne Umbuchung', near(sr.rate, 0.375, 1e-9) && sr.spend === 2500, sr);
-// 14) Ausführungstermine: am 1. jedes Monats, ab 24.11.2026 → 01.12.2026 (Di), 01.01.2027 (Fr), 01.02.2027 (Mo), 01.03.2027 (Mo), 01.04.2027, 01.05.2027 (Sa → Mo 03.05.)
-const ex = nextExecutions({ day: 1 }, new Date(2026, 10, 24), 6).map((x) => `${x.getDate()}.${x.getMonth() + 1}.${x.getFullYear()}`);
-t('Ausführungstermine', ex.join(' ') === '1.12.2026 1.1.2027 1.2.2027 1.3.2027 1.4.2027 3.5.2027', ex);
+// 14) Ausführungstermine: am 1. jedes Monats, ab 24.11.2026 → 01.12.2026 (Di), 01.01.2027 (Neujahr → Mo 04.01.), 01.02.2027 (Mo), 01.03.2027 (Mo), 01.04.2027, 01.05.2027 (Sa → Mo 03.05.)
+const dm = (x) => `${x.getDate()}.${x.getMonth() + 1}.${x.getFullYear()}`;
+const ex = nextExecutions({ day: 1 }, new Date(2026, 10, 24), 6).map(dm);
+t('Ausführungstermine', ex.join(' ') === '1.12.2026 4.1.2027 1.2.2027 1.3.2027 1.4.2027 3.5.2027', ex);
+
+// 15) Verzinsungskonvention: 10.000 € Start, 300 €/Monat, 20 Jahre – nominal (p. a. ÷ 12) und effektiv (zwölfte Wurzel)
+const ref = (compounding, ratePa) => projectSavings({ monthly: 300, initial: 10000, ratePa, years: 20, compounding }).value;
+t('nominal 3/5/7 %', near(ref('nominal', 0.03), 116698.15) && near(ref('nominal', 0.05), 150436.50) && near(ref('nominal', 0.07), 196665.39), [ref('nominal', 0.03), ref('nominal', 0.05), ref('nominal', 0.07)]);
+t('effektiv 3/5/7 %', near(ref('effektiv', 0.03), 116117.45) && near(ref('effektiv', 0.05), 148274.32) && near(ref('effektiv', 0.07), 190957.76), [ref('effektiv', 0.03), ref('effektiv', 0.05), ref('effektiv', 0.07)]);
+t('Standard ist effektiv', projectSavings({ monthly: 300, initial: 10000, ratePa: 0.05, years: 20 }).value === ref('effektiv', 0.05), null);
+t('nominal 5 % = 5,116 % effektiv', near(annualEffective(0.05, 'nominal'), 0.0511619, 1e-7) && near(annualEffective(0.05), 0.05, 1e-12), annualEffective(0.05, 'nominal'));
+let bad = false; try { projectSavings({ monthly: 1, compounding: 'x' }); } catch { bad = true; } t('Unbekannte Konvention wirft', bad, null);
+
+// 16) Handelstage: Wochenende, Feiertag, Feiertag vor Wochenende, Jahreswechsel
+const nt = (y, m, d, o) => dm(nextTradingDay(new Date(y, m - 1, d), o));
+t('Handelstag bleibt Handelstag', nt(2026, 11, 24) === '24.11.2026', nt(2026, 11, 24));
+t('Samstag → Montag', nt(2026, 11, 28) === '30.11.2026', nt(2026, 11, 28));
+t('Karfreitag + Ostermontag', nt(2027, 3, 26) === '30.3.2027', nt(2027, 3, 26));
+t('Feiertag vor Wochenende (Fr 1.5.2026)', nt(2026, 5, 1) === '4.5.2026', nt(2026, 5, 1));
+t('Jahreswechsel 24.12.2026 → 28.12.2026', nt(2026, 12, 24) === '28.12.2026', nt(2026, 12, 24));
+t('Silvester + Neujahr 2026/27 → 04.01.2027', nt(2026, 12, 31) === '4.1.2027', nt(2026, 12, 31));
+t('Eigene Feiertage ersetzen die Liste', nt(2026, 12, 24, { holidays: [] }) === '24.12.2026' && nt(2026, 11, 24, { holidays: ['2026-11-24'] }) === '25.11.2026', null);
+t('24 Börsenfeiertage 2026–2028', BOERSENFEIERTAGE.length === 24 && !isTradingDay(new Date(2028, 3, 17)) && isTradingDay(new Date(2028, 3, 18)), BOERSENFEIERTAGE.length);
+
+// 17) Frei verfügbar: 3.842,17 € − 412,30 € Kreditkarte − 120 € Abbuchungen − 300 € Sparrate − 500 € Puffer = 2.509,87 €, 7 Tage (24.–30.11.)
+const sg = safeToSpend({ balance: 3842.17, cardOpen: 412.30, fixedUpcoming: 120, plannedSavings: 300, reserve: 500, today: new Date(2026, 10, 24, 9, 30) });
+t('Frei verfügbar', sg.free === 2509.87 && sg.daysLeft === 7 && sg.perDay === 358.55, sg);
 
 console.log(`${fail ? '✖' : '✓'} Finanzmathematik: ${n - fail}/${n} Referenztests bestanden`);
 process.exitCode = fail ? 1 : 0;

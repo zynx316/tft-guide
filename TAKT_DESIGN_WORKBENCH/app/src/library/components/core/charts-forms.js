@@ -2,7 +2,7 @@
 import { html } from '../../../lib/html.js';
 import { useState, useRef, useLayoutEffect } from 'preact/hooks';
 import { Card, Button, Field, Input, Select, Textarea, EmptyState, Segmented, toneColor } from '../../ui.js';
-import { toList, nextId } from '../../helpers.js';
+import { toList, nextId, money, percent } from '../../helpers.js';
 import { fmt } from '../../../lib/util.js';
 
 // --------------------------------------------------------------------------
@@ -11,7 +11,7 @@ export const chart = {
   name: 'Diagramm',
   category: 'Diagramme',
   description: 'SVG-Diagramm: Balken, Linie, Fläche oder Ring. Mehrere Serien, Tooltip per Hover/Tap, Zeitraum-Umschalter optional.',
-  version: '1.0',
+  version: '1.1', // 1.1: Beträge/Prozente über money()/percent() (Privatsphäre, de-DE-Format)
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Verlauf' },
     { name: 'type', label: 'Typ', type: 'select', options: ['bar', 'line', 'area', 'donut'], default: 'bar' },
@@ -44,7 +44,7 @@ export const chart = {
       const ro = new ResizeObserver(([e]) => setW(Math.max(200, Math.round(e.contentRect.width))));
       ro.observe(box.current); return () => ro.disconnect();
     }, [props.type]);
-    const f = (v) => (props.format === 'currency' ? fmt.currency(v) : props.format === 'percent' ? fmt.percent(v) : fmt.number(v, v % 1 ? 1 : 0));
+    const f = (v) => (props.format === 'currency' ? money(ctx, v) : props.format === 'percent' ? percent(ctx, v, { sign: false }) : fmt.number(v, v % 1 ? 1 : 0));
     const head = ranges.length ? html`<${Segmented} value=${range} options=${ranges.map((r) => ({ value: r, label: r }))} onChange=${(r) => { setRange(r); ctx.emit('chart.range', { range: r }); }} />` : null;
     const empty = !d || (d.segments ? !d.segments.length : !(d.series || []).some((s) => s.values?.length));
     if (empty) return html`<${Card} title=${props.title}><${EmptyState} icon="bar-chart-3" title="Keine Daten" text="Für diesen Zeitraum liegen keine Werte vor." /><//>`;

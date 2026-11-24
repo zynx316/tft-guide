@@ -1,7 +1,6 @@
 // Modul "Start" – das Herzstück der App: modulübergreifende Tagesübersicht, Briefing, Rückblick und Anpassung.
 // Referenztag: Di, 24.11.2026 09:30 (ctx.today). Termine, Aufgaben, Finanzen, Wetter, Training und Ernährung kommen aus der gemeinsamen
 // Datenwelt (@world:…), Gewohnheiten aus dem Modul „Gewohnheiten“.
-import { HABITS } from './habits.js';
 import calendar from './calendar.js';
 import tasks from './tasks.js';
 import finance from './finance.js';
@@ -47,7 +46,7 @@ const stats = [
 ];
 
 const world = { events: '@world:events', tasks: '@world:tasks', finance: '@world:financeSummary', plans: '@world:savingsPlans', budgets: '@world:budgets', subs: '@world:subscriptions', weather: '@world:wxActive', training: '@world:fitnessToday', nutrition: '@world:nutSummary' };
-const local = { habits: HABITS, hints: HINTS };
+const local = { habits: '@world:habits', hints: HINTS };
 const ALL_VP = ['desktop', 'notebook', 'tablet', 'mobile'];
 const demoToday = { ...world, ...local, tiles: TILES, week };
 const demoBrief = { ...world, ...local };

@@ -306,9 +306,34 @@ const endOf = (start, min) => hhmm(toMin(start) + min);
 export const wxTraining = [
   ...Array.from({ length: 7 }, (_, k) => addDay(DAY0, k)).flatMap((date) => {
     const dow = dowOfIso(date), day = trainingProgram.days.find((d) => d.dow === dow);
-    if (day) return [{ id: `tr-${day.id}`, date, start: day.time, end: endOf(day.time, day.durationMin), title: `Krafttraining ${day.name}`, where: fitnessProfile.gym, outdoor: false, kind: 'Kraft' }];
+    if (day) return [{ id: `tr-${day.id}`, eventId: `e-fit-${day.id}`, date, start: day.time, end: endOf(day.time, day.durationMin), title: `Krafttraining ${day.name}`, where: fitnessProfile.gym, outdoor: false, kind: 'Kraft' }];
     if (dow === 5) return [{ id: 'tr-run', date, start: null, end: null, title: 'Lockerer Lauf', where: 'Johannisberg', outdoor: true, kind: 'Laufen', durationMin: 50 }];
-    if (dow === 6) return [{ id: 'tr-hike', date, start: '11:00', end: '15:00', title: 'Wanderung Taunus', where: 'Feldberg', outdoor: true, kind: 'Wandern', externalPlace: true }];
+    if (dow === 6) return [{ id: 'tr-hike', eventId: 'e20', date, start: '11:00', end: '15:00', title: 'Wanderung Taunus', where: 'Feldberg', outdoor: true, kind: 'Wandern', externalPlace: true }];
     return [];
   }),
 ];
+
+// --- Launchpad, Hinweise, Suche, Mitteilungen (aus den Orten und Warnungen oben abgeleitet) -------------------------------------
+const alertNow = wxActive.alerts.find((a) => a.level >= 2) || wxActive.alerts[0];
+const hm = (iso) => `${iso.slice(11, 13)}:${iso.slice(14, 16)}`;
+export const weatherSummary = {
+  kpis: [
+    { label: wxActive.name, value: String(Math.round(wxActive.current.temp)), unit: '°C', icon: 'cloud-sun', tone: 'info', to: 'weather.home' },
+    ...(alertNow ? [{ label: `Warnung Stufe ${alertNow.level}`, value: alertNow.short, icon: 'alert-triangle', tone: 'warning', to: 'weather.alerts' }] : []),
+    { label: 'Regen', value: wxActive.nowcast.text || 'trocken', icon: 'cloud-rain', tone: 'neutral', to: 'weather.radar' },
+  ],
+};
+export const weatherHints = alertNow ? [
+  { id: 'h-wx-alert', text: `${alertNow.short} ab ${hm(alertNow.from)} Uhr (Warnstufe ${alertNow.level}). Wege am besten vorher erledigen, der Lieferanten-Call um 15:00 Uhr läuft per Zoom.`, source: `wxActive.alerts[${alertNow.id}]`, module: 'weather', tone: 'warning', to: 'weather.alerts' },
+] : [];
+export const weatherSearch = [
+  ...wxPlaces.filter((p) => p.saved).map((p) => ({ id: `place:${p.id}`, type: 'Ort', title: p.name, subtitle: p.region, module: 'weather', to: 'weather.locations', params: { id: p.id } })),
+  ...wxActive.alerts.map((a) => ({ id: `wxalert:${a.id}`, type: 'Warnung', title: a.title, subtitle: `Stufe ${a.level} · ${a.short}`, module: 'weather', to: 'weather.alerts', params: { id: a.id } })),
+];
+export const weatherNotifications = alertNow ? [
+  { id: 'n-wx', title: `Böen-Warnung ab ${hm(alertNow.from)} Uhr`, text: `Stufe ${alertNow.level}, ${alertNow.short.toLowerCase().replace('sturmböen', 'Sturmböen')} bis ${hm(alertNow.to)} Uhr. Draußen-Termine prüfen.`, module: 'weather', tone: 'warning', priority: 'wichtig', time: alertNow.issued, to: 'weather.alerts' },
+] : [];
+
+// Szenarien: Wetter und Orte kommen von außen und bleiben im Ersten Start erhalten. Geplantes Training gibt es erst mit einem gewählten Plan
+// (der Erste Start hat noch keinen Termin im Kalender), darum ist `wxTraining` dort leer (Referenzen auf Termine bleiben auflösbar).
+export const scenarios = { erststart: { wxTraining: [] } };

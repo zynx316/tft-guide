@@ -2,84 +2,12 @@
 // Eigene Daten (Gewohnheiten, Routinen, Hinweise) – Verläufe werden deterministisch erzeugt (kein Zufall zur Laufzeit).
 // Die Daten werden auch vom Start-Modul genutzt (home.js importiert sie).
 
-// --- Datenerzeugung (reines JS, ohne UI-Importe) --------------------------------------------------------------
-const pad = (n) => String(n).padStart(2, '0');
-const keyOf = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-const parse = (k) => { const [y, m, d] = k.split('-').map(Number); return new Date(y, m - 1, d); };
-const add = (k, n) => { const d = parse(k); d.setDate(d.getDate() + n); return keyOf(d); };
-const wd = (k) => (parse(k).getDay() + 6) % 7;
-const END = '2026-11-23', TODAY = '2026-11-24';
-const lcg = (seed) => { let s = seed >>> 0; return () => { s = (Math.imul(s, 1664525) + 1013904223) >>> 0; return s / 4294967296; }; };
-
-/** recent: Muster der letzten Tage bis gestern (d = erledigt, p = teilweise, m = verpasst); davor zufällig nach Quote. */
-function build({ since, rate, recent = '', days = null, goal = null, seed, partial = 0.08 }) {
-  const rnd = lcg(seed), log = {}, start = add(END, -(recent.length - 1));
-  for (let k = since; k <= END; k = add(k, 1)) {
-    if (days && !days.includes(wd(k))) continue;
-    let st;
-    if (recent && k >= start) st = recent[Math.round((parse(k) - parse(start)) / 864e5)];
-    else { const r = rnd(); st = r < rate ? 'd' : r < rate + partial ? 'p' : 'm'; }
-    if (st === 'd') log[k] = goal ? goal.target : 1;
-    else if (st === 'p' && goal) log[k] = Math.max(goal.step, Math.floor((goal.target * (0.4 + rnd() * 0.4)) / goal.step) * goal.step);
-  }
-  return log;
-}
-/** Krafttraining: 3× pro Woche (Mo/Mi/Fr), die letzten 9 Wochen lückenlos. */
-function trainingLog() {
-  const rnd = lcg(77), log = {};
-  for (let w = '2026-03-02', i = 0; w <= '2026-11-16'; w = add(w, 7), i++) {
-    const full = w >= '2026-09-21';
-    const n = full ? 3 : rnd() < 0.78 ? 3 : 2;
-    [0, 2, 4].slice(0, n).forEach((d) => { log[add(w, d + (rnd() < 0.18 ? 1 : 0))] = 1; });
-  }
-  log['2026-11-23'] = 1; // Mo: Oberkörper (Push)
-  return log;
-}
-
-const withToday = (log, v) => ({ ...log, [TODAY]: v });
-const W8 = { target: 10, unit: 'Gläser', step: 1 }; // 10 Gläser à 250 ml = 2,5 l (Wasserziel aus Ernährung)
-const READ = { target: 20, unit: 'Min.', step: 5 };
-
-export const HABITS = [
-  { id: 'h-water', name: 'Wasser trinken', icon: 'droplet', tone: 3, daypart: 'tagsüber', time: '09:00', reminder: true, rhythm: { type: 'daily' }, goal: W8, since: '2026-06-15', link: { module: 'nutrition', label: 'Ernährung' },
-    log: withToday(build({ since: '2026-06-15', rate: 0.74, recent: 'dpddmddpdddmddddpdddddd', goal: W8, seed: 11 }), 4), note: 'Ein Glas = 250 ml. Ziel 2,5 Liter.' },
-  { id: 'h-vitd', name: 'Vitamin D', icon: 'pill', tone: 4, daypart: 'morgens', time: '07:15', reminder: true, rhythm: { type: 'daily' }, since: '2026-10-01', link: null,
-    log: withToday(build({ since: '2026-10-01', rate: 0.96, recent: 'dddddddddddddddddddddddd', seed: 21 }), 1), note: 'Oktober bis März, mit dem Frühstück.' },
-  { id: 'h-dehnen', name: 'Dehnen', icon: 'activity', tone: 2, daypart: 'morgens', time: '07:30', reminder: true, rhythm: { type: 'daily' }, since: '2026-08-10', link: null,
-    log: build({ since: '2026-08-10', rate: 0.66, recent: 'dmddmdddmddmdddmdmdddmddd', seed: 31 }), note: '10 Minuten: Nacken, Rücken, Hüfte – nach dem Aufstehen.' },
-  { id: 'h-plan', name: 'Tagesplanung', icon: 'list-checks', tone: 1, daypart: 'morgens', time: '08:30', reminder: true, rhythm: { type: 'weekdays' }, since: '2026-06-01', link: { module: 'calendar', label: 'Kalender' },
-    log: withToday(build({ since: '2026-06-01', rate: 0.86, recent: 'dddddddddddddddddddddddd', days: [0, 1, 2, 3, 4], seed: 41 }), 1), note: 'Top 3 festlegen, Kalender und Aufgaben abgleichen.' },
-  { id: 'h-lesen', name: 'Lesen', icon: 'book-open', tone: 5, daypart: 'abends', time: '21:30', reminder: true, rhythm: { type: 'daily' }, goal: READ, since: '2026-07-20', link: null,
-    log: build({ since: '2026-07-20', rate: 0.56, recent: 'mdddmpdmdddpmdddmddddmddd', goal: READ, seed: 51 }), note: 'Aktuell: „Die Kunst des guten Handelns“.' },
-  { id: 'h-handy', name: 'Kein Handy nach 22 Uhr', icon: 'moon', tone: 6, daypart: 'abends', time: '21:45', reminder: true, rhythm: { type: 'daily' }, since: '2026-09-14', link: null,
-    log: build({ since: '2026-09-14', rate: 0.55, recent: 'ddmdmdddmdmmdddmddmdmmdmm', seed: 61 }), note: 'Handy lädt im Flur. Wecker liegt in der Küche.' },
-  { id: 'h-training', name: 'Krafttraining', icon: 'dumbbell', tone: 6, daypart: 'abends', time: '18:30', reminder: false, rhythm: { type: 'perWeek', perWeek: 3 }, since: '2026-03-02', link: { module: 'fitness', label: 'Fitness' },
-    log: trainingLog(), note: 'Zählt automatisch, sobald ein Training in Fitness abgeschlossen wird.' },
-];
-
-export const ROUTINES = [
-  { id: 'r-morning', name: 'Morgenroutine', icon: 'sunrise', time: '06:45', steps: [
-    { id: 'rm1', title: 'Vitamin D nehmen', minutes: 1, habitId: 'h-vitd' },
-    { id: 'rm2', title: 'Kaffee ohne Handy', minutes: 5 },
-    { id: 'rm3', title: 'Dehnen', minutes: 10, habitId: 'h-dehnen' },
-    { id: 'rm4', title: 'Tagesplanung', minutes: 10, habitId: 'h-plan' },
-  ], log: { [TODAY]: ['rm2'] } },
-  { id: 'r-evening', name: 'Abendroutine', icon: 'moon', time: '21:30', steps: [
-    { id: 're1', title: 'Tagesabschluss', minutes: 5 },
-    { id: 're2', title: 'Lesen', minutes: 20, habitId: 'h-lesen' },
-    { id: 're3', title: 'Handy weglegen', minutes: 1, habitId: 'h-handy' },
-    { id: 're4', title: 'Licht aus', minutes: 1 },
-  ], log: {} },
-];
-
-export const HABIT_HINTS = [
-  { id: 'h-dehnen', tone: 'accent', icon: 'activity', title: 'Dehnen steht noch aus', text: 'Zehn Minuten reichen – danach läuft der Tag leichter.', source: 'Gewohnheiten', module: 'habits', actionLabel: 'Ansehen' },
-  { id: 'h-water', tone: 'info', icon: 'droplet', title: 'Wasser: ein Glas jetzt', text: 'Bis zum Mittag sind etwa fünf Gläser ein guter Stand.', source: 'Gewohnheiten · Ernährung', module: 'habits', actionLabel: 'Ansehen' },
-  { id: 'h-handy', tone: 'accent2', icon: 'moon', title: 'Gnadentag diese Woche noch frei', text: 'Ein verpasster Abend bricht deine Serie nicht – Pause statt Druck.', source: 'Gewohnheiten', module: 'habits', actionLabel: 'Serie ansehen' },
-];
+// Gewohnheiten, Routinen und Hinweise liegen in der gemeinsamen Datenwelt (world/habits.js, Eigentümer: habits); Start bindet dieselben Listen.
+// Exporte bleiben für Module, die die Rohdaten lesen (z. B. Tests).
+export { habits as HABITS, routines as ROUTINES, habitHintCards as HABIT_HINTS } from '../world/habits.js';
 
 const ALL_VP = ['desktop', 'notebook', 'tablet', 'mobile'];
-const demoData = { habits: HABITS, routines: ROUTINES, hints: HABIT_HINTS };
+const demoData = { habits: '@world:habits', routines: '@world:routines', hints: '@world:habitHintCards' };
 const tpl = [
   { id: 'tpl1', title: 'Wasser trinken', subtitle: '10 Gläser, zählt in Ernährung mit', icon: 'droplet', tone: 'info', badge: 'Beliebt', meta: 'täglich' },
   { id: 'tpl2', title: '10 000 Schritte', subtitle: 'Schrittzähler aus Fitness', icon: 'footprints', tone: 'success', badge: 'Fitness', meta: 'täglich' },

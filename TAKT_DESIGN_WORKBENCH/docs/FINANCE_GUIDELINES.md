@@ -2,7 +2,7 @@
 
 > **Stand:** 24.11.2026 · **Referenztag der Demo:** Di, 24.11.2026, 09:30 Uhr
 > **Gültigkeit:** verbindlich für jede Variante, Komponente und jeden Seed-Text in `finance.*`, `savings.*`, `trading.*` sowie für Geldbeträge in `home.*`, `sales.*`, `documents.*`, `goals.*` und `system.*` (Suche, Mitteilungen). Gilt, bis eine Entscheidung im Entscheidungslog sie ändert. **Alle Steuer- und Rechtsangaben sind Annahmen mit Stand-Datum und müssen vor einer Veröffentlichung geprüft werden („Annahme, vor Veröffentlichung prüfen“).**
-> **Zugehörige Dateien:** `app/src/core/finmath.js` (Rechenkern, `TAX_DE`) · `tools/test-finmath.mjs` (18 Referenztests) · `app/src/library/components/crosscut/legal-notice.js` · `app/src/lib/format.js` (Formatstandard `fmtMoney`, `maskMoney`, 14 Referenzwerte) · `app/src/library/helpers.js` (`money()`, `percent()`) · `tests/format.test.mjs`, `tests/finmath.test.mjs` · `app/src/seed/world/finance.js` · `docs/HEALTH_GUIDELINES.md` (Gegenstück für Körperdaten) · `docs/TEXT_STIL.md` · `docs/DATENWELT.md` · `docs/BAUPLAN.md` (4, 5.8, 6, 10) · Pflichtfrage `pattern-finance-legal` in `app/src/seed/catalog.js`.
+> **Zugehörige Dateien:** `app/src/core/finmath.js` (Rechenkern, `TAX_DE`) · `tools/test-finmath.mjs` (32 Referenztests) · `app/src/library/components/crosscut/legal-notice.js` · `app/src/lib/format.js` (Formatstandard `fmtMoney`, `maskMoney`, 14 Referenzwerte) · `app/src/library/helpers.js` (`money()`, `percent()`) · `tests/format.test.mjs`, `tests/finmath.test.mjs` · `app/src/seed/world/finance.js` · `docs/HEALTH_GUIDELINES.md` (Gegenstück für Körperdaten) · `docs/TEXT_STIL.md` · `docs/DATENWELT.md` · `docs/BAUPLAN.md` (4, 5.8, 6, 10) · Pflichtfrage `pattern-finance-legal` in `app/src/seed/catalog.js`.
 > **Ist und Ziel:** „Ist“ beschreibt den Code am Stichtag, „Ziel“ ist verbindlich für neue Arbeit. Abweichungen sind benannt.
 
 ## 1. Grundsatz
@@ -80,7 +80,7 @@ Beim ersten Öffnen eines Moduls mit `legal` erscheint einmalig der Dialog „Ve
 - Jede Rechnung, die auf einer Annahme beruht (Rendite, Steuersatz, Inflation, Kosten), nennt Annahme **und** Stand: „Annahme · 5 % p. a. · Stand 24.11.2026“. Annahmen sind **Eingaben**, keine Wahrheit.
 - Parameter stehen **nur** im Rechenkern, nie in Komponenten. Ist: `TAX_DE` mit `stand: '2026-01'` in `finmath.js`. Ziel: `TAX_PARAMS` mit Feld `asOf` (Bauplan 5.8) und Anzeige „Annahmen Stand: …“.
 - Ändert sich ein Parameter, ändert sich `asOf` und der Hinweistext (`steuer`: „Annahmen Stand 01/2026“) mit; kein Hinweis darf ein veraltetes Datum tragen (Prüfung: Hinweistext liest `asOf`).
-- Konvention der Verzinsung wird **genannt**: „Zins p. a., monatlich verzinst (nominal), Einzahlung am Monatsende“ (Abschnitt 4.3).
+- Konvention der Verzinsung wird **genannt**: „Verzinsung effektiv: Rendite p. a. ist die tatsächliche Jahresrendite, monatlich umgerechnet, Einzahlung am Monatsende“ bzw. die Variante „nominal“ (Abschnitt 4.3, Text aus `COMPOUNDING` im Rechenkern).
 
 ## 4. Spannen statt Einzelwert bei Prognosen
 
@@ -92,21 +92,37 @@ Formulierung: im Konjunktiv und mit Annahme („Bei 5 % Rendite pro Jahr wären 
 
 ### 4.2 Referenzwerte (Tests)
 
-Startbetrag 10.000 €, Sparrate 300 € pro Monat nachschüssig, 20 Jahre, Einzahlungen gesamt 82.000 €. Referenzrechnung mit **nominaler** Monatsverzinsung (Jahreszins / 12):
+Startbetrag 10.000 €, Sparrate 300 € pro Monat nachschüssig, 20 Jahre, Einzahlungen gesamt 82.000 €. Beide Konventionen (Abschnitt 4.3) mit denselben Eingaben, im Rechenkern über `projectSavings({ …, compounding })`:
 
-| Rendite | Endwert | Ertrag |
+| Rendite p. a. | Endwert **effektiv** (Standard) | Ertrag | Endwert **nominal** (p. a. ÷ 12) | Ertrag |
+|---|---|---|---|---|
+| 3 % | 116.117,45 € | 34.117,45 € | 116.698,15 € | 34.698,15 € |
+| 5 % | **148.274,32 €** | 66.274,32 € | **150.436,50 €** | 68.436,50 € |
+| 7 % | 190.957,76 € | 108.957,76 € | 196.665,39 € | 114.665,39 € |
+
+Prüfbare Formel nominal: `10000 * (1 + r / 12) ** 240 + fvAnnuityNominal(300, r, 240)` ergibt die rechte Spalte. Effektiv rechnet mit dem Monatszins `(1 + r) ** (1 / 12) − 1`. Beide Reihen sind in `tools/test-finmath.mjs` und `tests/finmath.test.mjs` geprüft (Standard ohne Angabe = effektiv). Weitere Referenzen: 100 €/Monat, 7 % nominal, 10 Jahre = 17.308,48 €. Steuerbeispiel: 1.500 € Gewinn Aktien-ETF, 30 % Teilfreistellung, 1.000 € Pauschbetrag, 25 % + 5,5 % Soli → **13,19 €** (`estimateTax`: steuerpflichtig 50 €, Steuer 13,19 €; stimmt).
+
+### 4.3 Verzinsungskonvention (festgelegt)
+
+**Festlegung (24.11.2026):** Der Rechenkern kennt zwei Konventionen und benennt sie in jeder Anzeige. Der **Standard** für alle Projektionen in TAKT ist **effektiv**; **nominal** ist eine wählbare Alternative (Option `compounding: 'effektiv' | 'nominal'` an `projectSavings`, `savingsScenarios`, `monthsToGoal`, `requiredMonthly`; Umschalter „Verzinsung“ im Sparrechner).
+
+| | **effektiv** (Standard) | **nominal** |
 |---|---|---|
-| 3 % | 116.698,15 € | 34.698,15 € |
-| 5 % | **150.436,50 €** | 68.436,50 € |
-| 7 % | 196.665,39 € | 114.665,39 € |
+| Bedeutung der Rendite p. a. | tatsächliche Jahresrendite nach Zinseszins: 1.000 € werden bei 5 % in einem Jahr zu 1.050 € | Jahreszins, der durch 12 geteilt und monatlich gutgeschrieben wird |
+| Monatszins | `(1 + p. a.)^(1/12) − 1` (bei 5 % rund 0,4074 %) | `p. a. / 12` (bei 5 % rund 0,4167 %) |
+| 1.000 € Einmalanlage nach 12 Monaten bei 5 % | 1.050,00 € | 1.051,16 € (tatsächliche Jahresrendite 5,116 %) |
+| Referenz 10.000 € + 300 €/Monat, 5 %, 20 Jahre | 148.274,32 € | 150.436,50 € |
+| Wann sinnvoll | Vergleich mit Indexrenditen, `cagr` und der Depotrendite; die genannte Zahl ist das, was am Jahresende ankommt | Vergleich mit Anbieter-Rechnern und mit dem Bauplan-Referenzwert |
 
-Prüfbare Formel für die Tabelle (nominal): `10000 * (1 + r / 12) ** 240 + fvAnnuityNominal(300, r, 240)` ergibt 116.698,15 / 150.436,50 / 196.665,39 für r = 0,03 / 0,05 / 0,07 (am Stichtag nachgerechnet). Ein Test mit diesen drei Werten fehlt in `tests/finmath.test.mjs` und ist Teil des Wunsches an MOD-SAV. Weitere Referenzen (`tools/test-finmath.mjs`): 100 €/Monat, 7 %, 10 Jahre = 17.308,48 €. Steuerbeispiel: 1.500 € Gewinn Aktien-ETF, 30 % Teilfreistellung, 1.000 € Pauschbetrag, 25 % + 5,5 % Soli → **13,19 €** (`estimateTax`: steuerpflichtig 50 €, Steuer 13,19 €; stimmt).
+**Unterschied in einem Satz:** Bei gleicher genannter Zahl rechnet nominal mit dem höheren Monatszins; im Referenzbeispiel liegt der Endwert bei 5 % um **2.162,18 €** über dem effektiven (1,5 %), bei 7 % um 5.707,63 €. Vergleiche nie Werte aus beiden Konventionen miteinander, ohne die Konvention zu nennen.
 
-### 4.3 Ist-Abweichung (bitte vor der Umsetzung klären)
+**Regeln**
+- Einzahlung immer am Monatsende (nachschüssig), Kosten (TER) werden vor der Umrechnung von der Rendite abgezogen (`ratePa − costPa`).
+- Jedes Ergebnis nennt die Konvention in einem Satz (`conventionNote` im Sparrechner, Text aus `COMPOUNDING` im Kern): „Verzinsung effektiv: Die Rendite p. a. ist die tatsächliche Jahresrendite …“. Bei nominal steht zusätzlich die tatsächliche Jahresrendite („5,00 % nominal entsprechen etwa 5,12 % tatsächlicher Jahresrendite“, `annualEffective`).
+- Eine Spanne (3 / 5 / 7 %) gilt immer in **einer** Konvention. Plan-Verläufe aus Depotwerten (`planHistory`) werden in der Standardkonvention auf Einstand und Wert abgestimmt.
+- Neue Berechnungen rufen `monthlyRate(ratePa, compounding)` bzw. `projectSavings` auf, nie eine eigene Potenz oder Wurzel in einer Komponente.
 
-- `projectSavings` rechnet mit dem **effektiven** Monatszins `(1 + p.a.)^(1/12) − 1`. Für das Referenzbeispiel ergibt das bei 5 % **148.274,32 €** statt 150.436,50 €, bei 3 % 116.117,45 € und bei 7 % 190.957,76 €. Der Bauplan nennt 150.436,50 € als Testwert; die vorhandenen Tests prüfen nur `fvAnnuityNominal` gegen 17.308,48 €.
-- `savingsScenarios` hat die Standardspanne **2 % / 6 % / 9 %** („pessimistisch, erwartet, optimistisch“) statt 3 / 5 / 7 %. Auch die Namen „pessimistisch“ und „optimistisch“ sind zu vermeiden, weil sie als Prognose lesbar sind (Ziel: „vorsichtig“, „Annahme“, „zuversichtlich“ oder nur die Prozentwerte).
-- **Entscheidung für neue Arbeit (Annahme):** Ziel ist die **nominale** Konvention, weil Sparplan-Anbieter und die Referenzwerte so rechnen. Bis `finmath.js` angepasst ist, nennt jede Anzeige die Konvention und das Referenzbeispiel gilt als Test, der erst nach der Anpassung grün wird (Wunsch an INF-2/MOD-SAV, siehe Bericht).
+**Weiter offen:** Die Standardspanne `savingsScenarios` heißt im Kern noch 2 / 6 / 9 % („pessimistisch, erwartet, optimistisch“); der Sparrechner arbeitet mit Annahme ± 2 PP (3 / 5 / 7 %) und eigenen Namen. Angleichung der Kern-Standardspanne und Umbenennung bleiben ein Wunsch an MOD-SAV.
 
 ## 5. Umbuchung ist neutral
 
@@ -182,9 +198,24 @@ Farbwahl: Gewinn `--tk-c-success`, Verlust `--tk-c-danger` (Finanz-Kontext, im U
 - Ein Sparplan in TAKT ist ein **Plan mit Erinnerung**. Er wird beim Broker oder bei der Bank angelegt, TAKT erinnert, gleicht ab und zeigt die Wirkung.
 - Pflichtsatz in `savings.plans`, `savings.create`, `savings.calendar` und im Leerzustand: **„Dieser Sparplan wird nicht von TAKT ausgeführt. Du trägst ihn bei deinem Broker ein, TAKT erinnert dich und gleicht ab.“**
 - **Ausführung manuell bestätigen** („Ausgeführt am 02.11.“); daraus entsteht eine Umbuchung (Abschnitt 5) und, wenn Positionen verknüpft sind, die Positionsänderung.
-- **Ausführungstermin:** Fällt der Tag auf ein Wochenende oder einen Feiertag, wird auf den nächsten Handelstag verschoben und der Hinweis „wird am Mo, 16.11. ausgeführt“ gezeigt. Ist: `nextExecutions` verschiebt Samstag und Sonntag auf Montag, **ohne Feiertage**; Ziel: Feiertage als Parameter.
+- **Ausführungstermin:** Fällt der Tag auf ein Wochenende oder einen Börsenfeiertag, wird auf den **nächsten Handelstag** verschoben und der Hinweis „wird am Mo, 16.11. ausgeführt“ bzw. „Verschoben vom 01.01. (Neujahr)“ gezeigt. Ist: `nextTradingDay(date, { holidays })`, `isTradingDay`, `nonTradingReason` und `nextExecutions(plan, from, count, { holidays })` im Kern (Abschnitt 8.1); `savings/_plans.js` nutzt sie, keine lokale Feiertagsliste mehr.
 - **Deckungs-Check:** „Am 01.12. fehlen 120,00 € auf dem Girokonto für alle Sparpläne.“ als Hinweis (`--tk-c-warning`), nie als Alarm.
 - Welt (Ist): 5 Pläne, 4 aktiv (All-World 300 €, Emerging Markets 75 €, World IT 50 €, Notgroschen 150 €), E-Bike pausiert bis 15.01.2027. Summe aktiver Raten **575 €** = Umbuchungen „Sparen“ im November. Der Plan Emerging Markets (Tag 15) ist am Sonntag 15.11. gebucht; nach der Regel oben wäre der Montag 16.11. richtig (Hinweis an MOD-SAV).
+
+### 8.1 Handelstage (Annahme mit Stand)
+
+- **Stand der Annahme: 24.11.2026**, Quelle: Xetra-Handelskalender, nicht amtlich geprüft („Annahme, vor Veröffentlichung prüfen“). Im Kern `HANDELSTAGE` (Stand, Jahre, Regel, Hinweistext) und `BOERSENFEIERTAGE` (24 Einträge).
+- **Börsenfeiertage 2026 bis 2028:** Neujahr, Karfreitag, Ostermontag, Tag der Arbeit (1. Mai), Heiligabend (24.12.), 1. und 2. Weihnachtstag, Silvester (31.12.). Dazu Samstag und Sonntag. Ostern wird per Regel berechnet (`easterSunday`), die Daten stehen als Tabelle in den Tests.
+
+| Jahr | Neujahr | Karfreitag | Ostermontag | 1. Mai | 24.12. | 25.12. | 26.12. | 31.12. |
+|---|---|---|---|---|---|---|---|---|
+| 2026 | Do 01.01. | Fr 03.04. | Mo 06.04. | Fr 01.05. | Do | Fr | Sa | Do |
+| 2027 | Fr 01.01. | Fr 26.03. | Mo 29.03. | Sa 01.05. | Fr | Sa | So | Fr |
+| 2028 | Sa 01.01. | Fr 14.04. | Mo 17.04. | Mo 01.05. | So | Mo | Di | So |
+
+- **Regel:** Der Termin rutscht auf den nächsten Handelstag, auch über den Monatswechsel (Do 31.12.2026 → Mo 04.01.2027, weil Silvester, Neujahr und das Wochenende davor liegen). Ein verschobener Termin zählt ab seinem **verschobenen** Tag (Sa 31.10. → Mo 02.11.: am 02.11. ist die Ausführung noch fällig).
+- **Eigene Feiertage:** Die Option `holidays` (Array, Set, Map oder Funktion) ersetzt die Standardliste, `holidays: []` heißt „nur Wochenenden“. Für Jahre außerhalb 2026 bis 2028 wird dieselbe Regel angewendet, ist dort aber nicht geprüft.
+- **Grenzen:** Der tatsächliche Ausführungstag hängt vom Broker ab (Sparpläne laufen oft an festen Börsentagen, einzelne Anbieter weichen ab). TAKT zeigt deshalb „voraussichtlich“, nie „wurde ausgeführt“.
 
 ## 9. Steuerparameter (Annahme, vor Veröffentlichung prüfen)
 
@@ -237,7 +268,7 @@ Zitate in „…“ in Anforderungen und Akzeptanzkriterien sind erlaubt (wie in
 
 ## 11. Herleitbarkeit und Datenstand
 
-- **Jede Kennzahl ist herleitbar.** „Frei verfügbar bis Monatsende“ trägt „Wie berechnet?“ mit den Posten (Saldo, anstehende Fixkosten, geplante Sparraten, Reserven, Tage bis Monatsende). Ziel: `safeToSpend()` in `finmath.js`.
+- **Jede Kennzahl ist herleitbar.** „Frei verfügbar bis Monatsende“ trägt „Wie berechnet?“ mit den Posten (Saldo, anstehende Fixkosten, geplante Sparraten, Reserven, Tage bis Monatsende). Ist: `safeToSpend({ balance, cardOpen, fixedUpcoming, plannedSavings, reserve, today })` in `finmath.js` rechnet Summe, Resttage und Tagesbetrag; die Auswahl der Konten und Termine bleibt in `finance/_calc.js`.
 - **Datenstand ehrlich benennen:** „Stand 09:30“, „Offline, Stand 09:15“, „Kurse verzögert“. Fiktive Daten heißen „fiktiv (Demo)“.
 - Alle Welt-Werte sind **fiktiv**. ISINs der Demo sind real, Kurse und Bestände erfunden. Kein Hinweis darf Realdaten behaupten.
 
@@ -254,15 +285,24 @@ Zitate in „…“ in Anforderungen und Akzeptanzkriterien sind erlaubt (wie in
 | F7 | Privatmodus: kein sichtbarer Betrag im DOM, Maske gleich breit | Probe `privacy-clean` |
 | F8 | Vorzeichen und Pfeil zusätzlich zur Farbe, Minus = U+2212 | Probe `money-format` |
 | F9 | Steuerwerte aus `TAX_DE`/`TAX_PARAMS`, nie hartkodiert | `check` (Zinsformeln und Sätze in Komponenten melden) |
-| F10 | Referenztests (150.436,50 €, 13,19 €) grün | `node tools/test-finmath.mjs` (18 Tests, Ist grün), `tests/finmath.test.mjs` |
+| F10 | Referenztests (150.436,50 €, 13,19 €) grün | `node tools/test-finmath.mjs` (32 Tests, Ist grün; beide Konventionen, Handelstage, Frei verfügbar), `tests/finmath.test.mjs` |
 | F11 | Plan-Tracker-Satz in Sparplan-Features | Review |
 | F12 | Kein horizontaler Überlauf bei 9.999.999,99 € auf 360 px | Probe |
 
 ## 13. Offene Punkte und Annahmen
 
 - **Rechtsprüfung** aller Hinweistexte und Steuerangaben vor jeder Veröffentlichung (BAUPLAN_PAKETE `decisionsForUser` Nr. 10). Wer prüft und wann: offen.
-- **Verzinsungskonvention** (nominal gegen effektiv) und Standardspanne (3/5/7 gegen 2/6/9): offen, Arbeitsannahme nominal und 3/5/7.
+- **Verzinsungskonvention:** festgelegt (Abschnitt 4.3), Standard effektiv, nominal wählbar. **Standardspanne** des Kerns (3/5/7 gegen 2/6/9): offen, der Sparrechner nutzt Annahme ± 2 PP.
+- **Handelstage:** Börsenfeiertage 2026 bis 2028 sind eine Annahme (Stand 24.11.2026), Prüfung gegen den offiziellen Xetra-Kalender steht aus.
 - **Kursdatenquelle** (kostenlos verzögert gegen lizenziert): offen, Demo fiktiv.
 - **Kontoanbindung** (Import statt Aggregator): Empfehlung, Entscheidung offen.
 - **Kirchensteuer, Basiszins, Teilfreistellung weiterer Fondstypen:** Parameter fehlen im Code, bis zur Pflege Hinweis statt Rechnung.
 - **Android-Schutz** (FLAG_SECURE, Biometrie, verschlüsselter Speicher): in der Workbench nur beschreibbar, nicht prüfbar; Test im Flutter-Projekt.
+
+## 14. Beleg → Buchung
+
+- **Ablauf in der App:** Im Feature „Beleg erkennen“ (Picture to Text) öffnet „Als Ausgabe buchen“ **Schnell erfassen** in Finanzen mit den erkannten Angaben als Vorbelegung. Gebucht wird erst, wenn dort „Speichern“ bzw. „Erfassen“ gedrückt wird; vorher entsteht keine Buchung und der Beleg bleibt „offen“. Danach steht der Beleg auf „Gebucht“, die Buchung trägt `receiptId`. **Rückgängig** in Schnell erfassen setzt die Buchung, die Salden und den Beleg zurück.
+- **Schnittstelle:** `ctx.emit('receipt.book', { id, to: 'finance.quickadd', ui: { prefill } })` mit `prefill = { kind: 'expense', title, amount, date: 'YYYY-MM-DD', time?: 'HH:mm', category, account, receiptId }`. `amount` ist der Betrag (das Vorzeichen wird ignoriert), `account` eine Konto-ID oder ein Kontoname, `category` eine Kategorie aus der Finanzwelt (unbekannte Kategorien bleiben als Text erhalten). Die Schnellerfassung liest `ctx.ui.prefill` (`readPrefill` in `finance/_fin.js`), zeigt „aus Beleg“ mit „Verwerfen“ und leert die Vorbelegung nach dem Speichern.
+- **Einzel-Screen:** Ohne App (Feature- oder Galerie-Modus) ist kein Ziel erreichbar; „Als Ausgabe buchen“ schreibt dann wie bisher direkt in die Buchungen der Vorschau und der Hinweis lautet „Die Buchung wird nur vorgeschlagen und erst nach „Als Ausgabe buchen“ angelegt“.
+- **Datum und Uhrzeit:** Tag und Uhrzeit stammen vom Beleg; fehlt die Uhrzeit, gilt „jetzt“ (am selben Tag) bzw. 12:00 Uhr.
+- **Prüfpflicht:** Der Hinweis „bitte mit dem Beleg vergleichen“ bleibt sichtbar, weil Beträge aus der Texterkennung stammen.

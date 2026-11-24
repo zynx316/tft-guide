@@ -2,17 +2,8 @@
 import { html } from '../../../lib/html.js';
 import { useState } from 'preact/hooks';
 import { Card, Button, Badge, Icon, EmptyState, Tabs, Field, Input, Select } from '../../ui.js';
-import { fmt } from '../../../lib/util.js';
-import { toList } from '../../helpers.js';
 import { rel, filterItems, ORDER_STAGES } from './shared.js';
-import { money } from '../../helpers.js';
-// Zusatzkomponenten der Inhalts-Bereiche (Notizen, Wissen, Erkennung): werden hier mit registriert, weil content/index.js nur Einzelexporte kennt.
-import { noteChecklists, noteInbox } from '../content/note-list.js';
-import { noteFocus } from '../content/note-editor.js';
-import { kbAreas } from '../content/kb-tree.js';
-import { kbNext } from '../content/kb-article.js';
-import { captureLauncher, docScanner } from '../content/capture-panel.js';
-import { receiptReview, businessCard } from '../content/ocr-result.js';
+import { toList, money } from '../../helpers.js';
 
 const STAGES = ORDER_STAGES;
 const CHIPS = Object.fromEntries(Object.entries(STAGES).map(([k, s]) => [s.label.toLowerCase(), (o) => o.status === k]));
@@ -22,7 +13,7 @@ export const orderPipeline = {
   name: 'Bestell-Pipeline',
   category: 'Vertrieb',
   description: 'Bestellungen nach Status (neu → bezahlt → versendet → zugestellt) mit Zählern, Summen und Weiterschalten per Aktion. Als Reiter-Liste oder Spalten (Desktop). Ein Tipp auf eine Bestellung öffnet einen Dialog oder – mit openIn „select“ – meldet order.open mit ID (für die Navigation zum Bestelldetail).',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Bestellungen' },
     { name: 'stages', label: 'Angezeigte Status', type: 'list', default: ['new', 'paid', 'shipped', 'delivered'] },
@@ -91,7 +82,7 @@ export const orderPipeline = {
         body: () => html`<div class="tk-col" style="gap:10px"><div class="tk-row"><${Badge} tone=${st.tone}>${st.label}<//><span class="tk-muted">${o.channel} · ${rel(o.date, ctx.today)}</span></div>
           <dl class="tk-detail__fields" style="display:grid;grid-template-columns:minmax(90px,auto) 1fr;gap:8px 16px;margin:0;font-size:var(--tk-fs-sm)">
             <dt class="tk-subtle">Kunde</dt><dd style="margin:0">${o.customer}</dd><dt class="tk-subtle">Artikel</dt><dd style="margin:0">${o.items} ${o.items === 1 ? 'Position' : 'Positionen'}</dd>
-            <dt class="tk-subtle">Summe</dt><dd style="margin:0;font-weight:600">${fmt.currency(o.total)}</dd></dl></div>`,
+            <dt class="tk-subtle">Summe</dt><dd style="margin:0;font-weight:600">${money(ctx, o.total)}</dd></dl></div>`,
         footer: (close) => html`<${Button} onClick=${close}>Schließen<//>${st.next && html`<${Button} variant="primary" icon="arrow-right" onClick=${() => { advance(o); close(); }}>${st.action}<//>`}`,
       });
     };
@@ -99,7 +90,7 @@ export const orderPipeline = {
       return html`<div class="tk-order-pipeline__row" role="button" tabindex="0" aria-selected=${ctx.ui.selectedId === o.id ? 'true' : 'false'} onClick=${() => open(o)} onKeyDown=${(e) => e.key === 'Enter' && open(o)}>
         <div class="tk-order-pipeline__main"><div class="tk-order-pipeline__no"><span>${o.number}</span><${Badge}>${o.channel}<//></div>
           <div class="tk-order-pipeline__sub tk-truncate">${o.customer} · ${o.items} Art. · ${rel(o.date, ctx.today)}</div></div>
-        <span class="tk-order-pipeline__total">${fmt.currency(o.total)}</span>
+        <span class="tk-order-pipeline__total">${money(ctx, o.total)}</span>
         ${st.next ? html`<span class="tk-order-pipeline__act"><${Button} size="sm" icon="arrow-right" onClick=${(e) => { e.stopPropagation(); advance(o); }}>${st.action}<//></span>` : html`<span class="tk-order-pipeline__act"><${Badge} tone="success" icon="check">Abgeschlossen<//></span>`}
       </div>`; };
     const empty = (txt) => html`<${EmptyState} icon="package" title="Keine Bestellungen" text=${txt || (ctx.ui.query ? `Keine Treffer für „${ctx.ui.query}“.` : 'Sobald Bestellungen eingehen, erscheinen sie hier.')} />`;
@@ -109,7 +100,7 @@ export const orderPipeline = {
     const stats = html`<div class="tk-order-pipeline__stats" style=${`--n:${keys.length}`}>${keys.map((k) => html`<button type="button" class="tk-order-pipeline__stat" aria-pressed=${props.mode === 'tabs' || ctx.bp === 'mobile' ? String(cur === k) : 'false'}
       onClick=${() => { setActive(k); ctx.emit('pipeline.stage', { stage: k }); }}>
       <span style=${`color:var(--tk-c-${STAGES[k].tone})`}><${Icon} name=${STAGES[k].icon} size=${14} /><span style="color:var(--tk-c-text-muted)">${STAGES[k].label}</span></span>
-      <strong>${by(k).length}</strong><small>${fmt.currency(sum(k))}</small></button>`)}</div>`;
+      <strong>${by(k).length}</strong><small>${money(ctx, sum(k))}</small></button>`)}</div>`;
 
     if (props.mode === 'columns' && ctx.bp !== 'mobile') {
       return html`<div class="tk-order-pipeline tk-order-pipeline--cols"><div class="tk-h3" style="margin-bottom:10px">${props.title}</div>
@@ -199,4 +190,4 @@ const orderDetail = {
   },
 };
 
-export default [orderPipeline, orderDetail, noteChecklists, noteInbox, noteFocus, kbAreas, kbNext, captureLauncher, docScanner, receiptReview, businessCard];
+export default [orderPipeline, orderDetail];

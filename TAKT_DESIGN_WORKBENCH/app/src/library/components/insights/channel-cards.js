@@ -14,7 +14,7 @@ export const channelCards = {
   name: 'Kanal-Karten',
   category: 'Vertrieb',
   description: 'Verkaufskanäle (Shopify, Etsy, Amazon …) als Karten oder Zeilen mit Status, Umsatz, Bestellungen und letztem Sync. Aktion „Synchronisieren“ mit Ladezustand; Fehlerkanäle optional zuerst. Ein Tipp auf den Kanal meldet channel.open mit ID.',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Verkaufskanäle' },
     { name: 'minWidth', label: 'Min. Kartenbreite (px)', type: 'number', default: 260 },
@@ -106,7 +106,7 @@ export const channelCards = {
             </div>
             ${ch.status === 'error' && ch.error && html`<div class="tk-channel-card__err"><${Icon} name="alert-triangle" size=${16} /><span>${ch.error}</span></div>`}
             ${props.showStats && html`<div class="tk-channel-card__stats">
-              <div class="tk-channel-card__stat"><span>Umsatz 30 Tage</span><strong>${fmt.currency(ch.revenue)}</strong></div>
+              <div class="tk-channel-card__stat"><span>Umsatz 30 Tage</span><strong>${money(ctx, ch.revenue)}</strong></div>
               <div class="tk-channel-card__stat"><span>Bestellungen</span><strong>${fmt.number(ch.orders)}</strong></div></div>`}
             <div class="tk-channel-card__foot">
               <span class="tk-channel-card__sync"><${Icon} name="clock" size=${13} /><span>${isBusy ? 'Synchronisiere …' : `${ch.lastSync ? `Sync ${rel(ch.lastSync, ctx.today)}` : 'Noch nicht synchronisiert'}`}</span></span>

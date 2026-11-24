@@ -3,68 +3,15 @@
 const L = (...lines) => lines.join('\n');
 const ALL_VP = ['desktop', 'notebook', 'tablet', 'mobile'];
 
-const notes = [
-  { id: 'n1', title: 'Ideen TAKT V2', pinned: true, tags: ['Projekt', 'Ideen'], updated: '2026-11-24T07:40:00',
-    body: L('## Fokus', '- Modulweise Entwicklung mit der Workbench', '- Design vor Code: Varianten vergleichen, dann freigeben', '- Ein Token-Set für alle drei Themes', '', '## Offene Fragen', '- Wie viel Markdown braucht eine Notiz wirklich?', '- Sollen Checklisten mit Aufgaben verknüpft werden?', '', '> Tipp: Erst die Mobile-Variante entwerfen, dann auf Desktop erweitern.') },
-  { id: 'n2', title: 'Einkaufsliste Wochenende', tags: ['Privat'], updated: '2026-11-23T18:20:00',
-    body: L('- [x] Hafermilch', '- [x] Tomaten', '- [ ] Basilikum', '- [ ] Kaffee (Bohnen)', '- [ ] Parmesan', '- [ ] Spülmittel') },
-  { id: 'n3', title: 'Meeting Sales-Review', tags: ['Arbeit', 'Sales'], updated: '2026-11-23T11:05:00',
-    body: L('## Ergebnisse', '- Q4-Umsatz liegt **8 %** über Plan', '- Etsy-Kanal wächst am stärksten', '- Marktplatz-Gebühren steigen ab Januar', '', '## Aufgaben', '- [ ] Preisstrategie für Januar vorbereiten', '- [ ] Lieferanten-Call bestätigen', '- [x] Zahlen aus Shopify exportieren') },
-  { id: 'n4', title: 'Reiseplanung Lissabon', pinned: true, tags: ['Privat', 'Reisen'], updated: '2026-11-20T21:10:00',
-    body: L('## Eckdaten', '- 12.–16. Dezember, 4 Nächte', '- Flug ab Düsseldorf, 07:15 Uhr', '- Unterkunft in der Alfama', '', '## Ideen', '- Tram 28 früh am Morgen nehmen', '- Pastéis de Belém', '- Tagesausflug nach Sintra', '', '> Hinweis: Reisepass bis Mai 2027 gültig – passt.') },
-  { id: 'n5', title: 'Rezept: Linsen-Dal', tags: ['Rezepte'], updated: '2026-11-18T19:30:00',
-    body: L('Cremig, schnell und perfekt für kalte Abende.', '', '## Zutaten', '- 250 g rote Linsen', '- 1 Dose Kokosmilch', '- 1 Zwiebel, 2 Knoblauchzehen', '- Kurkuma, Kreuzkümmel, Garam Masala', '', '## Zubereitung', '1. Zwiebel und Knoblauch anschwitzen', '2. Gewürze kurz mitrösten', '3. Linsen und Kokosmilch zugeben, 20 Minuten köcheln') },
-  { id: 'n6', title: 'Lesenotizen: Deep Work', tags: ['Lernen'], updated: '2026-11-15T20:00:00',
-    body: L('## Kernideen', '- Konzentrierte Arbeit braucht **geschützte Zeitblöcke**', '- Rituale senken die Einstiegshürde', '- Ablenkung ist teurer als sie aussieht', '', '> Wichtig: 90 Minuten am Stück sind für mich die Obergrenze.') },
-  { id: 'n7', title: 'Geschenkideen Weihnachten', tags: ['Privat'], updated: '2026-11-12T09:15:00',
-    body: L('- [ ] Jana: Kochbuch „Plenty“', '- [ ] Papa: Wanderkarte Teutoburger Wald', '- [x] Oma: Handschuhe', '- [ ] Team: Adventskalender (Kaffee)') },
-  { id: 'n8', title: 'Steuer 2026 – To-do', tags: ['Finanzen'], updated: '2026-11-09T16:40:00',
-    body: L('- [x] Spendenquittungen sammeln', '- [ ] Belege Homeoffice-Pauschale', '- [ ] Fahrtenbuch abschließen', '- [ ] Termin Steuerberater bestätigen') },
-  { id: 'n9', title: 'Podcast-Ideen', tags: ['Ideen'], updated: '2026-11-02T22:05:00',
-    body: L('Kurze Folgen (15 Minuten) zu persönlicher Produktivität.', '', '- Folge 1: Warum To-do-Listen scheitern', '- Folge 2: Wochenplanung in 10 Minuten', '- Folge 3: Notizen, die man wiederfindet') },
-  { id: 'n10', title: 'Packliste Wochenende Harz', archived: true, tags: ['Reisen'], updated: '2026-10-30T08:00:00',
-    body: L('- [x] Wanderschuhe', '- [x] Regenjacke', '- [x] Thermoskanne', '- [x] Ladekabel') },
-  // Eingang: noch nicht einsortiert
-  { id: 'n11', title: 'Newsletter-Betreff testen', inbox: true, tags: [], updated: '2026-11-24T08:52:00',
-    body: 'Zwei Betreffzeilen im A/B-Test: „Black Friday: 20 % auf Wohntextilien“ gegen „Dein Winter wird gemütlich“.' },
-  { id: 'n12', title: 'Rückruf Frau Weber (Lieferung)', inbox: true, tags: [], updated: '2026-11-24T09:05:00',
-    body: 'Frau Weber fragt nach der Lieferzeit für die Wolldecke Skagen. Bis morgen zurückrufen.' },
-  { id: 'n13', title: 'Kaffeebohnen fürs Büro nachbestellen', inbox: true, tags: [], updated: '2026-11-23T20:15:00',
-    body: 'Hausmischung, 1 kg. Vorrat reicht noch bis Freitag.' },
-];
-
-const history = [
-  { id: 'h1', title: 'Notiz bearbeitet', time: '2026-11-24T07:40:00', icon: 'pencil', tone: 'accent', text: 'Abschnitt „Offene Fragen“ ergänzt' },
-  { id: 'h2', title: 'Tag „Ideen“ hinzugefügt', time: '2026-11-23T21:12:00', icon: 'tag', tone: 'info' },
-  { id: 'h3', title: 'Notiz angeheftet', time: '2026-11-22T08:30:00', icon: 'pin', tone: 'warning' },
-  { id: 'h4', title: 'Notiz angelegt', time: '2026-11-20T18:05:00', icon: 'sticky-note', tone: 'success' },
-];
-
-// Abgeleitete Kennzahlen (rechnerisch aus den Notizen, nie von Hand getippt)
-const live = notes.filter((n) => !n.archived && !n.inbox);
-const inboxCount = notes.filter((n) => n.inbox && !n.archived).length;
-const openChecks = live.reduce((s, n) => s + (n.body.match(/^\s*[-*]\s+\[ \]/gm) || []).length, 0);
-const metrics = [
-  { label: 'Notizen', value: live.length, icon: 'sticky-note', tone: 'accent' },
-  { label: 'Angeheftet', value: live.filter((n) => n.pinned).length, icon: 'pin', tone: 'warning' },
-  { label: 'Im Eingang', value: inboxCount, icon: 'inbox', tone: inboxCount ? 'info' : 'success' },
-  { label: 'Offene Punkte', value: openChecks, icon: 'list-checks', tone: 'success' },
-];
-const tagCount = {};
-for (const n of live) for (const t of n.tags || []) tagCount[t] = (tagCount[t] || 0) + 1;
-const tagChart = { segments: Object.entries(tagCount).sort((a, b) => b[1] - a[1]).slice(0, 6).map(([label, value]) => ({ label, value })) };
-
-const links = [
-  { id: 'l1', label: 'Aufgabe: Wireframes Kalender prüfen', module: 'tasks', sub: 'fällig heute' },
-  { id: 'l2', label: 'Sprint-Planung', module: 'calendar', sub: 'heute 11:00' },
-  { id: 'l3', label: 'Artikel: Fokuszeit schützen', module: 'knowledge' },
-];
+// Notizen, Verlauf, Verknüpfungen, Kennzahlen und Diagramm liegen in der gemeinsamen Datenwelt (world/knowledge.js, Eigentümer: knowledge):
+// Erfassen, Suche und Bildtext-Erkennung legen Notizen in derselben Liste an.
+const notesW = '@world:notes';
 
 const FILTERS = ['Alle', 'Angeheftet', 'Eingang', 'Arbeit', 'Privat', 'Projekt', 'Archiv'];
 const TAG_FILTERS = ['Alle', 'Angeheftet', 'Arbeit', 'Privat', 'Projekt', 'Ideen', 'Reisen', 'Rezepte', 'Eingang', 'Archiv'];
 const hdr = (props) => ({ id: 'hdr', component: 'page-header', region: 'header', props });
-const demo = { notes, metrics, tagChart, history };
-const worldCtx = { notes, tasks: '@world:tasks', events: '@world:events' };
+const demo = { notes: notesW, metrics: '@world:notesMetrics', tagChart: '@world:notesTagChart', history: '@world:notesHistory' };
+const worldCtx = { notes: notesW, tasks: '@world:tasks', events: '@world:events' };
 
 export default {
   module: {
@@ -119,7 +66,7 @@ export default {
           description: '+ Alles in einem Blick, Aktionen in der Zeile  − Viele Elemente, auf Mobile lang',
           layout: { type: 'split' },
           blocks: [
-            hdr({ eyebrow: 'Notizen', title: 'Übersicht', subtitle: `${live.length} Notizen · ${inboxCount} im Eingang · ${openChecks} offene Punkte`, primaryLabel: '', secondaryLabel: 'Alle Notizen', secondaryIcon: 'layout-list' }),
+            hdr({ eyebrow: 'Notizen', title: 'Übersicht', subtitle: 'Festhalten, einsortieren, wiederfinden', primaryLabel: '', secondaryLabel: 'Alle Notizen', secondaryIcon: 'layout-list' }),
             { id: 'flt', component: 'search-filter', region: 'main', props: { placeholder: 'Notizen durchsuchen …', filters: FILTERS } },
             { id: 'list', component: 'note-list', region: 'main', props: { title: 'Notizen', layout: 'compact', openIn: 'select', autoSelect: false, showCreate: true } },
             { id: 'inbox', component: 'note-inbox', region: 'aside', bind: { notes: 'notes', tasks: 'tasks' }, props: { title: 'Eingang', limit: 3, link: 'Einsortieren' } },
@@ -183,7 +130,7 @@ export default {
       ],
       flows: [{ id: 'fl-finden', name: 'Notiz finden und ergänzen', steps: [{ featureId: 'notes.overview', action: 'Filter „Arbeit“ wählen, Notiz antippen' }, { featureId: 'notes.overview', action: 'Im Editor ergänzen' }] }],
       viewports: ALL_VP,
-      demoData: { notes },
+      demoData: { notes: notesW },
       variants: [
         {
           id: 'A', name: 'Karten-Raster', direction: 'visuell', nav: [{ event: 'note.open', to: 'notes.editor' }, { event: 'note.create', to: 'notes.editor' }], concept: 'Visueller Überblick: Notizen als Karten mit Farbstreifen, Auszug und Listen-Fortschritt im Raster, Bearbeiten in einem Dialog (Bottom-Sheet auf Mobile). Die Übersicht bleibt immer sichtbar.',
@@ -251,7 +198,7 @@ export default {
       ],
       flows: [{ id: 'fl-schreiben', name: 'Notiz schreiben', steps: [{ featureId: 'notes.editor', action: 'Titel eintippen, Tag „Arbeit“ hinzufügen' }, { featureId: 'notes.editor', action: '„Checkliste“ antippen und Punkte schreiben' }, { featureId: 'notes.editor', action: 'Vorschau öffnen, Punkt abhaken' }] }],
       viewports: ['desktop', 'tablet', 'mobile'],
-      demoData: { notes, history, links },
+      demoData: { notes: notesW, history: '@world:notesHistory', links: '@world:notesLinks' },
       variants: [
         {
           id: 'A', name: 'Editor mit Verlauf', direction: 'kompakt', concept: 'Der Editor steht im Mittelpunkt, rechts (auf Mobile darunter) zeigt ein Verlauf die letzten Änderungen der Notiz.',
@@ -316,7 +263,7 @@ export default {
       ],
       flows: [{ id: 'fl-triage', name: 'Eingang in 30 Sekunden leeren', steps: [{ featureId: 'notes.inbox', action: 'Erste Notiz „Rückruf“ als Aufgabe übernehmen' }, { featureId: 'notes.inbox', action: 'Zweite Notiz mit „Arbeit“ einsortieren' }, { featureId: 'notes.inbox', action: 'Dritte archivieren' }] }],
       viewports: ALL_VP,
-      demoData: { notes, tagChart, tasks: '@world:tasks' },
+      demoData: { notes: notesW, tagChart: '@world:notesTagChart', tasks: '@world:tasks' },
       variants: [
         {
           id: 'A', name: 'Liste mit Aktionen', direction: 'kompakt', concept: 'Schnellnotiz-Zeile oben, darunter alle Notizen im Eingang als Liste; Tags, Aufgabe und Archiv sind Knöpfe in der Zeile. Rechts die Verteilung nach Tags.',
@@ -358,7 +305,7 @@ export default {
       ],
       acceptance: ['Die Trefferliste reagiert ohne Verzögerung auf jede Eingabe.', 'Ohne Treffer nennt der Hinweis den Suchbegriff und bietet „Neue Notiz“ an.'],
       viewports: ['desktop', 'tablet', 'mobile'],
-      demoData: { notes },
+      demoData: { notes: notesW },
       variants: [{
         id: 'A', name: 'Tag-Leiste + Treffer', direction: 'kompakt', concept: 'Suchfeld und scrollbare Tag-Chips oben, darunter eine kompakte Trefferliste ohne Ablenkung.',
         description: '+ Sehr schnell erlernbar  − Keine Vorschau der Notiz neben den Treffern',
@@ -397,7 +344,7 @@ export default {
       ],
       acceptance: ['Ein abgehakter Punkt verschwindet sofort aus der Liste (erledigte Punkte ausgeblendet).', 'Die Karten zeigen „x von y erledigt“ und den nächsten offenen Punkt.'],
       viewports: ['mobile', 'tablet', 'desktop'],
-      demoData: { notes },
+      demoData: { notes: notesW },
       variants: [{
         id: 'A', name: 'Offene Punkte', direction: 'kompakt', concept: 'Alle offenen Punkte nach Liste gruppiert, mit Häkchen in der Zeile. Zeigt, was jetzt zu tun ist.',
         description: '+ Direkt abarbeiten  − Kein Überblick über erledigte Listen',
@@ -423,7 +370,7 @@ export default {
       ],
       interactions: [{ trigger: 'Pin antippen', result: 'Notiz wandert nach oben', event: 'note.pin' }, { trigger: 'Archivieren antippen', result: 'Notiz verschwindet aus der Übersicht', event: 'note.archive' }],
       viewports: ['desktop', 'mobile'],
-      demoData: { notes },
+      demoData: { notes: notesW },
       variants: [{
         id: 'A', name: 'Angeheftet & Archiv', direction: 'kompakt', concept: 'Liste mit den Filtern „Angeheftet“ und „Archiv“; Anheften direkt in der Zeile, Wiederherstellen im Editor.',
         description: '+ Einfach, nutzt die Notizliste  − Archiv ist nur ein Filter',
@@ -442,25 +389,25 @@ export default {
         { text: 'Bilder mit Text lassen sich über Picture to Text in die Notiz übernehmen', type: 'info', priority: 'could' },
       ],
       interactions: [{ trigger: 'Anhang hinzufügen', result: 'Datei erscheint in der Notiz', event: 'note.attach' }],
-      viewports: ['mobile', 'tablet'], demoData: { notes },
+      viewports: ['mobile', 'tablet'], demoData: { notes: notesW },
     },
     {
       id: 'notes.notebooks', name: 'Notizbücher', group: 'Erweiterungen', status: 'not_analyzed', tier: 3,
       purpose: 'Notizen zusätzlich zu Tags in Notizbüchern bündeln (Projekt, Privat, Reise).',
       requirements: [{ text: 'Notizbuch mit Name und Farbe; Notizen verschieben', type: 'action', priority: 'could' }, { text: 'Entscheidung offen, ob Tags genügen', type: 'rule', priority: 'should' }],
-      interactions: [], viewports: ['desktop', 'mobile'], demoData: { notes },
+      interactions: [], viewports: ['desktop', 'mobile'], demoData: { notes: notesW },
     },
     {
       id: 'notes.templates', name: 'Vorlagen', group: 'Erweiterungen', status: 'not_analyzed', tier: 3,
       purpose: 'Wiederkehrende Notizen aus Vorlagen anlegen (Meeting, Tagesplan, Packliste, Rezept).',
       requirements: [{ text: 'Vorlagenauswahl bei „Neue Notiz“; eigene Vorlagen speichern', type: 'action', priority: 'could' }],
-      interactions: [], viewports: ['desktop', 'mobile'], demoData: { notes },
+      interactions: [], viewports: ['desktop', 'mobile'], demoData: { notes: notesW },
     },
     {
       id: 'notes.history', name: 'Versionsverlauf', group: 'Erweiterungen', status: 'not_analyzed', tier: 3,
       purpose: 'Frühere Stände einer Notiz ansehen und wiederherstellen.',
       requirements: [{ text: 'Liste der Stände mit Zeit, Vergleich und „Wiederherstellen“', type: 'action', priority: 'could' }],
-      interactions: [], viewports: ['desktop', 'tablet'], demoData: { notes, history },
+      interactions: [], viewports: ['desktop', 'tablet'], demoData: { notes: notesW, history: '@world:notesHistory' },
     },
   ],
   decisions: [

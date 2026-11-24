@@ -6,7 +6,7 @@ import { addMonths, toDate } from '../../../lib/date.js';
 import { fmtDate } from '../../../lib/format.js';
 import { arr, obj, todayOf, SV_CSS, QuietNote, QUIET_PROP } from './_savings.js';
 import { GrowthChart, GrowthLegend, CHART_CSS } from './_chart.js';
-import { getCalc, runCalc, calcPoints, forwardRun } from './_calc.js';
+import { getCalc, runCalc, calcPoints, forwardRun, conventionShort } from './_calc.js';
 import { planHistory } from './_plans.js';
 
 const FWD = [{ value: 0, label: 'Verlauf' }, { value: 5, label: '+5 Jahre' }, { value: 10, label: '+10 Jahre' }, { value: 20, label: '+20 Jahre' }];
@@ -29,7 +29,7 @@ export const growthChart = {
   name: 'Wachstumsdiagramm',
   category: 'Sparpläne',
   description: 'Eingezahlt gegen Wert über die Zeit, Ertrag als Fläche dazwischen und – bei Projektionen – die Spanne „Annahme ± 2 Prozentpunkte“. Quelle wählbar: Rechner (ui.calc), Sparplan-Verlauf mit Ausblick oder Depotverlauf.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Eingezahlt und Wert' },
     QUIET_PROP,
@@ -74,11 +74,12 @@ export const growthChart = {
       const sw = props.switcher && html`<div class="tk-sv-segwrap"><${Segmented} label="Ausblick" value=${fwd} onChange=${(v) => { setFwd(v); ctx.emit('chart.outlook', { years: v }); }} options=${FWD} /></div>`;
       return wrap(html`<${GrowthChart} ...${common} points=${r.pts} now=${fwd ? r.now : undefined} xLabel=${yearOf} label=${`Verlauf von ${plan.name}`} />
         ${!props.compact && html`<${GrowthLegend} band=${fwd > 0} bandText="Spanne Annahme ± 2 PP" projected=${fwd > 0} />`}
-        <p class="tk-svgc__note">Modell: gleichbleibende Rendite, auf Einstand und Wert der Position abgestimmt${fwd ? '. Ausblick mit den Annahmen des Plans, ohne Gewähr' : ''}.</p>`, sw);
+        <p class="tk-svgc__note">Modell: gleichbleibende Rendite, auf Einstand und Wert der Position abgestimmt${fwd ? '. Ausblick mit den Annahmen des Plans, ohne Gewähr' : ''}. Verzinsung effektiv.</p>`, sw);
     }
     const c = getCalc(ctx), run = runCalc(c), pts = calcPoints(run, c.years > 25 ? 3 : 1);
     return wrap(html`<${GrowthChart} ...${common} points=${props.showBand ? pts : pts.map((p) => ({ ...p, low: undefined, high: undefined }))} bandLabel="Spanne" xLabel=${(m) => (m === 0 ? 'Start' : `${Math.round(m / 12)} J.`)} label=${`Wachstum über ${c.years} Jahre`} />
-      ${!props.compact && html`<${GrowthLegend} band=${props.showBand} bandText=${`Spanne ${Math.round(run.nominal.vorsichtig * 100)} bis ${Math.round(run.nominal.zuversichtlich * 100)} % (Annahme)`} />`}`);
+      ${!props.compact && html`<${GrowthLegend} band=${props.showBand} bandText=${`Spanne ${Math.round(run.nominal.vorsichtig * 100)} bis ${Math.round(run.nominal.zuversichtlich * 100)} % (Annahme)`} />`}
+      ${!props.compact && html`<p class="tk-svgc__note" data-qa="calc-convention">${conventionShort(c)}</p>`}`);
   },
 };
 export default [growthChart];

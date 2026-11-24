@@ -47,7 +47,7 @@ const HOME_TILES = [
 ];
 const STEPS = [
   { id: 'c-etsy', title: 'Etsy neu verbinden', text: 'Die Anmeldung ist abgelaufen, Bestellungen werden nicht abgeglichen.', icon: 'key-round', tone: 'danger', done: false, to: 'settings.accounts', actionLabel: 'Verbinden' },
-  { id: 'c-lock', title: 'App-Sperre aktivieren', text: 'Schütze Finanzen und Notizen mit PIN oder Biometrie.', icon: 'lock', done: false, to: 'system.lock', actionLabel: 'Einrichten' },
+  { id: 'c-lock', title: 'App-Sperre prüfen', text: 'Die App-Sperre ist an (PIN, nach 1 Minute). Finanzen, Sparpläne und Trading verlangen die Entsperrung.', icon: 'lock', done: true, to: 'system.lock' },
   { id: 'c-nav', title: 'Navigationsleiste anpassen', text: 'Wähle bis zu vier Favoriten für die Leiste.', icon: 'layout-grid', done: false, to: 'settings.modules', actionLabel: 'Anpassen' },
   { id: 'c-backup', title: 'Sicherung prüfen', text: 'Letzte Sicherung heute 03:00 Uhr, die automatische Sicherung ist an.', icon: 'cloud-upload', done: true, to: 'settings.data' },
   { id: 'c-quiet', title: 'Ruhezeiten festlegen', text: '22:00–07:00 Uhr ist eingestellt, Wichtiges kommt durch.', icon: 'moon-star', done: true },
@@ -83,13 +83,6 @@ const NOTIFY_GROUPS = [
 const NOTIFY_MODULES_ONLY = ['n-modules'];
 
 // ------------------------------------------------------------------ Daten, Konten, Region, Über ---
-const BACKUPS = [
-  { id: 'b1', at: '2026-11-24T03:00:00', size: 6.9, kind: 'auto' },
-  { id: 'b2', at: '2026-11-23T03:00:00', size: 6.8, kind: 'auto' },
-  { id: 'b3', at: '2026-11-22T03:00:00', size: 6.8, kind: 'auto' },
-  { id: 'b4', at: '2026-11-21T03:00:00', size: 6.7, kind: 'auto' },
-  { id: 'b5', at: '2026-11-20T21:15:00', size: 6.7, kind: 'manual' },
-];
 const DATA_GROUPS = [{ id: 'd-misc', title: 'Weitere Optionen', rows: [
   { id: 'd-trash', type: 'nav', label: 'Papierkorb', hint: '30 Tage wiederherstellbar', icon: 'trash-2', to: 'system.trash', value: '7 Einträge' },
   { id: 'd-import', type: 'action', label: 'Daten importieren', hint: 'Aus einer TAKT-Sicherung oder CSV', icon: 'upload', toast: 'Import wählen (Demo)' },
@@ -420,7 +413,7 @@ export default {
         'Auf 360 px gibt es keinen horizontalen Überlauf.',
       ],
       viewports: ALL_VP,
-      demoData: { backups: BACKUPS, groups: DATA_GROUPS },
+      demoData: { backups: '@world:backups', groups: DATA_GROUPS },
       variants: [
         {
           id: 'A', name: 'Sicherung zuerst', direction: 'kompakt',

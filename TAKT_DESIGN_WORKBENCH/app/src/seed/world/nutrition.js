@@ -4,7 +4,10 @@
 // Alle Nährwerte sind plausible Demo-Werte (je 100 g), keine geprüften Herstellerdaten.
 import { per, totals, entryFromFood, ean13, bmr, tdee, shiftDay, dayEntries, r1 } from '../../library/components/nutrition/_calc.js';
 import { transactions } from './finance.js';
-import { fitnessProfile, bodySummary, bodyWeightLog } from './fitness.js';
+import { triple } from './_util.js';
+import { fmtNumber } from '../../lib/format.js';
+const num = (v) => fmtNumber(v, { digits: 0 });
+import { fitnessProfile, bodySummary, bodyWeightLog, trainingProgram } from './fitness.js';
 import { recipeToEntry, recipePerServing, planNutrition } from '../../library/components/nutrition/_recipes.js';
 
 const TODAY = '2026-11-24';
@@ -17,6 +20,7 @@ const F = (id, name, category, [kcal, protein, carbs, fat, fiber, sugar, satFat,
   portions: portions.map(([label, g]) => ({ label, g })), brand: x.brand || null, barcode: x.bc ? ean13(x.bc) : null,
   allergens: x.al || [], tags: x.tags || [], fav: !!x.fav, custom: false, piece: x.piece || null, eur100: x.eur ?? 0.5,
   source: x.bc ? 'Demo-Daten (Herstellerangabe, nicht verifiziert)' : 'Demo-Daten (Richtwerte)',
+  ...(x.alc ? { alcohol: x.alc } : {}), // Alkohol in g je 100 g/ml (7 kcal je g, Atwater)
 });
 export const nutFoods = [
   F('f-skyr', 'Skyr natur', 'Milch & Eier', [63, 11, 4, 0.2, 0, 4, 0.1, 0.1], [['Becher (150 g)', 150], ['Schüssel (250 g)', 250]], { brand: 'Arla', bc: '571000100011', al: ['Milch'], tags: ['proteinreich'], fav: true, eur: 0.56 }),
@@ -42,12 +46,12 @@ export const nutFoods = [
   F('f-nudeln', 'Vollkornnudeln, roh', 'Getreide & Brot', [340, 12, 62, 2.5, 8, 3, 0.5, 0.03], [['Portion roh (100 g)', 100]], { al: ['Gluten'], tags: ['vegan'], eur: 0.28 }),
   F('f-kartoffeln', 'Kartoffeln, gekocht', 'Obst & Gemüse', [71, 2, 14.8, 0.1, 1.7, 0.8, 0, 0.01], [['Portion (250 g)', 250]], { tags: ['vegan'], eur: 0.15 }),
   F('f-suesskartoffel', 'Süßkartoffel', 'Obst & Gemüse', [86, 1.6, 20, 0.1, 3, 4.2, 0, 0.05], [['mittel (250 g)', 250]], { tags: ['vegan'], eur: 0.2 }),
-  F('f-brokkoli', 'Brokkoli', 'Obst & Gemüse', [34, 2.8, 2.7, 0.4, 2.6, 1.4, 0.1, 0.03], [['Portion (150 g)', 150], ['Kopf (400 g)', 400]], { tags: ['vegan'], eur: 0.25 }),
+  F('f-brokkoli', 'Brokkoli', 'Obst & Gemüse', [34, 2.8, 4.0, 0.4, 2.6, 1.4, 0.1, 0.03], [['Portion (150 g)', 150], ['Kopf (400 g)', 400]], { tags: ['vegan'], eur: 0.25 }),
   F('f-tomate', 'Tomate', 'Obst & Gemüse', [18, 0.9, 2.6, 0.2, 1.2, 2.5, 0, 0.01], [['mittel (100 g)', 100]], { tags: ['vegan'], eur: 0.3 }),
   F('f-zucchini', 'Zucchini', 'Obst & Gemüse', [17, 1.2, 2, 0.3, 1.1, 1.7, 0.1, 0.01], [['Zucchini (250 g)', 250]], { tags: ['vegan'], eur: 0.18 }),
   F('f-paprika', 'Paprika rot', 'Obst & Gemüse', [31, 1, 6, 0.3, 2, 4.2, 0.1, 0.01], [['Paprika (170 g)', 170]], { tags: ['vegan'], piece: { g: 170, label: 'Paprika', plural: 'Paprika' }, eur: 0.3 }),
   F('f-gurke', 'Gurke', 'Obst & Gemüse', [12, 0.6, 1.8, 0.2, 0.5, 1.7, 0, 0.01], [['halbe (200 g)', 200]], { tags: ['vegan'], piece: { g: 400, label: 'Gurke', plural: 'Gurken' }, eur: 0.12 }),
-  F('f-spinat', 'Blattspinat', 'Obst & Gemüse', [23, 2.9, 0.6, 0.4, 2.2, 0.4, 0.1, 0.2], [['Portion (150 g)', 150]], { tags: ['vegan'], eur: 0.45 }),
+  F('f-spinat', 'Blattspinat', 'Obst & Gemüse', [23, 2.9, 1.4, 0.4, 2.2, 0.4, 0.1, 0.2], [['Portion (150 g)', 150]], { tags: ['vegan'], eur: 0.45 }),
   F('f-zwiebel', 'Zwiebel', 'Obst & Gemüse', [28, 1.2, 4.9, 0.2, 1.7, 4.2, 0, 0.01], [['mittel (80 g)', 80]], { tags: ['vegan'], piece: { g: 80, label: 'Zwiebel', plural: 'Zwiebeln' }, eur: 0.12 }),
   F('f-karotte', 'Karotte', 'Obst & Gemüse', [36, 0.9, 7.5, 0.2, 3, 6.2, 0, 0.1], [['mittel (80 g)', 80]], { tags: ['vegan'], piece: { g: 80, label: 'Karotte', plural: 'Karotten' }, eur: 0.1 }),
   F('f-avocado', 'Avocado', 'Obst & Gemüse', [160, 2, 2, 15, 6.7, 0.7, 2.1, 0.01], [['halbe (80 g)', 80], ['ganze (160 g)', 160]], { tags: ['vegan'], piece: { g: 160, label: 'Avocado', plural: 'Avocados' }, eur: 0.75 }),
@@ -66,7 +70,7 @@ export const nutFoods = [
   F('f-whey', 'Whey-Protein Vanille', 'Eiweiß & Supplements', [385, 76, 8, 6, 1, 6, 3, 0.9], [['Messlöffel (30 g)', 30]], { brand: 'ESN', bc: '421800800081', al: ['Milch', 'Soja'], tags: ['proteinreich'], fav: true, eur: 3.2 }),
   F('f-riegel', 'Protein-Riegel Cookie', 'Eiweiß & Supplements', [364, 36, 28, 14, 5, 2, 6, 0.5], [['Riegel (55 g)', 55]], { brand: 'Barebells', bc: '731900900091', al: ['Milch', 'Erdnüsse', 'Soja'], tags: ['proteinreich'], piece: { g: 55, label: 'Riegel', plural: 'Riegel' }, eur: 3.5 }),
   F('f-kaffee', 'Kaffee, schwarz', 'Getränke', [2, 0.1, 0, 0, 0, 0, 0, 0], [['Tasse (200 ml)', 200]], { unit: 'ml', eur: 0.1 }),
-  F('f-bier', 'Bier (Pils)', 'Getränke', [43, 0.4, 3.1, 0, 0, 0, 0, 0], [['Glas (330 ml)', 330], ['Flasche (500 ml)', 500]], { unit: 'ml', al: ['Gluten'], eur: 0.1 }),
+  F('f-bier', 'Bier (Pils)', 'Getränke', [43, 0.4, 3.1, 0, 0, 0, 0, 0], [['Glas (330 ml)', 330], ['Flasche (500 ml)', 500]], { unit: 'ml', al: ['Gluten'], eur: 0.1, alc: 3.8 }),
 ];
 const FOOD = Object.fromEntries(nutFoods.map((f) => [f.id, f]));
 
@@ -99,6 +103,7 @@ export const nutRecipes = [
     ing: [['f-kichererbsen', 240], ['f-feta', 100], ['f-gurke', 300], ['f-tomate', 250], ['f-zwiebel', 40], ['f-olivenoel', 20], ['f-vollkornbrot', 100]],
     steps: ['Kichererbsen abspülen und abtropfen lassen.', 'Gurke und Tomaten würfeln, Zwiebel fein hacken.', 'Alles mit dem Öl mischen, Feta darüber bröseln.', 'Mit Salz, Pfeffer und etwas Zitronensaft abschmecken, mit Brot servieren.'] }),
 ];
+// Alkohol je Eintrag aus dem Lebensmittel (g), damit Energie und Nährwerte zusammenpassen (Befund B8)
 const REC = Object.fromEntries(nutRecipes.map((r) => [r.id, r]));
 for (const r of nutRecipes) r.perServing = recipePerServing(r, nutFoods);
 
@@ -134,6 +139,8 @@ export const nutDiary = [
   Q(TODAY, 'lunch', null, 'Quiche mit Salat · Café Moll (vorab geschätzt)', 720, 26, 52, 44, { prelogged: true, eventId: 'e5', amount: 'Schätzung · Mittag mit Jana' }),
 ];
 
+for (const e of nutDiary) { const f = FOOD[e.foodId]; if (f?.alcohol && e.grams) e.alcohol = r1((f.alcohol * e.grams) / 100); }
+
 // -------------------------------------------------------------------- Wasser
 const wE = (id, time, ml, vessel) => ({ id, date: TODAY, time, ml, vessel });
 export const nutWater = {
@@ -146,7 +153,7 @@ export const nutWater = {
 // ------------------------------------------------------------------ Ziele
 // Körperwerte kommen aus der Fitness-Welt (gemeinsames Profil: Größe, Gewicht, Zielgewicht)
 const profileBase = { sex: 'm', age: 38, heightCm: fitnessProfile.heightCm, weightKg: bodySummary.weightKg, goalWeightKg: fitnessProfile.goalKg, activity: 'aktiv', goalType: 'abnehmen', pace: 0.27, preset: 'eiweiss' };
-export const nutGoals = { kcal: 2400, protein: 140, carbs: 291, fat: 75, fiber: 30, water: 2500, trainingDays: ['Mo', 'Mi', 'Fr'], trainingBonus: 150, useTrainingBonus: false, includeActivity: false, showNumbers: true, setOn: d(-21) };
+export const nutGoals = { kcal: 2400, protein: 140, carbs: 291, fat: 75, fiber: 30, water: 2500, trainingDays: trainingProgram.days.map((x) => x.weekdayLabel), trainingBonus: 150, useTrainingBonus: false, includeActivity: false, showNumbers: true, setOn: d(-21) };
 export const nutProfile = { ...profileBase, bmr: bmr(profileBase), tdee: tdee(profileBase),
   weightTrend: [-49, -42, -35, -28, -21, -14, -7, 0].map((n) => d(n)).map((date) => ({ date, kg: ([...bodyWeightLog].filter((w) => w.date <= date).pop() || bodyWeightLog[0]).kg })) };
 
@@ -203,11 +210,46 @@ export const nutSummary = {
   weightKg: nutProfile.weightKg, goalWeightKg: nutProfile.goalWeightKg, foodBudgetLeft: r1(nutShopping.budgetMonth - nutShopping.spentMonth),
 };
 
-/** Launchpad-Kennzahl (Vertrag `<modul>Summary`): die erste Kennzahl steht auf der Modulkachel. */
-export const nutritionSummary = {
-  kpis: [
-    { label: 'übrig', value: nutSummary.leftKcal.toLocaleString('de-DE'), unit: 'kcal' },
-    { label: 'Eiweiß', value: String(Math.round(nutSummary.protein)), unit: 'g' },
-    { label: 'Wasser', value: nutSummary.waterMl.toLocaleString('de-DE'), unit: 'ml' },
-  ],
+/** Launchpad-Kennzahlen (Vertrag `<modul>Summary`): die erste Kennzahl steht auf der Modulkachel. Aus `nutSummary` abgeleitet. */
+const nutKpis = (S) => [
+  { label: 'übrig', value: num(S.leftKcal), unit: 'kcal', icon: 'flame', tone: 'accent', to: 'nutrition.home' },
+  { label: 'Eiweiß', value: num(Math.round(S.protein)), unit: 'g', icon: 'beef', tone: 'info', to: 'nutrition.log' },
+  { label: 'Wasser', value: num(S.waterMl), unit: 'ml', icon: 'droplet', tone: 'info', to: 'nutrition.water' },
+];
+export const nutritionSummary = { kpis: nutKpis(nutSummary) };
+export const nutritionHints = [
+  ...(nutSummary.nextMeal ? [{ id: 'h-nut-dinner', text: `Heute Abend steht „${nutSummary.nextMeal.title}“ auf dem Plan (${num(nutSummary.nextMeal.kcal)} kcal).`, source: 'nutPlan', module: 'nutrition', tone: 'info', to: 'nutrition.plan' }] : []),
+  { id: 'h-nut-water', text: `Wasser heute: ${num(nutSummary.waterMl)} von ${num(nutSummary.waterGoal)} ml.`, source: 'nutWater', module: 'nutrition', tone: 'info', to: 'nutrition.water' },
+];
+export const nutritionSearch = nutTemplates.map((t) => ({ id: `template:${t.id}`, type: 'Vorlage', title: t.name, subtitle: `${num(t.kcal)} kcal · ${t.items.length} Zutaten`, module: 'nutrition', to: 'nutrition.log', params: { id: t.id } }));
+export const nutritionNotifications = [
+  { id: 'n-nut', title: `Wasser: ${num(nutSummary.waterMl)} von ${num(nutSummary.waterGoal)} ml`, text: 'Mit einem Tipp trägst du ein Glas ein.', module: 'nutrition', tone: 'neutral', priority: 'leise', time: '2026-11-24T08:30:00', to: 'nutrition.water' },
+];
+
+// --- Szenarien: Erster Start (nichts erfasst) und Stress-Tag (dreifaches Tagebuch, Summen folgen) --------------------------
+const summaryFor = (diary, waterMl, spent) => {
+  const t = totals(dayEntries(diary, TODAY));
+  return { ...nutSummary, eatenKcal: t.kcal, leftKcal: nutGoals.kcal - t.kcal, protein: t.protein, waterMl, nextMeal: null, foodBudgetLeft: r1(nutShopping.budgetMonth - spent) };
+};
+const stressDiary = triple(nutDiary);
+const stressWaterEntries = triple(nutWater.entries);
+const stressWaterMl = stressWaterEntries.reduce((a, e) => a + e.ml, 0);
+const stressSummary = { ...summaryFor(stressDiary, stressWaterMl, nutShopping.spentMonth), nextMeal: nutSummary.nextMeal };
+const stressToday = totals(dayEntries(stressDiary, TODAY));
+export const scenarios = {
+  erststart: {
+    nutWater: { goal: nutGoals.water, vessels: nutWater.vessels, entries: [], week: [] },
+    nutShopping: { ...nutShopping, pantry: [], checked: {}, manual: [], recipeAdds: [], spentMonth: 0 },
+    nutHistory: [],
+    nutSummary: { ...summaryFor([], 0, 0), foodBudgetLeft: nutShopping.budgetMonth },
+    nutritionSummary: { kpis: [{ label: 'Tagesziel', value: num(nutGoals.kcal), unit: 'kcal', icon: 'flame', tone: 'accent', to: 'nutrition.goals' }] },
+    nutritionHints: [], nutritionSearch: [], nutritionNotifications: [],
+  },
+  stress: {
+    nutDiary: stressDiary,
+    nutWater: { ...nutWater, entries: stressWaterEntries },
+    nutHistory: nutHistory.map((h) => (h.date === TODAY ? { ...h, kcal: stressToday.kcal, protein: stressToday.protein, carbs: stressToday.carbs, fat: stressToday.fat, fiber: stressToday.fiber, water: stressWaterMl } : h)),
+    nutSummary: stressSummary,
+    nutritionSummary: { kpis: nutKpis(stressSummary) },
+  },
 };

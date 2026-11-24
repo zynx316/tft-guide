@@ -154,3 +154,11 @@ test('Geld kompakt: Skala wird nach dem Runden gewählt', () => {
   assert.equal(fmtMoney(999999.9, { compact: true }), `1,0${NB}Mio.${NB}€`);
   assert.equal(fmtMoney(-1234567, { compact: true, sign: true }), `${MINUS}1,2${NB}Mio.${NB}€`);
 });
+
+test('Kaufmännische Rundung auf Cent (FINANCE_GUIDELINES R1/R2)', async () => {
+  const { fmtMoney } = await import('../app/src/lib/format.js');
+  assert.equal(fmtMoney(1.005), '1,01\u00a0€');
+  assert.equal(fmtMoney(-2.675), '\u22122,68\u00a0€');
+  assert.equal(fmtMoney(0.125), '0,13\u00a0€');
+  assert.equal(fmtMoney(2.5, { cents: false }), '3\u00a0€');
+});

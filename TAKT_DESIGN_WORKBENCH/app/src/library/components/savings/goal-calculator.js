@@ -4,7 +4,7 @@ import { useEffect } from 'preact/hooks';
 import { Card, Button, Chip, Select } from '../../ui.js';
 import { fmtNumber, fmtDate } from '../../../lib/format.js';
 import { arr, obj, todayOf, eur, eur2, Stepper, SV_CSS, plural } from './_savings.js';
-import { getCalc, neededMonthly, SPREAD } from './_calc.js';
+import { getCalc, neededMonthly, conventionNote, SPREAD } from './_calc.js';
 import { monthsBetween } from './_plans.js';
 import { CHART_CSS } from './_chart.js';
 
@@ -16,7 +16,7 @@ export const goalCalculator = {
   name: 'Zielrechner',
   category: 'Sparpläne',
   description: 'Rückwärts rechnen: Zielbetrag, Zeit und vorhandenes Geld eingeben, TAKT nennt die nötige Monatsrate als Spanne (Annahme ± 2 PP), Alternativen mit mehr oder weniger Zeit und den Weg zum Sparplan. Ziele aus der Liste übernehmbar.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Was brauche ich für mein Ziel?' },
     { name: 'framed', label: 'In Karte', type: 'boolean', default: true },
@@ -40,15 +40,15 @@ export const goalCalculator = {
     const apply = (patch) => {
       const n = { ...g, ...patch };
       ctx.setUi('goalcalc', n);
-      const need = neededMonthly({ target: n.target, current: n.current, years: n.years, ratePa: n.ratePa });
+      const need = neededMonthly({ target: n.target, current: n.current, years: n.years, ratePa: n.ratePa, compounding: getCalc(ctx).compounding });
       ctx.setUi('calc', { ...getCalc(ctx), initial: n.current, monthly: Math.round(need.annahme * 100) / 100, years: n.years, ratePa: n.ratePa, dynamicPa: 0, costPa: 0 });
     };
     useEffect(() => { if (!ctx.ui.goalcalc) apply({}); }, []);
     const fromGoal = (id) => { const gl = goals.find((x) => x.id === id); if (!gl) return; apply({ target: gl.target, current: Math.round(gl.current), years: Math.max(1, Math.ceil(monthsBetween(today, gl.due) / 12)) }); ctx.emit('goalcalc.source', { id }); };
     const set = (k) => (v) => { apply({ [k]: v }); ctx.emit('goalcalc.change', { field: k, value: v }); };
-    const need = neededMonthly({ target: g.target, current: g.current, years: g.years, ratePa: g.ratePa });
-    const more = neededMonthly({ target: g.target, current: g.current, years: g.years + 2, ratePa: g.ratePa }).annahme, less = g.years > 2 ? neededMonthly({ target: g.target, current: g.current, years: g.years - 2, ratePa: g.ratePa }).annahme : null;
-    const zero = neededMonthly({ target: g.target, current: g.current, years: g.years, ratePa: 0 }).annahme;
+    const cp = getCalc(ctx).compounding, nm = (o) => neededMonthly({ target: g.target, current: g.current, years: g.years, ratePa: g.ratePa, compounding: cp, ...o });
+    const need = nm(), more = nm({ years: g.years + 2 }).annahme, less = g.years > 2 ? nm({ years: g.years - 2 }).annahme : null;
+    const zero = nm({ ratePa: 0 }).annahme;
     const enough = need.annahme <= 0;
     const body = html`<div class="tk-svg">
       ${goals.length > 0 && html`<label class="tk-field"><span class="tk-field__label">Ziel übernehmen</span><${Select} value="" onChange=${fromGoal} aria-label="Sparziel übernehmen" options=${[{ value: '', label: 'Eigene Eingaben' }, ...goals.map((x) => ({ value: x.id, label: x.name }))]} /></label>`}
@@ -61,7 +61,8 @@ export const goalCalculator = {
         ${enough ? html`<span class="tk-sv-lead">Dein Startbetrag würde bei ${pc(g.ratePa)} Rendite p. a. allein reichen.</span><span class="tk-sv-meta">Für ${eur(ctx, g.target)} in ${plural(g.years, 'Jahr', 'Jahren')} wäre keine Monatsrate nötig.</span>`
           : html`<span class="tk-sv-meta">Für ${eur(ctx, g.target)} in ${g.years === 1 ? 'einem Jahr' : `${g.years} Jahren`} wären etwa nötig</span><div class="tk-svg__big">${eur2(ctx, need.annahme)} <span style="font-size:var(--tk-fs-lg);font-weight:var(--tk-fw-medium)">pro Monat</span></div>
           <span class="tk-sv-meta">Spanne: ${eur(ctx, need.zuversichtlich)} bei ${pc(g.ratePa + SPREAD)} bis ${eur(ctx, need.vorsichtig)} bei ${pc(Math.max(0, g.ratePa - SPREAD))} Rendite p. a.</span>`}
-        <span class="tk-sv-meta">Eingezahlt wären das ${eur(ctx, g.current + Math.max(0, need.annahme) * need.months)}, der Rest käme aus Erträgen. Stand ${fmtDate(today)}.</span></div>
+        <span class="tk-sv-meta">Eingezahlt wären das ${eur(ctx, g.current + Math.max(0, need.annahme) * need.months)}, der Rest käme aus Erträgen. Stand ${fmtDate(today)}.</span>
+        <span class="tk-sv-meta" data-qa="calc-convention">${conventionNote({ ratePa: g.ratePa, compounding: cp })}</span></div>
       ${props.showAlternatives && !enough && html`<div class="tk-svg__alt" aria-label="Alternativen"><div><small>Ohne Rendite</small><b>${eur(ctx, zero)}</b><small>pro Monat</small></div>
         <div><small>${g.years + 2} Jahre Zeit</small><b>${eur(ctx, more)}</b><small>pro Monat</small></div>${less != null && html`<div><small>${g.years - 2} Jahre Zeit</small><b>${eur(ctx, less)}</b><small>pro Monat</small></div>`}</div>`}
       <div class="tk-sv-btnrow"><${Button} variant="primary" icon="plus" disabled=${enough} onClick=${() => ctx.emit('calc.create', { ui: { draft: { monthly: Math.ceil(need.annahme / 5) * 5, ratePa: g.ratePa, dynamicPa: 0 } } })}>Als Sparplan anlegen<//></div></div>`;

@@ -1,6 +1,10 @@
 // Gemeinsame Datenwelt: Termine & Aufgaben der Persona (Kalender, Aufgaben, Start, Fokus …)
 // Referenztag: Di, 24.11.2026 09:30. Von Modul-Manifesten importiert oder per '@world:events' gebunden.
-const baseEvents = [
+import { trainingProgram, fitnessProfile } from './fitness.js';
+import { r2, TODAY, at, eventsOn, addDay, dowOf, WD, triple, eur, plusMin, timeOf } from './_util.js';
+
+/** Ursprüngliche Termine (Stand der freigegebenen Features). `legacyEvents()` liefert sie unverändert; die Welt nutzt `baseEvents` weiter unten. */
+const legacyBaseEvents = [
   // Serien
   { id: 'e-standup', title: 'Daily Stand-up', start: '2026-11-02T09:45:00', end: '2026-11-02T10:00:00', category: 'Arbeit', tone: 'accent', location: 'Teams', repeat: 'Werktags' },
   { id: 'e-planung', title: 'Wochenplanung', start: '2026-11-02T08:30:00', end: '2026-11-02T09:15:00', category: 'Fokus', tone: 'success', repeat: 'Wöchentlich', note: 'Prioritäten der Woche festlegen, Kalender und Aufgaben abgleichen.' },
@@ -40,6 +44,24 @@ const baseEvents = [
   { id: 'e26', title: 'Monatsabschluss Buchhaltung', start: '2026-11-30T10:00:00', end: '2026-11-30T12:00:00', category: 'Arbeit', tone: 'accent', location: 'Büro' },
   { id: 'e27', title: 'Jahresplanung 2027', start: '2026-12-01T09:00:00', end: '2026-12-01T12:00:00', category: 'Fokus', tone: 'success' },
   { id: 'e28', title: 'Nikolausfeier Team', start: '2026-12-04T17:00:00', end: '2026-12-04T20:00:00', category: 'Privat', tone: 'accent2', location: 'Brauhaus' },
+];
+
+// Welt-Termine: wie die ursprünglichen, aber ohne die Donnerstags-Serie (Training kommt aus dem Wochenplan der Fitness-Welt, Befund B2)
+// und mit gekennzeichneter Überschneidung (Befund B10).
+const OVERLAP = {
+  e3: 'Backlog-Priorisierung für Sprint 12. Die Überschneidung mit „Fokus: Workbench-Review“ ist gewollt: Der Fokusblock pausiert für die Sprint-Planung.',
+  e4: 'Varianten Kalender und Aufgaben durchgehen. Die Überschneidung mit der Sprint-Planung (11:00 bis 11:45) ist gewollt: Der Fokusblock läuft danach weiter.',
+};
+/** Krafttraining: eine wöchentliche Serie je Trainingstag des Wochenplans (gleiche Tage, Zeiten und Orte wie Fitness, Wetter, Ernährung). */
+const programStart = trainingProgram.startDate;
+const trainingSeries = trainingProgram.days.map((day) => {
+  const date = addDay(programStart, (day.dow - dowOf(programStart) + 7) % 7);
+  const end = plusMin(day.time, day.durationMin);
+  return { id: `e-fit-${day.id}`, title: `Krafttraining ${day.name}`, start: `${date}T${day.time}:00`, end: `${date}T${end}:00`, category: 'Fitness', tone: 'info', location: fitnessProfile.gym, repeat: 'Wöchentlich', note: `${day.focus}. Wochenplan aus Fitness.` };
+});
+const baseEvents = [
+  ...legacyBaseEvents.filter((e) => e.id !== 'e-fitness').map((e) => (OVERLAP[e.id] ? { ...e, note: OVERLAP[e.id] } : e)),
+  ...trainingSeries,
 ];
 
 /** Aufgaben (Referenz: heute Di 24.11.2026). status: Offen | In Arbeit | Review | Erledigt */
@@ -86,7 +108,7 @@ const EVENT_DETAILS = {
   e12: { attendees: [{ name: 'Lea Hoffmann', status: 'Zugesagt' }], reminders: ['10 Min. vorher'] },
   e15: { reminders: ['15 Min. vorher'] },
   e16: { attendees: [{ name: 'Lea Hoffmann', status: 'Zugesagt' }, { name: 'Ben Albrecht', status: 'Zugesagt' }, { name: 'Mara Sander', status: 'Abgesagt' }], reminders: ['1 Tag vorher'], travel: 8 },
-  e17: { attendees: [{ name: 'Frau Brandt', status: 'Zugesagt', role: 'Steuerberaterin' }], reminders: ['1 Tag vorher', '1 Std. vorher'], travel: 20 },
+  e17: { attendees: [{ name: 'Tim Brandt', status: 'Zugesagt', role: 'Steuerberater' }], reminders: ['1 Tag vorher', '1 Std. vorher'], travel: 20 },
   e20: { attendees: [{ name: 'Jana', status: 'Zugesagt' }, { name: 'Timo', status: 'Offen' }], reminders: ['1 Tag vorher'], travel: 85 },
   'e-standup': { attendees: [{ name: 'Lea Hoffmann', status: 'Zugesagt' }, { name: 'Ben Albrecht', status: 'Zugesagt' }], reminders: ['5 Min. vorher'], link: 'Teams-Besprechung' },
 };
@@ -145,7 +167,7 @@ const extraEvents = [
 /** Termine der Persona inklusive Details, Feiertagen, Geburtstagen und Abo-Terminen. */
 export const events = [...baseEvents.map((e) => (EVENT_DETAILS[e.id] ? { ...e, ...EVENT_DETAILS[e.id] } : e)), ...holidayEvents, ...birthdayEvents, ...extraEvents];
 /** Ursprüngliche Termine ohne Ergänzungen (für freigegebene Features, die unverändert bleiben). Keine Welt-Daten. */
-export const legacyEvents = () => baseEvents.map((e) => ({ ...e }));
+export const legacyEvents = () => legacyBaseEvents.map((e) => ({ ...e }));
 export const legacyTasks = () => baseTasks.map((t) => ({ ...t }));
 
 /** Erledigungstag der bereits abgehakten Aufgaben (für Wochenauswertung). */
@@ -181,3 +203,56 @@ export const taskFocusLog = Object.entries(FOCUS_DAYS).flatMap(([day, list]) => 
   id: `fl-${day.slice(5)}-${i + 1}`, taskId, title: (baseTasks.find((t) => t.id === taskId) || {}).title || 'Aufgabe', start: `${day}T${at}:00`, minutes: 25, kind: 'Fokus',
 })));
 export const taskFocusGoal = { sessionsPerDay: 6, focusMinutes: 25, breakMinutes: 5, longBreakMinutes: 15 };
+
+// ============================================================================
+// Launchpad, Hinweise, Suche, Mitteilungen, Szenarien (Vertrag: docs/DATENWELT.md Abschnitt 5.2)
+// Alles aus den Listen oben abgeleitet. Aufgaben und Termine selbst findet die globale Suche direkt in `tasks` und `events`
+// (Slots der Komponente), darum listen `calendarSearch` und `tasksSearch` nur die weiteren Objekte: Kalenderquellen und Eingang.
+// ============================================================================
+const isOpen = (t) => !t.done && t.status !== 'Erledigt';
+const dueDay = (t) => String(t.due || '').slice(0, 10);
+
+function calendarSummaryOf(list) {
+  const today = eventsOn(list, TODAY).filter((e) => !e.allDay);
+  const upcoming = today.find((e) => e._t >= '09:30');
+  let overlaps = 0;
+  const span = (e) => [e._t, plusMin(e._t, Math.max(15, (new Date(e.end) - new Date(e.start)) / 60000))];
+  for (let i = 0; i < today.length; i++) for (let j = i + 1; j < today.length; j++) { const [a0, a1] = span(today[i]), [b0, b1] = span(today[j]); if (a0 < b1 && b0 < a1) overlaps += 1; }
+  return { kpis: [
+    { label: 'Termine heute', value: today.length, icon: 'calendar', tone: 'accent', to: 'calendar.home' },
+    { label: 'Nächster Termin', value: upcoming ? `${upcoming._t} Uhr` : '–', icon: 'clock', tone: 'info', to: 'calendar.day' },
+    { label: 'Überschneidungen', value: overlaps, icon: 'calendar-clock', tone: overlaps ? 'warning' : 'success', to: 'calendar.day' },
+  ] };
+}
+function tasksSummaryOf(list) {
+  const open = list.filter(isOpen);
+  const dueToday = open.filter((t) => dueDay(t) === TODAY).length, overdue = open.filter((t) => dueDay(t) && dueDay(t) < TODAY).length;
+  return { kpis: [
+    { label: 'offen', value: open.length, icon: 'list-checks', tone: 'accent', to: 'tasks.home' },
+    { label: 'heute fällig', value: dueToday, icon: 'calendar-check', tone: dueToday ? 'warning' : 'success', to: 'tasks.list' },
+    { label: 'überfällig', value: overdue, icon: 'alert-circle', tone: overdue ? 'danger' : 'success', to: 'tasks.list' },
+  ] };
+}
+export const calendarSummary = calendarSummaryOf(events);
+export const tasksSummary = tasksSummaryOf(tasks);
+
+export const calendarHints = [
+  { id: 'h-cal-overlap', text: 'Sprint-Planung und „Fokus: Workbench-Review“ überschneiden sich um 11:00 Uhr – gewollt, der Fokusblock pausiert.', source: 'events[e3,e4]', module: 'calendar', tone: 'info', to: 'calendar.day' },
+  ...calSources.filter((s) => s.status === 'error').map((s) => ({ id: `h-cal-src-${s.id}`, text: `${s.name}: ${s.error}`, source: `calSources[${s.id}]`, module: 'calendar', tone: 'warning', to: 'calendar.sources' })),
+];
+export const tasksHints = [
+  ...tasks.filter((t) => isOpen(t) && dueDay(t) && dueDay(t) < TODAY).map((t) => ({ id: `h-task-overdue-${t.id}`, text: `„${t.title}“ ist seit ${dueDay(t) === addDay(TODAY, -1) ? 'gestern' : 'dem 22.11.'} überfällig.`, source: `tasks[${t.id}]`, module: 'tasks', tone: 'warning', to: 'tasks.detail', carry: { selectedId: t.id } })),
+  { id: 'h-task-inbox', text: `${taskInbox.length} Einträge im Eingang warten auf Sortierung.`, source: 'taskInbox', module: 'tasks', tone: 'info', to: 'tasks.inbox' },
+];
+export const calendarSearch = calSources.filter((s) => s.visible).map((s) => ({ id: `calsrc:${s.id}`, type: 'Kalender', title: s.name, subtitle: s.account, module: 'calendar', to: 'calendar.sources', params: { id: s.id } }));
+export const tasksSearch = taskInbox.map((i) => ({ id: `inbox:${i.id}`, type: 'Eingang', title: i.title, subtitle: `Eingang · ${i.source}`, module: 'tasks', to: 'tasks.inbox', params: { id: i.id } }));
+export const calendarNotifications = calSources.filter((s) => s.status === 'error').map((s) => ({ id: `n-cal-${s.id}`, title: `${s.name}: Anmeldung abgelaufen`, text: 'Das Abo liefert seit Sonntag keine Daten. Verbinde die Quelle neu.', module: 'calendar', tone: 'warning', priority: 'normal', time: `${dueDay({ due: s.lastSync })}T07:00:00`, to: 'calendar.sources' }));
+export const tasksNotifications = [
+  { id: 'n-task-inbox', title: `${taskInbox.length} Einträge im Eingang`, text: `„${taskInbox[0].title}“ und ${taskInbox.length - 1} weitere warten auf Sortierung.`, module: 'tasks', tone: 'info', priority: 'normal', time: taskInbox[0].at, to: 'tasks.inbox' },
+];
+
+// Szenarien: Summen folgen den Listen (Erster Start: alles 0, Stress: dreifache Listen)
+export const scenarios = {
+  erststart: { calendarSummary: calendarSummaryOf([]), tasksSummary: tasksSummaryOf([]) },
+  stress: { calendarSummary: calendarSummaryOf(triple(events)), tasksSummary: tasksSummaryOf(triple(tasks)) },
+};

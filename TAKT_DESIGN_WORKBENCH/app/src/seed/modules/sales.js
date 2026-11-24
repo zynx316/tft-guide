@@ -1,90 +1,14 @@
 // Modul "Sales Channels" – Verkaufskanäle, Bestellungen, Listings, Auswertung
 // Referenztag: Di, 24.11.2026 09:30. Die Zahlen sind rechnerisch konsistent: Summen entstehen aus den Positionen der Bestellungen.
+
 const L = (...lines) => lines.join('\n');
 const ALL_VP = ['desktop', 'notebook', 'tablet', 'mobile'];
-const REF = '2026-11-24T09:30:00';
-const pad = (n) => String(n).padStart(2, '0');
-const local = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:00`;
-const plus = (iso, min) => local(new Date(new Date(iso).getTime() + min * 60000));
-const r2 = (n) => Math.round(n * 100) / 100;
-
-// ---- Katalog „Nordlicht Studio“ und Bestellungen ----------------------------------------------------------
-const PROD = { kissen: ['Leinen-Kissenhülle Fjord 45×45', 24.9], kerze: ['Bienenwachskerzen-Set (3)', 19.9], vase: ['Keramikvase Skagen', 38], decke: ['Wolldecke Skagen', 89], licht: ['Duftlicht Birke', 14.5], ablage: ['Holzablage Eiche', 29.99], korb: ['Jutekorb-Set (2)', 34.5], brett: ['Servierbrett Esche', 32] };
-const SEQ = ['new', 'paid', 'shipped', 'delivered'];
-const mk = (id, number, customer, ch, date, status, items, ship, payment, address, extra = {}) => {
-  const lines = items.map(([k, q]) => ({ sku: k.toUpperCase(), name: PROD[k][0], qty: q, price: PROD[k][1] }));
-  const total = r2(lines.reduce((s, l) => s + l.qty * l.price, 0) + ship);
-  const at = { new: date, paid: plus(date, 22), shipped: plus(date, 24 * 60 + 40), delivered: plus(date, 3 * 24 * 60) };
-  const history = SEQ.slice(0, SEQ.indexOf(status) + 1).map((s) => ({ status: s, at: at[s] }));
-  const names = { shopify: 'Shopify', etsy: 'Etsy', amazon: 'Amazon', ebay: 'eBay', shop: 'Eigener Shop' };
-  const [first, ...rest] = customer.split(' ');
-  return { id, number, customer, channel: names[ch], channelId: ch, items: lines.reduce((s, l) => s + l.qty, 0), total, date, status, lines, shipping: ship, payment, address,
-    email: `${first.toLowerCase().replace(/ı/g, 'i')}.${rest.join('').toLowerCase().replace(/ü/g, 'ue').replace(/ı/g, 'i')}@example.org`, history, ...extra };
+// Kanäle, Bestellungen, Kennzahlen, Diagramme und Sync-Protokoll liegen in der gemeinsamen Datenwelt (world/sales.js, Eigentümer: sales).
+const demo = {
+  channels: '@world:channels', orders: '@world:orders', metrics: '@world:salesMetrics', revenue: '@world:salesRevenue', shares: '@world:salesShares', rows: '@world:salesRows',
+  stageChart: '@world:salesStageChart', syncLog: '@world:salesSyncLog', tasks: '@world:tasks', events: '@world:events',
 };
-const orders = [
-  mk('o1', '#4185', 'Anna Berger', 'shopify', '2026-11-24T09:12:00', 'new', [['kissen', 1], ['kerze', 2]], 4.9, 'PayPal', 'Lutterstraße 7, 33602 Bielefeld'),
-  mk('o2', '#4184', 'Markus Lindner', 'shop', '2026-11-24T08:40:00', 'new', [['decke', 1], ['kissen', 2], ['licht', 3]], 0, 'Kreditkarte', 'Lindenstraße 14, 30159 Hannover'),
-  mk('o3', '#4183', 'Sophie Krämer', 'amazon', '2026-11-24T07:55:00', 'new', [['ablage', 1]], 0, 'Amazon Pay', 'Hammer Straße 31, 48153 Münster'),
-  mk('o4', '#4181', 'Jonas Weber', 'etsy', '2026-11-23T19:20:00', 'paid', [['vase', 1]], 4.9, 'PayPal', 'Venloer Straße 88, 50823 Köln'),
-  mk('o5', '#4180', 'Fatma Yıldız', 'shopify', '2026-11-23T16:05:00', 'paid', [['korb', 1], ['kerze', 1], ['licht', 2]], 4.9, 'Klarna', 'Eppendorfer Weg 5, 20259 Hamburg'),
-  mk('o6', '#4179', 'Lukas Hartmann', 'shop', '2026-11-22T12:30:00', 'paid', [['brett', 2]], 4.9, 'Vorkasse', 'Kaiserstraße 40, 44135 Dortmund'),
-  mk('o7', '#4176', 'Lena Roth', 'amazon', '2026-11-22T11:05:00', 'shipped', [['decke', 1], ['kissen', 1]], 0, 'Amazon Pay', 'Torstraße 112, 10119 Berlin', { carrier: 'DHL', tracking: '00340434129876543210' }),
-  mk('o8', '#4174', 'Paul Schneider', 'shopify', '2026-11-21T17:45:00', 'shipped', [['vase', 1]], 4.9, 'PayPal', 'Karl-Heine-Straße 9, 04229 Leipzig', { carrier: 'DPD', tracking: '01426012345678' }),
-  mk('o9', '#4170', 'Tim Fuchs', 'shopify', '2026-11-20T14:30:00', 'delivered', [['kerze', 1]], 4.9, 'Karte', 'Schwachhauser Heerstraße 21, 28211 Bremen', { carrier: 'DHL', tracking: '00340434129812345678' }),
-  mk('o10', '#4168', 'Marie Vogel', 'etsy', '2026-11-19T10:15:00', 'delivered', [['kissen', 2]], 4.9, 'PayPal', 'Bilker Allee 150, 40217 Düsseldorf', { carrier: 'DHL', tracking: '00340434129855555555' }),
-  mk('o11', '#4165', 'Daniel Keller', 'ebay', '2026-11-18T09:40:00', 'delivered', [['licht', 1]], 4.9, 'PayPal', 'Böblinger Straße 60, 70199 Stuttgart', { carrier: 'Hermes', tracking: 'H1234567890' }),
-];
-const today = orders.filter((o) => o.date.startsWith('2026-11-24'));
-const todayRevenue = r2(today.reduce((s, o) => s + o.total, 0));
-const todayBy = (id) => r2(today.filter((o) => o.channelId === id).reduce((s, o) => s + o.total, 0));
-
-// ---- Kanäle (30 Tage) ----------------------------------------------------------------------------------------
-const channels = [
-  { id: 'shopify', name: 'Shopify', icon: 'shopping-cart', status: 'connected', lastSync: '2026-11-24T09:18:00', revenue: 6240.5, orders: 78, delta: 8.2, pending: 3, url: 'nordlicht-studio.myshopify.com', trend: [5200, 5400, 5800, 5700, 6100, 6240], autoSync: true, notify: true,
-    log: [{ at: '2026-11-24T09:18:00', text: '3 neue Bestellungen importiert', tone: 'success' }, { at: '2026-11-24T09:03:00', text: 'Bestand abgeglichen (84 Artikel)', tone: 'info' }, { at: '2026-11-24T08:48:00', text: 'Synchronisation ohne Änderungen', tone: 'info' }] },
-  { id: 'etsy', name: 'Etsy', icon: 'store', status: 'error', lastSync: '2026-11-23T21:40:00', revenue: 1980, orders: 31, delta: -4.1, url: 'etsy.com/shop/NordlichtStudio', trend: [2300, 2250, 2100, 2050, 2000, 1980], autoSync: true, notify: true,
-    error: 'Zugriffstoken abgelaufen – Bestellungen werden nicht importiert.', needsAuth: true,
-    log: [{ at: '2026-11-23T21:40:00', text: 'Zugriffstoken abgelaufen – Import gestoppt', tone: 'danger' }, { at: '2026-11-23T21:25:00', text: '1 neue Bestellung importiert', tone: 'success' }, { at: '2026-11-23T19:10:00', text: 'Bestand abgeglichen (61 Artikel)', tone: 'info' }] },
-  { id: 'amazon', name: 'Amazon', icon: 'package', status: 'connected', lastSync: '2026-11-24T08:45:00', revenue: 4310.2, orders: 52, delta: 3.4, pending: 1, url: 'sellercentral.amazon.de', trend: [3900, 4000, 4100, 4150, 4250, 4310], autoSync: true, notify: true,
-    log: [{ at: '2026-11-24T08:45:00', text: '1 neue Bestellung importiert', tone: 'success' }, { at: '2026-11-24T07:30:00', text: 'Versandstatus zurückgeschrieben (2 Bestellungen)', tone: 'info' }] },
-  { id: 'ebay', name: 'eBay', icon: 'tag', status: 'paused', lastSync: '2026-11-18T10:00:00', revenue: 410, orders: 9, delta: -22, url: 'ebay.de/usr/nordlicht-studio', trend: [620, 580, 520, 470, 430, 410], autoSync: false, notify: true,
-    log: [{ at: '2026-11-18T10:00:00', text: 'Kanal pausiert', tone: 'info' }, { at: '2026-11-18T09:40:00', text: '1 neue Bestellung importiert', tone: 'success' }] },
-  { id: 'shop', name: 'Eigener Shop', icon: 'globe', status: 'connected', lastSync: '2026-11-24T09:25:00', revenue: 2875, orders: 24, delta: 12.5, url: 'nordlicht-studio.de', trend: [2100, 2300, 2450, 2600, 2750, 2875], autoSync: true, notify: false,
-    log: [{ at: '2026-11-24T09:25:00', text: 'Synchronisation ohne Änderungen', tone: 'info' }, { at: '2026-11-24T08:40:00', text: '1 neue Bestellung importiert', tone: 'success' }] },
-];
-const totalRevenue = r2(channels.reduce((s, c) => s + c.revenue, 0));
-const totalOrders = channels.reduce((s, c) => s + c.orders, 0);
-const toDo = orders.filter((o) => o.status === 'new' || o.status === 'paid').length;
-
-// 7-Tage-Reihen je Kanal (Mi 18.11. bis Di 24.11., heute bis 09:30); der heutige Wert entsteht aus den Bestellungen
-const revenue = { labels: ['Mi', 'Do', 'Fr', 'Sa', 'So', 'Mo', 'Di'], series: [
-  { name: 'Shopify', values: [212, 246, 301, 188, 163, 229, todayBy('shopify')] },
-  { name: 'Amazon', values: [141, 162, 138, 187, 126, 152, todayBy('amazon')] },
-  { name: 'Eigener Shop', values: [88, 74, 121, 96, 85, 103, todayBy('shop')] },
-  { name: 'Etsy', values: [59, 71, 64, 38, 47, 52, 0] }] };
-const sumDay = (i) => r2(revenue.series.reduce((s, x) => s + x.values[i], 0));
-const dayTotals = revenue.labels.map((_, i) => sumDay(i));
-const shares = { segments: channels.map((c) => ({ label: c.name, value: c.revenue })).sort((a, b) => b.value - a.value) };
-const stageChart = { segments: ['new', 'paid', 'shipped', 'delivered'].map((k) => ({ label: { new: 'Neu', paid: 'Bezahlt', shipped: 'Versendet', delivered: 'Zugestellt' }[k], value: orders.filter((o) => o.status === k).length })) };
-const metrics = [
-  { label: 'Umsatz heute', value: new Intl.NumberFormat('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(todayRevenue), unit: '€', icon: 'banknote', tone: 'success', spark: dayTotals },
-  { label: 'Bestellungen heute', value: today.length, icon: 'shopping-cart', tone: 'accent', spark: [6, 8, 7, 9, 12, 10, today.length] },
-  { label: 'Zu bearbeiten', value: toDo, icon: 'inbox', tone: 'warning' },
-  { label: 'Retourenquote', value: '2,8', unit: '%', icon: 'rotate-ccw', tone: 'info', delta: -0.4, suffix: ' PP', invert: true },
-];
-const aov = r2(totalRevenue / totalOrders);
-const metricsRevenue = [
-  { label: 'Umsatz 30 Tage', value: new Intl.NumberFormat('de-DE', { maximumFractionDigits: 0 }).format(totalRevenue), unit: '€', icon: 'banknote', tone: 'success', delta: 6.1 },
-  { label: 'Bestellungen', value: totalOrders, icon: 'shopping-cart', tone: 'accent', delta: 4.3 },
-  { label: 'Ø Warenkorb', value: new Intl.NumberFormat('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(aov), unit: '€', icon: 'package', tone: 'info', delta: 1.8 },
-  { label: 'Retourenquote', value: '2,8', unit: '%', icon: 'rotate-ccw', tone: 'warning', delta: -0.4, suffix: ' PP', invert: true },
-];
-const nf = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' });
-const rows = channels.map((c) => ({ id: c.id, title: c.name, icon: c.icon, status: { connected: 'Verbunden', error: 'Fehler', paused: 'Pausiert' }[c.status], tone: { connected: 'success', error: 'danger', paused: 'neutral' }[c.status],
-  revenue: c.revenue, orders: c.orders, change: c.delta / 100, trend: c.trend, subtitle: c.error || `${c.orders} Bestellungen in 30 Tagen`, meta: { shopify: 'vor 12 Min.', etsy: 'gestern 21:40', amazon: 'vor 45 Min.', ebay: '18.11.', shop: 'vor 5 Min.' }[c.id], revenueText: nf.format(c.revenue) }));
-const syncLog = channels.flatMap((c) => c.log.map((l, i) => ({ id: `${c.id}-${i}`, title: `${c.name}: ${l.text}`, time: l.at, icon: l.tone === 'danger' ? 'alert-triangle' : l.tone === 'success' ? 'refresh-cw' : 'info', tone: l.tone === 'info' ? 'accent' : l.tone }))).sort((a, b) => b.time.localeCompare(a.time));
-const demo = { channels, orders, metrics, revenue, shares, rows, stageChart, syncLog, tasks: '@world:tasks', events: '@world:events' };
-const nRun = channels.filter((c) => c.status === 'connected').length, nErr = channels.filter((c) => c.status === 'error').length;
+const metricsRevenue = '@world:salesMetricsRevenue';
 const hdr = (props) => ({ id: 'hdr', component: 'page-header', region: 'header', props });
 const filtersCh = 'Alle, Verbunden, Fehler, Pausiert';
 const ORDER_CHIPS = 'Alle, Shopify, Amazon, Etsy, Eigener Shop, eBay';
@@ -146,7 +70,7 @@ export default {
           description: '+ Alles auf einen Blick, Sync pro Kanal  − Auf Mobile lange Seite, Fehler fallen nur über Farbe und Text der Karte auf',
           layout: { type: 'grid' },
           blocks: [
-            hdr({ eyebrow: 'Dienstag, 24. November', title: 'Übersicht', subtitle: `${nRun} von ${channels.length} Kanälen laufen · ${nErr} Fehler`, primaryLabel: 'Kanal verbinden', primaryIcon: 'plus', primaryEvent: 'channel.connect', secondaryLabel: 'Bestellungen', secondaryIcon: 'package' }),
+            hdr({ eyebrow: 'Dienstag, 24. November', title: 'Übersicht', subtitle: 'Kanäle, Bestellungen und Umsatz', primaryLabel: 'Kanal verbinden', primaryIcon: 'plus', primaryEvent: 'channel.connect', secondaryLabel: 'Bestellungen', secondaryIcon: 'package' }),
             { id: 'kpi', component: 'metric-row', region: 'main', span: 12, bind: { metrics: 'metrics' } },
             { id: 'cards', component: 'channel-cards', region: 'main', span: 12, bind: { channels: 'channels' }, props: { title: 'Verkaufskanäle', minWidth: 250 } },
             { id: 'rev', component: 'chart', region: 'main', span: 7, spanTablet: 12, bind: { series: 'revenue' }, props: { title: 'Umsatz – letzte 7 Tage', type: 'bar', height: 190, format: 'currency' } },
@@ -158,7 +82,7 @@ export default {
           description: '+ Sortieren/Vergleichen, Sync und Fehler im Detail  − Nüchtern, Mobile zeigt Karten statt Tabelle',
           layout: { type: 'split' },
           blocks: [
-            hdr({ eyebrow: 'Sales Channels', title: 'Übersicht', subtitle: `${totalOrders} Bestellungen in 30 Tagen · ${toDo} zu bearbeiten`, primaryLabel: 'Kanal verbinden', primaryEvent: 'channel.connect', secondaryLabel: 'Bestellungen', secondaryIcon: 'package' }),
+            hdr({ eyebrow: 'Sales Channels', title: 'Übersicht', subtitle: 'Bestellungen und Umsatz der letzten 30 Tage', primaryLabel: 'Kanal verbinden', primaryEvent: 'channel.connect', secondaryLabel: 'Bestellungen', secondaryIcon: 'package' }),
             { id: 'flt', component: 'search-filter', region: 'main', props: { placeholder: 'Kanal suchen …', filters: filtersCh } },
             { id: 'tbl', component: 'data-table', region: 'main', bind: { rows: 'rows' }, props: { title: '', columns: 'title:Kanal:text, status:Status:badge, revenue:Umsatz 30 T.:currency, orders:Bestellungen:number, change:Veränderung:percent, trend:Verlauf:spark' } },
             { id: 'pipe', component: 'order-pipeline', region: 'main', bind: { orders: 'orders' }, props: { title: 'Offene Bestellungen', stages: 'new, paid', openIn: 'select', respectFilter: false } },
@@ -171,7 +95,7 @@ export default {
           description: '+ Führt direkt zu Handlungen, wenig Rauschen  − Kein Gesamtüberblick über den Umsatz',
           layout: { type: 'split' },
           blocks: [
-            hdr({ title: 'Heute zu tun', subtitle: `${nErr} Kanal mit Fehler · ${toDo} Bestellungen offen`, primaryLabel: '', secondaryLabel: 'Umsatz', secondaryIcon: 'bar-chart-3' }),
+            hdr({ title: 'Heute zu tun', subtitle: 'Fehler beheben, Bestellungen bearbeiten', primaryLabel: '', secondaryLabel: 'Umsatz', secondaryIcon: 'bar-chart-3' }),
             { id: 'att', component: 'sales-attention', region: 'main', bind: { channels: 'channels', orders: 'orders', events: 'events', tasks: 'tasks' }, props: { title: 'Jetzt zu tun' } },
             { id: 'pipe', component: 'order-pipeline', region: 'main', bind: { orders: 'orders' }, props: { title: 'Offene Bestellungen', stages: 'new, paid', openIn: 'select', respectFilter: false } },
             { id: 'cards', component: 'channel-cards', region: 'aside', bind: { channels: 'channels' }, props: { title: 'Kanäle', layout: 'rows', errorsFirst: true } },
@@ -210,7 +134,7 @@ export default {
           description: '+ Fluss der Bestellungen sichtbar  − Viele Bestellungen verlängern die Spalten',
           layout: { type: 'stack' },
           blocks: [
-            hdr({ title: 'Bestellungen', subtitle: `${orders.length} Bestellungen · ${channels.length} Kanäle`, primaryLabel: '' }),
+            hdr({ title: 'Bestellungen', subtitle: 'Alle Bestellungen aus allen Kanälen', primaryLabel: '' }),
             { id: 'flt', component: 'search-filter', region: 'main', props: { placeholder: 'Kunde oder Nr. suchen …', filters: ORDER_CHIPS } },
             { id: 'pipe', component: 'order-pipeline', region: 'main', bind: { orders: 'orders' }, props: { title: 'Pipeline', mode: 'columns', openIn: 'select' } },
           ],
@@ -220,7 +144,7 @@ export default {
           description: '+ Abarbeiten ohne Rauschen  − Abgeschlossene Bestellungen sind nicht sichtbar',
           layout: { type: 'stack', narrow: true },
           blocks: [
-            hdr({ title: 'Heute versenden', subtitle: `${toDo} Bestellungen offen`, primaryLabel: '' }),
+            hdr({ title: 'Heute versenden', subtitle: 'Bezahlte Bestellungen zuerst', primaryLabel: '' }),
             { id: 'pipe', component: 'order-pipeline', region: 'main', bind: { orders: 'orders' }, props: { title: 'Zu bearbeiten', stages: 'paid, new', initial: 'paid', openIn: 'select' } },
           ],
         },
@@ -263,7 +187,7 @@ export default {
       acceptance: ['Die Gesamtsumme entspricht Zwischensumme plus Versand, die enthaltene MwSt 19 % ist angegeben.', '„Versenden“ lässt sich ohne Sendungsnummer nicht bestätigen.', 'Nach dem Versenden zeigt der Verlauf „Versendet“ mit Zeitpunkt.', 'Der Kanal führt mit einem Tipp zum Kanal-Detail.'],
       flows: [{ id: 'fl-ship', name: 'Bestellung versenden', steps: [{ featureId: 'sales.order', action: '„Versenden“, Paketdienst DHL und Sendungsnummer eintragen' }, { featureId: 'sales.order', action: 'Verlauf zeigt „Versendet“' }] }],
       viewports: ALL_VP,
-      demoData: { orders },
+      demoData: { orders: '@world:orders' },
       variants: [
         {
           id: 'A', name: 'Vollständiges Detail', direction: 'kompakt', concept: 'Kopf mit Status und Kanal, Verlauf, nächster Schritt, danach Positionen mit Summen, Kunde sowie Zahlung und Versand nebeneinander. Alles in einer Ansicht.',
@@ -375,7 +299,7 @@ export default {
       interactions: [{ trigger: 'Formular absenden', result: 'Kanal erscheint in der Liste rechts', event: 'form.submit' }, { trigger: 'Absenden ohne Pflichtfelder', result: 'Fehler unter den Feldern', event: 'form.invalid' }, { trigger: 'Neuen Kanal synchronisieren', result: 'Ladezustand, danach Rückmeldung', event: 'channel.sync' }, { trigger: 'Kanal in der Liste antippen', result: 'Kanal-Detail', event: 'channel.open', to: 'sales.channel' }],
       acceptance: ['Ohne Shop-URL und API-Schlüssel meldet das Formular den Fehler am Feld.', 'Nach „Verbinden“ steht der neue Kanal in der Liste rechts.'],
       viewports: ['desktop', 'tablet', 'mobile'],
-      demoData: { channels: channels.slice(0, 3) },
+      demoData: { channels: '@world:channels' },
       variants: [{
         id: 'A', name: 'Formular + Bestand', direction: 'kompakt', concept: 'Links das Verbindungsformular, rechts bereits verbundene Kanäle zur Orientierung. Hinweis zu Berechtigungen oberhalb.',
         description: '+ Einfach, ein Schritt  − Kein geführter Assistent für komplexe OAuth-Kanäle',

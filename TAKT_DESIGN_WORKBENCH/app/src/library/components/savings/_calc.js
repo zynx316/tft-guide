@@ -1,11 +1,13 @@
 // Sparpläne – Rechner-Zustand (ctx.ui.calc) und Projektionen. Mathematik: ausschließlich core/finmath.js.
-// Konvention (aus dem Kern): Rendite p. a. nach Kosten, monatlich umgerechnet, Einzahlung am Monatsende.
-import { projectSavings, savingsScenarios, requiredMonthly, estimateTax, TAX_DE } from '../../../core/finmath.js';
+// Konvention (aus dem Kern): Rendite p. a. nach Kosten, monatlich umgerechnet, Einzahlung am Monatsende. Verzinsung wählbar:
+// effektiv (Standard, p. a. = tatsächliche Jahresrendite) oder nominal (p. a. ÷ 12); der Rechner nennt sie (conventionNote).
+import { projectSavings, savingsScenarios, requiredMonthly, estimateTax, annualEffective, COMPOUNDING, COMPOUNDING_DEFAULT, TAX_DE } from '../../../core/finmath.js';
+import { fmtPercent } from '../../../lib/format.js';
 import { obj, r2, clamp } from './_savings.js';
 
 export const INFLATION = 0.02;           // Annahme für „heutige Kaufkraft“
 export const SPREAD = 0.02;              // Spanne ± 2 Prozentpunkte um die Annahme (3 % · 5 % · 7 %)
-export const CALC_DEFAULT = { initial: 10000, monthly: 300, years: 20, ratePa: 0.05, costPa: 0.002, dynamicPa: 0, real: false, tax: false };
+export const CALC_DEFAULT = { initial: 10000, monthly: 300, years: 20, ratePa: 0.05, costPa: 0.002, dynamicPa: 0, real: false, tax: false, compounding: COMPOUNDING_DEFAULT };
 export const CALC_LIMITS = {
   initial: { min: 0, max: 100000, step: 500, label: 'Startbetrag', unit: '€' },
   monthly: { min: 0, max: 2000, step: 25, label: 'Monatliche Rate', unit: '€' },
@@ -15,6 +17,16 @@ export const CALC_LIMITS = {
   dynamicPa: { min: 0, max: 0.1, step: 0.005, label: 'Ratensteigerung p. a.', unit: '%' },
 };
 export const SCENARIO_NAMES = { vorsichtig: 'Vorsichtig', annahme: 'Annahme', zuversichtlich: 'Zuversichtlich' };
+export const COMPOUNDING_OPTIONS = [{ value: 'effektiv', label: COMPOUNDING.effektiv.label }, { value: 'nominal', label: COMPOUNDING.nominal.label }];
+
+/** Kurzform für enge Stellen (Diagramm, Tabelle): „Verzinsung effektiv, Einzahlung am Monatsende.“ */
+export const conventionShort = (c) => `Verzinsung ${(COMPOUNDING[c.compounding] || COMPOUNDING[COMPOUNDING_DEFAULT]).kurz}, Einzahlung am Monatsende.`;
+/** Konvention als Satz für Hinweise unter Ergebnissen: welche Verzinsung gilt und was sie bedeutet (Stand: Kern, FINANCE_GUIDELINES 4.3). */
+export function conventionNote(c) {
+  const k = COMPOUNDING[c.compounding] ? c.compounding : COMPOUNDING_DEFAULT, pc = (r) => fmtPercent(r, { digits: 2 });
+  const extra = k === 'nominal' ? ` ${pc(c.ratePa)} nominal entsprechen etwa ${pc(annualEffective(c.ratePa, 'nominal'))} tatsächlicher Jahresrendite.` : '';
+  return `Verzinsung ${COMPOUNDING[k].label.toLowerCase()}: ${COMPOUNDING[k].text} Einzahlung am Monatsende.${extra}`;
+}
 
 export const getCalc = (ctx, base = {}) => ({ ...CALC_DEFAULT, ...obj(base), ...obj(ctx.ui?.calc) });
 export const setCalc = (ctx, patch, base) => ctx.setUi('calc', { ...getCalc(ctx, base), ...patch });
@@ -26,7 +38,7 @@ export function runCalc(c) {
   if (cache.has(key)) return cache.get(key);
   const adj = (r) => (c.real ? (1 + r) / (1 + INFLATION) - 1 : r);
   const rates = { vorsichtig: adj(Math.max(0, c.ratePa - SPREAD)), annahme: adj(c.ratePa), zuversichtlich: adj(c.ratePa + SPREAD) };
-  const sc = savingsScenarios({ monthly: c.monthly, initial: c.initial, years: c.years, costPa: c.costPa, dynamicPa: c.dynamicPa }, rates);
+  const sc = savingsScenarios({ monthly: c.monthly, initial: c.initial, years: c.years, costPa: c.costPa, dynamicPa: c.dynamicPa, compounding: c.compounding }, rates);
   const out = { calc: c, rates, nominal: { vorsichtig: Math.max(0, c.ratePa - SPREAD), annahme: c.ratePa, zuversichtlich: c.ratePa + SPREAD } };
   for (const [k, v] of Object.entries(sc)) {
     const tax = c.tax ? estimateTax({ gain: Math.max(0, v.gain), allowanceLeft: TAX_DE.sparerPauschbetrag.single, equityFund: true }).tax : 0;
@@ -52,9 +64,9 @@ export function milestones(run, ctxMax = 6) {
 }
 
 /** Zielrechner rückwärts: nötige Monatsrate (Kern: requiredMonthly) für Annahme ± 2 PP. */
-export function neededMonthly({ target, current = 0, years, ratePa }) {
+export function neededMonthly({ target, current = 0, years, ratePa, compounding = COMPOUNDING_DEFAULT }) {
   const months = Math.max(1, Math.round(years * 12));
-  const at = (r) => requiredMonthly({ target, current, months, ratePa: r });
+  const at = (r) => requiredMonthly({ target, current, months, ratePa: r, compounding });
   return { annahme: at(ratePa), vorsichtig: at(Math.max(0, ratePa - SPREAD)), zuversichtlich: at(ratePa + SPREAD), months };
 }
 

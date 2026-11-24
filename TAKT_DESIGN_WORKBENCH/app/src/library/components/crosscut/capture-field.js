@@ -41,7 +41,7 @@ export const captureField = {
   name: 'Erfassen-Feld',
   category: 'Querschnitt',
   description: 'Ein Eingabefeld für alles: „morgen 14 Uhr Zahnarzt“, „!Angebot Müller schicken“, „−12,50 Rewe“, „Milch kaufen“. TAKT zeigt vor dem Speichern, was erkannt wurde, und legt es in der Datenwelt an. Art lässt sich umstellen, Rückgängig inklusive.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'mode', label: 'Darstellung', type: 'select', options: ['line', 'tiles', 'smart'], default: 'line' },
     { name: 'placeholder', label: 'Platzhalter', type: 'text', default: 'Was möchtest du festhalten?' },
@@ -57,6 +57,7 @@ export const captureField = {
     { slot: 'meals', label: 'Mahlzeiten', default: 'nutDiary', shape: 'Welt: nutDiary', required: false },
     { slot: 'shopping', label: 'Einkaufsliste', default: 'nutShopping', shape: 'Welt: nutShopping', required: false },
     { slot: 'inbox', label: 'Eingang', default: 'taskInbox', shape: 'Welt: taskInbox', required: false },
+    { slot: 'notes', label: 'Notizen', default: 'notes', shape: 'Welt: notes', required: false },
     { slot: 'foods', label: 'Lebensmittel', default: 'nutFoods', shape: 'Welt: nutFoods', required: false },
   ],
   events: ['capture.input', 'capture.kind', 'capture.voice', 'capture.save', 'capture.undo', 'capture.suggest'],
@@ -64,7 +65,7 @@ export const captureField = {
   flutter: { widget: 'TaktCaptureField', propMap: { mode: 'layout', placeholder: 'hint', showExamples: 'showExamples' }, events: { 'capture.save': 'onCapture', 'capture.voice': 'onVoice', 'capture.undo': 'onUndo' } },
   a11y: { role: 'group', nameFrom: 'Erfassen' },
   css: XC_CSS + CSS,
-  example: { props: { initialText: 'morgen 14 Uhr Zahnarzt' }, data: { tasks: [], events: [], transactions: [], meals: [], shopping: { manual: [] }, inbox: [], foods: [] } },
+  example: { props: { initialText: 'morgen 14 Uhr Zahnarzt' }, data: { tasks: [], events: [], transactions: [], meals: [], shopping: { manual: [] }, inbox: [], notes: [], foods: [] } },
   render: function CaptureField({ props, data, setData, ctx }) {
     const [text, setText] = useState(props.initialText || '');
     const [forced, setForced] = useState(null);

@@ -1,9 +1,9 @@
 // Finanzen – gemeinsame UI-Bausteine, Datenslots und Basis-CSS (Präfix tk-fn-).
 import { html } from '../../../lib/html.js';
-import { Icon, Card, toneColor } from '../../ui.js';
+import { Icon, Card, Badge, Button, toneColor } from '../../ui.js';
 import { money } from '../../helpers.js';
 import { fmtDate, fmtRelativeDay } from '../../../lib/format.js';
-import { arr, r2, isoLocal } from './_calc.js';
+import { arr, r2, isoLocal, catMeta } from './_calc.js';
 
 export { arr, obj } from './_calc.js';
 
@@ -54,9 +54,50 @@ export function unbookTx(setData, tx) {
   setData('accounts', (l) => arr(l).map((a) => (a.id === tx.account ? { ...a, balance: r2(a.balance - tx.amount) } : a.id === tx.to ? { ...a, balance: r2(a.balance + tx.amount) } : a)));
 }
 export const buildTx = (ctx, list, f) => ({
-  id: newTxId(ctx, list), date: isoLocal(nowOf(ctx)), title: f.title || (f.type === 'transfer' ? 'Umbuchung' : f.category), category: f.category, account: f.account, type: f.type,
+  id: newTxId(ctx, list), date: f.date || isoLocal(nowOf(ctx)), title: f.title || (f.type === 'transfer' ? 'Umbuchung' : f.category), category: f.category, account: f.account, type: f.type,
   amount: f.type === 'income' ? Math.abs(f.amount) : -Math.abs(f.amount), ...(f.type === 'transfer' ? { to: f.to } : {}), icon: f.icon || (f.type === 'transfer' ? 'arrow-left-right' : 'receipt'),
+  ...(f.receiptId ? { receiptId: f.receiptId } : {}),
 });
+
+// --- Vorbelegung (ctx.ui.prefill) --------------------------------------------------------------------------
+// Andere Module öffnen „Schnell erfassen“ mit ctx.emit(event, { to: 'finance.quickadd', ui: { prefill } }). Beispiel Beleg:
+// prefill = { kind: 'expense', title, amount, date: 'YYYY-MM-DD', time?: 'HH:mm', category, account: Konto-ID oder -Name, receiptId }.
+// Beträge dürfen mit Vorzeichen kommen (wir nehmen den Betrag), Kategorie und Konto werden nur übernommen, wenn es sie gibt.
+const KINDS = ['expense', 'income', 'transfer'];
+/**
+ * Vorbelegung lesen und prüfen (Verweise auf Konten und Kategorien werden aufgelöst, Unbekanntes bleibt leer).
+ * @returns {{kind, title, amount, date, category, account, receiptId, label}|null} null, wenn nichts vorbelegt ist
+ */
+export function readPrefill(ctx, { accounts, categories } = {}) {
+  const p = ctx.ui?.prefill;
+  if (!p || typeof p !== 'object') return null;
+  const amount = Math.abs(Number(p.amount)) || 0, accs = arr(accounts), want = String(p.account || '').toLowerCase();
+  const account = want ? (accs.find((a) => a.id === p.account) || accs.find((a) => String(a.name).toLowerCase() === want) || accs.find((a) => String(a.name).toLowerCase().startsWith(want)))?.id || null : null;
+  const date = /^\d{4}-\d{2}-\d{2}/.test(String(p.date || '')) ? String(p.date).slice(0, 10) : null;
+  const time = /^\d{1,2}:\d{2}/.test(String(p.time || '')) ? String(p.time).slice(0, 5).padStart(5, '0') : null;
+  const category = p.category && arr(categories).some((c) => c.id === p.category || c.label === p.category) ? catMeta(categories, p.category).id : p.category || null;
+  const title = String(p.title || '').trim();
+  return { kind: KINDS.includes(p.kind) ? p.kind : 'expense', title, amount, date, time, category, account, receiptId: p.receiptId || null, label: p.receiptId ? 'aus Beleg' : 'Vorbelegt' };
+}
+/** Betrag als Eingabetext mit zwei Nachkommastellen („4,50“) für Numpad und Zeile. */
+export const prefillAmountText = (pf) => (pf?.amount ? pf.amount.toFixed(2).replace('.', ',') : '');
+/** Buchungsdatum aus der Vorbelegung: Tag aus dem Beleg, Uhrzeit vom Beleg, sonst „jetzt“ (am selben Tag) bzw. 12:00. */
+export function prefillDate(ctx, pf) {
+  if (!pf?.date) return undefined;
+  const now = isoLocal(nowOf(ctx));
+  return `${pf.date}T${pf.time || (now.slice(0, 10) === pf.date ? now.slice(11, 16) : '12:00')}:00`;
+}
+/** Hinweiszeile „aus Beleg“ über dem Erfassen-Formular, mit „Verwerfen“. */
+export const PrefillNote = ({ pf, onDiscard }) => html`<div class="tk-fn-prefill" role="status" data-qa="prefill"><div class="tk-fn-prefill__top"><${Badge} tone="info" icon=${pf.receiptId ? 'receipt' : 'sparkles'}>${pf.label}<//>
+  <${Button} size="sm" variant="ghost" icon="x" onClick=${onDiscard} aria-label="Vorbelegung verwerfen">Verwerfen<//></div>
+  <span class="tk-fn-meta">${pf.title || 'Ohne Titel'} · bitte mit dem Beleg vergleichen</span></div>`;
+/** Beleg als gebucht markieren (Welt „receipts“); liefert die Rückgängig-Funktion. Ohne Welt (Einzel-Screen) passiert nichts. */
+export function markReceiptBooked(ctx, receiptId, tx) {
+  const list = arr(ctx.world?.get('receipts')), prev = list.find((r) => r.id === receiptId);
+  if (!receiptId || !prev) return () => {};
+  ctx.world.set('receipts', (l) => arr(l).map((r) => (r.id === receiptId ? { ...r, status: 'gebucht', txId: tx.id } : r)));
+  return () => ctx.world.set('receipts', (l) => arr(l).map((r) => (r.id === receiptId ? prev : r)));
+}
 
 // Basis-CSS (einmal geladen über fin-safe-to-spend). Karten im Raster füllen die Zeilenhöhe.
 export const FIN_CSS = `
@@ -86,6 +127,8 @@ export const FIN_CSS = `
   .tk-fn-list > * + * { border-top:1px solid var(--tk-c-border); }
   .tk-fn-stack { display:flex; flex-direction:column; gap:var(--tk-space-3); min-width:0; }
   .tk-fn-actions { display:flex; gap:8px; flex-wrap:wrap; }
+  .tk-fn-prefill { display:flex; flex-direction:column; gap:2px; padding:6px 6px 8px 12px; border-radius:var(--tk-radius-md); background:var(--tk-c-info-soft); border:1px solid var(--tk-c-border); min-width:0; }
+  .tk-fn-prefill__top { display:flex; align-items:center; justify-content:space-between; gap:8px; } .tk-fn-prefill > .tk-fn-meta { overflow-wrap:anywhere; padding-right:6px; }
   .tk-fn-undo { display:flex; align-items:center; gap:8px; padding:6px 6px 6px 12px; border-radius:var(--tk-radius-md); background:var(--tk-c-surface2); border:1px solid var(--tk-c-border); font-size:var(--tk-fs-sm); }
   .tk-fn-note { display:flex; gap:8px; align-items:flex-start; font-size:var(--tk-fs-sm); color:var(--tk-c-text-muted); line-height:var(--tk-lh-snug); }
   .tk-fn-note svg { flex:none; margin-top:2px; }

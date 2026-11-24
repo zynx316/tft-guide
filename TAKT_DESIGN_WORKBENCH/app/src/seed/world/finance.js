@@ -5,7 +5,7 @@
 // Alle Kurse/Werte sind FIKTIV (Demo). Referenztag: Di, 24.11.2026 09:30.
 // Binden per '@world:<schlüssel>' in demoData oder importieren.
 // ============================================================================
-const r2 = (x) => Math.round(x * 100) / 100;
+import { r2, eur, triple } from './_util.js';
 
 // --- Depot -----------------------------------------------------------------
 export const positions = [
@@ -41,13 +41,14 @@ export const transactions = [
   { id: 't7', date: '2026-11-18T12:00:00', title: 'Kino Lichtwerk', category: 'Freizeit', amount: -24.00, account: 'acc-giro', type: 'expense', icon: 'ticket' },
   { id: 't8', date: '2026-11-17T08:30:00', title: 'Edeka Center', category: 'Lebensmittel', amount: -96.31, account: 'acc-giro', type: 'expense', icon: 'shopping-cart' },
   { id: 't9', date: '2026-11-16T14:22:00', title: 'Thalia Bücher', category: 'Freizeit', amount: -42.50, account: 'acc-kreditkarte', type: 'expense', icon: 'book-open' },
-  { id: 't10', date: '2026-11-15T07:00:00', title: 'Sparplan EM IMI', category: 'Sparen', amount: -75.00, account: 'acc-giro', type: 'transfer', to: 'acc-depot', icon: 'piggy-bank' },
+  { id: 't10', date: '2026-11-16T07:00:00', title: 'Sparplan EM IMI', category: 'Sparen', amount: -75.00, account: 'acc-giro', type: 'transfer', to: 'acc-depot', icon: 'piggy-bank' },
   { id: 't11', date: '2026-11-14T11:40:00', title: 'Wochenmarkt Siegfriedplatz', category: 'Lebensmittel', amount: -31.60, account: 'acc-giro', type: 'expense', icon: 'carrot' },
   { id: 't12', date: '2026-11-12T19:00:00', title: 'Konzert Ringlokschuppen', category: 'Freizeit', amount: -98.00, account: 'acc-kreditkarte', type: 'expense', icon: 'party-popper' },
   { id: 't13', date: '2026-11-10T09:15:00', title: 'REWE Markt Bielefeld', category: 'Lebensmittel', amount: -84.12, account: 'acc-giro', type: 'expense', icon: 'shopping-cart' },
   { id: 't14', date: '2026-11-08T13:00:00', title: 'Bäckerei Krause', category: 'Lebensmittel', amount: -12.40, account: 'acc-giro', type: 'expense', icon: 'croissant' },
   { id: 't15', date: '2026-11-05T10:00:00', title: 'Fitnessstudio FitX', category: 'Gesundheit', amount: -39.90, account: 'acc-giro', type: 'expense', subscriptionId: 'sub-fitx', icon: 'dumbbell' },
-  { id: 't16', date: '2026-11-03T08:00:00', title: 'Privatentnahme', category: 'Einnahmen', amount: 4200.00, account: 'acc-giro', type: 'income', icon: 'banknote' },
+  // Privatentnahme: beide Seiten sind eine Umbuchung (Geschäftskonto → Girokonto), zählt weder als Einnahme noch als Ausgabe (Befund B3).
+  { id: 't16', date: '2026-11-03T08:00:00', title: 'Privatentnahme', category: 'Umbuchung', amount: 4200.00, account: 'acc-giro', type: 'transfer', from: 'acc-business', icon: 'banknote' },
   { id: 't17', date: '2026-11-03T08:05:00', title: 'Privatentnahme (Geschäftskonto)', category: 'Umbuchung', amount: -4200.00, account: 'acc-business', type: 'transfer', to: 'acc-giro', icon: 'arrow-left-right' },
   { id: 't18', date: '2026-11-02T07:00:00', title: 'Sparplan All-World', category: 'Sparen', amount: -300.00, account: 'acc-giro', type: 'transfer', to: 'acc-depot', icon: 'piggy-bank' },
   { id: 't19', date: '2026-11-02T07:00:00', title: 'Sparplan World IT', category: 'Sparen', amount: -50.00, account: 'acc-giro', type: 'transfer', to: 'acc-depot', icon: 'piggy-bank' },
@@ -88,17 +89,20 @@ export const fixedCostsMonthly = r2(subscriptions.filter((s) => !s.business).red
 export const savingsPlans = [
   { id: 'sp-allworld', name: 'All-World Sparplan', positionId: 'p-allworld', isin: 'IE00BK5BQT80', monthly: 300, day: 1, intervalMonths: 1, startDate: '2021-03-01', active: true, dynamicPa: 0.03, expectedReturnPa: 0.06, goalId: 'g-rente', tone: 1 },
   { id: 'sp-em', name: 'Emerging Markets', positionId: 'p-em', isin: 'IE00BKM4GZ66', monthly: 75, day: 15, intervalMonths: 1, startDate: '2022-01-15', active: true, dynamicPa: 0, expectedReturnPa: 0.06, goalId: 'g-rente', tone: 2 },
-  { id: 'sp-tech', name: 'World IT', positionId: 'p-tech', isin: 'IE00BM67HT60', monthly: 50, day: 1, intervalMonths: 1, startDate: '2023-06-01', active: true, dynamicPa: 0, expectedReturnPa: 0.07, goalId: null, tone: 4 },
+  { id: 'sp-tech', name: 'World IT', positionId: 'p-tech', isin: 'IE00BM67HT60', monthly: 50, day: 1, intervalMonths: 1, startDate: '2023-06-01', active: true, dynamicPa: 0, expectedReturnPa: 0.07, goalId: 'g-rente', tone: 4 },
   { id: 'sp-tagesgeld', name: 'Notgroschen (Dauerauftrag)', accountId: 'acc-tagesgeld', monthly: 150, day: 1, intervalMonths: 1, startDate: '2024-01-01', active: true, dynamicPa: 0, expectedReturnPa: 0.025, goalId: 'g-notgroschen', tone: 3 },
   { id: 'sp-ebike', name: 'E-Bike', accountId: 'acc-tagesgeld', monthly: 100, day: 15, intervalMonths: 1, startDate: '2026-03-15', active: false, pausedUntil: '2027-01-15', dynamicPa: 0, expectedReturnPa: 0.025, goalId: 'g-ebike', tone: 5 },
 ];
 export const savingsMonthlyTotal = r2(savingsPlans.filter((p) => p.active).reduce((s, p) => s + p.monthly, 0));
+const planRate = (goalId) => savingsPlans.filter((p) => p.goalId === goalId).reduce((x, p) => x + p.monthly, 0);
+const tagesgeld = accounts.find((a) => a.type === 'savings').balance;
+/** Sparziele: `monthly` = Summe der Raten der Pläne mit dieser goalId (auch pausierte), `current` aus Konto bzw. Depot (Invariante W6). */
 export const savingsGoals = [
-  { id: 'g-notgroschen', name: 'Notgroschen (6 Monatsausgaben)', target: 15000, current: 9500, icon: 'shield', tone: 3, due: '2029-12-31', monthly: 150 },
-  { id: 'g-japan', name: 'Japan-Reise 2027', target: 6000, current: 2150, icon: 'plane', tone: 5, due: '2027-09-01', monthly: 0 },
-  { id: 'g-ebike', name: 'Neues E-Bike', target: 3500, current: 1200, icon: 'bike', tone: 2, due: '2027-06-01', monthly: 100, paused: true },
-  { id: 'g-rente', name: 'Altersvorsorge (Depot)', target: 250000, current: depotValue, icon: 'landmark', tone: 1, due: '2054-12-31', monthly: 375 },
-];
+  { id: 'g-notgroschen', name: 'Notgroschen (6 Monatsausgaben)', target: 15000, current: tagesgeld, icon: 'shield', tone: 3, due: '2029-12-31' },
+  { id: 'g-japan', name: 'Japan-Reise 2027', target: 6000, current: 2150, icon: 'plane', tone: 5, due: '2027-09-01' },
+  { id: 'g-ebike', name: 'Neues E-Bike', target: 3500, current: 1200, icon: 'bike', tone: 2, due: '2027-06-01', paused: true },
+  { id: 'g-rente', name: 'Altersvorsorge (Depot)', target: 250000, current: depotValue, icon: 'landmark', tone: 1, due: '2054-12-31' },
+].map((g) => ({ ...g, monthly: planRate(g.id) }));
 
 // --- Watchlist & Dividenden (fiktive Kurse) ------------------------------
 export const watchlist = [
@@ -115,27 +119,28 @@ export const dividends = [
 ];
 export const taxAllowance = { total: 1000, used: 312.40, bank: 'Trade Republic', stand: '24.11.2026' };
 
-/** Kennzahlen für Übersichten (abgeleitet – nicht von Hand pflegen). `kpis` speist die Kachel im Launchpad (erste Kennzahl). */
-export const financeSummary = (() => {
-  const nov = transactions.filter((t) => t.date.startsWith('2026-11'));
+/**
+ * Kennzahlen für Übersichten (abgeleitet – nicht von Hand pflegen). `kpis` speist die Kachel im Launchpad (erste Kennzahl).
+ * Gesamtsicht: Umbuchungen (auch die Privatentnahme) zählen weder als Einnahme noch als Ausgabe (Invariante W4).
+ */
+export function summaryOfFinance({ tx, budgetList, net, depot, fixed, savingsTotal }) {
+  const nov = tx.filter((t) => t.date.startsWith('2026-11'));
   const income = r2(nov.filter((t) => t.type === 'income').reduce((s, t) => s + t.amount, 0));
   const expenses = r2(-nov.filter((t) => t.type === 'expense').reduce((s, t) => s + t.amount, 0));
   const saved = r2(-nov.filter((t) => t.type === 'transfer' && t.category === 'Sparen').reduce((s, t) => s + t.amount, 0));
-  const inPlan = budgets.filter((b) => b.value <= b.target).length;
-  // Gesamtsicht: Die Privatentnahme (Geschäftskonto → Girokonto) ist intern und zählt nicht als Einnahme.
-  const incomeTotal = r2(nov.filter((t) => t.type === 'income' && !/^Privatentnahme/i.test(t.title)).reduce((s, t) => s + t.amount, 0));
-  const rateTotal = incomeTotal ? (incomeTotal - expenses) / incomeTotal : 0;
-  const pct = (x) => String(Math.round(x * 100));
+  const inPlan = budgetList.filter((b) => b.value <= b.target).length;
+  const rate = income ? (income - expenses) / income : 0;
   return {
-    netWorth, depotValue, income, expenses, saved, savingsRate: income ? (income - expenses) / income : 0, fixedCostsMonthly, savingsMonthlyTotal,
-    kpis: [
-      { label: 'Budgets im Plan', value: `${inPlan} von ${budgets.length}`, icon: 'wallet', tone: inPlan === budgets.length ? 'success' : 'warning' },
-      { label: 'Sparquote Nov.', value: pct(rateTotal), unit: '%', icon: 'piggy-bank', tone: 'accent' },
-      { label: 'gespart im November', value: String(Math.round(saved)), unit: '€', icon: 'piggy-bank', tone: 'accent' },
-      { label: 'Vermögen', value: String(Math.round(netWorth)), unit: '€', icon: 'landmark', tone: 'info' },
-    ],
+    netWorth: net, depotValue: depot, income, expenses, saved, savingsRate: rate, fixedCostsMonthly: fixed, savingsMonthlyTotal: savingsTotal,
+    kpis: budgetList.length || tx.length ? [
+      { label: 'Budgets im Plan', value: `${inPlan} von ${budgetList.length}`, icon: 'wallet', tone: inPlan === budgetList.length ? 'success' : 'warning', to: 'finance.budgets' },
+      { label: 'Sparquote Nov.', value: String(Math.round(rate * 100)), unit: '%', icon: 'piggy-bank', tone: 'accent', to: 'finance.cashflow' },
+      { label: 'gespart im November', value: String(Math.round(saved)), unit: '€', icon: 'piggy-bank', tone: 'accent', to: 'savings.home' },
+      { label: 'Vermögen', value: String(Math.round(net)), unit: '€', icon: 'landmark', tone: 'info', to: 'finance.networth' },
+    ] : [{ label: 'Konten verbunden', value: 0, icon: 'wallet', tone: 'neutral', to: 'finance.accounts' }],
   };
-})();
+}
+export const financeSummary = summaryOfFinance({ tx: transactions, budgetList: budgets, net: netWorth, depot: depotValue, fixed: fixedCostsMonthly, savingsTotal: savingsMonthlyTotal });
 
 // ============================================================================
 // ERWEITERUNGEN Finanzen (Ausbau des Moduls). Nur ergänzt – bestehende Schlüssel bleiben unverändert.
@@ -234,29 +239,45 @@ export const financePrefs = {
   reserve: 300, // Puffer, der bei „frei verfügbar“ nicht mitzählt (eigene Vorgabe)
 };
 
-// --- Launchpad, Start, Suche, Mitteilungen --------------------------------------------------------------------
-const fmtEur = (v) => `${new Intl.NumberFormat('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Math.abs(v))}\u00a0€`;
+// --- Hinweise, Suche, Mitteilungen ------------------------------------------------------------------------------
+// Konten, Buchungen und Sparpläne findet die globale Suche direkt aus den Sammlungen (Slots); `financeSearch` nennt Abos und Budgets.
+const fmtEur = (v) => eur(Math.abs(v), true);
 export const financeHints = [
-  ...budgets.filter((b) => b.value > b.target).map((b) => ({ id: `h-bud-${b.id}`, text: `${b.label} liegt ${fmtEur(b.value - b.target)} über dem Budget.`, source: 'budget', module: 'finance', tone: 'warning', to: 'finance.budgets' })),
-  { id: 'h-kfz', text: 'Kfz-Versicherung: Kündigung zum 01.01. ist noch bis 30.11. möglich.', source: 'abo', module: 'finance', tone: 'info', to: 'finance.subscriptions' },
-  { id: 'h-netflix', text: 'Netflix wurde seit 34 Tagen nicht genutzt (167,88\u00a0€ im Jahr).', source: 'abo', module: 'finance', tone: 'info', to: 'finance.subscriptions' },
+  ...budgets.filter((b) => b.value > b.target).map((b) => ({ id: `h-bud-${b.id}`, text: `${b.label} liegt ${fmtEur(b.value - b.target)} über dem Budget.`, source: `budgets[${b.id}]`, module: 'finance', tone: 'warning', to: 'finance.budgets' })),
+  { id: 'h-kfz', text: 'Kfz-Versicherung: Kündigung zum 01.01. ist noch bis 30.11. möglich.', source: 'financeSubMeta[sub-kfz]', module: 'finance', tone: 'info', to: 'finance.subscriptions', carry: { selectedId: 'sub-kfz' } },
+  { id: 'h-netflix', text: `Netflix wurde seit 34 Tagen nicht genutzt (${fmtEur(13.99 * 12)} im Jahr).`, source: 'subscriptions[sub-netflix]', module: 'finance', tone: 'info', to: 'finance.subscriptions', carry: { selectedId: 'sub-netflix' } },
 ];
 export const financeSearch = [
-  ...accounts.map((a) => ({ id: `s-${a.id}`, type: 'Konto', title: a.name, subtitle: `${a.bank} · ${fmtEur(a.balance)}`, module: 'finance', to: 'finance.accounts' })),
-  ...transactions.slice(0, 12).map((t) => ({ id: `s-${t.id}`, type: 'Buchung', title: t.title, subtitle: `${t.category} · ${fmtEur(t.amount)}`, module: 'finance', to: 'finance.transaction', params: { id: t.id } })),
-  ...subscriptions.map((s) => ({ id: `s-${s.id}`, type: 'Abo', title: s.name, subtitle: `${fmtEur(s.amount)} im Monat`, module: 'finance', to: 'finance.subscriptions' })),
+  ...subscriptions.map((s) => ({ id: `sub:${s.id}`, type: 'Abo', title: s.name, subtitle: `${fmtEur(s.amount)} im Monat`, module: 'finance', to: 'finance.subscriptions', params: { id: s.id } })),
+  ...budgets.map((b) => ({ id: `budget:${b.id}`, type: 'Budget', title: `Budget ${b.label}`, subtitle: `${fmtEur(b.value)} von ${fmtEur(b.target)}`, module: 'finance', to: 'finance.budgets', params: { id: b.id } })),
 ];
+const budFun = budgets.find((b) => b.id === 'b-fun');
 export const financeNotifications = [
   { id: 'n-kfz', title: 'Kündigungsfrist Kfz-Versicherung', text: 'Noch bis 30.11. zum Jahreswechsel kündbar.', module: 'finance', tone: 'warning', priority: 'wichtig', time: '2026-11-24T08:00:00', to: 'finance.subscriptions' },
-  { id: 'n-fun', title: 'Freizeit über Budget', text: `${fmtEur(budgets.find((b) => b.id === 'b-fun').value - budgets.find((b) => b.id === 'b-fun').target)} über dem Monatsbudget.`, module: 'finance', tone: 'warning', priority: 'normal', time: '2026-11-22T20:10:00', to: 'finance.budgets' },
+  { id: 'n-fun', title: 'Freizeit über Budget', text: `${fmtEur(budFun.value - budFun.target)} über dem Monatsbudget.`, module: 'finance', tone: 'warning', priority: 'normal', time: '2026-11-22T20:10:00', to: 'finance.budgets' },
   { id: 'n-tx', title: 'Etsy Auszahlung eingegangen', text: `Geschäftskonto: ${fmtEur(812.4)}`, module: 'finance', tone: 'info', priority: 'leise', time: '2026-11-23T10:05:00', to: 'finance.transaction', params: { id: 't3' } },
 ];
 
-// --- Szenarien: Erststart (nichts erfasst) und Stress (Extremwerte) ---------------------------------------------
-const zeroSummary = { netWorth: 0, depotValue: 0, income: 0, expenses: 0, saved: 0, savingsRate: 0, fixedCostsMonthly: 0, savingsMonthlyTotal: 0, kpis: [] };
+// --- Szenarien: Erststart (nichts erfasst) und Stress (Extremwerte, abgeleitete Werte folgen den verdreifachten Listen) ----------
+const tripled = (v) => triple(v);
+const stressTx = tripled(transactions);
+const stressPositions = tripled(positions);
+const stressDepot = r2(stressPositions.reduce((x, p) => x + p.value, 0) + depotCash);
+const stressAccounts = [
+  ...accounts.map((a) => (a.type === 'depot' ? { ...a, balance: stressDepot } : a)),
+  { id: 'acc-extrem', name: 'Verrechnungskonto Online-Shop Nordlicht Studio mit sehr langem Namen', bank: 'Kontist Business Premium', type: 'business', balance: 9999999.99, icon: 'briefcase', tone: 5, spark: [9800000, 9900000, 9999999.99], iban: 'DE02 1203 0000 •••• •••• 00' },
+];
+const stressNet = r2(stressAccounts.reduce((x, a) => x + a.balance, 0));
+const stressSpent = (cat) => r2(-stressTx.filter((t) => t.type === 'expense' && t.category === cat).reduce((x, t) => x + t.amount, 0));
+const stressBudgets = budgets.map((b) => ({ ...b, value: stressSpent(b.category) }));
+const stressSubs = tripled(subscriptions);
+const stressFixed = r2(stressSubs.filter((x) => !x.business).reduce((x, y) => x + y.amount, 0));
+const stressPlans = tripled(savingsPlans);
+const stressSavings = r2(stressPlans.filter((p) => p.active).reduce((x, p) => x + p.monthly, 0));
+const stressRate = (g) => r2(stressPlans.filter((p) => p.goalId === g).reduce((x, p) => x + p.monthly, 0));
 export const scenarios = {
   erststart: {
-    financeSummary: zeroSummary, netWorth: 0, fixedCostsMonthly: 0,
+    financeSummary: summaryOfFinance({ tx: [], budgetList: [], net: 0, depot: 0, fixed: 0, savingsTotal: 0 }), netWorth: 0, fixedCostsMonthly: 0,
     financeMonths: [], financeEvents: [], financeHints: [], financeSearch: [], financeNotifications: [],
     financeNetWorthHistory: { labels: [], series: [] },
     financeRules: [], financeTxMeta: {},
@@ -264,6 +285,11 @@ export const scenarios = {
   },
   stress: {
     financeMonths,
-    accounts: [...accounts, { id: 'acc-extrem', name: 'Verrechnungskonto Online-Shop Nordlicht Studio mit sehr langem Namen', bank: 'Kontist Business Premium', type: 'business', balance: 9999999.99, icon: 'briefcase', tone: 5, spark: [9800000, 9900000, 9999999.99], iban: 'DE02 1203 0000 •••• •••• 00' }],
+    accounts: stressAccounts, netWorth: stressNet, transactions: stressTx, budgets: stressBudgets,
+    positions: stressPositions, depotValue: stressDepot, subscriptions: stressSubs, fixedCostsMonthly: stressFixed,
+    savingsPlans: stressPlans, savingsMonthlyTotal: stressSavings,
+    savingsGoals: savingsGoals.map((g) => ({ ...g, current: g.id === 'g-rente' ? stressDepot : g.current, monthly: stressRate(g.id) })),
+    depotHistory: { ...depotHistory, series: depotHistory.series.map((x, i) => (i === 0 ? { ...x, values: [...x.values.slice(0, -1), Math.round(stressDepot)] } : x)) },
+    financeSummary: summaryOfFinance({ tx: stressTx, budgetList: stressBudgets, net: stressNet, depot: stressDepot, fixed: stressFixed, savingsTotal: stressSavings }),
   },
 };

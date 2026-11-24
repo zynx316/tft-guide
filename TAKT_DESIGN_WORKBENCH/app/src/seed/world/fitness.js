@@ -251,12 +251,38 @@ export const fitnessMetrics = [
 ];
 export const fitnessSummary = { sessionsTotal: fitnessProfile.lifetimeBefore + workoutHistory.length, sessions8w: workoutHistory.length, volume8w: sum(workoutHistory.map((h) => h.volume)), plannedSets: plannedSets(trainingProgram, library), avgSleep7: r1(avg(sleepLog.slice(-7).map((s) => s.hours))), avgSteps7: 8400, workoutDays: ['Mo', 'Mi', 'Fr'], runDays: ['Sa', 'So'], nextWorkoutDay: 'Mi', todayKind: 'rest', stand: '24.11.2026 09:30' };
 
+// --- Launchpad, Hinweise, Suche, Mitteilungen (aus den Daten oben abgeleitet) ------------------------------------------------
+/** Kennzahlen als Anhang an `fitnessSummary` (flache Felder bleiben, Komponenten lesen sie). */
+const fitnessKpis = (next, weekDone, goal, streak) => [
+  { label: 'Training', value: next, icon: 'dumbbell', tone: 'accent', to: 'fitness.home' },
+  { label: 'Einheiten diese Woche', value: `${weekDone} von ${goal}`, icon: 'target', tone: 'info', to: 'fitness.goals' },
+  { label: 'Wochen in Folge', value: streak, icon: 'flame', tone: 'warning', to: 'fitness.goals' },
+];
+fitnessSummary.kpis = fitnessKpis(fitnessToday.nextWhen, wkNow.sessions, fitnessProfile.weeklyGoal, fitnessStreak.weeks);
+export const fitnessHints = [
+  { id: 'h-fit-next', text: `${fitnessToday.nextWhen.replace(', ', ' um ')} Uhr steht ${fitnessToday.nextName} an – ${fitnessToday.nextSets} Sätze, etwa ${fitnessToday.nextMinutes} Minuten.`, source: 'fitnessToday', module: 'fitness', tone: 'info', to: 'fitness.session' },
+  { id: 'h-fit-sleep', text: `Schlaf im Schnitt ${num(fitnessSummary.avgSleep7, 1)} Std. in den letzten 7 Nächten, dein Ziel liegt bei ${num(fitnessProfile.sleepGoalH, 1)} Std.`, source: 'sleepLog', module: 'fitness', tone: 'info', to: 'fitness.recovery' },
+];
+export const fitnessSearch = [
+  ...exerciseLibrary.map((e) => ({ id: `exercise:${e.id}`, type: 'Übung', title: e.name, subtitle: `${e.muscle} · ${e.equipment}`, module: 'fitness', to: 'fitness.exercise', params: { id: e.id } })),
+  ...trainingProgram.days.map((d) => ({ id: `plan:${d.id}`, type: 'Trainingstag', title: `${d.weekdayLabel} · ${d.name}`, subtitle: `${d.time} Uhr · ${d.durationMin} Min. · ${d.focus}`, module: 'fitness', to: 'fitness.plan', params: { id: d.id } })),
+];
+export const fitnessNotifications = [
+  { id: 'n-fit', title: `Morgen ${fitnessToday.nextWhen.split(', ')[1]}: ${fitnessToday.nextName}`, text: `${fitnessToday.nextExercises.length} Übungen, etwa ${fitnessToday.nextMinutes} Minuten. Dein Plan steht bereit.`, module: 'fitness', tone: 'success', priority: 'normal', time: '2026-11-23T20:30:00', to: 'fitness.home' },
+];
+
 // --- Szenario „Erster Start“: noch kein Training, keine Serie, kein Rückblick (Leerzustände und erste Aktion prüfen) ---
+// Der Stress-Tag verdreifacht die Trainingsliste; die Kennzahlen folgen (Einheiten der 8 Wochen, Volumen).
 export const scenarios = {
   erststart: {
     fitnessStreak: { weeks: 0, best: 0, since: null, jokersPerQuarter: 2, jokersLeft: 2, paused: false, history: [], current: { week: weekStartNow, sessions: 0, goal: fitnessProfile.weeklyGoal } },
     weeklyRecap: { week: '', range: '', done: [], learned: '', next: '' },
     fitnessToday: { ...fitnessToday, kind: 'rest', headline: 'Noch kein Plan', text: 'Wähle ein Programm – dann erscheint hier deine nächste Einheit.', nextDayId: null, nextExercises: [], weekSessions: 0 },
+    fitnessSummary: { ...fitnessSummary, sessionsTotal: 0, sessions8w: 0, volume8w: 0, avgSleep7: 0, avgSteps7: 0, kpis: fitnessKpis('Plan wählen', 0, fitnessProfile.weeklyGoal, 0) },
+    fitnessHints: [], fitnessNotifications: [],
+  },
+  stress: {
+    fitnessSummary: { ...fitnessSummary, sessions8w: workoutHistory.length * 3, volume8w: fitnessSummary.volume8w * 3, sessionsTotal: fitnessSummary.sessionsTotal + workoutHistory.length * 2 },
   },
 };
 
