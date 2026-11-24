@@ -94,6 +94,13 @@ for (const f of state.features) {
   if (!f.requirements.length && f.status !== 'not_analyzed') warnings.push(`${f.id}: keine Anforderungen`);
 }
 
+// 3-) Größe des Seed-Zustands: Browser-Speicher (Rückfallebene) fasst ~5 MB; ab 2,5 MB Hinweis, ab 4 MB Fehler
+{
+  const kb = Math.round(JSON.stringify(state).length / 1024);
+  if (kb > 4096) errors.push(`Seed-Zustand ${kb} KB – zu groß für den Browser-Speicher (Grenze ~5 MB): Demo-Daten in die Welt auslagern`);
+  else if (kb > 2560) warnings.push(`Seed-Zustand ${kb} KB – nähert sich der Grenze des Browser-Speichers (~5 MB)`);
+}
+
 // 3a) Integritätsprüfung (core/validate.js) – nur die Punkte, die oben nicht schon geprüft werden
 {
   const { validateState } = await import(pathToFileURL(path.join(SRC, 'core/validate.js')).href);

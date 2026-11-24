@@ -45,7 +45,8 @@ app/src/
                   seedpatch · validate (Integrität) · workorder · spec (+ spec-json: JSON, specHash, Routen) · flutter · finmath · recurrence · health · preview-payload · versioning · impact
   seed/           index.js · catalog.js (Grundsatzfragen + Muster) · modules/*.js · world/*.js (Datenwelt)
   launcher/       Demo-Launcher (Versionen nebeneinander, Handy-Vollbild, Bewertung, Feedback)
-  workbench/      store.js (EINZIGER Ort für Zustandsänderungen: actions.*; Konflikt-Rebase) · app.js · views/*
+  workbench/      store.js (EINZIGER Ort für Zustandsänderungen: actions.*; Konflikt-Rebase; Zustände nie direkt ändern –
+                  Rückgängig teilt Teilbäume, lib/share.js) · app.js · views/*
 server.mjs        Statischer Server + /api/state (Revision/409) + Backups + /api/feedback (v2) + /api/network
 tests/            Node-Tests (npm test)      qa/run-qa.mjs  Vertrag · E2E · Matrix · Regression      tools/  check, verify, Generatoren
 ```

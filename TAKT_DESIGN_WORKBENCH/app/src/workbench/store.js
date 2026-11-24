@@ -15,6 +15,7 @@ import { APP_QUESTIONS, PATTERN_QUESTIONS } from '../seed/catalog.js';
 import { getComponent, defaultProps } from '../library/registry.js';
 import { DEFAULT_DIRECTIONS } from '../core/directions.js';
 import { apiFetch } from '../lib/api.js';
+import { shareUnchanged } from '../lib/share.js';
 
 let state = null;
 const listeners = new Set();
@@ -149,7 +150,8 @@ export function mutate(summary, recipe, meta = {}) {
     if (draft.history.length > 3000) draft.history.length = 3000;
   }
   lastCoalesce = { key: meta.coalesce || null, ts: Date.now() };
-  state = draft;
+  // Unveränderte Teilbäume mit dem Vorzustand teilen: Rückgängig-Schritte kosten nur die Änderung, nicht ~3 MB je Kopie
+  state = shareUnchanged(prev, draft);
   pendingOps.push({ seq: ++opSeq, summary, recipe, meta });
   schedulePersist();
   notify();

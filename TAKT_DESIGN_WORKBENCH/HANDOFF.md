@@ -72,7 +72,8 @@ eine WLAN-PIN (neu bei jedem Start, in der Konsole angezeigt); andere Geräte im
 - **Echtes Smartphone nicht getestet** (kein Gerät in der Cloud). Über LAN-HTTP gibt es keinen Service Worker (ADR-001).
 - **Simulationen:** Radar, Barcode-Scan, Texterkennung, Kurse, Orders sind simuliert; Datenquellen sind eine offene
   Grundsatzfrage.
-- **Workbench-Zustand** liegt in einer JSON-Datei; Skalierungsmaßnahmen (Snapshots auslagern, Undo als Patches) stehen in TASKS.md.
+- **Workbench-Zustand** liegt in einer JSON-Datei (~1,8 MB); Rückgängig teilt Speicher strukturell. Offene Skalierungsmaßnahme
+  (Versions-Snapshots je Feature auslagern) steht in TASKS.md.
 - Restpunkte aus den Prüfungen und der Vollständigkeitsprüfung: **TASKS.md**.
 
 ## 6. Ordnerübersicht

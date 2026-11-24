@@ -65,7 +65,9 @@ Zusätzlich zu Modulen, Features, Varianten, Versionen, Historie und QA (siehe K
 
 ## 4. Zustand & Persistenz (`workbench/store.js`, `server.mjs`)
 - **Einziger Schreibweg:** `mutate(summary, recipe, meta)` auf einer Kopie (atomar), Historie, Undo/Redo (ohne Einstellungen/QA),
-  entprelltes Speichern. UI ruft nur `actions.*` auf.
+  entprelltes Speichern. UI ruft nur `actions.*` auf. Nach jeder Änderung teilt `lib/share.js` (`shareUnchanged`) alle
+  unveränderten Teilbäume mit dem Vorzustand – 60 Rückgängig-Schritte kosten so etwa 0,3 MB statt ~180 MB. Deshalb gilt:
+  übernommene Zustände nie direkt verändern (auch nicht in Ansichten, z. B. kein `.sort()` auf Zustands-Arrays ohne Kopie).
 - **Mehrere Tabs/Geräte:** Tabs übernehmen den Stand des anderen Tabs inkl. Server-Revision; beim Zurückkehren in den Tab wird
   der Datei-Stand abgeglichen. Meldet der Server trotzdem einen Konflikt (409), werden die noch nicht gespeicherten eigenen
   Änderungen als Rezepte **auf den Server-Stand neu angewendet** (Rebase) – nur wenn das scheitert (z. B. nach Undo), bleibt der
