@@ -154,3 +154,32 @@ Zeiten in UTC. Neue Einträge unten anhängen (Datum, Phase, Entscheidung/Änder
   Fehler gefunden und behoben: im App-Modus des Launchers lief die Privatsphäre-Prüfung nie, weil der Prüf-Payload das Flag
   nicht trug. `npm run check` prüft das Modulfeld `legal` statisch und fand dabei, dass Finanzen, Sparpläne, Trading und
   Gewohnheiten das Feld nicht pflegen (ab6c508).
+
+### 09:05–10:10 – Kernwünsche der Abschluss-QA (Hauptsession, parallel zu den Nachprüfungen)
+- **App-Rahmen:** Seitenleiste zeigte nur 12 von 19 Modulen (`modules.slice(0, 12)`) – jetzt alle, scrollbar.
+- **Große Schrift:** `.tk-truncate`, Seiten- und Kartentitel, Umschalter brechen um (Silbentrennung), Kartenkopf quetscht den
+  Titel nicht mehr, Gewichtsfeld wächst mit (`ch`); die QA-Sonde meldet „…“ und gequetschte Titel bei großer Schrift.
+- **Privatsphäre und Formate:** Achsenwerte von Geld-Diagrammen maskiert, Beträge im Freitext (`maskAmounts`), Sonde erkennt
+  „96,10€“ und „Mio. €“; `metric-row` mit `sensitive`/`neutral`, `Delta` bei 0 neutral mit echtem Minus; Donut bei Summe 0 ehrlich.
+- **Bausteine:** Leerzustände je Liste (`emptyTitle/emptyText`), „3 von 11“ bei gekürzten Listen, Seitenkopf-Untertitel aus Daten
+  (Start: „Heute zählt: … bis 14:00 Uhr“), `layout.panelOpen`.
+- **Neue Module eingebunden:** Start zeigt Kacheln und die dringendsten Hinweise von Ziele, Einkauf und Dokumente (Sprung zum
+  Anlass); Suche findet Dokumente, Garantien, Ziele und Einkaufsartikel live; „Erfassen › 2 l Milch“ landet mit Menge im
+  Kühlregal, „Ansehen“ öffnet die Einkaufsliste; Einstellungen zählen 19 Module, Mitteilungsregeln und Sperrschalter ergänzt;
+  Finanzen › Abos: „Vorlage“ führt zum Vertrag in Dokumente (als Vorschlag, die Entscheidung bleibt offen).
+- **Pflichthinweise:** Modulfeld `legal` bei Finanzen, Sparpläne, Trading (Gewohnheiten durch die Nachprüfung) – Sonde 158/158.
+- **Handy:** Schnellerfassung einzeilig (7 % statt 21–24 % der Höhe); Launcher-Versionsauswahl weicht fixierten Leisten aus;
+  Launcher zeigt die Abdeckung je Richtung für Kernfeatures (Tier 1: 98/84/94 %) statt aller Features (wirkte bei Fokus mit
+  58 % fälschlich unter der Gate-Grenze).
+- **Tests:** Erfassen/Suche (2), Modulzahl der Einstellungen, Seed-Abgleich mit dem echten Seed (2) → 390 Tests.
+- Fehler unterwegs (ehrlich): Ein Import der Modulliste in `world/settings.js` hätte `npm run check` abstürzen lassen (die Datei
+  zieht Preact nach) – vor dem Commit bemerkt, durch Konstante plus Test ersetzt.
+
+### 07:10–09:50 – Ergebnis Abschluss-QA-Workflow (13 Agenten)
+- Sichtprüfung je Gruppe (alle Versionen, 390/1440, Erststart, Stress, Privat, 200 %), Korrektur, unabhängige Nachprüfung:
+  Alltag „gut“ (13 Befunde behoben, u. a. Wochenstunden 29,2 h statt 10 h, Fokus-Badge 6 statt 7 fällig, Überlappungen im
+  Wochenraster als „+N“), Geld „gut“ (Privatmodus-Lecks, Deckungs-Check, Order-Texte), Gesundheit „gut“ (Gesundheitshinweise in
+  15 Ernährungs-Varianten, neutrale Kennzahlen, Gewicht app-weit ausblendbar), Wissen/Kern „gut“ (Live-Suche, Zähler,
+  Erststart, Belegtext im Privatmodus). Keine Regressionen.
+- Vollständigkeitsprüfung: Auftrag und Basis-v1-Abnahme überwiegend erfüllt; offen bzw. teilweise: Phase 1 (nur zuhause),
+  Gerätetest, Baselines, 12 fehlende Tier-1-Richtungen, Erststart Fitness/Ernährung, Altlasten → Lückenschluss-Workflow.
