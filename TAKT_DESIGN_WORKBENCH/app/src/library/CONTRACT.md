@@ -99,3 +99,25 @@ export const taskList = {
   Favoriten der Leiste, ausgeschaltete Module (`enabled[id] === false`), Theme, Schriftgröße, Beträge ausblenden.
 - **Blockbreite:** `ctx.blockWidth` (gemessene Breite des eigenen Blocks, folgt Größenänderungen) – für Diagramme und SVG
   statt eigenem ResizeObserver. Große Schrift: Attribut `data-tk-large-text` am Root (≥ 125 %), Variable `--tk-text-scale`.
+
+## Ergänzungen (Stand 24.11.2026, nach der Abschluss-QA)
+- **Große Schrift (`[data-tk-large-text]`, ab 125 %):** `.tk-truncate`, Kartentitel, Seitentitel und Umschalter brechen um
+  (Silbentrennung über `lang="de"`), statt mit „…“ zu kürzen. Die QA-Sonde meldet „…“ und auf unter 48 px gequetschte
+  Titel bei großer Schrift als `clipped`. Bewusst abgeschnittene Bereiche (z. B. Vorschaubilder) tragen `data-clip-ok`.
+  Feste Breiten für Zahlenfelder in `ch` statt `px` angeben, damit sie mit der Schrift wachsen.
+- **Freitext mit Beträgen** (Belegtext, Untertitel, Papierkorb): `maskAmounts(ctx, text)` aus `library/helpers.js` ersetzt im
+  Privatsphäre-Modus jeden Betrag durch „•••• €“. `item-list` (Untertitel, Meta) und `card-grid` (Text) tun das bereits.
+- **Kennzahlen:** `metric-row` kennt je Kennzahl `sensitive` (Wert und Veränderung im Privatsphäre-Modus maskiert) und
+  `neutral` (Veränderung ohne Grün/Rot und ohne Pfeil – Gesundheitswerte wie Gewicht und Puls). Das Primitiv `Delta` zeigt 0
+  immer neutral und nutzt das echte Minus „−“.
+- **Leerzustände je Einsatz:** `item-list` und `card-grid` haben `emptyTitle`/`emptyText`; gekürzte Listen (`limit`) zählen
+  „3 von 11“.
+- **Seitenkopf aus Daten:** `page-header` liest einen Untertitel aus dem Datenslot `subtitle` (Standard-Schlüssel
+  `headerSubtitle`), z. B. `bind: { subtitle: 'homeHeadline' }` mit einem Welt-Schlüssel – der Eigenschaftstext bleibt Rückfall.
+- **Pflichthinweise:** Modulfeld `legal` ist eine Liste von `legal-notice`-Arten (`keine-beratung`, `gesundheit`, `dokumente`,
+  `steuer-ordner`, `gewaehrleistung`, `aufbewahrung` …). `npm run check` verlangt dann in jeder Variante einen `legal-notice`;
+  die QA-Sonde prüft es im Browser (`legal-present`).
+- **Geldformat:** Beträge nur aus `money()` – die Sonde (`money-format`) meldet normale Leerzeichen vor „€“, englische
+  Dezimalpunkte und Bindestrich statt „−“.
+- **Hinweise anderer Module** (Komponente `hint-cards`): ein Hinweis mit `to`/`carry` navigiert direkt zum Anlass
+  (`detail.to`, Auswahl über `detail.ui`), ohne feste Regel im Manifest.
