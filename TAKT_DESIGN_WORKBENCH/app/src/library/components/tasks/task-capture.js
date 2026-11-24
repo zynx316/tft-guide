@@ -53,7 +53,7 @@ export const taskCapture = {
       <div class="tk-tsk-cap__parsed" aria-live="polite">${p.title ? html`${due && html`<${Badge} icon="calendar">${new Intl.DateTimeFormat('de-DE', { weekday: 'short', day: 'numeric', month: 'short' }).format(new Date(`${due.slice(0, 10)}T00:00:00`))}${due.length > 10 ? `, ${due.slice(11, 16)}` : ''}<//>`}${p.priority && html`<${Badge} tone=${PRIORITY[p.priority].tone} icon="flag">${PRIORITY[p.priority].label}<//>`}${p.project && html`<${Badge} tone="accent" icon="folder">${p.project}<//>`}${p.estimate && html`<${Badge} icon="timer">${p.estimate} Min.<//>`}${toInbox && html`<${Badge} icon="inbox">Eingang<//>`}`
         : html`<span class="tk-subtle" style="font-size:var(--tk-fs-sm)">${toInbox ? 'Erst festhalten, später sortieren.' : 'Datum, ! für Priorität, #Projekt und Dauer werden erkannt.'}</span>`}</div>
       ${props.showExamples && !text && html`<div class="tk-tsk-cap__ex">${EXAMPLES.map((x) => html`<button type="button" onClick=${() => setText(x)}>${x}</button>`)}</div>`}</div>`;
-    return props.bare ? body : html`<${Card} title=${props.title} icon="plus-circle">${body}<//>`;
+    return props.bare ? body : html`<${Card} title=${props.title} icon="circle-plus">${body}<//>`;
   },
 };
 export default taskCapture;

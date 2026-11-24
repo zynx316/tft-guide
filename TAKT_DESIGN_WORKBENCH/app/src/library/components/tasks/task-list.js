@@ -4,6 +4,7 @@ import { html } from '../../../lib/html.js';
 import { useState } from 'preact/hooks';
 import { Card, Check, Badge, EmptyState, Input, Button, Icon, toneColor } from '../../ui.js';
 import { groupBy } from '../../helpers.js';
+import { rankedOpen } from './_tasks-x.js';
 import { dueInfo, filterTasks, sortTasks, prio, toggleTask, PrioFlag, DueText, SubCount, RepeatIcon, GROUP_ORDER, TASK_CSS } from './_tasks.js';
 
 const groupKey = { due: (t, today) => dueInfo(t, today).group, priority: (t) => prio(t).label, project: (t) => t.project || 'Ohne Projekt', category: (t) => t.category || 'Ohne Kategorie' };
@@ -19,6 +20,7 @@ export const taskList = {
     { name: 'groupBy', label: 'Gruppieren nach', type: 'select', options: ['none', 'due', 'priority', 'project', 'category'], default: 'due' },
     { name: 'showDone', label: 'Erledigte zeigen', type: 'boolean', default: true },
     { name: 'showProject', label: 'Projekt anzeigen', type: 'boolean', default: true },
+    { name: 'skipNext', label: 'Nächste Aufgabe auslassen („Jetzt dran“)', type: 'boolean', default: false },
     { name: 'showPriorityLabel', label: 'Priorität als Text', type: 'boolean', default: false },
     { name: 'dense', label: 'Kompakt', type: 'boolean', default: false },
     { name: 'inlineAdd', label: 'Eingabezeile oben', type: 'boolean', default: false },
@@ -58,6 +60,7 @@ export const taskList = {
     let items = filterTasks(all, props.respectFilter ? ctx.ui : {}, ctx.today);
     if (!props.showDone) items = items.filter((t) => !t.done);
     items = [...items].sort(sortTasks);
+    if (props.skipNext) { const top = rankedOpen(all, ctx.today)[0]; if (top) items = items.filter((t) => t.id !== top.id); }
     if (props.limit > 0) items = items.slice(0, props.limit);
     const projects = [...new Set(all.map((t) => t.project).filter(Boolean))];
     const open = (t) => { if (props.selectable) ctx.setUi('selectedId', t.id); ctx.emit('task.open', { id: t.id }); };

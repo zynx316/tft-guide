@@ -1,7 +1,7 @@
 // Finanzen: Vermögensverlauf als gestapelte Fläche (Liquidität, Rücklagen, Depot) mit Zeitraum und Punktauswahl.
 import { html } from '../../../lib/html.js';
 import { useState } from 'preact/hooks';
-import { Card, Chip, EmptyState, toneColor } from '../../ui.js';
+import { Card, Chip, Icon, EmptyState, toneColor } from '../../ui.js';
 import { wealth, arr, r2 } from './_calc.js';
 import { SlimEmpty, slots, pctx, eur, eur0 } from './_fin.js';
 import { fmtPercent } from '../../../lib/format.js';
@@ -26,7 +26,7 @@ export const finNetworthChart = {
   events: ['networth.point', 'networth.range'],
   states: ['empty'],
   css: `
-  .tk-fnn svg { display:block; width:100%; height:auto; overflow:visible; } .tk-fnn__legend { display:flex; flex-wrap:wrap; gap:6px 14px; margin-top:var(--tk-space-3); font-size:var(--tk-fs-xs); color:var(--tk-c-text-muted); } .tk-fnn__legend span { display:inline-flex; align-items:center; gap:6px; } .tk-fnn__legend i { width:10px; height:10px; border-radius:3px; }
+  .tk-fnn > svg { display:block; width:100%; height:auto; overflow:visible; } .tk-fnn__legend { display:flex; flex-wrap:wrap; gap:6px 14px; margin-top:var(--tk-space-3); font-size:var(--tk-fs-xs); color:var(--tk-c-text-muted); } .tk-fnn__legend span { display:inline-flex; align-items:center; gap:6px; } .tk-fnn__legend i { width:10px; height:10px; border-radius:3px; }
   .tk-fnn__head { display:flex; justify-content:space-between; align-items:flex-end; gap:12px; flex-wrap:wrap; margin-bottom:var(--tk-space-3); }
   .tk-fnn__hit { fill:transparent; cursor:pointer; }
   .tk-fnn__tip { display:grid; grid-template-columns:repeat(auto-fit, minmax(calc(110px * var(--tk-text-scale, 1)), 1fr)); gap:8px; padding:var(--tk-space-3); border-radius:var(--tk-radius-md); background:var(--tk-c-surface2); border:1px solid var(--tk-c-border); margin-top:var(--tk-space-3); }
@@ -56,7 +56,7 @@ export const finNetworthChart = {
         <line x1=${x(idx)} x2=${x(idx)} y1=${PT} y2=${h - PB} stroke="var(--tk-c-text)" stroke-width="1.5" stroke-dasharray="3 3" opacity=".7" />
         ${lbl.map((l, i) => (n <= 6 || i % 2 === (n - 1) % 2) && html`<text x=${x(i)} y=${h - 6} text-anchor="middle" fill="var(--tk-c-text-subtle)" font-size=${ctx.bp === 'mobile' ? 11 : 12}>${l}</text>`)}
         ${lbl.map((l, i) => html`<rect class="tk-fnn__hit" x=${x(i) - (W / n) / 2} y="0" width=${W / n} height=${h} onClick=${() => { setPick(i); ctx.emit('networth.point', { label: l }); }}><title>${l}: ${eur0(c, totals[i])}</title></rect>`)}</svg>
-      <div class="tk-fnn__tip" aria-live="polite"><div><span class="tk-fn-cap">${lbl[idx]}</span><strong>${eur0(c, totals[idx])}</strong></div>${series.map((s, si) => html`<div><span class="tk-fn-sub" style="display:flex;gap:6px;align-items:center"><i style=${`width:9px;height:9px;border-radius:3px;background:${toneColor(TONES[si % 3])}`}></i>${s.name}</span><strong>${eur0(c, vals[si][idx])}</strong></div>`)}</div></div><//>`;
+      <div class="tk-fnn__tip" aria-live="polite"><div><span class="tk-fn-cap">${lbl[idx]}</span><strong>${eur0(c, totals[idx])}</strong></div>${series.map((s, si) => html`<div><span class="tk-fn-sub" style="display:flex;gap:6px;align-items:center"><i style=${`width:9px;height:9px;border-radius:3px;background:${toneColor(TONES[si % 3])}`}></i>${s.name}</span><strong>${eur0(c, vals[si][idx])}</strong></div>`)}</div>${live.debt > 0 && html`<p class="tk-fn-note" style="margin:var(--tk-space-3) 0 0"><${Icon} name="info" size=${14} />Liquidität nach Abzug der offenen Kreditkarte; der Verlauf endet im aktuellen Kontostand.</p>`}</div><//>`;
   },
 };
 export default [finNetworthChart];

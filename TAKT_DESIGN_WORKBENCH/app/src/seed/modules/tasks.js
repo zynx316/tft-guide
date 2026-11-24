@@ -1,16 +1,10 @@
 // Modul "Aufgaben" – Seed-Manifest. Referenztag: Di, 24.11.2026 09:30 (ctx.today).
 // Demo-Daten kommen aus der gemeinsamen Datenwelt ('@world:tasks' …): Abhaken, Anlegen, Eingang sortieren und Fokus-Blöcke wirken in allen Screens.
 
-const metrics = [
-  { label: 'Heute fällig', value: 4, icon: 'list-checks', tone: 'warning', delta: 1, suffix: '', invert: true },
-  { label: 'Überfällig', value: 2, icon: 'alert-circle', tone: 'danger', delta: -1, suffix: '', invert: true },
-  { label: 'Diese Woche erledigt', value: 9, icon: 'check-circle-2', tone: 'success', delta: 18, spark: [3, 5, 4, 6, 8, 9] },
-  { label: 'Fokuszeit geplant', value: '3,5', unit: 'h', icon: 'timer', tone: 'info' },
-];
 const FILTERS = ['Alle', 'Heute', 'Überfällig', 'Hoch'];
 const ALL_VP = ['desktop', 'notebook', 'tablet', 'mobile'];
 const demoData = {
-  tasks: '@world:tasks', events: '@world:events', inbox: '@world:taskInbox', activity: '@world:taskActivity', log: '@world:taskFocusLog', goal: '@world:taskFocusGoal', metrics,
+  tasks: '@world:tasks', events: '@world:events', inbox: '@world:taskInbox', activity: '@world:taskActivity', log: '@world:taskFocusLog', goal: '@world:taskFocusGoal',
 };
 const NAV = 'navigate';
 const I = (trigger, result, event, to) => ({ trigger, result, event, ...(to ? { to } : {}) });
@@ -45,7 +39,7 @@ export default {
   features: [
     // ------------------------------------------------------ Übersicht (Startseite)
     {
-      id: 'tasks.home', name: 'Übersicht', group: 'Übersicht', status: 'review',
+      id: 'tasks.home', name: 'Übersicht', group: 'Übersicht', status: 'review', tier: 1,
       purpose: 'Der Einstieg in die Aufgaben: Was ist heute fällig, was überfällig, was liegt im Eingang – und was ist als Nächstes zu tun. Von hier mit einem Tipp in Liste, Board, Projekte, Eingang oder Fokus.',
       requirements: [
         { text: 'Heute fällig und überfällig auf einen Blick, Zeitbedarf des Tages (Summe der Schätzungen)', type: 'info', priority: 'must' },
@@ -101,14 +95,14 @@ export default {
         {
           id: 'B', name: 'Fortschritt & Verlauf', direction: 'visuell', concept: 'Eine Botschaft je Karte: der Tagesfortschritt als Ring, die Woche als Säulen, Kennzahlen als Kacheln, Projekte mit Balken, der Fokus der Woche. Große Kacheln führen in die Bereiche.',
           description: '+ Motivierend, sofort verständlich, ruhig  − Weniger Aufgaben ohne Scrollen sichtbar',
-          layout: { type: 'grid' },
+          layout: { type: 'grid', stretch: true },
           blocks: [
             { id: 'hdr', component: 'page-header', region: 'header', props: { eyebrow: 'Aufgaben', title: 'Dein Tag', subtitle: 'Di, 24. November', primaryLabel: '' } },
             { id: 'ring', component: 'task-day-ring', region: 'main', span: 5, spanTablet: 12, bind: { tasks: 'tasks', activity: 'activity' }, props: { title: 'Heute' } },
-            { id: 'week', component: 'task-week-chart', region: 'main', span: 7, spanTablet: 12, bind: { tasks: 'tasks', activity: 'activity', log: 'log' }, props: { title: 'Diese Woche' } },
+            { id: 'week', component: 'task-week-chart', region: 'main', span: 7, spanTablet: 12, bind: { tasks: 'tasks', activity: 'activity', log: 'log' }, props: { title: 'Letzte 7 Tage' } },
             { id: 'stats', component: 'task-stats', region: 'main', span: 12, bind: { tasks: 'tasks', inbox: 'inbox', activity: 'activity', log: 'log' }, props: { style: 'tiles', items: ['overdue', 'inbox', 'focus', 'done'] } },
             { id: 'proj', component: 'project-list', region: 'main', span: 6, spanTablet: 12, bind: { tasks: 'tasks' }, props: { title: 'Projekte' } },
-            { id: 'log', component: 'focus-log', region: 'main', span: 6, spanTablet: 12, bind: { log: 'log', goal: 'goal' }, props: { title: 'Fokus der Woche', scope: 'week' } },
+            { id: 'log', component: 'focus-log', region: 'main', span: 6, spanTablet: 12, bind: { log: 'log', goal: 'goal' }, props: { title: 'Fokus der letzten 7 Tage', scope: 'week' } },
             { id: 'nav', component: 'shortcut-bar', region: 'main', span: 12, props: { style: 'tiles', items: SHORTCUTS } },
           ],
         },
@@ -121,7 +115,7 @@ export default {
             { id: 'next', component: 'next-task', region: 'main', bind: { tasks: 'tasks' }, props: { title: 'Jetzt dran' } },
             { id: 'cap', component: 'task-capture', region: 'main', bind: { tasks: 'tasks', inbox: 'inbox' }, props: { title: 'Erfassen', target: 'inbox', showExamples: false } },
             { id: 'hints', component: 'task-hints', region: 'main', bind: { tasks: 'tasks', inbox: 'inbox', events: 'events' }, props: { title: 'Hinweise', limit: 3 } },
-            { id: 'list', component: 'task-list', region: 'main', bind: { tasks: 'tasks' }, props: { title: 'Danach', groupBy: 'none', showDone: false, dense: true, limit: 4, selectable: false } },
+            { id: 'list', component: 'task-list', region: 'main', bind: { tasks: 'tasks' }, props: { title: 'Danach', skipNext: true, groupBy: 'none', showDone: false, dense: true, limit: 4, selectable: false } },
             { id: 'nav', component: 'shortcut-bar', region: 'main', props: { style: 'chips', items: SHORTCUTS } },
           ],
         },
@@ -131,7 +125,7 @@ export default {
     },
     // ------------------------------------------------------ Aufgabenübersicht
     {
-      id: 'tasks.overview', name: 'Aufgabenübersicht', group: 'Ansichten', status: 'design',
+      id: 'tasks.overview', name: 'Aufgabenübersicht', group: 'Ansichten', status: 'design', tier: 1,
       purpose: 'Auf einen Blick erfassen, was zu tun ist, und sofort handeln: abhaken, priorisieren, nächste Aufgabe starten. Drei Konzepte: Liste, Kanban oder Tagesplanung.',
       requirements: [
         { text: 'Offene Aufgaben nach Fälligkeit gruppiert (Überfällig, Heute, Morgen …)', type: 'info', priority: 'must' },
@@ -167,7 +161,7 @@ export default {
           description: '+ Schnell, vertraut, mobil ideal  − Wenig Überblick über Projekte und Status',
           layout: { type: 'stack', narrow: true },
           blocks: [
-            { id: 'hdr', component: 'page-header', region: 'header', props: { eyebrow: 'Aufgaben', title: 'Meine Aufgaben', subtitle: '18 offen · 2 überfällig', primaryLabel: '', secondaryLabel: 'Board', secondaryIcon: 'kanban' } },
+            { id: 'hdr', component: 'page-header', region: 'header', props: { eyebrow: 'Aufgaben', title: 'Meine Aufgaben', subtitle: 'Offene Aufgaben nach Fälligkeit', primaryLabel: '', secondaryLabel: 'Board', secondaryIcon: 'kanban' } },
             { id: 'filter', component: 'search-filter', region: 'main', props: { filters: FILTERS, placeholder: 'Aufgaben suchen …' } },
             { id: 'list', component: 'task-list', region: 'main', bind: { tasks: 'tasks' }, props: { title: '', groupBy: 'due', showDone: true, dense: false, inlineAdd: true, selectable: false } },
           ],
@@ -189,7 +183,7 @@ export default {
           layout: { type: 'split', asideFirstOnMobile: false },
           blocks: [
             { id: 'hdr', component: 'page-header', region: 'header', props: { eyebrow: 'Aufgaben · Fokus', title: 'Heute planen', subtitle: 'Di, 24. November', primaryLabel: '', secondaryLabel: 'Board', secondaryIcon: 'kanban' } },
-            { id: 'kpi', component: 'metric-row', region: 'header', bind: { metrics: 'metrics' }, hideOn: ['mobile'] },
+            { id: 'kpi', component: 'task-stats', region: 'header', bind: { tasks: 'tasks', inbox: 'inbox', activity: 'activity', log: 'log' }, props: { style: 'tiles', items: ['today', 'overdue', 'done', 'focus'] }, hideOn: ['mobile'] },
             { id: 'focus', component: 'focus-next', region: 'main', bind: { events: 'events', tasks: 'tasks' }, props: { title: 'Tagesplan', openMode: NAV } },
             { id: 'prio', component: 'task-list', region: 'aside', bind: { tasks: 'tasks' }, props: { title: 'Nach Priorität', groupBy: 'priority', showDone: false, dense: true, showProject: true, selectable: false, limit: 9 } },
           ],
@@ -200,7 +194,7 @@ export default {
     },
     // ---------------------------------------------------------- Kanban
     {
-      id: 'tasks.kanban', name: 'Kanban', group: 'Ansichten', status: 'design',
+      id: 'tasks.kanban', name: 'Kanban', group: 'Ansichten', status: 'design', tier: 2,
       purpose: 'Aufgaben nach Arbeitsstatus organisieren und per Drag & Drop (oder Menü) weiterschieben.',
       requirements: [
         { text: 'Vier Spalten: Offen, In Arbeit, Review, Erledigt – mit Zähler je Spalte', type: 'info', priority: 'must' },
@@ -264,7 +258,7 @@ export default {
     },
     // ---------------------------------------------------------- Listenansicht
     {
-      id: 'tasks.list', name: 'Listenansicht', group: 'Ansichten', status: 'design',
+      id: 'tasks.list', name: 'Listenansicht', group: 'Ansichten', status: 'design', tier: 2,
       purpose: 'Alle Aufgaben als ruhige Liste – wahlweise nach Priorität oder Projekt gruppiert.',
       requirements: [
         { text: 'Gruppierung wählbar: Fälligkeit, Priorität, Projekt', type: 'action', priority: 'must' },
@@ -304,7 +298,7 @@ export default {
     },
     // ---------------------------------------------------------- Detailansicht
     {
-      id: 'tasks.detail', name: 'Detailansicht', group: 'Ansichten', status: 'review',
+      id: 'tasks.detail', name: 'Detailansicht', group: 'Ansichten', status: 'review', tier: 1,
       purpose: 'Eine Aufgabe vollständig bearbeiten: Titel, Priorität, Fälligkeit, Status, Projekt, Wiederholung, Unteraufgaben, Notiz – und von hier den Fokus-Timer starten.',
       requirements: [
         { text: 'Master-Detail: Liste wählt Aufgabe, Detail zeigt alle Felder; aus anderen Screens geöffnet zeigt es die angetippte Aufgabe', type: 'info', priority: 'must' },
@@ -359,7 +353,7 @@ export default {
     },
     // ---------------------------------------------------------- Eingang
     {
-      id: 'tasks.inbox', name: 'Eingang', group: 'Erfassen & Fokus', status: 'design',
+      id: 'tasks.inbox', name: 'Eingang', group: 'Erfassen & Fokus', status: 'design', tier: 1,
       purpose: 'Schnell erfassen, später sortieren: alles, was per Sprache, Notiz, Teilen oder Scan hereinkommt, landet im Eingang und wird mit einem Tipp zur Aufgabe (Heute, Morgen, Diese Woche, Irgendwann).',
       requirements: [
         { text: 'Eingang listet unsortierte Einträge mit Quelle (Sprache, Notiz, Teilen, Scan, Erfassen) und Alter', type: 'info', priority: 'must' },
@@ -414,7 +408,7 @@ export default {
     },
     // ---------------------------------------------------------- Fokus-Timer
     {
-      id: 'tasks.focus', name: 'Fokus-Timer', group: 'Erfassen & Fokus', status: 'design',
+      id: 'tasks.focus', name: 'Fokus-Timer', group: 'Erfassen & Fokus', status: 'design', tier: 2,
       purpose: 'Eine Aufgabe in Ruhe abarbeiten: Pomodoro mit Fokusblock und Pause an der gewählten Aufgabe, Tagesziel in Blöcken und ein Protokoll der geschafften Zeit.',
       requirements: [
         { text: 'Timer mit Fokusblock (25 Min.), kurzer Pause (5 Min.), nach vier Blöcken langer Pause (15 Min.); Presets 25/5, 50/10, 15/3', type: 'rule', priority: 'must' },
@@ -468,12 +462,12 @@ export default {
         {
           id: 'C', name: 'Ring & Wochenverlauf', direction: 'visuell', concept: 'Der Ring groß, daneben der Wochenverlauf (erledigt je Tag mit Fokus-Punkten) und die Fokus-Woche als Balken. Zeigt Rhythmus statt Zahlenkolonnen.',
           description: '+ Motivierend, Rhythmus sichtbar  − Viel Raum für wenig Funktion',
-          layout: { type: 'grid' },
+          layout: { type: 'grid', stretch: true },
           blocks: [
             { id: 'hdr', component: 'page-header', region: 'header', props: { eyebrow: 'Aufgaben', title: 'Fokus', subtitle: 'Dein Rhythmus', primaryLabel: '' } },
             { id: 'timer', component: 'focus-timer', region: 'main', span: 7, spanTablet: 12, bind: { tasks: 'tasks', log: 'log', goal: 'goal' }, props: { style: 'ring', preset: '25 / 5' } },
-            { id: 'week', component: 'task-week-chart', region: 'main', span: 5, spanTablet: 12, bind: { tasks: 'tasks', activity: 'activity', log: 'log' }, props: { title: 'Diese Woche' } },
-            { id: 'log', component: 'focus-log', region: 'main', span: 5, spanTablet: 12, bind: { log: 'log', goal: 'goal' }, props: { title: 'Fokus der Woche', scope: 'week' } },
+            { id: 'week', component: 'task-week-chart', region: 'main', span: 5, spanTablet: 12, bind: { tasks: 'tasks', activity: 'activity', log: 'log' }, props: { title: 'Letzte 7 Tage' } },
+            { id: 'log', component: 'focus-log', region: 'main', span: 5, spanTablet: 12, bind: { log: 'log', goal: 'goal' }, props: { title: 'Fokus der letzten 7 Tage', scope: 'week' } },
           ],
         },
       ],
@@ -482,7 +476,7 @@ export default {
     },
     // ---------------------------------------------------------- Prioritäten
     {
-      id: 'tasks.priority', name: 'Prioritäten', group: 'Organisation', status: 'analyzed',
+      id: 'tasks.priority', name: 'Prioritäten', group: 'Organisation', status: 'analyzed', tier: 2,
       purpose: 'Wichtiges von Dringendem trennen: drei Prioritätsstufen, die überall konsistent dargestellt werden.',
       requirements: [
         { text: 'Drei Stufen: Hoch (rot), Mittel (orange), Niedrig (neutral) – nie nur Farbe, immer Flagge + Text', type: 'rule', priority: 'must' },
@@ -495,7 +489,7 @@ export default {
     },
     // ---------------------------------------------------------- Fälligkeit
     {
-      id: 'tasks.due', name: 'Fälligkeit', group: 'Organisation', status: 'design',
+      id: 'tasks.due', name: 'Fälligkeit', group: 'Organisation', status: 'design', tier: 2,
       purpose: 'Fälligkeit relativ und menschlich anzeigen („Heute · 14:00“, „Seit 2 Tagen überfällig“) und Überfälliges sofort sichtbar machen.',
       requirements: [
         { text: 'Relative Texte: Heute, Morgen, Wochentag, Datum; überfällig mit Anzahl Tage', type: 'info', priority: 'must' },
@@ -517,7 +511,7 @@ export default {
           layout: { type: 'stack', narrow: true },
           blocks: [
             { id: 'hdr', component: 'page-header', region: 'header', props: { eyebrow: 'Aufgaben', title: 'Fälligkeiten', primaryLabel: '' } },
-            { id: 'note', component: 'notice-banner', region: 'main', props: { tone: 'danger', title: '2 Aufgaben sind überfällig', text: 'Belege Oktober hochladen und Etsy-Gebühren buchen warten seit gestern bzw. 2 Tagen.', actionLabel: 'Ansehen' } },
+            { id: 'note', component: 'task-hints', region: 'main', bind: { tasks: 'tasks', inbox: 'inbox', events: 'events' }, props: { title: '', limit: 2 } },
             { id: 'filter', component: 'search-filter', region: 'main', props: { filters: ['Alle', 'Überfällig', 'Heute', 'Diese Woche'], showSearch: false } },
             { id: 'list', component: 'task-list', region: 'main', bind: { tasks: 'tasks' }, props: { title: 'Nach Fälligkeit', groupBy: 'due', showDone: false, selectable: false } },
           ],
@@ -527,7 +521,7 @@ export default {
     },
     // ---------------------------------------------------------- Wiederholungen
     {
-      id: 'tasks.repeat', name: 'Wiederholungen', group: 'Organisation', status: 'not_analyzed',
+      id: 'tasks.repeat', name: 'Wiederholungen', group: 'Organisation', status: 'not_analyzed', tier: 3,
       purpose: 'Wiederkehrende Aufgaben (Belege, Wochenplanung) automatisch neu fällig stellen.',
       requirements: [
         { text: 'Rhythmen: täglich, werktags, wöchentlich, monatlich', type: 'rule', priority: 'must' },
@@ -540,7 +534,7 @@ export default {
     },
     // ---------------------------------------------------------- Kategorien
     {
-      id: 'tasks.categories', name: 'Kategorien', group: 'Organisation', status: 'analyzed',
+      id: 'tasks.categories', name: 'Kategorien', group: 'Organisation', status: 'analyzed', tier: 3,
       purpose: 'Aufgaben nach Lebensbereich (Arbeit, Privat, Finanzen) einordnen und filtern.',
       requirements: [
         { text: 'Jede Aufgabe hat höchstens eine Kategorie, unabhängig vom Projekt', type: 'rule', priority: 'must' },
@@ -553,7 +547,7 @@ export default {
     },
     // ---------------------------------------------------------- Projekte
     {
-      id: 'tasks.projects', name: 'Projekte', group: 'Organisation', status: 'design',
+      id: 'tasks.projects', name: 'Projekte', group: 'Organisation', status: 'design', tier: 2,
       purpose: 'Aufgaben zu Projekten bündeln, Fortschritt sehen und gezielt in ein Projekt eintauchen.',
       requirements: [
         { text: 'Projektliste mit Fortschrittsbalken (erledigt/gesamt) und nächster Fälligkeit', type: 'info', priority: 'must' },

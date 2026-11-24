@@ -388,7 +388,13 @@ window.__taktQA = {
     // rAF kann in verdeckten Frames gedrosselt sein -> mit Timeout absichern
     await Promise.race([new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))), new Promise((r) => setTimeout(r, 150))]);
     await new Promise((r) => setTimeout(r, 60));
-    return runProbe({ payload: probePayload || current, errors: runtimeErrors.slice() });
+    let res = runProbe({ payload: probePayload || current, errors: runtimeErrors.slice() });
+    // Unter hoher Last kann das erste vollständige Rendern nach data-ready kommen: bei fehlenden Blöcken kurz nachmessen.
+    for (let i = 0; i < 3 && res.checks.some((c) => c.id === 'blocks' && c.status === 'fail'); i++) {
+      await new Promise((r) => setTimeout(r, 250));
+      res = runProbe({ payload: probePayload || current, errors: runtimeErrors.slice() });
+    }
+    return res;
   },
 };
 // Design Studio: Alt+Klick auf einen Block wählt ihn im Editor aus.

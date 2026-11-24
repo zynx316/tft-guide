@@ -2,8 +2,8 @@
 import { html } from '../../../lib/html.js';
 import { useState } from 'preact/hooks';
 import { Card, Button, Badge, Icon, Progress, EmptyState } from '../../ui.js';
-import { sortTasks, dueInfo, toggleTask, PrioFlag, DueText, subProgress, prio, TASK_CSS } from './_tasks.js';
-import { minLabel } from './_tasks-x.js';
+import { toggleTask, PrioFlag, DueText, subProgress, TASK_CSS } from './_tasks.js';
+import { minLabel, rankedOpen } from './_tasks-x.js';
 
 export const nextTask = {
   id: 'next-task',
@@ -29,8 +29,7 @@ export const nextTask = {
   example: { data: { tasks: [{ id: 't1', title: 'Angebot Müller GmbH finalisieren', due: '2026-11-24T14:00:00', priority: 'hoch', status: 'In Arbeit', estimate: 60, subtasks: [{ id: 'a', title: 'Preise prüfen', done: true }, { id: 'b', title: 'PDF erzeugen', done: false }] }, { id: 't2', title: 'Belege Oktober hochladen', due: '2026-11-23', priority: 'mittel' }] } },
   render: function NextTask({ props, data, setData, ctx }) {
     const [skip, setSkip] = useState(0);
-    const rank = (t) => { const i = dueInfo(t, ctx.today); return [i.overdue ? 0 : i.diff === 0 ? 1 : 2, t.status === 'In Arbeit' ? 0 : 1, prio(t).rank]; };
-    const list = (Array.isArray(data.tasks) ? data.tasks : []).filter((t) => !t.done).sort((a, b) => { const x = rank(a), y = rank(b); return x[0] - y[0] || x[1] - y[1] || x[2] - y[2] || sortTasks(a, b); });
+    const list = rankedOpen(data.tasks, ctx.today);
     if (!list.length) return html`<${Card} title=${props.title}><${EmptyState} icon="check-check" title="Alles erledigt" text="Keine offene Aufgabe – genieße die freie Zeit." /><//>`;
     const t = list[skip % list.length], step = (t.subtasks || []).find((s) => !s.done), sp = subProgress(t);
     return html`<section class="tk-tsk-next" data-qa="next-task" aria-label=${props.title} key=${t.id}>

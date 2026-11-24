@@ -36,7 +36,7 @@ export const eventReminders = {
     const set = (r) => patchEvent(setData, ev, { reminders: r });
     const when = (label) => { const t = new Date(+ev._s - minsOf(label) * 60000); return minsOf(label) >= 1440 ? `${new Intl.DateTimeFormat('de-DE', { weekday: 'short', day: 'numeric', month: 'numeric' }).format(t)}, ${timeStr(t)} Uhr` : `${timeStr(t)} Uhr`; };
     return html`<${Card} title=${props.title} icon="bell" key=${ev.id}><div data-qa="event-reminders">
-      ${!list.length && html`<${EmptyState} icon="bell-off" title="Keine Erinnerung" text="Du wirst für diesen Termin nicht erinnert." />`}
+      ${!list.length && html`<${EmptyState} icon="bell" title="Keine Erinnerung" text="Du wirst für diesen Termin nicht erinnert." />`}
       ${list.map((l) => html`<div class="tk-ev-rem__row"><span class="tk-ev-rem__ico"><${Icon} name="bell" size=${16} /></span><div class="tk-grow"><div style="font-weight:var(--tk-fw-medium)">${l}</div>${!ev.allDay && html`<div class="tk-subtle" style="font-size:var(--tk-fs-sm)">${when(l)}</div>`}</div>
         <${Button} size="sm" variant="ghost" icon="x" aria-label=${`Erinnerung „${l}“ entfernen`} onClick=${() => { set(list.filter((x) => x !== l)); ctx.emit('reminder.remove', { label: l }); }} /></div>`)}
       ${free.length > 0 && html`<div class="tk-ev-rem__add"><${Select} value="" aria-label="Erinnerung hinzufügen" onChange=${(v) => { if (!v) return; set([...list, v]); ctx.emit('reminder.add', { label: v }); ctx.toast(`Erinnerung „${v}“ hinzugefügt`); }} options=${[{ value: '', label: 'Erinnerung hinzufügen …' }, ...free.map((l) => ({ value: l, label: l }))]} /></div>`}

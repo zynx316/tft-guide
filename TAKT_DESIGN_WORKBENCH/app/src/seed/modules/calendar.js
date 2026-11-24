@@ -15,7 +15,7 @@ const ALL_VP = ['desktop', 'notebook', 'tablet', 'mobile'];
 /** Freigegebene Monatsansicht: unveränderte Demo-Daten (Stand vor der Welt-Bindung). Neue Arbeitsversion → Weltbindung. */
 const monthData = { events: legacyEvents(), tasks: legacyTasks(), metrics };
 /** Alle übrigen Features: gemeinsame Datenwelt. */
-const demoData = { events: '@world:events', tasks: '@world:tasks', metrics };
+const demoData = { events: '@world:events', tasks: '@world:tasks' };
 const withWorld = (extra = {}) => ({ ...demoData, ...extra });
 const sourceData = withWorld({ sources: '@world:calSources', holidays: '@world:calHolidays', birthdays: '@world:calBirthdays', prefs: '@world:calPrefs' });
 const NAV = 'navigate';
@@ -51,7 +51,7 @@ export default {
   features: [
     // ------------------------------------------------------------ Übersicht (Startseite)
     {
-      id: 'calendar.home', name: 'Übersicht', group: 'Übersicht', status: 'review',
+      id: 'calendar.home', name: 'Übersicht', group: 'Übersicht', status: 'review', tier: 1,
       purpose: 'Der Einstieg in den Kalender: Was steht heute an, wie voll ist die Woche, was kommt als Nächstes (Feiertage, Geburtstage) – und von hier mit einem Tipp in Tag, Woche, Monat, Agenda oder zum einzelnen Termin.',
       requirements: [
         { text: 'Heute: Termine mit Uhrzeit, laufender bzw. nächster Termin hervorgehoben, freie Fenster sichtbar', type: 'info', priority: 'must' },
@@ -106,7 +106,7 @@ export default {
         {
           id: 'B', name: 'Tag als Band, Woche als Säulen', direction: 'visuell', concept: 'Eine Botschaft je Karte: der nächste Termin groß, der Tag als farbiger Zeitstreifen mit freien Fenstern, die Woche als Säulen, Feiertage und Geburtstage als Karten. Große Kacheln führen in die Ansichten.',
           description: '+ Ruhig, sofort verständlich, schöner Gesamteindruck  − Weniger Termine ohne Scrollen, Details erst nach dem Antippen',
-          layout: { type: 'grid' },
+          layout: { type: 'grid', stretch: true },
           blocks: [
             { id: 'hdr', component: 'page-header', region: 'header', props: { eyebrow: 'Kalender', title: 'Dein Tag', subtitle: 'Di, 24. November · KW 48', primaryLabel: 'Termin', primaryEvent: 'create.open' } },
             { id: 'next', component: 'next-event', region: 'main', span: 5, spanTablet: 12, bind: { events: 'events' }, props: { style: 'hero', openMode: NAV } },
@@ -135,7 +135,7 @@ export default {
     },
     // ------------------------------------------------------------ Tagesansicht
     {
-      id: 'calendar.day', name: 'Tagesansicht', group: 'Ansichten', status: 'design',
+      id: 'calendar.day', name: 'Tagesansicht', group: 'Ansichten', status: 'design', tier: 1,
       purpose: 'Einen einzelnen Tag stundengenau planen: Termine, Lücken und der aktuelle Zeitpunkt auf einen Blick – als Zeitraster, als Liste oder als Tagesband.',
       requirements: [
         { text: 'Zeitraster mit Terminen nach Uhrzeit, Überlappungen nebeneinander', type: 'info', priority: 'must' },
@@ -197,7 +197,7 @@ export default {
     },
     // --------------------------------------------------------- Wochenansicht
     {
-      id: 'calendar.week', name: 'Wochenansicht', group: 'Ansichten', status: 'design',
+      id: 'calendar.week', name: 'Wochenansicht', group: 'Ansichten', status: 'design', tier: 1,
       purpose: 'Die Woche überblicken und Termine nach Uhrzeit planen. Drei Konzepte: maximale Dichte, großzügige Struktur oder Termine + Aufgaben im Kontext.',
       requirements: [
         { text: 'Sieben Tage (Mo–So) im Zeitraster, Termine nach Uhrzeit positioniert', type: 'info', priority: 'must' },
@@ -244,9 +244,9 @@ export default {
           description: '+ Sehr lesbar, klare Tagesstruktur, schöner Gesamteindruck  − Weniger Termine ohne Scrollen sichtbar',
           layout: { type: 'stack' },
           blocks: [
-            { id: 'hdr', component: 'page-header', region: 'header', props: { eyebrow: 'Kalender', title: 'Deine Woche', subtitle: 'KW 48 · 27 Termine, 5,3 h Fokuszeit', primaryLabel: '' } },
+            { id: 'hdr', component: 'page-header', region: 'header', props: { eyebrow: 'Kalender', title: 'Deine Woche', subtitle: 'KW 48 · 23.–29. November', primaryLabel: '' } },
             { id: 'sw', component: 'view-switcher', region: 'main', props: { options: ['Tag', 'Woche'], initial: 'Woche', align: 'end' } },
-            { id: 'note', component: 'notice-banner', region: 'main', props: { tone: 'warning', title: 'Überschneidung am Dienstag', text: 'Sprint-Planung (11:00) überlappt mit „Fokus: Workbench-Review“.', actionLabel: 'Ansehen', dismissible: true } },
+            { id: 'note', component: 'cal-hints', region: 'main', bind: { events: 'events', tasks: 'tasks' }, props: { title: '', limit: 2 } },
             { id: 'cal', component: 'calendar-week', region: 'main', bind: { events: 'events' }, props: { density: 'spacious', startHour: 7, endHour: 21, showLocation: true, view: 'auto', openMode: NAV } },
           ],
         },
@@ -256,7 +256,7 @@ export default {
           layout: { type: 'split' },
           blocks: [
             { id: 'hdr', component: 'page-header', region: 'header', props: { eyebrow: 'Kalender · Fokus', title: 'Woche im Griff', subtitle: 'Termine, Aufgaben und freie Zeit', primaryLabel: '', secondaryLabel: 'Aufgaben', secondaryIcon: 'list-checks' } },
-            { id: 'kpi', component: 'metric-row', region: 'header', bind: { metrics: 'metrics' }, hideOn: ['mobile'] },
+            { id: 'kpi', component: 'cal-stats', region: 'header', bind: { events: 'events' }, props: { style: 'tiles', items: ['week', 'focus', 'booked', 'free'] }, hideOn: ['mobile'] },
             { id: 'cal', component: 'calendar-week', region: 'main', bind: { events: 'events', tasks: 'tasks' }, props: { density: 'comfortable', showWeekend: false, showTasks: true, startHour: 8, endHour: 19, view: 'Woche', openMode: NAV } },
             { id: 'next', component: 'focus-next', region: 'aside', bind: { events: 'events', tasks: 'tasks' }, props: { title: 'Als Nächstes', openMode: NAV } },
             { id: 'tasks', component: 'task-list', region: 'aside', bind: { tasks: 'tasks' }, props: { title: 'Prioritäten', groupBy: 'priority', showDone: false, dense: true, limit: 6, showProject: false, selectable: false } },
@@ -317,7 +317,7 @@ export default {
     },
     // ---------------------------------------------------------- Agenda
     {
-      id: 'calendar.agenda', name: 'Agenda', group: 'Ansichten', status: 'design',
+      id: 'calendar.agenda', name: 'Agenda', group: 'Ansichten', status: 'design', tier: 2,
       purpose: 'Kommende Termine als chronologische Liste – die schnellste Ansicht auf dem Handy: durchsuchbar, nach Kategorie filterbar, mit freien Fenstern und Feiertagen.',
       requirements: [
         { text: 'Termine der nächsten 14 Tage nach Tag gruppiert, Tage ohne Termin ausgeblendet', type: 'info', priority: 'must' },
@@ -370,7 +370,7 @@ export default {
     },
     // ---------------------------------------------------------- Termin-Detail
     {
-      id: 'calendar.event', name: 'Termin-Detail', group: 'Termine', status: 'design',
+      id: 'calendar.event', name: 'Termin-Detail', group: 'Termine', status: 'design', tier: 1,
       purpose: 'Ein Termin vollständig: Zeit mit Countdown, Ort mit Fahrzeit, Teilnehmer mit Zusage-Status, Erinnerungen, Konfliktwarnung mit Vorschlag für ein freies Fenster – und Bearbeiten, Duplizieren, Löschen.',
       requirements: [
         { text: 'Zeit (Datum, Beginn–Ende, Dauer), Kategorie, Wiederholung und Quelle auf einen Blick; Countdown „in 1 Std. 30 Min.“', type: 'info', priority: 'must' },
@@ -447,7 +447,7 @@ export default {
     },
     // ---------------------------------------------------------- Termin erstellen
     {
-      id: 'calendar.create', name: 'Termin erstellen', group: 'Termine', status: 'design',
+      id: 'calendar.create', name: 'Termin erstellen', group: 'Termine', status: 'design', tier: 1,
       purpose: 'Einen Termin in unter 15 Sekunden anlegen – per Formular, mit Chips und Vorschau oder in einem einzigen Satz.',
       requirements: [
         { text: 'Pflichtfelder: Titel, Datum, Beginn; Ende standardmäßig +1 Stunde', type: 'rule', priority: 'must' },
@@ -508,7 +508,7 @@ export default {
     },
     // ---------------------------------------------------------- Termin bearbeiten
     {
-      id: 'calendar.edit', name: 'Termin bearbeiten', group: 'Termine', status: 'analyzed',
+      id: 'calendar.edit', name: 'Termin bearbeiten', group: 'Termine', status: 'analyzed', tier: 2,
       purpose: 'Bestehende Termine ändern, verschieben oder löschen – ohne den Kalender zu verlassen.',
       requirements: [
         { text: 'Bearbeiten aus dem Termin-Detail heraus (gleiche Felder wie Erstellen)', type: 'action', priority: 'must' },
@@ -527,7 +527,7 @@ export default {
     },
     // ---------------------------------------------------------- Wiederholungen
     {
-      id: 'calendar.recurrence', name: 'Wiederholungen', group: 'Termine', status: 'not_analyzed',
+      id: 'calendar.recurrence', name: 'Wiederholungen', group: 'Termine', status: 'not_analyzed', tier: 3,
       purpose: 'Regelmäßige Termine (Stand-up, Training, Wochenplanung) einmal anlegen und automatisch wiederholen.',
       requirements: [
         { text: 'Wiederholungen: täglich, werktags, wöchentlich, alle 2 Wochen, monatlich', type: 'rule', priority: 'must' },
@@ -541,7 +541,7 @@ export default {
     },
     // ---------------------------------------------------------- Kategorien
     {
-      id: 'calendar.categories', name: 'Kategorien', group: 'Organisation', status: 'design',
+      id: 'calendar.categories', name: 'Kategorien', group: 'Organisation', status: 'design', tier: 3,
       purpose: 'Termine nach Lebensbereichen einfärben und gruppieren, damit der Kalender auf einen Blick lesbar bleibt.',
       requirements: [
         { text: 'Sechs Standardkategorien mit eigener Farbe (aus Theme-Tokens)', type: 'info', priority: 'must' },
@@ -572,7 +572,7 @@ export default {
     },
     // ---------------------------------------------------------- Filter
     {
-      id: 'calendar.filter', name: 'Filter', group: 'Organisation', status: 'review',
+      id: 'calendar.filter', name: 'Filter', group: 'Organisation', status: 'review', tier: 3,
       purpose: 'Termine nach Suchbegriff und Kategorie eingrenzen, ohne die Ansicht zu wechseln.',
       requirements: [
         { text: 'Volltextsuche über Titel, Ort und Notiz', type: 'action', priority: 'must' },
@@ -604,7 +604,7 @@ export default {
     },
     // ---------------------------------------------------------- Aufgabenintegration
     {
-      id: 'calendar.tasks', name: 'Aufgabenintegration', group: 'Organisation', status: 'design',
+      id: 'calendar.tasks', name: 'Aufgabenintegration', group: 'Organisation', status: 'design', tier: 2,
       purpose: 'Fällige Aufgaben im Kalender sichtbar machen und mit freien Zeitfenstern verbinden.',
       requirements: [
         { text: 'Aufgaben mit Fälligkeit erscheinen als Chips in der Ganztagszeile (Priorität farbig)', type: 'info', priority: 'must' },
@@ -636,7 +636,7 @@ export default {
     },
     // ---------------------------------------------------------- Kalender & Feiertage (Quellen)
     {
-      id: 'calendar.sources', name: 'Kalender & Feiertage', group: 'Einstellungen', status: 'design',
+      id: 'calendar.sources', name: 'Kalender & Feiertage', group: 'Einstellungen', status: 'design', tier: 3,
       purpose: 'Welche Kalender sieht TAKT? Konten und Abos mit Sync-Status, Feiertage NRW, Geburtstage und die Grundeinstellungen – Ausblenden wirkt sofort in allen Ansichten.',
       requirements: [
         { text: 'Quellen nach Konten, Abos und Zusatzkalendern mit Farbe, Terminzahl und Schalter „anzeigen“', type: 'info', priority: 'must' },
@@ -686,8 +686,8 @@ export default {
           layout: { type: 'grid' },
           blocks: [
             { id: 'hdr', component: 'page-header', region: 'header', props: { eyebrow: 'Kalender', title: 'Kalender & Feiertage', subtitle: 'Was du siehst, bestimmst du', primaryLabel: '' } },
-            { id: 'src', component: 'calendar-sources', region: 'main', span: 7, spanTablet: 12, bind: { sources: 'sources', events: 'events' }, props: { title: 'Kalender & Konten' } },
-            { id: 'cal', component: 'calendar-month', region: 'main', span: 5, spanTablet: 12, bind: { events: 'events' }, props: { dayList: 'never', maxChips: 2, weekNumbers: false } },
+            { id: 'src', component: 'calendar-sources', region: 'main', span: 5, spanTablet: 12, bind: { sources: 'sources', events: 'events' }, props: { title: 'Kalender & Konten' } },
+            { id: 'cal', component: 'calendar-month', region: 'main', span: 7, spanTablet: 12, bind: { events: 'events' }, props: { dayList: 'never', maxChips: 2, weekNumbers: false } },
             { id: 'hol', component: 'holiday-list', region: 'main', span: 7, spanTablet: 12, bind: { holidays: 'holidays', birthdays: 'birthdays', sources: 'sources', events: 'events' }, props: { title: 'Feiertage & Geburtstage' } },
             { id: 'prefs', component: 'calendar-prefs', region: 'main', span: 5, spanTablet: 12, bind: { prefs: 'prefs' }, props: { title: 'Einstellungen' } },
           ],

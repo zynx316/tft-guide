@@ -300,3 +300,7 @@ h1, h2, h3, h4, p { margin: 0; }
 [data-tk-large-text] .tk-chip { height: auto; min-height: 32px; white-space: normal; }
 /* Großbuchstaben-Labels ohne Versalien-Umwandlung (CSS macht aus „ß“ sonst „SS“, z. B. EIWEISS) */
 .tk-label--nocaps, .tk-nocaps { text-transform: none; letter-spacing: normal; }
+
+/* Fokus-Rahmen: der runde Erfassen-Knopf ragt ~22 px über die Leiste – fixierte Leisten der Varianten darüber halten */
+.bp-mobile.tk-has-bottomnav .tk-shell--fokus .tk-region--bottom { bottom: calc(var(--tk-size-bottom-nav) + 30px); }
+.bp-mobile.tk-has-bottomnav .tk-shell--fokus ~ .tk-toasts, .bp-mobile.tk-has-bottomnav .tk-shell--fokus .tk-toasts { bottom: calc(var(--tk-size-bottom-nav) + 34px); }

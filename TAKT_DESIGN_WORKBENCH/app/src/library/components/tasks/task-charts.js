@@ -49,7 +49,7 @@ export const taskWeekChart = {
   description: 'Säulen der letzten sieben Tage: erledigte Aufgaben je Tag, darunter die Fokus-Blöcke. Zeigt Rhythmus statt Zahlenkolonnen; heute ist hervorgehoben.',
   version: '1.0',
   props: [
-    { name: 'title', label: 'Titel', type: 'text', default: 'Diese Woche' },
+    { name: 'title', label: 'Titel', type: 'text', default: 'Letzte 7 Tage' },
     { name: 'showFocus', label: 'Fokus-Blöcke zeigen', type: 'boolean', default: true },
   ],
   data: [

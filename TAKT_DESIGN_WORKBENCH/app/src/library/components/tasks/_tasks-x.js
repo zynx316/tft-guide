@@ -2,7 +2,7 @@
 import { isoDay } from '../../../lib/util.js';
 import { parseWhen } from '../calendar/_cal-info.js';
 import { dayStart, addDays, dayKey, minutesOf, occurrences, onDay, freeSlots } from '../calendar/_cal.js';
-import { dueInfo, dueDate } from './_tasks.js';
+import { dueInfo, dueDate, prio, sortTasks } from './_tasks.js';
 
 export const CATEGORY_BY_PROJECT = { Vertrieb: 'Arbeit', Shop: 'Arbeit', 'TAKT V2': 'Arbeit', Finanzen: 'Finanzen', Privat: 'Privat' };
 export const PROJECT_NAMES = ['Shop', 'Vertrieb', 'Finanzen', 'TAKT V2', 'Privat'];
@@ -59,3 +59,9 @@ export const PRESETS = { '25 / 5': { focus: 25, brk: 5, long: 15 }, '50 / 10': {
 export const fmtClock = (sec) => `${String(Math.floor(Math.max(0, sec) / 60)).padStart(2, '0')}:${String(Math.max(0, sec) % 60).padStart(2, '0')}`;
 export const sessionsOn = (log, key) => (Array.isArray(log) ? log : []).filter((x) => String(x.start).slice(0, 10) === key && (x.kind || 'Fokus') === 'Fokus');
 export { dueDate };
+
+/** Rangfolge für „Jetzt dran“: überfällig vor heute, „In Arbeit“ zuerst, dann Priorität und Fälligkeit. */
+export function rankedOpen(tasks, today) {
+  const rank = (t) => { const i = dueInfo(t, today); return [i.overdue ? 0 : i.diff === 0 ? 1 : 2, t.status === 'In Arbeit' ? 0 : 1, prio(t).rank]; };
+  return openTasks(tasks).sort((a, b) => { const x = rank(a), y = rank(b); return x[0] - y[0] || x[1] - y[1] || x[2] - y[2] || sortTasks(a, b); });
+}

@@ -45,7 +45,7 @@ export const eventDetail = {
   render: function EventDetail({ props, data, setData, ctx }) {
     const events = Array.isArray(data.events) ? data.events : [];
     const ev = pickEvent(ctx, events, props.fallbackNext, props.previewId);
-    if (!ev) return html`<${Card}><${EmptyState} icon="calendar-search" title=${events.length ? 'Kein Termin gewählt' : 'Keine Termine'} text=${events.length ? 'Wähle einen Termin in der Liste oder im Kalender.' : 'Lege zuerst einen Termin an.'} /><//>`;
+    if (!ev) return html`<${Card}><${EmptyState} icon="calendar" title=${events.length ? 'Kein Termin gewählt' : 'Keine Termine'} text=${events.length ? 'Wähle einen Termin in der Liste oder im Kalender.' : 'Lege zuerst einen Termin an.'} /><//>`;
     const base = baseOf(events, ev), mins = Math.round((ev._e - ev._s) / 60000), until = Math.round((ev._s - ctx.today) / 60000);
     const state = ev.allDay ? null : until > 0 ? { tone: 'accent', text: inLabel(until) } : ev._e > ctx.today ? { tone: 'success', text: 'läuft jetzt' } : { tone: 'neutral', text: 'vorbei' };
     const leave = base.travel && !ev.allDay ? minutesOf(ev._s) - base.travel - 5 : null;
