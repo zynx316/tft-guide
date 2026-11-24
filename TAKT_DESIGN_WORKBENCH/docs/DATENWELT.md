@@ -367,7 +367,7 @@ Beispiele (Ziel, aus Ist-Daten):
 { label: 'Kalorien übrig', value: 910, unit: 'kcal', tone: 'accent', icon: 'flame', to: 'nutrition.today' }
 ```
 
-**Ist:** Alle 16 Module liefern `<m>Summary` mit `kpis` (bestehende flache Objekte `financeSummary`, `fitnessSummary` wurden **additiv** erweitert, `nutSummary` bleibt, dazu `nutritionSummary`), dazu `<m>Hints`, `<m>Search` und `<m>Notifications` (leere Listen erlaubt). `world/index.js` sammelt sie zu `allKpis`, `allHints`, `searchIndex`, `allNotifications` (Abschnitt 4.13). Das Launchpad liest `<m>Summary.kpis[0]` (`preview/launchpad.js`), `system.notifications` bindet `allNotifications`, `system.search` bindet `searchIndex`. Jedes `to` in Hints, Suche und Mitteilungen ist eine vorhandene Feature-ID (Test) und in `system.notifications` bzw. `system.search` als Navigationsregel eingetragen.
+**Ist:** Alle 19 Module liefern `<m>Summary` mit `kpis` (bestehende flache Objekte `financeSummary`, `fitnessSummary` wurden **additiv** erweitert, `nutSummary` bleibt, dazu `nutritionSummary`), dazu `<m>Hints`, `<m>Search` und `<m>Notifications` (leere Listen erlaubt). `world/index.js` sammelt sie zu `allKpis`, `allHints`, `searchIndex`, `allNotifications` (Abschnitt 4.13). Das Launchpad liest `<m>Summary.kpis[0]` (`preview/launchpad.js`), `system.notifications` bindet `allNotifications`, `system.search` bindet `searchIndex`. Jedes `to` in Hints, Suche und Mitteilungen ist eine vorhandene Feature-ID (Test) und in `system.notifications` bzw. `system.search` als Navigationsregel eingetragen.
 
 ### 5.3 `prefs` (Eigentümer settings)
 
