@@ -20,6 +20,10 @@ export const GROUPS = [
   { id: 'order', label: 'Bestellungen', icon: 'package', module: 'sales', to: 'sales.order' },
   { id: 'channel', label: 'Kanäle', icon: 'store', module: 'sales', to: 'sales.channel' },
   { id: 'scan', label: 'Erfassungen', icon: 'scan-text', module: 'picture-to-text', to: 'picture-to-text.result' },
+  { id: 'doc', label: 'Dokumente', icon: 'file-text', module: 'documents', to: 'documents.detail' },
+  { id: 'warranty', label: 'Garantien', icon: 'shield-check', module: 'documents', to: 'documents.warranties' },
+  { id: 'goal', label: 'Ziele', icon: 'target', module: 'goals', to: 'goals.detail' },
+  { id: 'sitem', label: 'Einkauf', icon: 'shopping-basket', module: 'shopping', to: 'shopping.list' },
   { id: 'setting', label: 'Einstellungen', icon: 'settings', module: 'settings', to: null },
   { id: 'module', label: 'Module', icon: 'layout-grid', module: 'home', to: null },
 ];
@@ -28,7 +32,7 @@ export const SCOPES = [
   { id: 'all', label: 'Alle', groups: null }, { id: 'tasks', label: 'Aufgaben', groups: ['task'] }, { id: 'calendar', label: 'Termine', groups: ['event'] },
   { id: 'finance', label: 'Finanzen', groups: ['transaction', 'account'] }, { id: 'savings', label: 'Sparpläne', groups: ['plan'] }, { id: 'trading', label: 'Depot', groups: ['position'] },
   { id: 'nutrition', label: 'Ernährung', groups: ['recipe', 'food'] }, { id: 'notes', label: 'Notizen', groups: ['note'] }, { id: 'knowledge', label: 'Wissen', groups: ['article'] },
-  { id: 'habits', label: 'Gewohnheiten', groups: ['habit'] }, { id: 'sales', label: 'Sales', groups: ['order', 'channel'] }, { id: 'scans', label: 'Scans', groups: ['scan'] }, { id: 'setting', label: 'Einstellungen', groups: ['setting'] }, { id: 'module', label: 'Module', groups: ['module'] },
+  { id: 'habits', label: 'Gewohnheiten', groups: ['habit'] }, { id: 'sales', label: 'Sales', groups: ['order', 'channel'] }, { id: 'scans', label: 'Scans', groups: ['scan'] }, { id: 'documents', label: 'Dokumente', groups: ['doc', 'warranty'] }, { id: 'goals', label: 'Ziele', groups: ['goal'] }, { id: 'shopping', label: 'Einkauf', groups: ['sitem'] }, { id: 'setting', label: 'Einstellungen', groups: ['setting'] }, { id: 'module', label: 'Module', groups: ['module'] },
 ];
 export const groupMeta = (id) => GROUPS.find((g) => g.id === id) || GROUPS[GROUPS.length - 1];
 
@@ -88,6 +92,16 @@ export function buildIndex(data, ctx) {
   if (Array.isArray(data.habits)) { live.add('habit:'); for (const h of data.habits) push('habit', h.id, h.name, `${h.daypart || 'Gewohnheit'}${h.time ? ` · ${h.time} Uhr` : ''}`, { icon: h.icon || 'repeat', extra: h.note || '' }); }
   if (Array.isArray(data.orders)) { live.add('order:'); const ST = { new: 'neu', paid: 'bezahlt', shipped: 'versendet', delivered: 'zugestellt' }; for (const o of data.orders) push('order', o.id, `${o.number} ${o.customer}`, `${o.channel} · ${ST[o.status] || o.status}`, { amount: o.total, ts: o.date, extra: `${o.email || ''} ${(o.lines || []).map((l) => l.name).join(' ')}` }); }
   if (Array.isArray(data.channels)) { live.add('channel:'); for (const c of data.channels) push('channel', c.id, c.name, c.error || `${c.orders} Bestellungen in 30 Tagen`, { icon: c.icon || 'store', extra: c.url || '' }); }
+  // Dokumente, Garantien, Ziele und Einkaufsartikel (eigene Listen und „Erfassen › Milch“) – Such-IDs wie in `<modul>Search`
+  if (Array.isArray(data.documents)) { live.add('doc:'); for (const d of data.documents) push('doc', d.id, d.title, [d.type, d.date && fmtDate(toDate(d.date), { style: 'short' })].filter(Boolean).join(' · '), { ts: d.added || d.date, extra: `${(d.tags || []).join(' ')} ${d.excerpt || ''}`, icon: d.sensitive ? 'lock' : 'file-text' }); }
+  if (Array.isArray(data.warranties)) { live.add('warranty:'); for (const w of data.warranties) push('warranty', w.id, w.title, `Gewährleistung bis ${w.legalEnd ? fmtDate(toDate(w.legalEnd), { style: 'short' }) : '–'}`, { extra: `${w.store || ''} ${w.category || ''}` }); }
+  if (Array.isArray(data.goals)) { live.add('ziel:'); for (const g of data.goals) if (!g.archived && g.status !== 'archived') push('goal', g.id, g.title, g.status === 'paused' ? 'Ziel · pausiert' : `Ziel${g.focus ? ' · Wochenfokus' : ''}`, { extra: g.why || '' }); }
+  if (Array.isArray(data.shoppingLists)) {
+    live.add('sitem:');
+    for (const l of data.shoppingLists) for (const it of arr(l.items)) push('sitem', it.id, it.name, `${l.name}${it.qty ? ` · ${it.qty}` : ''}${it.done ? ' · erledigt' : ''}`, { id: l.id, done: !!it.done });
+    const food = data.shoppingLists.find((l) => l.kind === 'food');
+    for (const it of arr(data.nutShopping?.manual)) push('sitem', it.id, it.name, `${food?.name || 'Lebensmittel'}${it.qty ? ` · ${it.qty}` : ''}`, { id: food?.id || 'sl-food' });
+  }
   if (Array.isArray(data.captures)) { live.add('scan:'); for (const c of data.captures) push('scan', c.id, c.title, [c.group || 'Erfassung', c.meta].filter(Boolean).join(' · '), { ts: c.created, extra: c.text || '' }); }
   for (const e of SETTING_ENTRIES) out.push({ key: `setting:${e.id}`, group: 'setting', id: e.id, module: 'settings', title: e.title, subtitle: e.sub, extra: e.keys, icon: e.icon, to: e.to });
   for (const m of MODULES) out.push({ key: `module:${m.id}`, group: 'module', id: m.id, module: m.id, title: m.name, subtitle: m.desc, icon: m.icon, to: m.home });

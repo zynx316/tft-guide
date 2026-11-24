@@ -8,14 +8,14 @@ import { XC_CSS } from './_xc-css.js';
 import { MODULES, moduleMeta } from './_system.js';
 
 const SUGGEST = ['Müller', 'Rewe', 'Sparplan', 'Jana', 'Skyr'];
-const SOURCES = ['events', 'tasks', 'transactions', 'accounts', 'savingsPlans', 'positions', 'nutRecipes', 'nutFoods', 'notes', 'articles', 'habits', 'orders', 'channels', 'captures'];
+const SOURCES = ['events', 'tasks', 'transactions', 'accounts', 'savingsPlans', 'positions', 'nutRecipes', 'nutFoods', 'notes', 'articles', 'habits', 'orders', 'channels', 'captures', 'documents', 'warranties', 'goals', 'shoppingLists', 'nutShopping'];
 
 export const globalSearch = {
   id: 'global-search',
   name: 'Globale Suche',
   category: 'Querschnitt',
   description: 'Eine Suche über alle Module: Aufgaben, Termine, Buchungen, Konten, Sparpläne, Depot, Rezepte und Module, dazu Befehle wie „Neue Aufgabe“. Drei Darstellungen: gruppierte Liste, Karten mit Vorschlägen und Befehlspalette mit Tastatur.',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'mode', label: 'Darstellung', type: 'select', options: ['list', 'cards', 'palette'], default: 'list' },
     { name: 'placeholder', label: 'Platzhalter', type: 'text', default: 'Suchen oder Befehl eingeben' },

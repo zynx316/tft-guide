@@ -48,6 +48,7 @@ const LOCK_GROUPS = [
     { id: 'sens-trading', type: 'switch', label: 'Trading', icon: 'candlestick-chart', pref: 'privacy.sensitive', member: 'trading' },
     { id: 'sens-fitness', type: 'switch', label: 'Fitness', hint: 'Körperdaten und Gewicht', icon: 'dumbbell', pref: 'privacy.sensitive', member: 'fitness' },
     { id: 'sens-notes', type: 'switch', label: 'Notizen', icon: 'sticky-note', pref: 'privacy.sensitive', member: 'notes' },
+    { id: 'sens-documents', type: 'switch', label: 'Dokumente & Verträge', hint: 'Ausweise, Verträge, Steuer', icon: 'folder', pref: 'privacy.sensitive', member: 'documents' },
   ] },
   { id: 'where', title: 'Wo liegen deine Daten?', rows: [
     { id: 'where-store', type: 'info', label: 'Speicherort', value: 'Nur auf diesem Gerät', icon: 'smartphone' },
@@ -55,7 +56,7 @@ const LOCK_GROUPS = [
   ] },
 ];
 
-const baseModuleHome = ['calendar.home', 'tasks.home', 'weather.home', 'sales.overview', 'fitness.home', 'savings.home', 'habits.home', 'trading.portfolio', 'nutrition.home', 'settings.home', 'home.today', 'finance.home'];
+const baseModuleHome = ['calendar.home', 'tasks.home', 'weather.home', 'sales.overview', 'fitness.home', 'savings.home', 'habits.home', 'trading.portfolio', 'nutrition.home', 'settings.home', 'home.today', 'finance.home', 'goals.home', 'shopping.home', 'documents.home'];
 // Ziele der Mitteilungen und Suchtreffer aus den Aggregaten der Datenwelt (jede Navigation braucht eine Regel mit `to`), dazu die abgeleiteten Ziele
 const targetsOf = (list) => list.map((x) => x.to).filter(Boolean);
 const NOTIF_TARGETS = [...new Set([...targetsOf(WORLD.allNotifications), 'tasks.list', 'tasks.detail', 'calendar.event'])];
@@ -210,7 +211,7 @@ export default {
         { id: 'fl-befehl', name: 'Befehl ausführen', steps: [{ featureId: 'system.search', action: '„Neue Aufgabe“ wählen' }, { featureId: 'system.capture', action: 'Aufgabe erfassen' }] },
       ],
       viewports: ALL_VP,
-      demoData: { events: '@world:events', tasks: '@world:tasks', transactions: '@world:transactions', accounts: '@world:accounts', savingsPlans: '@world:savingsPlans', positions: '@world:positions', nutRecipes: '@world:nutRecipes', nutFoods: '@world:nutFoods', notes: '@world:notes', articles: '@world:articles', habits: '@world:habits', orders: '@world:orders', channels: '@world:channels', captures: '@world:captures', searchIndex: '@world:searchIndex', recents: ['Müller', 'Rewe', 'Sparplan'] },
+      demoData: { events: '@world:events', tasks: '@world:tasks', transactions: '@world:transactions', accounts: '@world:accounts', savingsPlans: '@world:savingsPlans', positions: '@world:positions', nutRecipes: '@world:nutRecipes', nutFoods: '@world:nutFoods', notes: '@world:notes', articles: '@world:articles', habits: '@world:habits', orders: '@world:orders', channels: '@world:channels', captures: '@world:captures', documents: '@world:documents', warranties: '@world:warranties', goals: '@world:goals', shoppingLists: '@world:shoppingLists', nutShopping: '@world:nutShopping', searchIndex: '@world:searchIndex', recents: ['Müller', 'Rewe', 'Sparplan'] },
       variants: [
         {
           id: 'A', name: 'Volltext mit Gruppen', direction: 'kompakt',
@@ -268,7 +269,7 @@ export default {
         go('notes.inbox', '„Ansehen“ bei Notiz', 'Notizen-Eingang öffnet sich'),
         go('finance.transactions', '„Ansehen“ bei einer erfassten Buchung', 'Umsätze öffnen sich'),
         go('nutrition.log', '„Ansehen“ bei einer erfassten Mahlzeit', 'Tagebuch öffnet sich'),
-        go('nutrition.shopping', '„Ansehen“ bei einem Einkauf', 'Einkaufsliste öffnet sich'),
+        go('shopping.list', '„Ansehen“ bei einem Einkauf', 'Einkaufsliste (Einkauf & Haushalt) öffnet sich'),
         I('Satz eingeben', 'Vorschau zeigt erkannte Art und Felder', 'capture.input'),
         I('Art-Chip wählen', 'Erkannte Art wird ersetzt', 'capture.kind'),
         I('Mikrofon antippen', 'Aufnahme läuft, erkannter Satz erscheint im Feld', 'capture.voice'),
@@ -425,7 +426,7 @@ export default {
         { text: 'App-Sperre an/aus; Entsperren mit PIN oder Biometrie; automatisch sperren nach Sofort, 1, 5 oder 15 Minuten', type: 'action', priority: 'must' },
         { text: 'Sperrbildschirm mit Uhr, Datum und Ziffernblock; Fehlversuche zählen, nach drei Versuchen Wartezeit; „PIN vergessen“ erklärt die Folgen', type: 'state', priority: 'must' },
         { text: 'Privatmodus: Geldbeträge zeigen „••••“; Vorschau im App-Wechsler verbergen; Screenshots blockieren', type: 'action', priority: 'should' },
-        { text: 'Sensible Module (Finanzen, Sparpläne, Trading, Fitness, Notizen) verlangen die Entsperrung einzeln', type: 'rule', priority: 'should' },
+        { text: 'Sensible Module (Finanzen, Sparpläne, Trading, Fitness, Notizen, Dokumente & Verträge) verlangen die Entsperrung einzeln', type: 'rule', priority: 'should' },
         { text: 'Transparenz: Speicherort und Weitergabe (Wetterdienst bekommt nur den Ort ohne Namen)', type: 'info', priority: 'must' },
         { text: 'Abhängige Einstellungen sind ausgegraut, wenn die Sperre aus ist', type: 'state', priority: 'should' },
       ],

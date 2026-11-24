@@ -7,7 +7,7 @@ export const prefs = {
   favorites: ['home', 'calendar', 'tasks', 'finance'], enabled: {}, theme: 'graphite', density: 'komfortabel', textScale: 1, reduceMotion: false,
   privacy: { hideAmounts: false, lock: true, method: 'pin', autoLock: 'Nach 1 Minute', hidePreview: true, blockScreenshots: false, sensitive: ['finance', 'savings', 'trading'] },
   quietHours: { on: true, from: '22:00', to: '07:00', allowImportant: true },
-  notify: { on: true, digest: true, digestTime: '07:30', groupBy: 'time', rules: { tasks: true, calendar: '15 Min.', finance: true, savings: true, trading: true, fitness: true, nutrition: false, weather: 'ab Stufe 2', sales: true, habits: true } },
+  notify: { on: true, digest: true, digestTime: '07:30', groupBy: 'time', rules: { tasks: true, calendar: '15 Min.', finance: true, savings: true, trading: true, fitness: true, nutrition: false, weather: 'ab Stufe 2', sales: true, habits: true, goals: true, shopping: true, documents: true } },
   region: { weekStart: 'Montag', temp: '°C', distance: 'km', weight: 'kg', state: 'Nordrhein-Westfalen' },
 };
 
@@ -20,7 +20,7 @@ export const backups = [
   { id: 'b5', at: at(-4, '21:15'), size: 6.7, kind: 'manual' },
 ];
 
-const MODULE_COUNT = 16;
+const MODULE_COUNT = 19; // = WORLD_MODULES.length (world/index.js); tests/world-invariants.test.mjs prüft den Gleichstand
 const day = (iso) => (iso.slice(0, 10) === at(0).slice(0, 10) ? 'heute' : `am ${iso.slice(8, 10)}.${iso.slice(5, 7)}.`);
 const summaryOf = (list) => ({ kpis: [
   { label: 'Module aktiv', value: `${prefs.enabled && Object.values(prefs.enabled).includes(false) ? MODULE_COUNT - Object.values(prefs.enabled).filter((v) => v === false).length : MODULE_COUNT} von ${MODULE_COUNT}`, icon: 'layout-grid', tone: 'accent', to: 'settings.modules' },

@@ -271,7 +271,7 @@ Start und Gewohnheiten binden **dieselben** Schlüssel (`@world:habits`, `@world
 | `systemSummary` + Hints/Search/Notifications | Vertrag 5.2 | „10 im Eingang“ (7 Aufgaben-Eingang + 3 Notizen) |
 | `prefs` | `{favorites, enabled, theme, density, textScale, reduceMotion, privacy, quietHours, notify, region}` – **identisch** mit `DEFAULT_PREFS` in `crosscut/_system.js` (Test) | Favoriten Start, Kalender, Aufgaben, Finanzen |
 | `backups` (5) | `{id, at, size, kind auto/manual}` | heute 03:00, 6,9 MB |
-| `settingsSummary` + Hints/Search/Notifications | Vertrag 5.2 | „16 von 16 Module aktiv“ |
+| `settingsSummary` + Hints/Search/Notifications | Vertrag 5.2 | „19 von 19 Module aktiv“ |
 
 ### 4.14 `goals.js` (MOD-HAB, Modul „Ziele“)
 

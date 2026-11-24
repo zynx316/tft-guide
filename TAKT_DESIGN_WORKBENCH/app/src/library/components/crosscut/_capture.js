@@ -2,6 +2,7 @@
 import { isoDay, addDays } from '../../../lib/util.js';
 import { fmtDate, fmtTime, fmtMoney, fmtNumber } from '../../../lib/format.js';
 import { cap } from './_system.js';
+import { guessAisle, parseQuick } from '../shopping/_logic.js'; // Gang und Menge wie in der Schnelleingabe von „Einkauf & Haushalt“
 
 /** Zielarten: Beschriftung, Icon, Ziel-Feature zum Ansehen (Event `open:<to>`). */
 export const KINDS = {
@@ -10,7 +11,7 @@ export const KINDS = {
   note: { label: 'Notiz', icon: 'sticky-note', to: 'notes.inbox', view: 'Im Notizen-Eingang ansehen', placeholder: 'z. B. Notiz: Idee für Newsletter-Betreff' },
   expense: { label: 'Buchung', icon: 'wallet', to: 'finance.transactions', view: 'In den Umsätzen ansehen', placeholder: 'z. B. −12,50 Rewe' },
   meal: { label: 'Mahlzeit', icon: 'utensils', to: 'nutrition.log', view: 'Im Tagebuch ansehen', placeholder: 'z. B. Mittag Linsensuppe 450 kcal' },
-  shopping: { label: 'Einkauf', icon: 'shopping-basket', to: 'nutrition.shopping', view: 'Auf der Einkaufsliste ansehen', placeholder: 'z. B. Milch kaufen' },
+  shopping: { label: 'Einkauf', icon: 'shopping-basket', to: 'shopping.list', view: 'Auf der Einkaufsliste ansehen', placeholder: 'z. B. Milch kaufen' },
   inbox: { label: 'Eingang', icon: 'inbox', to: 'tasks.inbox', view: 'Im Eingang ansehen', placeholder: 'Alles andere landet im Eingang' },
 };
 export const KIND_ORDER = ['task', 'event', 'note', 'expense', 'meal', 'shopping'];
@@ -100,7 +101,8 @@ export function parseCapture(raw, today, foods = []) {
   const words = text.split(/\s+/).length;
   if (/^(kaufen|einkauf|einkaufen)\s*:/i.test(text) || /\b(kaufen|besorgen|einkaufen)\b/i.test(text) || (GROCERY.test(text) && words <= 3)) {
     const title = clean(text.replace(/^(kaufen|einkauf|einkaufen)\s*:/i, '').replace(/\b(kaufen|besorgen|einkaufen)\b/i, ''));
-    return out('shopping', title, [{ k: 'Liste', v: 'Einkauf' }, { k: 'Bereich', v: 'Sonstiges' }], 'Einkaufswort erkannt', true);
+    const q = parseQuick(title) || { name: title, qty: '' }; const aisle = guessAisle(q.name);
+    return out('shopping', q.name, [{ k: 'Liste', v: 'Lebensmittel' }, { k: 'Gang', v: aisle }, ...(q.qty ? [{ k: 'Menge', v: q.qty }] : [])], 'Einkaufswort erkannt', true, { aisle, qty: q.qty || '' });
   }
   if (words >= 8) return out('note', text, [{ k: 'Ablage', v: 'Eingang' }], 'Längerer Text ohne Termin oder Betrag', false);
   return out('inbox', text, [{ k: 'Ablage', v: 'Eingang' }], 'Nichts Eindeutiges erkannt. Sortiere später oder wähle eine Art', false);
@@ -121,7 +123,7 @@ export function commitCapture(p, { setData, ctx, kind = p.kind }) {
   else if (kind === 'expense') restore = add('transactions', { id, date: iso(today), title: p.title, category: d.category || 'Sonstiges', amount: d.amount ?? 0, account: 'acc-giro', type: (d.amount ?? 0) >= 0 ? 'income' : 'expense', icon: 'receipt' });
   else if (kind === 'meal') restore = add('meals', { id, date: isoDay(today), meal: d.meal || 'snack', time: fmtTime(today), foodId: d.foodId || null, name: p.title, amount: '1 Portion', grams: null, kcal: d.kcal || 0, protein: 0, carbs: 0, fat: 0, fiber: 0, sugar: 0, salt: 0, source: 'Erfassen' });
   else if (kind === 'shopping') {
-    const item = { id, name: p.title, aisle: 'Sonstiges', qty: '' };
+    const item = { id, name: p.title, aisle: d.aisle || guessAisle(p.title), qty: d.qty || '' };
     setData('shopping', (s) => ({ ...obj(s), manual: [...(obj(s).manual || []), item] }));
     restore = () => setData('shopping', (s) => ({ ...obj(s), manual: (obj(s).manual || []).filter((x) => x.id !== id) }));
   } else if (kind === 'note') {

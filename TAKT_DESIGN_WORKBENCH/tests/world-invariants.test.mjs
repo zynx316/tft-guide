@@ -221,6 +221,7 @@ test('Jede @world:-Bindung in allen Manifesten zeigt auf einen vorhandenen Welt-
 const kpiOk = (k) => k && typeof k.label === 'string' && k.label && k.value !== undefined && k.value !== null && k.value !== '';
 test('Jedes Modul liefert <modul>Summary.kpis (erste Kennzahl = Launchpad-Kachel) in allen Szenarien', () => {
   assert.equal(WORLD_MODULES.length, 19);
+  assert.match(String(worlds.alltag.settingsSummary.kpis[0].value), new RegExp(`von ${WORLD_MODULES.length}$`), 'Einstellungen zählen alle Module');
   assert.deepEqual([...WORLD_MODULES].sort(), [...MODULE_IDS].sort(), 'Modulliste der Welt = Module der Manifeste');
   for (const id of SCENARIO_IDS) for (const m of WORLD_MODULES) {
     const s = worlds[id][`${camelOf(m)}Summary`];
@@ -300,4 +301,26 @@ test('Welt ist deterministisch und bleibt klein (Seed unter 1,6 MB)', async () =
     const code = fs.readFileSync(path.join(dir, f), 'utf8').split('\n').filter((l) => !/^\s*(\/\/|\*|\/\*)/.test(l)).join('\n');
     assert.ok(!/Date\.now\(\)|Math\.random\(\)|new Date\(\)/.test(code), `${f}: nicht deterministisch`);
   }
+});
+
+test('Erfassen › Einkauf: Gang und Menge wie in „Einkauf & Haushalt“, „Ansehen“ führt zur Einkaufsliste', async () => {
+  const { parseCapture } = await import('../app/src/library/components/crosscut/_capture.js');
+  const p = parseCapture('2 l Milch kaufen', new Date('2026-11-24T09:30:00'));
+  assert.equal(p.kind, 'shopping'); assert.equal(p.title, 'Milch');
+  assert.deepEqual(p.data, { aisle: 'Kühlregal', qty: '2 l' });
+  const sys = MANIFESTS.find((m) => m.module.id === 'system');
+  const cap = sys.features.find((f) => f.id === 'system.capture');
+  assert.ok(cap.interactions.some((i) => i.to === 'shopping.list'), 'Ansehen → shopping.list');
+});
+
+test('Suche: Dokumente, Garantien, Ziele und Einkaufsartikel sind Live-Quellen (auch zur Laufzeit angelegte)', async () => {
+  const { buildIndex } = await import('../app/src/library/components/crosscut/_search.js');
+  const ctx = { today: '2026-11-24T09:30:00', privacy: false };
+  const data = { documents: [...WORLD.documents, { id: 'doc-neu', title: 'Mietvertrag Garage', type: 'Vertrag', date: '2026-11-24', tags: [] }],
+    warranties: WORLD.warranties, goals: WORLD.goals, shoppingLists: WORLD.shoppingLists, nutShopping: { ...WORLD.nutShopping, manual: [{ id: 'cap-1', name: 'Milch', qty: '2 l', aisle: 'Kühlregal' }] }, index: WORLD.searchIndex };
+  const idx = buildIndex(data, ctx);
+  assert.ok(idx.some((e) => e.group === 'doc' && e.id === 'doc-neu'), 'neues Dokument');
+  assert.ok(idx.some((e) => e.group === 'sitem' && e.title === 'Milch' && e.id === 'sl-food'), 'erfasste Milch → Lebensmittel-Liste');
+  assert.ok(idx.some((e) => e.group === 'goal' && e.id === 'g-japan'), 'Ziel');
+  assert.ok(!idx.some((e) => e.ext && /^(doc|warranty|ziel|sitem):/.test(e.key.slice(4))), 'keine Dubletten aus dem statischen Index');
 });

@@ -33,7 +33,7 @@ export const DEFAULT_PREFS = {
   favorites: ['home', 'calendar', 'tasks', 'finance'], enabled: {}, theme: 'graphite', density: 'komfortabel', textScale: 1, reduceMotion: false,
   privacy: { hideAmounts: false, lock: true, method: 'pin', autoLock: 'Nach 1 Minute', hidePreview: true, blockScreenshots: false, sensitive: ['finance', 'savings', 'trading'] },
   quietHours: { on: true, from: '22:00', to: '07:00', allowImportant: true },
-  notify: { on: true, digest: true, digestTime: '07:30', groupBy: 'time', rules: { tasks: true, calendar: '15 Min.', finance: true, savings: true, trading: true, fitness: true, nutrition: false, weather: 'ab Stufe 2', sales: true, habits: true } },
+  notify: { on: true, digest: true, digestTime: '07:30', groupBy: 'time', rules: { tasks: true, calendar: '15 Min.', finance: true, savings: true, trading: true, fitness: true, nutrition: false, weather: 'ab Stufe 2', sales: true, habits: true, goals: true, shopping: true, documents: true } },
   region: { weekStart: 'Montag', temp: '°C', distance: 'km', weight: 'kg', state: 'Nordrhein-Westfalen' },
 };
 const isObj = (v) => v && typeof v === 'object' && !Array.isArray(v);
