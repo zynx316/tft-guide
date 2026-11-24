@@ -88,11 +88,17 @@ export async function runProbe({ payload, errors = [] } = {}) {
   add('overflow-x', docW > W + 1 ? 'fail' : 'pass', docW > W + 1 ? `Dokument ${docW} px breit bei Viewport ${W} px` : `Dokumentbreite ${docW} px ≤ ${W} px`, offenders);
 
   // 4) Abgeschnittene Inhalte (overflow hidden ohne Ellipsis/Line-Clamp)
+  //    Bei großer Schrift (≥ 125 %) zählt auch „…“: Texte sollen dann umbrechen statt gekürzt zu werden.
   const clipped = [];
+  const largeText = document.documentElement.hasAttribute('data-tk-large-text');
   for (const el of document.querySelectorAll('.tk-app__content *, .tk-bare *')) {
     const cs = getComputedStyle(el);
     if (!/(hidden|clip)/.test(cs.overflowX + cs.overflowY)) continue;
-    if (cs.textOverflow === 'ellipsis' || cs.webkitLineClamp !== 'none' && cs.webkitLineClamp) continue;
+    if (cs.textOverflow === 'ellipsis') {
+      if (largeText && el.scrollWidth > el.clientWidth + 1 && visible(el) && !el.closest('[data-clip-ok]')) clipped.push(`${describe(el)} (mit „…“ gekürzt bei großer Schrift)`);
+      continue;
+    }
+    if (cs.webkitLineClamp !== 'none' && cs.webkitLineClamp) continue;
     if (el.tagName === 'svg' || el.closest('svg') || !visible(el)) continue;
     if (el.matches('.tk-card--flush,.tk-dialog,.tk-progress,.tk-skel,[data-clip-ok]')) continue;
     const overX = el.scrollWidth > el.clientWidth + 2 && /(hidden|clip)/.test(cs.overflowX);
@@ -162,7 +168,7 @@ export async function runProbe({ payload, errors = [] } = {}) {
 
   // 9) Privatsphäre: im Privatsphäre-Modus darf kein Geldbetrag lesbar sein
   if (payload?.privacy) {
-    const money = /(?:^|[^\w•])[−-]?\d{1,3}(?:\.\d{3})*(?:,\d{1,2})?\s?€/;
+    const money = /(?:^|[^\w•])[−+-]?\d{1,3}(?:\.\d{3})*(?:,\d{1,2})?(?:\s?(?:Tsd\.|Mio\.|Mrd\.))?\s?€/; // auch „96,10€“ und „1,2 Mio. €“ (Achsen)
     const leaks = [];
     const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
     for (let n = walker.nextNode(); n; n = walker.nextNode()) { const t = n.textContent; if (money.test(t) && n.parentElement && visible(n.parentElement) && !n.parentElement.closest('script,style')) leaks.push(`${describe(n.parentElement)} „${t.trim().slice(0, 40)}“`); }

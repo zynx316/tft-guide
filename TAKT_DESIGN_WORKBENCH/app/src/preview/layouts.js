@@ -33,7 +33,7 @@ export function blocksByRegion(variant) {
 export function Layout({ variant, renderBlock, bp }) {
   const L = variant.layout || { type: 'stack' };
   const reg = blocksByRegion(variant);
-  const [panelOpen, setPanelOpen] = useState(false);
+  const [panelOpen, setPanelOpen] = useState(!!L.panelOpen); // layout.panelOpen: Seitenleiste (Liste) startet mobil aufgeklappt
   const tabsList = [...new Set((reg.main || []).map((b) => b.tab || 'Übersicht'))];
   const [tab, setTab] = useState(tabsList[0]);
   const activeTab = tabsList.includes(tab) ? tab : tabsList[0];

@@ -11,7 +11,7 @@ export const chart = {
   name: 'Diagramm',
   category: 'Diagramme',
   description: 'SVG-Diagramm: Balken, Linie, Fläche oder Ring. Mehrere Serien, Tooltip per Hover/Tap, Zeitraum-Umschalter optional.',
-  version: '1.1', // 1.1: Beträge/Prozente über money()/percent() (Privatsphäre, de-DE-Format)
+  version: '1.2', // 1.1: Beträge/Prozente über money()/percent() (Privatsphäre, de-DE-Format); 1.2: Summe 0 ehrlich, Achsen bei Nullreihen, Achsenwerte im Privatsphäre-Modus maskiert
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Verlauf' },
     { name: 'type', label: 'Typ', type: 'select', options: ['bar', 'line', 'area', 'donut'], default: 'bar' },
@@ -51,18 +51,18 @@ export const chart = {
 
     if (props.type === 'donut') {
       const segs = d.segments || d.series.map((s) => ({ label: s.name, value: s.values.reduce((a, b) => a + b, 0) }));
-      const total = segs.reduce((a, s) => a + s.value, 0) || 1;
+      const sum = segs.reduce((a, s) => a + s.value, 0); const total = sum || 1; // Summe 0: Mitte zeigt 0, Legende ohne Prozente
       let acc = 0; const R = 54, C = 2 * Math.PI * R;
       return html`<${Card} title=${props.title} actions=${head}><div class="tk-chart tk-chart__donut">
         <svg viewBox="0 0 140 140" style="width:140px;height:140px;flex:none">
           <circle cx="70" cy="70" r=${R} fill="none" stroke="var(--tk-c-surface3)" stroke-width="16" />
-          ${segs.map((s, i) => { const len = (s.value / total) * C; const el = html`<circle cx="70" cy="70" r=${R} fill="none" stroke=${`var(--tk-chart-${(i % 6) + 1})`} stroke-width="16"
+          ${sum > 0 && segs.map((s, i) => { const len = (s.value / total) * C; const el = html`<circle cx="70" cy="70" r=${R} fill="none" stroke=${`var(--tk-chart-${(i % 6) + 1})`} stroke-width="16"
             stroke-dasharray=${`${Math.max(len - 2, 0)} ${C}`} stroke-dashoffset=${-acc} transform="rotate(-90 70 70)" style="cursor:pointer"
             onClick=${() => { setTip(s); ctx.emit('chart.point', { label: s.label }); }} />`; acc += len; return el; })}
-          <text x="70" y="66" text-anchor="middle" fill="var(--tk-c-text)" style=${`font-size:${Math.max(10, Math.min(17, 150 / Math.max(1, f(tip ? tip.value : total).length)))}px;font-weight:700`}>${f(tip ? tip.value : total)}</text>
+          <text x="70" y="66" text-anchor="middle" fill="var(--tk-c-text)" style=${`font-size:${Math.max(10, Math.min(17, 150 / Math.max(1, f(tip ? tip.value : sum).length)))}px;font-weight:700`}>${f(tip ? tip.value : sum)}</text>
           <text x="70" y="84" text-anchor="middle" fill="var(--tk-c-text-subtle)" style="font-size:10px">${tip ? tip.label : 'Gesamt'}</text>
         </svg>
-        ${props.showLegend && html`<div class="tk-chart__legend">${segs.map((s, i) => html`<span><i class="tk-dot" style=${`background:var(--tk-chart-${(i % 6) + 1})`}></i>${s.label} <strong class="tk-num" style="color:var(--tk-c-text)">${fmt.percent(s.value / total, 0)}</strong></span>`)}</div>`}
+        ${props.showLegend && html`<div class="tk-chart__legend">${segs.map((s, i) => html`<span><i class="tk-dot" style=${`background:var(--tk-chart-${(i % 6) + 1})`}></i>${s.label} <strong class="tk-num" style="color:var(--tk-c-text)">${sum > 0 ? fmt.percent(s.value / total, 0) : '–'}</strong></span>`)}</div>`}
       </div><//>`;
     }
 
@@ -72,13 +72,15 @@ export const chart = {
     const all = series.flatMap((s) => s.values); const max = Math.max(...all, 0) * 1.1 || 1; const min = Math.min(0, ...all);
     const x = (i) => P.l + (labels.length <= 1 ? 0 : (i / (labels.length - 1)) * (W - P.l - P.r));
     const y = (v) => P.t + (1 - (v - min) / (max - min)) * (H - P.t - P.b);
-    const ticks = [0, 0.5, 1].map((t) => min + t * (max - min));
+    const flat = !all.some((v) => v);  // nur Nullwerte: eine Nulllinie statt „0 · 1 · 1“
+    const tickLabel = (t) => (props.format === 'currency' && ctx.privacy ? '••' : Math.abs(t) >= 10000 ? `${fmt.number(t / 1000, 0)}k` : fmt.number(t, Math.abs(max - min) < 3 && t % 1 ? 1 : 0));
+    const ticks = flat ? [0] : [...new Map([0, 0.5, 1].map((t) => min + t * (max - min)).map((t) => [tickLabel(t), t])).values()];
     const slotW = (W - P.l - P.r) / labels.length;
     return html`<${Card} title=${props.title} actions=${head}><div class="tk-chart" ref=${box}>
       <div class="tk-chart__tip">${tip ? html`<strong>${tip.label}</strong> · ${tip.items.map((it) => `${it.name}: ${f(it.value)}`).join(' · ')}` : html`<span class="tk-subtle">Punkt antippen für Details</span>`}</div>
       <svg viewBox=${`0 0 ${W} ${H}`} width=${W} height=${H} style=${`height:${H}px`} role="img" aria-label=${props.title}>
         ${ticks.map((t) => html`<g><line x1=${P.l} x2=${W - P.r} y1=${y(t)} y2=${y(t)} stroke="var(--tk-c-border)" stroke-dasharray="3 4" />
-          <text x=${P.l - 6} y=${y(t) + 4} text-anchor="end" fill="var(--tk-c-text-subtle)" style="font-size:11px">${Math.abs(t) >= 10000 ? `${fmt.number(t / 1000, 0)}k` : fmt.number(t, 0)}</text></g>`)}
+          <text x=${P.l - 6} y=${y(t) + 4} text-anchor="end" fill="var(--tk-c-text-subtle)" style="font-size:11px">${tickLabel(t)}</text></g>`)}
         ${props.type === 'bar' ? series.map((s, si) => s.values.map((v, i) => { const bw = Math.min(28, (slotW * 0.7) / series.length); const bx = P.l + i * slotW + (slotW - bw * series.length) / 2 + si * bw;
             return html`<rect x=${bx} y=${y(Math.max(v, 0))} width=${bw - 2} height=${Math.abs(y(v) - y(0))} rx="3" fill=${`var(--tk-chart-${(si % 6) + 1})`} opacity=${tip && tip.i !== i ? 0.45 : 1} />`; }))
           : series.map((s, si) => { const pts = s.values.map((v, i) => `${x(i)},${y(v)}`); const col = `var(--tk-chart-${(si % 6) + 1})`;

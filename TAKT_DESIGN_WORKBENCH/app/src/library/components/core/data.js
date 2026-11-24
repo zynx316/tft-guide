@@ -2,22 +2,22 @@
 import { html } from '../../../lib/html.js';
 import { useState } from 'preact/hooks';
 import { Card, Badge, Icon, Check, EmptyState, Sparkline, Delta, Progress, Button, toneColor } from '../../ui.js';
-import { applyUiFilter, groupBy, toList, money, percent } from '../../helpers.js';
+import { applyUiFilter, groupBy, toList, money, percent, maskAmounts } from '../../helpers.js';
 import { fmt } from '../../../lib/util.js';
 
 export const metricRow = {
   id: 'metric-row',
   name: 'Kennzahlen-Reihe',
   category: 'Daten',
-  description: 'KPI-Kacheln mit Wert, Einheit, Trend und optionaler Sparkline. Desktop als Reihe, Mobile als 2er-Raster oder horizontal scrollbar.',
-  version: '1.0',
+  description: 'KPI-Kacheln mit Wert, Einheit, Trend und optionaler Sparkline. Desktop als Reihe, Mobile als 2er-Raster oder horizontal scrollbar. `sensitive` maskiert Wert und Veränderung im Privatsphäre-Modus, `neutral` zeigt die Veränderung ohne Grün/Rot (Gesundheit).',
+  version: '1.1',
   props: [
     { name: 'columns', label: 'Spalten (Desktop)', type: 'number', default: 4 },
     { name: 'mobileLayout', label: 'Mobile', type: 'select', options: ['grid', 'scroll'], default: 'grid' },
     { name: 'showSpark', label: 'Sparklines', type: 'boolean', default: true },
     { name: 'variant', label: 'Stil', type: 'select', options: ['card', 'plain'], default: 'card' },
   ],
-  data: [{ slot: 'metrics', label: 'Kennzahlen', default: 'metrics', shape: '{label,value,unit?,delta?,invert?,icon?,tone?,spark?:number[]}[]', required: true }],
+  data: [{ slot: 'metrics', label: 'Kennzahlen', default: 'metrics', shape: '{label,value,unit?,delta?,invert?,neutral?,sensitive?,icon?,tone?,spark?:number[]}[]', required: true }],
   events: ['metric.open'],
   states: ['empty'],
   css: `
@@ -46,8 +46,8 @@ export const metricRow = {
     return html`<div class=${`tk-metric-row tk-metric-row--${props.mobileLayout}`} style=${`--cols:${props.columns}`}>
       ${ms.map((m) => html`<button type="button" class=${`tk-metric ${props.variant === 'plain' ? 'tk-metric--plain' : ''}`} onClick=${() => ctx.emit('metric.open', { label: m.label })}>
         <div class="tk-metric__label">${m.icon && html`<span style=${`color:${toneColor(m.tone || 'accent')}`}><${Icon} name=${m.icon} size=${15} /></span>`}<span class="tk-truncate">${m.label}</span></div>
-        <div class="tk-metric__value">${m.value}${m.unit && html`<small>${m.unit}</small>`}</div>
-        ${(m.delta != null || (props.showSpark && m.spark)) && html`<div class="tk-metric__foot"><${Delta} value=${m.delta} suffix=${m.suffix ?? '%'} invert=${m.invert} />${props.showSpark && m.spark && html`<${Sparkline} values=${m.spark} width=${72} height=${24} tone=${m.tone || 'accent'} />`}</div>`}
+        <div class="tk-metric__value">${m.sensitive && ctx.privacy ? '••••' : m.value}${m.unit && html`<small>${m.unit}</small>`}</div>
+        ${(m.delta != null || (props.showSpark && m.spark)) && html`<div class="tk-metric__foot"><${Delta} value=${m.sensitive && ctx.privacy ? null : m.delta} suffix=${m.suffix ?? '%'} invert=${m.invert} neutral=${m.neutral} />${props.showSpark && m.spark && html`<${Sparkline} values=${m.spark} width=${72} height=${24} tone=${m.tone || 'accent'} />`}</div>`}
       </button>`)}
     </div>`;
   },
@@ -58,7 +58,7 @@ export const itemList = {
   name: 'Liste',
   category: 'Daten',
   description: 'Universelle Liste (Titel, Untertitel, Meta, Badge, optional Checkbox). Respektiert Suche/Filter, wählt Elemente für Master-Detail (ctx.ui.selectedId).',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: '' },
     { name: 'checkable', label: 'Abhakbar', type: 'boolean', default: false },
@@ -68,6 +68,7 @@ export const itemList = {
     { name: 'limit', label: 'Max. Einträge (0 = alle)', type: 'number', default: 0 },
     { name: 'respectFilter', label: 'Suche/Filter beachten', type: 'boolean', default: true },
     { name: 'emptyTitle', label: 'Leerzustand Titel', type: 'text', default: 'Keine Einträge' },
+    { name: 'emptyText', label: 'Leerzustand Text', type: 'text', default: 'Lege den ersten Eintrag an.' },
   ],
   data: [{ slot: 'items', label: 'Einträge', default: 'items', shape: '{id,title,subtitle?,meta?,badge?,tone?,icon?,done?,group?}[]', required: true }],
   events: ['item.open', 'item.toggle'],
@@ -89,6 +90,7 @@ export const itemList = {
   ] } },
   render: ({ props, data, setData, ctx }) => {
     let items = applyUiFilter(data.items, ctx.ui, { respect: props.respectFilter });
+    const total = items.length;
     if (props.limit > 0) items = items.slice(0, props.limit);
     const toggle = (it) => { setData('items', (all) => all.map((x) => (x.id === it.id ? { ...x, done: !x.done } : x))); ctx.emit('item.toggle', { id: it.id }); };
     const open = (it) => { if (props.selectable) ctx.setUi('selectedId', it.id); ctx.emit('item.open', { id: it.id }); };
@@ -97,14 +99,14 @@ export const itemList = {
       ${props.checkable && html`<${Check} checked=${it.done} onChange=${() => toggle(it)} label=${`${it.title} erledigt`} />`}
       ${!props.checkable && it.icon && html`<span class="tk-item-list__icon" style=${`color:${toneColor(it.tone || 'accent')}`}><${Icon} name=${it.icon} size=${17} /></span>`}
       <div class="tk-grow"><div class="tk-item-list__title tk-truncate" data-done=${it.done ? 'true' : 'false'}>${it.title}</div>
-        ${it.subtitle && !props.dense && html`<div class="tk-item-list__sub tk-truncate">${it.subtitle}</div>`}</div>
+        ${it.subtitle && !props.dense && html`<div class="tk-item-list__sub tk-truncate">${maskAmounts(ctx, it.subtitle)}</div>`}</div>
       ${it.badge && ctx.bp !== 'mobile' && html`<${Badge} tone=${it.tone || 'neutral'}>${it.badge}<//>`}
-      ${it.meta && html`<span class="tk-item-list__meta">${it.meta}</span>`}
+      ${it.meta && html`<span class="tk-item-list__meta">${maskAmounts(ctx, it.meta)}</span>`}
     </div>`;
     const body = !items.length
-      ? html`<${EmptyState} icon="inbox" title=${props.emptyTitle} text=${ctx.ui.query ? `Keine Treffer für „${ctx.ui.query}“.` : 'Lege den ersten Eintrag an.'} />`
+      ? html`<${EmptyState} icon="inbox" title=${props.emptyTitle} text=${ctx.ui.query ? `Keine Treffer für „${ctx.ui.query}“.` : props.emptyText || 'Lege den ersten Eintrag an.'} />`
       : props.groupBy ? groupBy(items, (i) => i[props.groupBy] ?? 'Ohne').map(([g, list]) => html`<div><div class="tk-item-list__group">${g}</div>${list.map(row)}</div>`) : items.map(row);
-    return html`<${Card} flush title=${props.title} class=${`tk-item-list ${props.dense ? 'tk-item-list--dense' : ''}`} actions=${props.title && html`<${Badge}>${items.length}<//>`}>${body}<//>`;
+    return html`<${Card} flush title=${props.title} class=${`tk-item-list ${props.dense ? 'tk-item-list--dense' : ''}`} actions=${props.title && html`<${Badge}>${total > items.length ? `${items.length} von ${total}` : items.length}<//>`}>${body}<//>`;
   },
 };
 
@@ -113,13 +115,15 @@ export const cardGrid = {
   name: 'Kartenraster',
   category: 'Daten',
   description: 'Raster aus Inhaltskarten (Notizen, Artikel, Kanäle …) mit Icon/Farbfeld, Text-Auszug und Tags. Spaltenzahl responsiv.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: '' },
     { name: 'minWidth', label: 'Min. Kartenbreite (px)', type: 'number', default: 240 },
     { name: 'showExcerpt', label: 'Textauszug', type: 'boolean', default: true },
     { name: 'cover', label: 'Farbfeld oben', type: 'boolean', default: false },
     { name: 'respectFilter', label: 'Suche/Filter beachten', type: 'boolean', default: true },
+    { name: 'emptyTitle', label: 'Leerzustand Titel', type: 'text', default: 'Keine Inhalte' },
+    { name: 'emptyText', label: 'Leerzustand Text', type: 'text', default: 'Hier erscheinen deine Inhalte.' },
   ],
   data: [{ slot: 'items', label: 'Karten', default: 'items', shape: '{id,title,text?,tags?,icon?,tone?,meta?,pinned?}[]', required: true }],
   events: ['card.open'],
@@ -139,14 +143,14 @@ export const cardGrid = {
   ] } },
   render: ({ props, data, ctx }) => {
     const items = applyUiFilter(data.items, ctx.ui, { respect: props.respectFilter });
-    const grid = !items.length ? html`<${Card}><${EmptyState} icon="layout-grid" title="Keine Inhalte" text=${ctx.ui.query ? `Keine Treffer für „${ctx.ui.query}“.` : 'Hier erscheinen deine Inhalte.'} /><//>`
+    const grid = !items.length ? html`<${Card}><${EmptyState} icon="layout-grid" title=${props.emptyTitle || 'Keine Inhalte'} text=${ctx.ui.query ? `Keine Treffer für „${ctx.ui.query}“.` : props.emptyText || 'Hier erscheinen deine Inhalte.'} /><//>`
       : html`<div class="tk-card-grid" style=${`--minw:${props.minWidth}px`}>
         ${items.map((it) => html`<button type="button" class="tk-card tk-card--interactive tk-card-grid__card" onClick=${() => { ctx.setUi('selectedId', it.id); ctx.emit('card.open', { id: it.id }); }}
             style=${ctx.ui.selectedId === it.id ? 'border-color:var(--tk-c-accent)' : ''}>
           ${props.cover && html`<div class="tk-card-grid__cover" style=${`background:color-mix(in srgb, ${toneColor(it.tone)} 16%, transparent);color:${toneColor(it.tone)}`}><${Icon} name=${it.icon || 'file-text'} size=${24} /></div>`}
           <div class="tk-card-grid__inner">
             <div class="tk-card-grid__title">${!props.cover && it.icon && html`<span style=${`color:${toneColor(it.tone)}`}><${Icon} name=${it.icon} size=${16} /></span>`}<span class="tk-truncate">${it.title}</span>${it.pinned && html`<span class="tk-subtle"><${Icon} name="pin" size=${13} /></span>`}</div>
-            ${props.showExcerpt && it.text && html`<div class="tk-card-grid__text">${it.text}</div>`}
+            ${props.showExcerpt && it.text && html`<div class="tk-card-grid__text">${maskAmounts(ctx, it.text)}</div>`}
             <div class="tk-row" style="justify-content:space-between"><div class="tk-card-grid__tags">${(it.tags || []).map((t) => html`<${Badge}>${t}<//>`)}</div>${it.meta && html`<span class="tk-subtle" style="font-size:var(--tk-fs-xs);white-space:nowrap">${it.meta}</span>`}</div>
           </div></button>`)}</div>`;
     return props.title ? html`<div class="tk-col" style="gap:12px"><div class="tk-h3">${props.title}</div>${grid}</div>` : grid;

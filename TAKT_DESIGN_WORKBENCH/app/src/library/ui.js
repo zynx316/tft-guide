@@ -159,9 +159,14 @@ export function Sparkline({ values = [], width = 96, height = 28, tone = 'accent
 }
 
 /** Kennzahl-Trend (+/-) */
-export const Delta = ({ value, suffix = '%', invert }) => {
+/** Veränderung mit Vorzeichen (echtes Minus „−“). 0 und `neutral` (Gesundheitswerte: Gewicht, Puls) ohne Pfeil und ohne Grün/Rot. */
+export const Delta = ({ value, suffix = '%', invert, neutral }) => {
   if (value == null) return null;
-  const good = invert ? value < 0 : value >= 0;
+  const n = Number(value);
+  const sign = n > 0 ? '+' : n < 0 ? '−' : '';
+  const text = `${sign}${String(Math.abs(n)).replace('.', ',')}${suffix}`;
+  if (neutral || n === 0 || Number.isNaN(n)) return html`<span class="tk-num" style="font-size:var(--tk-fs-sm);font-weight:500;color:var(--tk-c-text-muted)">${Number.isNaN(n) ? String(value) : text}</span>`;
+  const good = invert ? n < 0 : n > 0;
   return html`<span class="tk-num" style=${`display:inline-flex;align-items:center;gap:2px;font-size:var(--tk-fs-sm);font-weight:600;color:var(--tk-c-${good ? 'success' : 'danger'})`}>
-    <${Icon} name=${value >= 0 ? 'arrow-up-right' : 'arrow-down-right'} size=${14} />${value > 0 ? '+' : ''}${String(value).replace('.', ',')}${suffix}</span>`;
+    <${Icon} name=${n > 0 ? 'arrow-up-right' : 'arrow-down-right'} size=${14} />${text}</span>`;
 };

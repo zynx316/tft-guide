@@ -99,7 +99,7 @@ function Block({ block, store, ctx, forcedState }) {
 // navigiert er wirklich (Module, Features eines Moduls, Zurück).
 function AppShell({ chrome, bp, modules = [], activeModule, title, moduleName, canBack, onBack, onNavModule, onMore, onTitle, sideFeatures, activeFeature, onFeature, onSearch, onBell, shell = 'tabs', onHome, onCapture, homeModule = 'home', children }) {
   if (!chrome) return html`<div class="tk-bare">${children}</div>`;
-  const mods = modules.slice(0, 12);
+  const mods = modules; // alle aktiven Module (19); die Seitenleiste scrollt, mobil steht der Rest unter „Mehr“/„Alle“
   document.documentElement.classList.toggle('tk-has-bottomnav', bp === 'mobile');
   const titleBtn = (strong) => (onTitle
     ? html`<button type="button" class="tk-app__titlebtn" onClick=${onTitle} aria-label=${`${title} – Bereiche des Moduls`}>${strong}<${Icon} name="chevron-down" size=${15} /></button>`

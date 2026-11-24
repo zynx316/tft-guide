@@ -41,6 +41,10 @@ export const nextId = (items, prefix = 'n') => `${prefix}${Date.now().toString(3
 /** Maske für ausgeblendete Prozente („•• %“): gleich breit, unabhängig vom Wert. */
 export const MASK_PERCENT = `••${NBSP}%`;
 
+/** Freitext mit Beträgen (Belegtext, Papierkorb-Detail, Untertitel): im Privatsphäre-Modus jeden Betrag durch „•••• €“ ersetzen. */
+const AMOUNT_IN_TEXT = /[−+-]?\d{1,3}(?:\.\d{3})*(?:,\d{1,2})?(?:[\s\u00a0\u202f]?(?:Tsd\.|Mio\.|Mrd\.))?[\s\u00a0\u202f]?€/g;
+export const maskAmounts = (ctx, text) => (ctx?.privacy && typeof text === 'string' ? text.replace(AMOUNT_IN_TEXT, `••••${NBSP}€`) : text);
+
 const unitOf = (currency) => fmtMoney(0, { cents: false, currency }).split(NBSP)[1] || '';
 const isWhole = (v) => Math.abs(v - Math.round(v)) < 0.005;
 

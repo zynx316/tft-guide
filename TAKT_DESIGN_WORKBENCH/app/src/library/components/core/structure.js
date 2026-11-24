@@ -9,8 +9,8 @@ export const pageHeader = {
   id: 'page-header',
   name: 'Seitenkopf',
   category: 'Struktur',
-  description: 'Titel, Untertitel und Primäraktion eines Feature-Screens. Auf Mobile kompakt, Aktion als Icon-Button.',
-  version: '1.0',
+  description: 'Titel, Untertitel und Primäraktion eines Feature-Screens. Auf Mobile kompakt, Aktion als Icon-Button. Der Untertitel kann aus Daten kommen (Slot `subtitle`, z. B. „Heute zählt: …“ aus der Welt); große Schrift bricht Titel um.',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Titel' },
     { name: 'subtitle', label: 'Untertitel', type: 'text', default: '' },
@@ -21,7 +21,7 @@ export const pageHeader = {
     { name: 'secondaryLabel', label: 'Sekundäraktion', type: 'text', default: '' },
     { name: 'secondaryIcon', label: 'Icon Sekundär', type: 'text', default: 'sliders-horizontal' },
   ],
-  data: [],
+  data: [{ slot: 'subtitle', label: 'Untertitel aus Daten (optional, überschreibt die Eigenschaft)', default: 'headerSubtitle', shape: 'string', required: false }],
   events: ['header.primary', 'header.secondary'],
   states: ['empty', 'loading', 'error'],
   css: `
@@ -33,15 +33,16 @@ export const pageHeader = {
   .bp-mobile .tk-page-header__sub { font-size:var(--tk-fs-sm); margin-top:2px; }
   `,
   example: { props: { title: 'Wochenansicht', subtitle: 'KW 48 · 24.–30. November', eyebrow: 'Kalender', primaryLabel: 'Termin' } },
-  render: ({ props, ctx }) => {
+  render: ({ props, data, ctx }) => {
     const mobile = ctx.bp === 'mobile';
+    const subtitle = (typeof data?.subtitle === 'string' && data.subtitle) || props.subtitle;
     // Im App-Modus navigiert die Runtime (emit → true); dann kein zusätzlicher Hinweis.
     const primary = () => { if (!ctx.emit(props.primaryEvent || 'header.primary') && (props.primaryEvent || 'header.primary') === 'header.primary') ctx.toast(`${props.primaryLabel} – Aktion ausgelöst`); };
     return html`<header class="tk-page-header">
       <div class="tk-page-header__text">
         ${props.eyebrow && !mobile && html`<div class="tk-label" style="margin-bottom:6px">${props.eyebrow}</div>`}
         <h1 class="tk-h1 tk-truncate">${props.title}</h1>
-        ${props.subtitle && html`<p class="tk-page-header__sub tk-truncate">${props.subtitle}</p>`}
+        ${subtitle && html`<p class="tk-page-header__sub tk-truncate">${subtitle}</p>`}
       </div>
       <div class="tk-page-header__actions">
         ${props.secondaryLabel && html`<${Button} icon=${props.secondaryIcon} onClick=${() => { if (!ctx.emit('header.secondary')) ctx.toast(props.secondaryLabel); }} aria-label=${props.secondaryLabel}>${mobile ? null : props.secondaryLabel}<//>`}

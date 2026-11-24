@@ -125,3 +125,32 @@ Zeiten in UTC. Neue Einträge unten anhängen (Datum, Phase, Entscheidung/Änder
 - Danach: kaufmännische Rundung, Privatsphäre in Kern-Tabellen, Vertragsprüfung erkennt konfigurierbare Events (123 → 7).
 
 ### ab 07:10 – Abschluss-QA-Workflow (4 Modulgruppen: Sichtprüfung → Korrektur → Nachprüfung, dann Vollständigkeitsprüfung)
+- (Ergebnisse folgen unten, sobald der Workflow abgeschlossen ist.)
+
+### 07:10–09:05 – Parallel in der Hauptsession: Lücken aus der Vollständigkeitsliste geschlossen
+- **WLAN-PIN** für `npm run lan` (Server prüft `X-Takt-Pin` bzw. `?k=`, QR-Link enthält die PIN, lokal ohne PIN; 3 Tests).
+  Fehler unterwegs: Launcher meldete im LAN-Modus „nur auf diesem Rechner“, weil `boundTo` die Adresse der Anfrage statt der
+  Listen-Adresse nahm – behoben, Test ergänzt (58c80af).
+- **Flutter-Brücke:** Spezifikation als JSON (`takt-feature-spec/1`, `specHash`, Routentabelle, Manifest), `npm run spec` und
+  `npm run spec:check` (Änderungen seit dem letzten Export), Slash-Command `/takt-spec` (b1c19f1).
+- **Integritätsprüfung** `validateState` (Verweise zwischen Modulen, Features, Varianten, Versionen, Entscheidungen, Runden,
+  Anmerkungen): Import blockiert bei Fehlern, Karte in „Daten & Backup“, Teil von `npm run check` (5be194a).
+- **Launcher:** Tastenkürzel 1–4 (Versionen), T (Theme), B (Beträge), R (Hoch-/Querformat) (244982d, f926026).
+- **Rückgängig mit strukturellem Teilen** (`lib/share.js`): 60 Schritte belegen 0,3 MB statt ~180 MB; Seed-Größenprüfung (ad1b182).
+- **SessionStart-Hook** (`tools/session-brief.mjs`): Claude Code bekommt zuhause beim Start automatisch die Kurzlage
+  (e78aca4, c6f7ba9). Fehler unterwegs: `git add -A` aus dem Unterordner hatte die Workflow-Arbeitskopien als eingebettete
+  Repos eingecheckt – entfernt, `.claude/worktrees/` ignoriert (d721ae6); seitdem nur explizite Pfade.
+
+### 07:15–08:40 – Workflow „Fehlende Bauplan-Module“ (3 Pakete in Arbeitskopien, je Bau → unabhängige Prüfung → Korrektur)
+- **Ziele** (`goals`, 6 Features), **Einkauf & Haushalt** (`shopping`, 7 Features), **Dokumente & Verträge** (`documents`,
+  11 Features) – Prüfurteil je „gut“. Damit sind alle 19 Module des Bauplans gebaut (197 Features).
+- Integration in der Hauptsession (2412a27): neue Dateien 1:1 übernommen, die fünf Gemeinschaftsdateien (Seed, Welt,
+  Registry, Modulliste, Invarianten-Test) gezielt ergänzt, `SEED_VERSION` 2026-11-24.5, Modulname „Dokumente & Verträge“
+  vereinheitlicht, DATENWELT 4.14–4.16. Ergebnis: check 0 Fehler, 386/386 Tests, Vertrag 0 Fehler, E2E 32/32.
+- Kernwünsche der Module umgesetzt: Rechtshinweis-Vorlagen `dokumente`, `gewaehrleistung`, `steuer-ordner`, `aufbewahrung`;
+  große Schrift bricht Seiten- und Kartentitel mit Silbentrennung um statt „Einkauf …“ abzuschneiden; `onInput`-Vertrag der
+  Primitive dokumentiert (230b2a6).
+- **QA-Sonde** um `legal-present` (Pflichthinweis des Moduls) und `money-format` (Beträge nur aus `money()`) erweitert;
+  Fehler gefunden und behoben: im App-Modus des Launchers lief die Privatsphäre-Prüfung nie, weil der Prüf-Payload das Flag
+  nicht trug. `npm run check` prüft das Modulfeld `legal` statisch und fand dabei, dass Finanzen, Sparpläne, Trading und
+  Gewohnheiten das Feld nicht pflegen (ab6c508).
