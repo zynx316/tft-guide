@@ -4,6 +4,7 @@ import { html } from '../../../lib/html.js';
 import { useState } from 'preact/hooks';
 import { Button, Icon, EmptyState, Progress } from '../../ui.js';
 import { SHP_CSS, slots, ex, useShop } from './_shopping.js';
+import { ROUTE_CSS, StoreRoute, stopsOf } from './_store-route.js';
 import { groupByAisle, aislesFor, aisleIcon, toggleItem, finishList, estimate, arr, discardTrip, tripPrefill, TRIP_PENDING, FOOD_CATEGORY } from './_logic.js';
 import { money } from '../../helpers.js';
 import { fmtTime } from '../../../lib/format.js';
@@ -12,12 +13,12 @@ export const shopStoreMode = {
   id: 'shop-store-mode',
   name: 'Laden-Modus',
   category: 'Einkauf',
-  description: 'Einkaufen mit einer Hand: große Flächen (mindestens 56 px), Gänge in der Reihenfolge deines Ladens, Abgehaktes wandert nach unten, Offline-Hinweis. „Einkauf fertig“ führt zur Ausgabe in Finanzen.',
-  version: '1.1',
+  description: 'Einkaufen mit einer Hand: große Flächen (mindestens 56 px), Gänge in der Reihenfolge deines Ladens, Abgehaktes wandert nach unten, Offline-Hinweis. Ansichten: alle Gänge (Liste), ein Gang nach dem anderen (walk) und Laufweg (route: Fortschrittsring, ein Stopp je Gang als Karte mit großen Artikelkacheln). „Einkauf fertig“ führt zur Ausgabe in Finanzen.',
+  version: '1.2',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Im Laden' },
     { name: 'showOffline', label: 'Offline-Hinweis', type: 'boolean', default: true },
-    { name: 'view', label: 'Ansicht', type: 'select', options: ['aisles', 'walk'], default: 'aisles' },
+    { name: 'view', label: 'Ansicht', type: 'select', options: ['aisles', 'walk', 'route'], default: 'aisles' },
     { name: 'showListSwitch', label: 'Listenwechsel', type: 'boolean', default: true },
     { name: 'financeTarget', label: 'Ziel nach „Einkauf fertig“', type: 'text', default: 'finance.quickadd' },
   ],
@@ -27,6 +28,7 @@ export const shopStoreMode = {
   a11y: { role: 'list', nameFrom: 'Listenname' },
   flutter: { widget: 'ShopStoreMode', propMap: { financeTarget: 'financeRoute' }, events: ['item.toggle', 'store.done'] },
   css: `${SHP_CSS}
+  ${ROUTE_CSS}
   .tk-shps-bar { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
   .tk-shps-sw { display:flex; flex-wrap:wrap; gap:8px; } .tk-shps-sw button { flex:0 1 auto; max-width:100%; white-space:normal; text-align:left; min-height:56px; padding:0 18px; border-radius:var(--tk-radius-lg); border:1.5px solid var(--tk-c-border-strong); background:var(--tk-c-surface2); color:inherit; font:inherit; font-weight:var(--tk-fw-semibold); cursor:pointer; display:inline-flex; align-items:center; gap:8px; }
   .tk-shps-sw button[aria-pressed="true"] { background:var(--tk-c-accent); color:var(--tk-c-text-on-accent); border-color:var(--tk-c-accent); }
@@ -53,7 +55,7 @@ export const shopStoreMode = {
     const [showDone, setShowDone] = useState(true), [finished, setFinished] = useState(null), [walkIdx, setWalkIdx] = useState(0);
     if (!list) return html`<${EmptyState} icon="store" title="Noch keine Liste" text="Lege eine Liste an, dann kannst du sie im Laden abarbeiten." />`;
     const st = store(list), aisles = aislesFor(st, list.items), { groups, done } = groupByAisle(list.items, aisles, { doneApart: true });
-    const wi = Math.max(0, Math.min(walkIdx, groups.length - 1)), cur = groups[wi], isWalk = props.view === 'walk';
+    const wi = Math.max(0, Math.min(walkIdx, groups.length - 1)), cur = groups[wi], isWalk = props.view === 'walk', isRoute = props.view === 'route';
     const offline = !!ctx.env?.offline, total = list.total, left = list.open;
     const toggle = (i) => { toggleItem(setData, list, i); ctx.emit('item.toggle', { id: i.id, done: !i.done }); };
     const Row = (i) => html`<button type="button" role="checkbox" aria-checked=${String(i.done)} class="tk-shps-row" onClick=${() => toggle(i)}>
@@ -76,13 +78,12 @@ export const shopStoreMode = {
     const shown = isWalk ? [cur].filter(Boolean) : groups;
     return html`<div class="tk-shp">
       ${props.showListSwitch && views.length > 1 && html`<div class="tk-shps-sw" role="group" aria-label="Liste wählen">${views.map((l) => html`<button type="button" aria-pressed=${String(l.id === list.id)} onClick=${() => { ctx.setUi('selectedId', l.id); setWalkIdx(0); ctx.emit('store.switch', { id: l.id }); }}><${Icon} name=${l.icon} size=${18} />${l.name}<span class="tk-num">${l.open}</span></button>`)}</div>`}
-      <div class="tk-shps-bar"><div class="tk-grow"><div class="tk-shp-big">${left === 0 ? 'Alles im Wagen' : `${left} offen`}</div><div class="tk-shp-meta">${st ? st.name : list.name} · ${total - left} von ${total}${list.priceOpen > 0 ? ` · ca. ${money(ctx, list.priceOpen, { digits: 0 })} offen` : ''}</div></div></div>
-      <${Progress} value=${total ? (total - left) / total : 0} tone="success" />
+      ${!isRoute && html`<div class="tk-shps-bar"><div class="tk-grow"><div class="tk-shp-big">${left === 0 ? 'Alles im Wagen' : `${left} offen`}</div><div class="tk-shp-meta">${st ? st.name : list.name} · ${total - left} von ${total}${list.priceOpen > 0 ? ` · ca. ${money(ctx, list.priceOpen, { digits: 0 })} offen` : ''}</div></div></div><${Progress} value=${total ? (total - left) / total : 0} tone="success" />`}
       ${props.showOffline && html`<div class="tk-shps-off" role="status" data-offline=${String(offline)} data-qa="store-offline"><${Icon} name=${offline ? 'wifi-off' : 'wifi'} size=${18} /><span>${offline ? 'Offline: Abhaken wird gespeichert und später abgeglichen.' : 'Die Liste liegt auf deinem Gerät und funktioniert auch ohne Netz.'}</span></div>`}
-      <div>${shown.map((g) => html`<div class="tk-shps-aisle"><${Icon} name=${aisleIcon(g.aisle)} size=${20} />${isWalk ? `Gang ${wi + 1} von ${groups.length}: ` : ''}${g.aisle}<span>${g.items.length}</span></div>${g.items.map(Row)}`)}
+      ${isRoute ? html`<${StoreRoute} ctx=${ctx} stops=${stopsOf(list.items, aisles)} toggle=${toggle} left=${left} total=${total} storeName=${st ? st.name : list.name} priceOpen=${list.priceOpen} />` : html`<div>${shown.map((g) => html`<div class="tk-shps-aisle"><${Icon} name=${aisleIcon(g.aisle)} size=${20} />${isWalk ? `Gang ${wi + 1} von ${groups.length}: ` : ''}${g.aisle}<span>${g.items.length}</span></div>${g.items.map(Row)}`)}
         ${isWalk && groups.length > 1 && html`<div class="tk-shps-next"><div class="tk-shps-nav">${wi > 0 && html`<${Button} class="tk-shps-nextbtn" icon="arrow-left" onClick=${() => setWalkIdx(wi - 1)}>Vorheriger Gang<//>`}${wi < groups.length - 1 ? html`<${Button} class="tk-shps-nextbtn" icon="arrow-right" onClick=${() => setWalkIdx(wi + 1)}>Nächster Gang<//>` : html`<div class="tk-shp-sub" style="align-self:center">Das war der letzte Gang.</div>`}</div>${Chips}</div>`}
         ${groups.length === 0 && done.length > 0 && html`<${EmptyState} icon="check-circle-2" title="Alles im Wagen" text="Alle Artikel sind abgehakt. Schließe den Einkauf ab." />`}
-        ${done.length > 0 && html`<button type="button" class="tk-shps-aisle tk-shps-fold" aria-expanded=${String(showDone)} onClick=${() => setShowDone(!showDone)}><${Icon} name="shopping-basket" size=${20} />Im Wagen<span>${done.length}</span><${Icon} name=${showDone ? 'chevron-up' : 'chevron-down'} size=${20} /></button>${showDone && done.map(Row)}`}</div>
+        ${done.length > 0 && html`<button type="button" class="tk-shps-aisle tk-shps-fold" aria-expanded=${String(showDone)} onClick=${() => setShowDone(!showDone)}><${Icon} name="shopping-basket" size=${20} />Im Wagen<span>${done.length}</span><${Icon} name=${showDone ? 'chevron-up' : 'chevron-down'} size=${20} /></button>${showDone && done.map(Row)}`}</div>`}
       <${Button} class="tk-shps-finish" variant=${left === 0 ? 'primary' : 'default'} icon="check-check" disabled=${total - left === 0} onClick=${finish}>Einkauf fertig<//>
       <div class="tk-shp-sub" style="text-align:center">${total - left === 0 ? 'Hake erst etwas ab.' : 'Danach trägst du die Ausgabe in Finanzen ein.'}</div></div>`;
   },

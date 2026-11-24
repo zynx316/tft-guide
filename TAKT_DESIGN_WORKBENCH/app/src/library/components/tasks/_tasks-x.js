@@ -66,3 +66,8 @@ export function rankedOpen(tasks, today) {
   const rank = (t) => { const i = dueInfo(t, today); return [i.overdue ? 0 : i.diff === 0 ? 1 : 2, t.status === 'In Arbeit' ? 0 : 1, prio(t).rank]; };
   return openTasks(tasks).sort((a, b) => { const x = rank(a), y = rank(b); return x[0] - y[0] || x[1] - y[1] || x[2] - y[2] || sortTasks(a, b); });
 }
+
+// ---------------------------------------------------------------- Eingang ---
+export const INBOX_SRC = { Sprache: 'mic', Notiz: 'notebook-pen', Teilen: 'share-2', Scan: 'scan-line', Erfassen: 'plus', Mail: 'mail' };
+/** „vor 12 Min.“ / „gestern“ – relativ zu ctx.today. */
+export const inboxAgo = (at, today) => { const m = Math.round((+today - +new Date(at)) / 60000); return m < 60 ? `vor ${Math.max(1, m)} Min.` : m < 1440 ? `vor ${Math.round(m / 60)} Std.` : m < 2880 ? 'gestern' : `vor ${Math.round(m / 1440)} Tagen`; };

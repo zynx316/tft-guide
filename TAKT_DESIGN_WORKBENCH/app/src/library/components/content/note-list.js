@@ -3,7 +3,7 @@ import { html } from '../../../lib/html.js';
 import { useState } from 'preact/hooks';
 import { Card, Button, Badge, Icon, EmptyState, Input, Check, Progress, toneColor } from '../../ui.js';
 import { applyUiFilter } from '../../helpers.js';
-import { isoLocal, relDay, stripMd, sortNotes, checklistItems, checklistStats, tagTone, toggleTaskLine } from './content-util.js';
+import { isoLocal, relDay, stripMd, sortNotes, checklistItems, checklistStats, tagTone, toggleTaskLine, inboxOps } from './content-util.js';
 import { NoteForm, noteActions } from './note-editor.js';
 
 /** Editor im Dialog: lokaler Zustand, schreibt zusätzlich in den geteilten notes-Slot. */
@@ -21,7 +21,7 @@ export const noteList = {
   name: 'Notizliste',
   category: 'Inhalte',
   description: 'Notizen als Liste, einzeilige Kompaktliste oder Karten-Raster: angeheftete zuerst, Auszug, Tags, Checklisten-Fortschritt, relatives Datum. Beachtet Suche/Filter („Angeheftet“, „Eingang“, „Archiv“, Tags). Auswahl über ctx.ui.selectedId – oder Bearbeiten im Dialog.',
-  version: '1.2',
+  version: '1.3',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Notizen' },
     { name: 'layout', label: 'Darstellung', type: 'select', options: ['list', 'compact', 'grid'], default: 'list' },
@@ -32,12 +32,13 @@ export const noteList = {
     { name: 'showProgress', label: 'Checklisten-Fortschritt', type: 'boolean', default: true },
     { name: 'autoSelect', label: 'Erste Notiz markieren (Master-Detail)', type: 'boolean', default: true },
     { name: 'showCreate', label: 'Neue-Notiz-Button', type: 'boolean', default: true },
+    { name: 'showArchive', label: 'Archivieren-Knopf (Wiederherstellen im Archiv)', type: 'boolean', default: false },
     { name: 'groupPinned', label: 'Angeheftete abgrenzen', type: 'boolean', default: true },
     { name: 'cardSize', label: 'Kartengröße (Raster)', type: 'select', options: ['normal', 'large'], default: 'normal' },
     { name: 'minWidth', label: 'Min. Kartenbreite (px, Raster)', type: 'number', default: 230 },
   ],
   data: [{ slot: 'notes', label: 'Notizen', default: 'notes', shape: '{id,title,body,tags?,pinned?,archived?,inbox?,updated}[]', required: true }],
-  events: ['note.open', 'note.pin', 'note.create'],
+  events: ['note.open', 'note.pin', 'note.create', 'note.archive'],
   states: ['empty'],
   css: `
   .tk-note-list { display:flex; flex-direction:column; min-width:0; }
@@ -60,7 +61,8 @@ export const noteList = {
   .bp-mobile .tk-note-row--compact { min-height:56px; }
   .bp-mobile .tk-note-row--compact .tk-note-row__main { flex-direction:column; align-items:stretch; gap:2px; }
   .bp-mobile .tk-note-row--compact .tk-note-row__title { flex:none; }
-  .tk-note-row__pin { width:36px; height:36px; margin:-6px -8px -6px 0; display:grid; place-items:center; border:0; background:transparent; color:var(--tk-c-text-subtle); border-radius:var(--tk-radius-sm); cursor:pointer; flex:none; }
+  .tk-note-row__btns { display:flex; flex:none; margin:-6px -8px -6px 0; }
+  .tk-note-row__pin { width:36px; height:36px; display:grid; place-items:center; border:0; background:transparent; color:var(--tk-c-text-subtle); border-radius:var(--tk-radius-sm); cursor:pointer; flex:none; }
   .tk-note-row__pin:hover { background:var(--tk-c-surface3); color:var(--tk-c-text); }
   .tk-note-row__pin[aria-pressed="true"] { color:var(--tk-c-accent); }
   .bp-mobile .tk-note-row__pin { width:44px; height:44px; }
@@ -103,14 +105,15 @@ export const noteList = {
     };
     const pin = (e, n) => { e.stopPropagation(); setData('notes', (a) => a.map((x) => (x.id === n.id ? { ...x, pinned: !x.pinned } : x))); ctx.emit('note.pin', { id: n.id, pinned: !n.pinned }); ctx.toast(n.pinned ? 'Anheften aufgehoben' : 'Notiz angeheftet'); };
     const create = () => {
-      const id = (ctx.newId ? ctx.newId("n") : `n${Date.now().toString(36)}`); const n = { id, title: '', body: '', tags: [], updated: isoLocal(ctx.today) };
+      const id = ctx.newId('n'); const n = { id, title: '', body: '', tags: [], updated: isoLocal(ctx.today) };
       setData('notes', (a) => [n, ...a]); ctx.setUi('selectedId', id); const nav = ctx.emit('note.create', { id, ui: { newNote: n } });
       if (props.openIn === 'dialog' && !nav) open(n); else if (!nav) ctx.toast('Neue Notiz angelegt');
     };
     const addBtn = props.showCreate && html`<${Button} size="sm" variant="primary" icon="plus" aria-label="Neue Notiz" onClick=${create}>${ctx.bp === 'mobile' ? null : 'Neu'}<//>`;
     const empty = html`<${EmptyState} icon=${f === 'Archiv' ? 'archive' : f === 'Eingang' ? 'inbox' : 'sticky-note'} title=${f === 'Archiv' ? 'Archiv ist leer' : f === 'Eingang' ? 'Eingang ist leer' : 'Keine Notizen gefunden'}
       text=${q ? `Keine Treffer für „${q}“.` : 'Halte Gedanken, Listen und Ideen fest.'} action=${props.showCreate && html`<${Button} variant="primary" icon="plus" onClick=${create}>Neue Notiz<//>`} />`;
-    const pinBtn = (n) => html`<button type="button" class="tk-note-row__pin" aria-label=${n.pinned ? 'Anheften aufheben' : 'Anheften'} aria-pressed=${n.pinned ? 'true' : 'false'} onClick=${(e) => pin(e, n)}><${Icon} name="pin" size=${16} /></button>`;
+    const archive = (e, n) => { e.stopPropagation(); setData('notes', (a) => a.map((x) => (x.id === n.id ? { ...x, archived: !x.archived, inbox: false } : x))); ctx.emit('note.archive', { id: n.id, archived: !n.archived }); ctx.toast(n.archived ? 'Notiz wiederhergestellt' : 'Notiz archiviert'); };
+    const pinBtn = (n) => html`<div class="tk-note-row__btns">${props.showArchive && html`<button type="button" class="tk-note-row__pin" aria-label=${n.archived ? 'Notiz wiederherstellen' : 'Notiz archivieren'} title=${n.archived ? 'Wiederherstellen' : 'Archivieren'} onClick=${(e) => archive(e, n)}><${Icon} name=${n.archived ? 'archive-restore' : 'archive'} size=${16} /></button>`}<button type="button" class="tk-note-row__pin" aria-label=${n.pinned ? 'Anheften aufheben' : 'Anheften'} aria-pressed=${n.pinned ? 'true' : 'false'} onClick=${(e) => pin(e, n)}><${Icon} name="pin" size=${16} /></button></div>`;
     const tagsOf = (n, max = 2) => (n.tags || []).slice(0, max).map((t) => html`<${Badge}>${t}<//>`);
     const stats = (n) => (props.showProgress ? checklistStats(n.body) : { total: 0 });
 
@@ -247,21 +250,8 @@ export const noteInbox = {
     const inboxTotal = inbox.length;   // Badge zeigt den ganzen Eingang, auch wenn nur ein Ausschnitt sichtbar ist
     if (props.limit > 0) inbox = inbox.slice(0, props.limit);
     const tags = Array.isArray(props.tags) ? props.tags : String(props.tags).split(',').map((s) => s.trim()).filter(Boolean);
-    const patch = (id, p) => setData('notes', (all) => all.map((n) => (n.id === id ? { ...n, ...p } : n)));
-    const add = () => {
-      const t = text.trim(); if (!t) return; const id = (ctx.newId ? ctx.newId("n") : `n${Date.now().toString(36)}`);
-      setData('notes', (all) => [{ id, title: t.slice(0, 70), body: t.length > 70 ? t : '', tags: [], inbox: true, updated: isoLocal(ctx.today) }, ...all]);
-      ctx.emit('note.inbox.add', { id }); ctx.toast('Im Eingang gespeichert'); setText('');
-    };
-    const sort = (n, tag) => { patch(n.id, { tags: [tag], inbox: false }); ctx.emit('note.inbox.sort', { id: n.id, tag }); ctx.toast(`In „${tag}“ einsortiert`); };
-    const keep = (n) => { patch(n.id, { inbox: false }); ctx.emit('note.inbox.keep', { id: n.id }); ctx.toast('Bei den Notizen abgelegt'); };
-    const task = (n) => {
-      const due = isoLocal(ctx.today).slice(0, 10);
-      setData('tasks', (all) => [{ id: `t-${n.id}`, title: n.title, due, priority: 'mittel', project: 'Eingang', category: 'Arbeit', status: 'Offen', subtasks: [], note: n.body || '' }, ...(Array.isArray(all) ? all : [])]);
-      patch(n.id, { inbox: false, archived: true }); ctx.emit('note.to-task', { id: n.id }); ctx.toast('Aufgabe für heute angelegt');
-    };
-    const archive = (n) => { patch(n.id, { inbox: false, archived: true }); ctx.emit('note.archive', { id: n.id, archived: true }); ctx.toast('Notiz archiviert'); };
-    const open = (n) => { ctx.setUi('selectedId', n.id); ctx.emit('note.open', { id: n.id }); };
+    const ops = inboxOps({ setData, ctx }), { sort, keep, task, archive, open } = ops;
+    const add = () => { if (ops.add(text)) setText(''); };
     const capture = props.showCapture && html`<div class="tk-note-inbox__capture"><${Input} value=${text} onInput=${setText} placeholder="Schnellnotiz … (Enter)" aria-label="Schnellnotiz" onKeyDown=${(e) => e.key === 'Enter' && add()} /><${Button} variant="primary" icon="plus" aria-label="Im Eingang speichern" onClick=${add}>${ctx.bp === 'mobile' ? null : 'Erfassen'}<//></div>`;
     const empty = html`<${EmptyState} icon="inbox" title="Eingang ist leer" text="Alles einsortiert. Neue Gedanken landen hier, bis du sie ablegst." />`;
     const badge = html`<div class="tk-row"><${Badge} tone=${inboxTotal ? 'warning' : 'success'}>${inboxTotal}<//>${props.link && html`<${Button} size="sm" variant="ghost" iconRight="chevron-right" onClick=${() => ctx.emit('note.inbox.open')}>${props.link}<//>`}</div>`;

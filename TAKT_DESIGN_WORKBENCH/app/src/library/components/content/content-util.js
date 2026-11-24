@@ -130,3 +130,25 @@ export const readMinutes = (body = '') => Math.max(1, Math.round(wordCount(body)
 
 /** Gemeinsame Beschriftungszeile „Label · Wert“ – nutzt Komponenten für Kopfbereiche kleiner Karten. */
 export const caps = (s) => String(s || '').replace(/^./, (c) => c.toUpperCase());
+
+/** Aktionen des Notiz-Eingangs (Schnellnotiz, Einsortieren, Aufgabe, Behalten, Archivieren) – gemeinsam für Liste, Assistent und Pinnwand. */
+export function inboxOps({ setData, ctx }) {
+  const patch = (id, p) => setData('notes', (all) => all.map((n) => (n.id === id ? { ...n, ...p } : n)));
+  return {
+    patch,
+    add: (text) => {
+      const t = String(text || '').trim(); if (!t) return false; const id = ctx.newId('n');
+      setData('notes', (all) => [{ id, title: t.slice(0, 70), body: t.length > 70 ? t : '', tags: [], inbox: true, updated: isoLocal(ctx.today) }, ...all]);
+      ctx.emit('note.inbox.add', { id }); ctx.toast('Im Eingang gespeichert'); return true;
+    },
+    sort: (n, tag) => { patch(n.id, { tags: [tag], inbox: false }); ctx.emit('note.inbox.sort', { id: n.id, tag }); ctx.toast(`In „${tag}“ einsortiert`); },
+    keep: (n) => { patch(n.id, { inbox: false }); ctx.emit('note.inbox.keep', { id: n.id }); ctx.toast('Bei den Notizen abgelegt'); },
+    task: (n) => {
+      const due = isoLocal(ctx.today).slice(0, 10);
+      setData('tasks', (all) => [{ id: `t-${n.id}`, title: n.title, due, priority: 'mittel', project: 'Eingang', category: 'Arbeit', status: 'Offen', subtasks: [], note: n.body || '' }, ...(Array.isArray(all) ? all : [])]);
+      patch(n.id, { inbox: false, archived: true }); ctx.emit('note.to-task', { id: n.id }); ctx.toast('Aufgabe für heute angelegt');
+    },
+    archive: (n) => { patch(n.id, { inbox: false, archived: true }); ctx.emit('note.archive', { id: n.id, archived: true }); ctx.toast('Notiz archiviert'); },
+    open: (n) => { ctx.setUi('selectedId', n.id); ctx.emit('note.open', { id: n.id }); },
+  };
+}

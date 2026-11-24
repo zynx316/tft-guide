@@ -172,7 +172,7 @@ export const kbNext = {
       const hit = ev && arts.map((a) => ({ a, score: (a.tags || []).includes(ev.category) * 1 + sig(ev.title).filter((w) => sig(`${a.title} ${a.tags?.join(' ')}`).includes(w)).length * 2 })).filter((x) => x.score > 0).sort((x, y) => y.score - x.score)[0];
       if (!ev || !hit) return empty('Zu den nächsten Terminen gibt es keinen passenden Artikel.');
       return html`<div class="tk-kb-next" style=${`--tone:${toneColor('warning')}`}><span class="tk-label">${label} · ${untilLabel(ev.start, ctx.today)}</span>
-        <div class="tk-kb-next__sub tk-kb-next__ev"><${Icon} name="calendar-clock" size=${14} /><span>${ev.title} · ${fmtTime(ev.start)} Uhr</span></div>
+        <div class="tk-kb-next__sub tk-kb-next__ev"><${Icon} name="calendar-clock" size=${14} /><span>${ev.title} · ${ctx.fmt.fmtTime(ev.start, { suffix: true })}</span></div>
         <div class="tk-kb-next__title">${hit.a.title}</div><div class="tk-kb-next__sub">${hit.a.area} › ${hit.a.category} · ${readMinutes(hit.a.body)} Min. Lesezeit</div>
         <div><${Button} variant="primary" icon="book-open" onClick=${() => open(hit.a)}>Artikel lesen<//></div></div>`;
     }
@@ -184,4 +184,3 @@ export const kbNext = {
       <${Button} size="sm" onClick=${() => open(a)}>Prüfen<//><${Button} size="sm" variant="ghost" icon="check" aria-label=${`${a.title} als aktuell markieren`} title="Als aktuell markieren" onClick=${() => done(a)} /></div>`)}<//>`;
   },
 };
-const fmtTime = (iso) => new Intl.DateTimeFormat('de-DE', { hour: '2-digit', minute: '2-digit' }).format(new Date(iso));

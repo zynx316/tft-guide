@@ -190,7 +190,7 @@ export const noteFocus = {
     const match = ev && live.find((n) => (n.tags || []).includes(ev.category) || words(ev.title).some((w) => words(`${n.title} ${n.body}`).includes(w)));
     const open = (n) => { ctx.setUi('selectedId', n.id); ctx.emit('note.open', { id: n.id }); };
     const create = () => {
-      const id = (ctx.newId ? ctx.newId("n") : `n${Date.now().toString(36)}`);
+      const id = ctx.newId('n');
       const n = { id, title: ev ? `${ev.title} – Notizen` : '', body: ev ? '## Agenda\n- \n\n## Ergebnisse\n- \n\n## Aufgaben\n- [ ] ' : '', tags: ev ? [ev.category] : [], updated: isoLocal(ctx.today) };
       setData('notes', (a) => [n, ...a]); ctx.setUi('selectedId', id); ctx.emit('note.create', { id, ui: { newNote: n } }); ctx.toast(ev ? 'Notiz zum Termin angelegt' : 'Neue Notiz angelegt');
     };

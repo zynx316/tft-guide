@@ -70,7 +70,7 @@ export const ocrResult = {
     const conf = Math.round(cap.confidence * 100);
     const copy = () => { try { navigator.clipboard?.writeText(cap.text); } catch { /* Vorschau */ } ctx.emit('ocr.copy', { id: cap.id }); ctx.toast('Text kopiert'); };
     const toNote = () => {
-      const id = (ctx.newId ? ctx.newId("n") : `n${Date.now().toString(36)}`);
+      const id = ctx.newId('n');
       setData('notes', (a) => [{ id, title: cap.title, body: `${cap.text.split('\n').join('\n\n')}`, tags: ['OCR'], inbox: true, updated: isoLocal(ctx.today) }, ...(Array.isArray(a) ? a : [])]);
       setSaved(cap.id); ctx.emit('ocr.save-note', { id: cap.id }); ctx.toast('Als Notiz gespeichert');
     };

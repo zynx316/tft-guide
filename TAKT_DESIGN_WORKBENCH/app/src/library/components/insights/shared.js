@@ -1,11 +1,12 @@
 // Gemeinsame Helfer der Insights-Komponenten (Vertrieb, Trading, Fitness, Finanzen).
 import { fmt } from '../../../lib/util.js';
+import { fmtMoney } from '../../../lib/format.js';
 
 /** Relative Zeitangabe ("vor 12 Minuten") bezogen auf ctx.today. */
 export const rel = (d, today) => (d ? fmt.relative(d, today instanceof Date ? today : new Date(today)) : '–');
 
 /** Euro-Betrag mit Vorzeichen: +1.234,50 € */
-export const signed = (n, digits = 2) => `${n > 0 ? '+' : n < 0 ? '−' : ''}${new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR', minimumFractionDigits: digits, maximumFractionDigits: digits }).format(Math.abs(n))}`;
+export const signed = (n, digits = 2) => fmtMoney(n, { sign: true, cents: digits > 0 });
 
 /** Prozent mit Vorzeichen (Eingabe als Anteil, 0.0123 -> +1,23 %) */
 export const signedPct = (n, digits = 2) => `${n > 0 ? '+' : n < 0 ? '−' : ''}${fmt.percent(Math.abs(n), digits)}`;

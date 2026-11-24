@@ -1,6 +1,7 @@
 // Domänen-Komponenten "content": Notizen, Wissensdatenbank, Picture to Text (Kategorie "Inhalte") und Wetter (Kategorie "Wetter").
 // Jede Komponente ist genau hier registriert (nicht über andere Bereiche) – doppelte IDs prüft tests/core-registry.test.mjs.
 import { noteList, noteChecklists, noteInbox } from './note-list.js';
+import { noteBoard } from './note-board.js';
 import { noteEditor, noteFocus } from './note-editor.js';
 import { kbTree, kbAreas } from './kb-tree.js';
 import { kbArticle, kbNext } from './kb-article.js';
@@ -14,7 +15,7 @@ import { weatherDaily } from './weather-daily.js';
 import { weatherAlerts } from './weather-alerts.js';
 
 export default [
-  noteList, noteChecklists, noteInbox, noteEditor, noteFocus,
+  noteList, noteChecklists, noteInbox, noteBoard, noteEditor, noteFocus,
   kbTree, kbAreas, kbArticle, kbNext,
   capturePanel, captureLauncher, docScanner,
   ocrResult, receiptReview, businessCard, countList, kpiTiles,

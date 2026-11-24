@@ -82,7 +82,7 @@ export const capturePanel = {
       const s = list[all.length % Math.max(list.length, 1)];
       if (!s) { ctx.toast('Keine Testdaten für die Erkennung vorhanden'); return; }
       const lines = s.text.split('\n').length;
-      const entry = { id: (ctx.newId ? ctx.newId("c") : `c${Date.now().toString(36)}`), title: s.title, subtitle: s.text.split('\n').join(' · ').slice(0, 70), meta: 'Gerade eben', badge: `${Math.round(s.confidence * 100)} %`, tone: s.confidence > 0.9 ? 'success' : 'warning',
+      const entry = { id: ctx.newId('c'), title: s.title, subtitle: s.text.split('\n').join(' · ').slice(0, 70), meta: 'Gerade eben', badge: `${Math.round(s.confidence * 100)} %`, tone: s.confidence > 0.9 ? 'success' : 'warning',
         icon: from === 'camera' ? 'camera' : from === 'clipboard' ? 'clipboard' : 'image', source: from, group: SOURCES.find((x) => x.value === from)?.label, text: s.text, lang: lang === 'Automatisch' ? s.lang : lang, confidence: s.confidence, uncertain: s.uncertain || [], created: isoLocal(ctx.today) };
       setData('captures', (a) => [entry, ...(Array.isArray(a) ? a : [])]); ctx.setUi('selectedId', entry.id);
       setDone({ lines, conf: s.confidence, unsure: (s.uncertain || []).length });
@@ -91,9 +91,9 @@ export const capturePanel = {
     const start = (from = source) => {
       if (run) return; setDone(null); setRun({ source: from, p: 0 });
       ctx.emit('capture.start', { source: from });
-      const t0 = Date.now();
+      const t0 = performance.now();
       timer.current = setInterval(() => {
-        const p = Math.min(1, (Date.now() - t0) / DURATION);
+        const p = Math.min(1, (performance.now() - t0) / DURATION);
         if (p >= 1) finish(from); else setRun({ source: from, p });
       }, 100);
     };
@@ -257,12 +257,12 @@ export const docScanner = {
     const samples = data.samples || [];
     const cur = pages[Math.min(sel, pages.length - 1)];
     const patch = (p) => setPages((a) => a.map((x, i) => (i === sel ? { ...x, ...p } : x)));
-    const snap = () => { if (!found) { ctx.toast('Noch keine Kanten erkannt'); return; } setFlash(true); setTimeout(() => setFlash(false), 160); const n = pages.length + 1; setPages((a) => [...a, mk(n + Date.now() % 1000)]); setSel(pages.length); ctx.emit('scan.capture', { pages: n }); ctx.toast(`Seite ${n} erfasst`); };
-    const fromFile = () => { const n = pages.length + 1; setPages((a) => [...a, mk(n + Date.now() % 1000)]); setSel(pages.length); setPerm('erteilt'); ctx.emit('permission.alternative'); ctx.toast(`Seite ${n} aus Datei hinzugefügt`); };
+    const snap = () => { if (!found) { ctx.toast('Noch keine Kanten erkannt'); return; } setFlash(true); setTimeout(() => setFlash(false), 160); const n = pages.length + 1; setPages((a) => [...a, mk(ctx.newId('p'))]); setSel(pages.length); ctx.emit('scan.capture', { pages: n }); ctx.toast(`Seite ${n} erfasst`); };
+    const fromFile = () => { const n = pages.length + 1; setPages((a) => [...a, mk(ctx.newId('p'))]); setSel(pages.length); setPerm('erteilt'); ctx.emit('permission.alternative'); ctx.toast(`Seite ${n} aus Datei hinzugefügt`); };
     const move = (d) => { const j = sel + d; if (j < 0 || j >= pages.length) return; setPages((a) => { const b = a.slice(); [b[sel], b[j]] = [b[j], b[sel]]; return b; }); setSel(j); ctx.emit('scan.edit', { action: 'move' }); };
     const del = () => { setPages((a) => a.filter((_, i) => i !== sel)); setSel(Math.max(0, sel - 1)); ctx.emit('scan.edit', { action: 'delete' }); ctx.toast('Seite entfernt'); };
-    const entry = (title, kind, ocr) => { const text = pages.map((_, i) => (samples[i % Math.max(samples.length, 1)]?.text || 'Text der Seite')).join('\n'); return { id: (ctx.newId ? ctx.newId("c") : `c${Date.now().toString(36)}`), title, kind, pages: pages.length, subtitle: `${pages.length} ${pages.length === 1 ? 'Seite' : 'Seiten'} · ${kind === 'document' ? 'PDF' : 'Text'}`, meta: 'Gerade eben', badge: '94 %', tone: 'success', icon: 'file-text', source: 'camera', group: 'Kamera', text, lang: 'Deutsch', confidence: 0.94, uncertain: [], created: isoLocal(ctx.today), searchable: ocr }; };
-    const save = (name, ocr) => { setProg(0); const t0 = Date.now(); const iv = setInterval(() => { const p = Math.min(1, (Date.now() - t0) / 1400); if (p >= 1) { clearInterval(iv); setProg(null); const e = entry(name, 'document', ocr); setData('captures', (a) => [e, ...(Array.isArray(a) ? a : [])]); ctx.setUi('selectedId', e.id); setSaved({ name, n: pages.length }); ctx.emit('scan.export', { id: e.id }); ctx.toast(`PDF gespeichert · ${pages.length} ${pages.length === 1 ? 'Seite' : 'Seiten'}`); } else setProg(p); }, 100); };
+    const entry = (title, kind, ocr) => { const text = pages.map((_, i) => (samples[i % Math.max(samples.length, 1)]?.text || 'Text der Seite')).join('\n'); return { id: ctx.newId('c'), title, kind, pages: pages.length, subtitle: `${pages.length} ${pages.length === 1 ? 'Seite' : 'Seiten'} · ${kind === 'document' ? 'PDF' : 'Text'}`, meta: 'Gerade eben', badge: '94 %', tone: 'success', icon: 'file-text', source: 'camera', group: 'Kamera', text, lang: 'Deutsch', confidence: 0.94, uncertain: [], created: isoLocal(ctx.today), searchable: ocr }; };
+    const save = (name, ocr) => { setProg(0); const t0 = performance.now(); const iv = setInterval(() => { const p = Math.min(1, (performance.now() - t0) / 1400); if (p >= 1) { clearInterval(iv); setProg(null); const e = entry(name, 'document', ocr); setData('captures', (a) => [e, ...(Array.isArray(a) ? a : [])]); ctx.setUi('selectedId', e.id); setSaved({ name, n: pages.length }); ctx.emit('scan.export', { id: e.id }); ctx.toast(`PDF gespeichert · ${pages.length} ${pages.length === 1 ? 'Seite' : 'Seiten'}`); } else setProg(p); }, 100); };
     const ocr = () => { const e = entry(`Scan ${pages.length} ${pages.length === 1 ? 'Seite' : 'Seiten'}`, 'text', true); setData('captures', (a) => [e, ...(Array.isArray(a) ? a : [])]); ctx.setUi('selectedId', e.id); ctx.emit('scan.ocr', { id: e.id }); ctx.toast('Text erkannt'); };
     const reset = () => { setPages([]); setSel(0); setSaved(null); setPhase('camera'); };
 

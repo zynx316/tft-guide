@@ -415,6 +415,16 @@ export default {
             { id: 'cap', component: 'task-capture', region: 'main', bind: { tasks: 'tasks', inbox: 'inbox' }, props: { title: 'Neuer Gedanke', target: 'inbox', showExamples: false } },
           ],
         },
+        {
+          id: 'C', name: 'Sortier-Fächer', direction: 'visuell', concept: 'Ring zeigt, wie weit der Eingang sortiert ist. Die aktuelle Karte steht groß neben vier Fächern (Heute, Morgen, Diese Woche, Irgendwann) mit Füllstand und Zeitbedarf; wartende Karten liegen als Reihe darunter und lassen sich nach vorn holen.',
+          description: '+ Man sieht, wohin die Aufgaben fallen und wie voll die Tage sind, Fortschritt ist sichtbar  − Je Sortierung ein Tipp auf das Fach, kein Mehrfachauswählen',
+          layout: { type: 'stack' },
+          blocks: [
+            { id: 'hdr', component: 'page-header', region: 'header', props: { eyebrow: 'Aufgaben', title: 'Eingang', subtitle: 'Sortiere in Fächer, sieh den Füllstand', primaryLabel: '' } },
+            { id: 'sorter', component: 'task-sorter', region: 'main', bind: { inbox: 'inbox', tasks: 'tasks' }, props: { title: 'Eingang sortieren', showSuggestion: true } },
+            { id: 'cap', component: 'task-capture', region: 'main', bind: { tasks: 'tasks', inbox: 'inbox' }, props: { title: 'Neuer Gedanke', target: 'inbox', showExamples: false } },
+          ],
+        },
       ],
       selectedVariantId: 'A',
       links: ['tasks.home', 'tasks.overview', 'tasks.detail'],

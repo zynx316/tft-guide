@@ -4,24 +4,24 @@ import { useState } from 'preact/hooks';
 import { Card, Badge, Button, Icon, EmptyState } from '../../ui.js';
 import { placeOf, hm, dkey, dayName, diffMin, durText, stamp, LV, lvSoft, KIND_ICON, SLOT_PLACE, SLOT_EVENTS, EX } from './_weather2.js';
 
-const when = (a, today) => {
+export const when = (a, today) => {
   const now = stamp(today), toTxt = dkey(a.to) === dkey(a.from) ? '' : `${dayName(a.to, today)} `;
   return `${dayName(a.from, today, true)} ${hm(a.from)} – ${toTxt}${hm(a.to)} Uhr`;
 };
-const status = (a, today) => {
+export const status = (a, today) => {
   const now = stamp(today);
   if (a.to <= now) return { label: 'Abgelaufen', tone: 'neutral' };
   if (a.from <= now) return { label: `Gilt seit ${durText(diffMin(now, a.from))}`, tone: LV[a.level].tone };
   return { label: `Beginnt in ${durText(diffMin(a.from, now))}`, tone: 'warning' };
 };
-const Meter = ({ level }) => html`<span class="tk-wxa__meter" role="img" aria-label=${`Warnstufe ${level} von 4`}>${[1, 2, 3, 4].map((i) => html`<i style=${i <= level ? `background:${LV[level].color}` : ''}></i>`)}</span>`;
+export const Meter = ({ level }) => html`<span class="tk-wxa__meter" role="img" aria-label=${`Warnstufe ${level} von 4`}>${[1, 2, 3, 4].map((i) => html`<i style=${i <= level ? `background:${LV[level].color}` : ''}></i>`)}</span>`;
 function Track({ a, today }) {
   const t0 = new Date(`${dkey(stamp(today))}T00:00:00`).getTime(), span = 72 * 3600000;
   const l = Math.max(0, (new Date(a.from) - t0) / span) * 100, r = Math.min(1, (new Date(a.to) - t0) / span) * 100, nowP = ((new Date(today) - t0) / span) * 100;
   return html`<div class="tk-wxa__track" aria-hidden="true"><span class="tk-wxa__fill" style=${`left:${l}%;width:${Math.max(2, r - l)}%;background:${LV[a.level].color}`}></span><span class="tk-wxa__now" style=${`left:${nowP}%`}></span>
     <span class="tk-wxa__d" style="left:0">Heute</span><span class="tk-wxa__d" style="left:33.3%">${dayName(new Date(t0 + 86400000), today)}</span><span class="tk-wxa__d" style="left:66.6%">${dayName(new Date(t0 + 2 * 86400000), today)}</span></div>`;
 }
-function impact(a, events, venues) {
+export function impact(a, events, venues) {
   return (events || []).filter((e) => !e.allDay && venues?.[e.location]?.outdoor && e.end > a.from && stamp(new Date(new Date(e.start).getTime() - 30 * 60000)) < a.to);
 }
 
