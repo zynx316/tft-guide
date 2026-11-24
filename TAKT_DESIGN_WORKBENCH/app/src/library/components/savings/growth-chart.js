@@ -71,7 +71,7 @@ export const growthChart = {
       const r = planPoints(plan, ctx, data, fwd);
       if (!r) return empty('Noch keine Ausführung', `Der Plan beginnt am ${fmtDate(plan.startDate)}. Danach erscheint hier der Verlauf.`);
       const start = toDate(plan.startDate), yearOf = (m) => String(addMonths(start, m).getFullYear());
-      const sw = props.switcher && html`<${Segmented} label="Ausblick" value=${fwd} onChange=${(v) => { setFwd(v); ctx.emit('chart.outlook', { years: v }); }} options=${FWD} />`;
+      const sw = props.switcher && html`<div class="tk-svg-sw"><${Segmented} label="Ausblick" value=${fwd} onChange=${(v) => { setFwd(v); ctx.emit('chart.outlook', { years: v }); }} options=${FWD} /></div>`;
       return wrap(html`<${GrowthChart} ...${common} points=${r.pts} now=${fwd ? r.now : undefined} xLabel=${yearOf} label=${`Verlauf von ${plan.name}`} />
         ${!props.compact && html`<${GrowthLegend} band=${fwd > 0} bandText="Spanne Annahme ± 2 PP" projected=${fwd > 0} />`}
         <p class="tk-svgc__note">Modell: gleichbleibende Rendite, auf Einstand und Wert der Position abgestimmt${fwd ? '. Ausblick mit den Annahmen des Plans, ohne Gewähr' : ''}.</p>`, sw);

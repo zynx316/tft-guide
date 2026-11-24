@@ -304,3 +304,7 @@ h1, h2, h3, h4, p { margin: 0; }
 /* Fokus-Rahmen: der runde Erfassen-Knopf ragt ~22 px über die Leiste – fixierte Leisten der Varianten darüber halten */
 .bp-mobile.tk-has-bottomnav .tk-shell--fokus .tk-region--bottom { bottom: calc(var(--tk-size-bottom-nav) + 30px); }
 .bp-mobile.tk-has-bottomnav .tk-shell--fokus ~ .tk-toasts, .bp-mobile.tk-has-bottomnav .tk-shell--fokus .tk-toasts { bottom: calc(var(--tk-size-bottom-nav) + 34px); }
+
+/* Große Schrift: Eingabefelder wachsen mit; Icon-Buttons werden in Zeilen nie gestaucht */
+[data-tk-large-text] .tk-input, [data-tk-large-text] .tk-select, [data-tk-large-text] .tk-search input { height: auto; min-height: var(--tk-size-control); padding-top: 6px; padding-bottom: 6px; }
+.tk-btn--icon { flex: none; }
