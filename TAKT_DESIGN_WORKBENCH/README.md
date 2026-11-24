@@ -21,7 +21,7 @@ npm run lan                # zusätzlich im WLAN erreichbar (Handy per QR-Code i
    einen eigenen App-Rahmen (Tab-Leiste · Launchpad mit Live-Kennzahlen · „Heute“ mit Erfassen-Knopf). Klicken ist gekoppelt.
    Werkzeugleiste: Gerät, Theme, Rahmen, **Szenario** (Alltag · Erster Start · Stress-Tag), Offline, Schrift 100–200 %,
    Beträge ausblenden, **Demo zurücksetzen**, Präsentation (P). Tasten: 1–3 Kompakt/Visuell/Fokus und 4 „Meine Auswahl“ ein-/ausblenden
-   (Handy: Version wählen), T Theme durchschalten, B Beträge aus-/einblenden.
+   (Handy: Version wählen), T Theme durchschalten, R Hoch-/Querformat, B Beträge aus-/einblenden.
 2. **Bewerten** je Version und Ebene (App · Modul · Feature): Sterne, Favorit, **fünf Kriterien** (Zeit bis zur Aktion, Einhand,
    Übersicht, Ruhe, trägt 20+ Module), Kommentar, „Übernehmen“. Vom Handy landen Bewertungen in der Workbench (Feedback).
 3. **Workbench › App-Ebene:** Leitbild (Vision, Prinzipien, Gewichte, Favoriten, Rahmen), **Grundsatzfragen** (Persona,

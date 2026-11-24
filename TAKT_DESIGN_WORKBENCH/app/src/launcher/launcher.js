@@ -200,6 +200,7 @@ function Launcher({ initialState }) {
   const prefs0 = ls.get(PREFS_KEY, {});
   const [selected, setSelected] = useState(() => (prefs0.selected || versions.filter((v) => v.kind === 'direction').map((v) => v.id)).filter((id) => versions.some((v) => v.id === id)).slice(0, 4));
   const [deviceId, setDeviceId] = useState(prefs0.deviceId || 'iphone-15');
+  const [landscape, setLandscape] = useState(!!prefs0.landscape);
   const [themeMode, setThemeMode] = useState(prefs0.themeMode || 'version');
   const [coupled, setCoupled] = useState(prefs0.coupled ?? true);
   const [level, setLevel] = useState(prefs0.level || 'feature');
@@ -218,10 +219,13 @@ function Launcher({ initialState }) {
   const frames = useRef({});
   const mobile = vw < 760;
   useEffect(() => { const on = () => { setVw(window.innerWidth); setVh(window.innerHeight); }; window.addEventListener('resize', on); return () => window.removeEventListener('resize', on); }, []);
-  useEffect(() => { ls.set(PREFS_KEY, { selected, deviceId, themeMode, coupled, level, privacy, scenario, offline, textScale, shellMode }); }, [selected, deviceId, themeMode, coupled, level, privacy, scenario, offline, textScale, shellMode]);
+  useEffect(() => { ls.set(PREFS_KEY, { selected, deviceId, landscape, themeMode, coupled, level, privacy, scenario, offline, textScale, shellMode }); }, [selected, deviceId, landscape, themeMode, coupled, level, privacy, scenario, offline, textScale, shellMode]);
   useEffect(() => { flushQueue(); }, []);
 
-  const device = launcherDevice(deviceId);
+  const baseDevice = launcherDevice(deviceId);
+  // Querformat: Breite/Höhe tauschen; Statusleiste schmaler, Kamera-Aussparung entfällt (liegt seitlich)
+  const canRotate = baseDevice.group !== 'desktop';
+  const device = landscape && canRotate ? { ...baseDevice, width: baseDevice.height, height: baseDevice.width, statusBar: Math.min(baseDevice.statusBar, 24), homeBar: Math.min(baseDevice.homeBar, 10), cutout: 'none' } : baseDevice;
   const shown = mobile ? [versions.find((v) => v.id === selected[mobileIdx % Math.max(1, selected.length)]) || versions[0]] : selected.map((id) => versions.find((v) => v.id === id)).filter(Boolean);
   const payloads = useMemo(() => Object.fromEntries(shown.map((v) => [v.id, buildAppPayload(state, v.id, { theme: themeMode === 'version' ? undefined : themeMode, revision: 1 + resetKey, privacy, scenario, env: { offline, scale: textScale }, shell: shellMode === 'version' ? undefined : shellMode, live })])), [state, shown.map((v) => v.id).join(), themeMode, privacy, scenario, offline, textScale, shellMode, resetKey]);
 
@@ -260,6 +264,7 @@ function Launcher({ initialState }) {
         toast(`${v.name}: ${selected.includes(v.id) ? (selected.length > 1 ? 'ausgeblendet' : 'bleibt sichtbar (mindestens eine Version)') : 'eingeblendet'}`);
       }
       if (e.key === 't' || e.key === 'T') setThemeMode((m) => { const all = ['version', ...THEME_IDS]; const next = all[(all.indexOf(m) + 1) % all.length]; toast(next === 'version' ? 'Theme: je Version' : `Theme: ${themes[next]?.label || next}`); return next; });
+      if ((e.key === 'r' || e.key === 'R') && !mobile) setLandscape((x) => { toast(x ? 'Hochformat' : 'Querformat'); return !x; });
       if (e.key === 'b' || e.key === 'B') setPrivacy((x) => { toast(x ? 'Beträge sichtbar' : 'Beträge ausgeblendet'); return !x; });
     };
     window.addEventListener('keydown', on); return () => window.removeEventListener('keydown', on);
@@ -311,6 +316,7 @@ function Launcher({ initialState }) {
       </div>
       <div class="ln-head__row ln-head__row--tools">
         <${Select} size="sm" style="width:auto" value=${deviceId} onChange=${setDeviceId} options=${LAUNCHER_DEVICES.map((d) => ({ value: d.id, label: `${d.label} · ${d.width}×${d.height}` }))} aria-label="Gerät" />
+        ${canRotate && html`<${IconBtn} icon="rotate-cw" label=${landscape ? 'Hochformat (R)' : 'Querformat (R)'} pressed=${landscape} onClick=${() => setLandscape(!landscape)} data-qa="ln-rotate" />`}
         <${Select} size="sm" style="width:auto" value=${themeMode} onChange=${setThemeMode} options=${[{ value: 'version', label: 'Theme: je Version' }, ...THEME_IDS.map((t) => ({ value: t, label: `Theme: ${themes[t].label}` }))]} aria-label="Theme" />
         <${Select} size="sm" style="width:auto" value=${shellMode} onChange=${setShellMode} options=${[{ value: 'version', label: 'Rahmen: je Version' }, ...SHELLS.map((x) => ({ value: x.id, label: `Rahmen: ${x.label}` }))]} aria-label="App-Rahmen" title="App-Rahmen (Navigation) – unabhängig von der Richtung vergleichen" data-qa="ln-shell" />
         <${Btn} size="sm" icon="link-2" pressed=${coupled} onClick=${() => setCoupled(!coupled)} title="Navigation in allen Versionen gleichzeitig">Gekoppelt<//>
@@ -322,7 +328,7 @@ function Launcher({ initialState }) {
         <${Seg} value=${level} onChange=${setLevel} options=${LEVELS.slice(0, 3).map((l) => ({ value: l.id, label: l.label }))} />
         <span class="wb-grow"></span>
         <${Btn} size="sm" icon="rotate-ccw" onClick=${() => { setResetKey((k) => k + 1); toast('Demo zurückgesetzt – Daten und Verlauf frisch'); }} title="Alle Eingaben der Demo verwerfen (Datenwelt und Navigation neu)" data-qa="ln-reset">Demo zurücksetzen<//>
-        <${Btn} size="sm" icon="maximize-2" onClick=${() => setPresent(true)} title="Präsentation (P) · Tasten: 1–3 Kompakt/Visuell/Fokus, 4 Meine Auswahl ein/aus, T Theme, B Beträge ausblenden">Präsentation<//>
+        <${Btn} size="sm" icon="maximize-2" onClick=${() => setPresent(true)} title="Präsentation (P) · Tasten: 1–3 Kompakt/Visuell/Fokus, 4 Meine Auswahl ein/aus, T Theme, R drehen, B Beträge ausblenden">Präsentation<//>
       </div>
     </header>`}
     ${present && html`<button type="button" class="ln-exit" onClick=${() => setPresent(false)}><${Icon} name="minimize-2" size=${15} />Präsentation beenden (Esc)</button>`}
