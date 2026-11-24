@@ -48,7 +48,7 @@ export const globalSearch = {
     const recents = (Array.isArray(data.recents) ? data.recents : []).slice(0, 6);
     const remember = (t) => { const s = String(t || '').trim(); if (s) setData('recents', (l) => [s, ...(Array.isArray(l) ? l : []).filter((x) => x !== s)].slice(0, 8)); };
     const input = (v) => { setQ(v); setActive(0); ctx.setUi('gsQuery', v); ctx.emit('search.input', { length: v.length }); };
-    const openIt = (it) => { remember(q); ctx.emit('search.open', { id: it.id, group: it.group }); if (it.to) ctx.emit(`open:${it.to}`, it.group === 'module' ? undefined : { id: it.id }); };
+    const openIt = (it) => { remember(q); ctx.emit('search.open', { id: it.id, group: it.group }); if (it.to) ctx.emit(`open:${it.to}`, it.group === 'module' || it.group === 'setting' ? undefined : { id: it.id }); };
     const runCmd = (c) => { ctx.emit('command.run', { id: c.id }); if (c.to) ctx.emit(`open:${c.to}`); else ctx.toast(c.note || c.label); };
     const capture = () => { ctx.emit('command.capture', { text: q }); ctx.emit('open:system.capture'); };
 

@@ -13,6 +13,7 @@ const CSS = `
   .tk-xc-bk__leg { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: var(--tk-space-1) var(--tk-space-3); margin: 0; padding: 0; list-style: none; font-size: var(--tk-fs-sm); }
   .tk-xc-bk__leg li { display: flex; align-items: center; gap: 6px; min-width: 0; }
   .tk-xc-bk__leg li span:last-child { margin-left: auto; font-variant-numeric: tabular-nums; color: var(--tk-c-text-muted); }
+  .tk-xc-bk .tk-xc-s { white-space: normal; }
   .tk-xc-bk__sw { width: 10px; height: 10px; border-radius: 3px; flex: none; }
   .tk-xc-bk__item { display: flex; align-items: center; gap: var(--tk-space-3); padding: var(--tk-space-2) var(--tk-space-3); min-height: 56px; border-bottom: 1px solid var(--tk-c-border); min-width: 0; }
   .tk-xc-bk__item:last-child { border-bottom: 0; }

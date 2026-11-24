@@ -71,8 +71,8 @@ export const notificationList = {
     const [st, setSt] = useState({});           // id → { read, gone, until }
     const [filter, setFilter] = useState('alle');
     const [menu, setMenu] = useState(null);
-    const prefs = getPrefs(data.prefs);
-    const all = collectNotifications(data, ctx);
+    const prefs = getPrefs(data.prefs, ctx);
+    const all = collectNotifications(data, ctx).map((n) => (ctx.privacy ? { ...n, title: priv(ctx, n.title) } : n));
     const patch = (id, p) => setSt((s) => ({ ...s, [id]: { ...s[id], ...p } }));
     const unread = (n) => !st[n.id]?.read && (+ctx.today - +new Date(n.time)) < 16 * 3600000 && n.priority !== 'leise';
     const live = all.filter((n) => !st[n.id]?.gone && !st[n.id]?.until);

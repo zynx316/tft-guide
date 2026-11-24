@@ -41,7 +41,7 @@ const merge = (base, over) => {
   return out;
 };
 /** Einstellungen = Standardwerte + gespeicherte Abweichungen (Welt-Schlüssel `prefs`, noch leer = Standard). */
-export const getPrefs = (raw) => merge(DEFAULT_PREFS, raw);
+export const getPrefs = (raw, ctx) => merge(ctx?.theme && DEFAULT_PREFS.theme !== ctx.theme ? { ...DEFAULT_PREFS, theme: ctx.theme } : DEFAULT_PREFS, raw);
 export const prefAt = (p, path) => String(path).split('.').reduce((o, k) => (o == null ? undefined : o[k]), p);
 export function setPrefAt(p, path, value) {
   const keys = String(path).split('.');

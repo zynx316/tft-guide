@@ -49,7 +49,7 @@ export const themePicker = {
   css: XC_CSS + CSS,
   example: { props: {}, data: { prefs: {} } },
   render: function ThemePicker({ props, data, setData, ctx }) {
-    const prefs = getPrefs(data.prefs);
+    const prefs = getPrefs(data.prefs, ctx);
     const save = (next) => setData('prefs', { ...prefs, ...next });
     const pick = (id) => { save({ theme: id }); ctx.emit('theme.select', { theme: id }); ctx.toast(`${themes[id].label} gewählt`); };
     const scale = Number(prefs.textScale) || 1;

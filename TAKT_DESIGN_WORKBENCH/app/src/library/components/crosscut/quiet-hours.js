@@ -31,7 +31,7 @@ export const quietHours = {
   css: XC_CSS + CSS,
   example: { props: {}, data: { prefs: {} } },
   render: function QuietHours({ props, data, setData, ctx }) {
-    const prefs = getPrefs(data.prefs), q = prefs.quietHours;
+    const prefs = getPrefs(data.prefs, ctx), q = prefs.quietHours;
     const save = (p, ev) => { setData('prefs', { ...prefs, quietHours: { ...q, ...p } }); ctx.emit(ev, p); };
     const a = mins(q.from), b = mins(q.to), pct = (m) => `${(m / 1440) * 100}%`;
     const dur = ((b - a + 1440) % 1440) / 60;

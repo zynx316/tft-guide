@@ -78,7 +78,8 @@ const LOCK_GROUPS = [
 const baseModuleHome = ['calendar.home', 'tasks.home', 'weather.home', 'sales.overview', 'fitness.home', 'savings.home', 'habits.home', 'trading.portfolio', 'nutrition.home', 'settings.home', 'home.today', 'finance.home'];
 const NOTIF_TARGETS = ['weather.alerts', 'sales.connect', 'tasks.inbox', 'trading.watchlist', 'fitness.home', 'savings.calendar', 'habits.home', 'nutrition.water', 'settings.data', 'home.review', 'tasks.list', 'tasks.detail', 'calendar.event', 'finance.subscriptions', 'finance.budgets', 'finance.transaction'];
 const SEARCH_TARGETS = ['tasks.detail', 'calendar.event', 'finance.transaction', 'finance.accounts', 'savings.plan', 'trading.detail', 'nutrition.recipe', 'nutrition.foods', 'system.capture', 'calendar.create', 'finance.quickadd', 'nutrition.log', 'settings.appearance', 'system.lock', 'system.trash', 'settings.data', 'settings.home',
-  'home.today', 'calendar.home', 'tasks.home', 'habits.home', 'notes.home', 'knowledge.home', 'picture-to-text.home', 'finance.home', 'savings.home', 'trading.portfolio', 'fitness.home', 'nutrition.home', 'weather.home', 'sales.overview'];
+  'home.today', 'calendar.home', 'tasks.home', 'habits.home', 'notes.home', 'knowledge.home', 'picture-to-text.home', 'finance.home', 'savings.home', 'trading.portfolio', 'fitness.home', 'nutrition.home', 'weather.home', 'sales.overview',
+  'settings.region', 'settings.modules', 'settings.notifications', 'settings.accounts', 'system.help', 'settings.about'];
 
 const worldData = { tasks: '@world:tasks', events: '@world:events' };
 
@@ -198,6 +199,7 @@ export default {
       requirements: [
         { text: 'Ein Suchfeld über alle Module; Ergebnisse nach Modul bzw. Art gruppiert, mit Anzahl und „Alle anzeigen“', type: 'info', priority: 'must' },
         { text: 'Treffer hervorheben (Teilwort, Umlaute egal: „uber“ findet „Über“), Titel vor Untertitel gewichten', type: 'rule', priority: 'must' },
+        { text: 'Einstellungsseiten sind Treffer (Gruppe „Einstellungen“: „Darstellung“, „Datenschutz“, „Über TAKT“) und öffnen die passende Seite', type: 'info', priority: 'should' },
         { text: 'Treffer öffnen das Zielobjekt im Modul (Aufgaben-Detail, Termin, Buchung, Konto, Sparplan …)', type: 'action', priority: 'must' },
         { text: 'Befehle: „Neue Aufgabe“, „Neuer Termin“, „Buchung erfassen“, „Theme wechseln“, „App sperren“, „Papierkorb öffnen“, „Daten exportieren“', type: 'action', priority: 'must' },
         { text: 'Leere Suche zeigt „Zuletzt gesucht“ (löschbar), Befehle und Vorschläge', type: 'info', priority: 'should' },
@@ -313,7 +315,7 @@ export default {
           blocks: [
             { id: 'hdr', component: 'page-header', region: 'header', props: { eyebrow: 'TAKT Kern', title: 'Schnell erfassen', subtitle: 'Ein Satz genügt', primaryLabel: '' } },
             { id: 'cap', component: 'capture-field', region: 'main', props: { mode: 'line', showExamples: true, showRecent: true } },
-            { id: 'inbox', component: 'task-inbox', region: 'aside', bind: { inbox: 'taskInbox', tasks: 'tasks' }, props: { title: 'Eingang', style: 'list' } },
+            { id: 'inbox', component: 'task-inbox', region: 'aside', bind: { inbox: 'taskInbox', tasks: 'tasks' }, props: { title: 'Eingang', style: 'steps' } },
             { id: 'undo', component: 'undo-toast', region: 'bottom', props: { demo: false, placement: 'sticky' } },
           ],
         },

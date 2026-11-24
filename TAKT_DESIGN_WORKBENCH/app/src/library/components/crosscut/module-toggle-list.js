@@ -42,7 +42,7 @@ export const moduleToggleList = {
   css: XC_CSS + CSS,
   example: { props: {}, data: { prefs: {} } },
   render: function ModuleToggleList({ props, data, setData, ctx }) {
-    const prefs = getPrefs(data.prefs);
+    const prefs = getPrefs(data.prefs, ctx);
     const max = Math.max(1, Number(props.maxFavorites) || 4);
     const favs = prefs.favorites.filter((id) => isEnabled(prefs, id)).slice(0, max);
     const save = (next) => setData('prefs', { ...prefs, ...next });

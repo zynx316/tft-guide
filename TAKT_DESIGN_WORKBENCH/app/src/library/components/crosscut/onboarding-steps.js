@@ -41,6 +41,8 @@ const CSS = `
   .tk-xc-ob__sw i:nth-child(3) { background: var(--tk-c-accent2); height: 60%; }
   .tk-xc-ob__line { display: flex; align-items: center; gap: var(--tk-space-3); min-height: 56px; min-width: 0; }
   .tk-xc-ob__nav { display: flex; gap: var(--tk-space-2); justify-content: space-between; }
+  .tk-xc-ob__nav > span:empty { display: none; }
+  .tk-xc-ob__nav > .tk-btn:only-child { margin-left: auto; }
   .bp-mobile .tk-xc-ob__nav .tk-btn { flex: 1 1 0; justify-content: center; }
   .tk-xc-ob__sum { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: var(--tk-space-2); }
   .tk-xc-ob__sum li { display: flex; align-items: center; gap: var(--tk-space-2); min-width: 0; }
@@ -69,7 +71,7 @@ export const onboardingSteps = {
     const [step, setStep] = useState(Math.max(0, Math.min(5, Number(props.startStep) || 0)));
     const [sample, setSample] = useState('sample');
     const [preset, setPreset] = useState('alles');
-    const prefs = getPrefs(data.prefs);
+    const prefs = getPrefs(data.prefs, ctx);
     const save = (next) => setData('prefs', { ...prefs, ...next });
     const active = MODULES.filter((m) => isEnabled(prefs, m.id));
     const favs = prefs.favorites.filter((id) => isEnabled(prefs, id));

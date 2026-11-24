@@ -14,13 +14,14 @@ export const GROUPS = [
   { id: 'position', label: 'Depot', icon: 'candlestick-chart', module: 'trading', to: 'trading.detail' },
   { id: 'recipe', label: 'Rezepte', icon: 'chef-hat', module: 'nutrition', to: 'nutrition.recipe' },
   { id: 'food', label: 'Lebensmittel', icon: 'apple', module: 'nutrition', to: 'nutrition.foods' },
+  { id: 'setting', label: 'Einstellungen', icon: 'settings', module: 'settings', to: null },
   { id: 'module', label: 'Module', icon: 'layout-grid', module: 'home', to: null },
 ];
 /** Eingrenzung der Suche (Chips): Name, Gruppen. */
 export const SCOPES = [
   { id: 'all', label: 'Alle', groups: null }, { id: 'tasks', label: 'Aufgaben', groups: ['task'] }, { id: 'calendar', label: 'Termine', groups: ['event'] },
   { id: 'finance', label: 'Finanzen', groups: ['transaction', 'account'] }, { id: 'savings', label: 'Sparpläne', groups: ['plan'] }, { id: 'trading', label: 'Depot', groups: ['position'] },
-  { id: 'nutrition', label: 'Ernährung', groups: ['recipe', 'food'] }, { id: 'module', label: 'Module', groups: ['module'] },
+  { id: 'nutrition', label: 'Ernährung', groups: ['recipe', 'food'] }, { id: 'setting', label: 'Einstellungen', groups: ['setting'] }, { id: 'module', label: 'Module', groups: ['module'] },
 ];
 export const groupMeta = (id) => GROUPS.find((g) => g.id === id) || GROUPS[GROUPS.length - 1];
 
@@ -37,10 +38,23 @@ export const COMMANDS = [
   { id: 'cmd-export', label: 'Daten exportieren', hint: 'Export und Backup', icon: 'download', to: 'settings.data', keys: 'export backup sicherung daten' },
   { id: 'cmd-settings', label: 'Einstellungen öffnen', hint: 'Alle Einstellungen', icon: 'settings', to: 'settings.home', keys: 'einstellungen optionen konfiguration' },
 ];
+/** Einstellungsseiten als Treffer („Darstellung“, „Datenschutz“, „Über TAKT“ …). */
+export const SETTING_ENTRIES = [
+  { id: 'set-appearance', title: 'Darstellung & Theme', sub: 'Theme, Dichte, Schriftgröße', to: 'settings.appearance', icon: 'palette', keys: 'dunkel hell farbe schrift größe animation' },
+  { id: 'set-region', title: 'Sprache & Region', sub: 'Sprache, Einheiten, Wochenstart', to: 'settings.region', icon: 'languages', keys: 'deutsch einheiten celsius kilometer feiertage' },
+  { id: 'set-modules', title: 'Module & Navigation', sub: 'Module ein oder aus, Favoriten der Leiste', to: 'settings.modules', icon: 'layout-grid', keys: 'navigation leiste reihenfolge favoriten' },
+  { id: 'set-notify', title: 'Benachrichtigungen', sub: 'Regeln und Ruhezeiten', to: 'settings.notifications', icon: 'bell', keys: 'mitteilungen ruhezeit push erinnerung' },
+  { id: 'set-lock', title: 'App-Sperre & Datenschutz', sub: 'PIN, Biometrie, Beträge ausblenden', to: 'system.lock', icon: 'lock', keys: 'privat privatsphäre pin biometrie sicherheit sensibel' },
+  { id: 'set-data', title: 'Daten, Export & Backup', sub: 'Sicherung, Export, Speicher', to: 'settings.data', icon: 'cloud-upload', keys: 'sicherung backup export import löschen speicher' },
+  { id: 'set-trash', title: 'Papierkorb', sub: '30 Tage wiederherstellbar', to: 'system.trash', icon: 'trash-2', keys: 'gelöscht wiederherstellen' },
+  { id: 'set-accounts', title: 'Konten & Sync', sub: 'Verbundene Dienste, Sync-Konflikte', to: 'settings.accounts', icon: 'refresh-cw', keys: 'sync anmeldung konto verbinden konflikt' },
+  { id: 'set-help', title: 'Hilfe & Tipps', sub: 'Tipps und Kurzbefehle', to: 'system.help', icon: 'lightbulb', keys: 'anleitung kurzbefehle tastatur' },
+  { id: 'set-about', title: 'Über TAKT', sub: 'Version, Lizenzen, Feedback', to: 'settings.about', icon: 'info', keys: 'version lizenz impressum feedback' },
+];
 export const COMMAND_TARGETS = [...new Set(COMMANDS.map((c) => c.to).filter(Boolean))];
 export const MODULE_TARGETS = MODULES.map((m) => m.home).filter(Boolean);
 /** Alle Ziele, die die Suche öffnen kann (für die Interaktionsliste im Manifest). */
-export const SEARCH_TARGETS = [...new Set([...GROUPS.map((g) => g.to).filter(Boolean), ...COMMAND_TARGETS, ...MODULE_TARGETS])];
+export const SEARCH_TARGETS = [...new Set([...GROUPS.map((g) => g.to).filter(Boolean), ...COMMAND_TARGETS, ...MODULE_TARGETS, ...SETTING_ENTRIES.map((e) => e.to)])];
 
 const arr = (v) => (Array.isArray(v) ? v : []);
 
@@ -59,6 +73,7 @@ export function buildIndex(data, ctx) {
   for (const p of arr(data.positions)) push('position', p.id, p.name, `${p.type} · ${fmtNumber(p.quantity, { digits: 2 })} Stück · ${p.isin}`, { extra: `${p.short} ${p.isin}` });
   for (const r of arr(data.nutRecipes)) push('recipe', r.id, r.title, `${(r.prepMin || 0) + (r.cookMin || 0)} Min. · ${r.subtitle || ''}`, { icon: r.icon || 'chef-hat', extra: (r.tags || []).join(' ') });
   for (const f of arr(data.nutFoods)) push('food', f.id, f.name, `${fmtNumber(f.kcal, { unit: 'kcal' })} je 100 g · ${f.category}`, { extra: `${f.brand || ''} ${(f.tags || []).join(' ')}` });
+  for (const e of SETTING_ENTRIES) out.push({ key: `setting:${e.id}`, group: 'setting', id: e.id, module: 'settings', title: e.title, subtitle: e.sub, extra: e.keys, icon: e.icon, to: e.to });
   for (const m of MODULES) out.push({ key: `module:${m.id}`, group: 'module', id: m.id, module: m.id, title: m.name, subtitle: m.desc, icon: m.icon, to: m.home });
   // Aggregat der Module (Welt-Schlüssel `searchIndex`, sobald vorhanden): { id, type, title, subtitle, module, to }
   for (const s of arr(data.index)) if (s?.to && !out.some((o) => o.key === `ext:${s.id}` || (o.id === s.id && o.module === s.module))) out.push({ key: `ext:${s.id}`, group: 'ext', id: s.params?.id ?? s.id, module: s.module, title: s.title, subtitle: s.subtitle || s.type, icon: moduleMeta(s.module).icon, to: s.to, ext: true });

@@ -25,7 +25,9 @@ const CSS = `
   .tk-xc-set__tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 156px), 1fr)); gap: var(--tk-space-3); }
   .tk-xc-set__tile { display: flex; flex-direction: column; align-items: flex-start; gap: var(--tk-space-3); padding: var(--tk-space-4); border-radius: var(--tk-radius-xl); border: 1px solid var(--tk-c-border); background: var(--tk-c-surface); color: var(--tk-c-text); font: inherit; text-align: left; cursor: pointer; min-width: 0; min-height: 132px; }
   .tk-xc-set__tile:hover { border-color: var(--tk-c-accent); box-shadow: var(--tk-shadow-sm); }
-  .tk-xc-set__tile .tk-xc-t { white-space: normal; overflow-wrap: anywhere; }
+  .tk-xc-set__tile .tk-xc-t { white-space: normal; overflow-wrap: break-word; hyphens: auto; }
+  .bp-mobile .tk-xc-set__tile .tk-xc-t { font-size: 14px; }
+  @media (min-width: 900px) { .tk-xc-set__tiles { grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); } }
   .tk-xc-set__tile .tk-xc-ic { width: 44px; height: 44px; border-radius: var(--tk-radius-lg); }
   .tk-xc-set__tile .tk-xc-s { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
   .tk-xc-set__search { display: flex; align-items: center; gap: var(--tk-space-2); height: 44px; padding: 0 var(--tk-space-3); border-radius: var(--tk-radius-lg); border: 1px solid var(--tk-c-border-strong); background: var(--tk-c-surface); color: var(--tk-c-text-muted); }
@@ -57,7 +59,7 @@ export const settingsList = {
   example: { props: {}, data: { groups: [{ id: 'g1', title: 'Allgemein', rows: [{ id: 'r1', type: 'switch', label: 'Mitteilungen', hint: 'Erinnerungen an Termine und Fristen', value: true }, { id: 'r2', type: 'choice', label: 'Wochenstart', options: ['Montag', 'Sonntag'], value: 'Montag' }, { id: 'r3', type: 'nav', label: 'Darstellung', value: 'Graphite', icon: 'palette', to: 'settings.appearance' }] }] } },
   render: function SettingsList({ props, data, setData, ctx }) {
     const [q, setQ] = useState('');
-    const prefs = getPrefs(data.prefs);
+    const prefs = getPrefs(data.prefs, ctx);
     let groups = Array.isArray(data.groups) ? data.groups : [];
     const ids = Array.isArray(props.groupIds) ? props.groupIds.filter(Boolean) : [];
     if (ids.length) groups = groups.filter((g) => ids.includes(g.id));
