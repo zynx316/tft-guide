@@ -248,9 +248,22 @@ function Launcher({ initialState }) {
       if (mobile && e.key === 'ArrowRight') setMobileIdx((i) => i + 1);
       if (mobile && e.key === 'ArrowLeft') setMobileIdx((i) => (i - 1 + selected.length) % selected.length);
       if (e.key === 'Escape') setPresent(false);
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      // 1–4: Version wählen (Handy) bzw. ein-/ausblenden (Laptop) · T: Theme durchschalten · B: Beträge ausblenden
+      const n = Number(e.key);
+      if (n >= 1 && n <= 4) {
+        if (mobile) { if (n <= selected.length) setMobileIdx(n - 1); return; }
+        const keyed = [...versions.filter((x) => x.kind === 'direction'), versions.find((x) => x.id === 'mix')].filter(Boolean); // 1–3 Richtungen, 4 Meine Auswahl
+        const v = keyed[n - 1]; if (!v) return;
+        const pos = (id) => versions.findIndex((x) => x.id === id);
+        setSelected((s) => (s.includes(v.id) ? (s.length > 1 ? s.filter((x) => x !== v.id) : s) : [...s, v.id].sort((a, c) => pos(a) - pos(c)).slice(-4)));
+        toast(`${v.name}: ${selected.includes(v.id) ? (selected.length > 1 ? 'ausgeblendet' : 'bleibt sichtbar (mindestens eine Version)') : 'eingeblendet'}`);
+      }
+      if (e.key === 't' || e.key === 'T') setThemeMode((m) => { const all = ['version', ...THEME_IDS]; const next = all[(all.indexOf(m) + 1) % all.length]; toast(next === 'version' ? 'Theme: je Version' : `Theme: ${themes[next]?.label || next}`); return next; });
+      if (e.key === 'b' || e.key === 'B') setPrivacy((x) => { toast(x ? 'Beträge sichtbar' : 'Beträge ausgeblendet'); return !x; });
     };
     window.addEventListener('keydown', on); return () => window.removeEventListener('keydown', on);
-  }, [mobile, selected.length]);
+  }, [mobile, selected, versions]);
 
   const toggleVersion = (id) => setSelected((s) => (s.includes(id) ? (s.length > 1 ? s.filter((x) => x !== id) : s) : [...s, id].slice(-4)));
   const routeText = (vid) => { const r = routes[vid]; if (r?.shellPage) return 'Übersicht (Launchpad)'; const f = state.features.find((x) => x.id === r?.featureId); const m = state.modules.find((x) => x.id === r?.moduleId); return f ? `${m?.name} › ${f.name}` : 'Start'; };
@@ -309,7 +322,7 @@ function Launcher({ initialState }) {
         <${Seg} value=${level} onChange=${setLevel} options=${LEVELS.slice(0, 3).map((l) => ({ value: l.id, label: l.label }))} />
         <span class="wb-grow"></span>
         <${Btn} size="sm" icon="rotate-ccw" onClick=${() => { setResetKey((k) => k + 1); toast('Demo zurückgesetzt – Daten und Verlauf frisch'); }} title="Alle Eingaben der Demo verwerfen (Datenwelt und Navigation neu)" data-qa="ln-reset">Demo zurücksetzen<//>
-        <${Btn} size="sm" icon="maximize-2" onClick=${() => setPresent(true)} title="Präsentation (P)">Präsentation<//>
+        <${Btn} size="sm" icon="maximize-2" onClick=${() => setPresent(true)} title="Präsentation (P) · Tasten: 1–3 Kompakt/Visuell/Fokus, 4 Meine Auswahl ein/aus, T Theme, B Beträge ausblenden">Präsentation<//>
       </div>
     </header>`}
     ${present && html`<button type="button" class="ln-exit" onClick=${() => setPresent(false)}><${Icon} name="minimize-2" size=${15} />Präsentation beenden (Esc)</button>`}
