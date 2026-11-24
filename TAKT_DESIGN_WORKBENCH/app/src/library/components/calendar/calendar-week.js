@@ -3,7 +3,7 @@ import { html } from '../../../lib/html.js';
 import { Button, Icon, EmptyState } from '../../ui.js';
 import {
   addDays, startOfWeek, dayKey, selDate, isoWeek, occurrences, onDay, layoutDay, eventsFiltered, minutesOf, timeStr, hm,
-  catColor, openEventDialog, openCreateDialog, WEEKDAYS, monthName, longDay, fullDay, shortDay, EVENT_CSS,
+  catColor, openEventDialog, openCreateDialog, WEEKDAYS, monthName, longDay, fullDay, shortDay, EVENT_CSS, bigTextScale,
 } from './_cal.js';
 import { dueDate, prio } from '../tasks/_tasks.js';
 import { toneColor } from '../../ui.js';
@@ -15,8 +15,8 @@ export const calendarWeek = {
   id: 'calendar-week',
   name: 'Kalender Tag/Woche',
   category: 'Kalender',
-  description: 'Zeitraster mit Terminen nach Uhrzeit, Überlappungen nebeneinander, Jetzt-Linie und Anlegen per Klick auf freie Zeit. Mobil: 3-Tage-Raster mit Tagesleiste. Reagiert auf ctx.ui.view (Tag/Woche) und selectedDate.',
-  version: '1.3',
+  description: 'Zeitraster mit Terminen nach Uhrzeit, Überlappungen nebeneinander, Jetzt-Linie und Anlegen per Klick auf freie Zeit. Mobil: 3-Tage-Raster mit Tagesleiste (bei großer Schrift ein Tag je Raster, Spaltenzahl nach Breite). Reagiert auf ctx.ui.view (Tag/Woche) und selectedDate.',
+  version: '1.4',
   props: [
     { name: 'startHour', label: 'Erste Stunde', type: 'number', default: 7 },
     { name: 'endHour', label: 'Letzte Stunde', type: 'number', default: 20 },
@@ -89,7 +89,14 @@ export const calendarWeek = {
   .bp-mobile .tk-cw__more { min-height:36px; }
   .bp-mobile .tk-cw__allchip { min-height:32px; }
   .bp-mobile .tk-cw__dayhead { min-height:56px; }
-  .bp-tablet .tk-cw__dnum { width:28px; height:28px; font-size:var(--tk-fs-md); }`,
+  .bp-tablet .tk-cw__dnum { width:28px; height:28px; font-size:var(--tk-fs-md); }
+  [data-tk-large-text] .tk-cw__grid { --gutter:calc(20px * var(--tk-text-scale, 1.5)); }
+  [data-tk-large-text] .tk-cw__bar { row-gap:var(--tk-space-2); }
+  [data-tk-large-text] .tk-cw__title { flex:1 1 100%; order:-1; margin:0; }
+  [data-tk-large-text] .tk-cw__dayhead { padding:8px 2px; }
+  [data-tk-large-text] .tk-cw__dnum { width:1.9em; height:1.9em; }
+  [data-tk-large-text] .tk-cw__hour { right:4px; }
+  [data-tk-large-text] .tk-cw__stripbtn { min-height:0; padding:4px 0; }`,
   example: {
     props: { density: 'comfortable' },
     data: { events: [
@@ -104,7 +111,11 @@ export const calendarWeek = {
     const sel = selDate(ctx);
     const view = props.view && props.view !== 'auto' ? props.view : props.respectView ? ctx.ui.view : null;
     const weekDays = props.showWeekend ? 7 : 5;
-    const n = view === 'Tag' ? 1 : mobile ? Math.min(Number(props.mobileDays) || 3, 7) : weekDays;
+    const bs = bigTextScale(), big = bs > 1; // große Schrift: weniger Tagesspalten, damit Termintexte lesbar bleiben
+    const bw = ctx.blockWidth || ctx.width || 390;
+    const n0 = view === 'Tag' ? 1 : mobile ? Math.min(Number(props.mobileDays) || 3, 7) : weekDays;
+    const n = big && n0 > 1 ? Math.max(1, Math.min(n0, Math.floor((bw - 16 - 20 * bs) / (84 * bs)))) : n0;
+    const cappedBig = big && n0 > 1 && n === 1;
     const first = n === 1 || mobile ? sel : startOfWeek(sel);
     const days = Array.from({ length: n }, (_, i) => addDays(first, i));
     const end = addDays(first, n);
@@ -114,7 +125,8 @@ export const calendarWeek = {
     const timed = occs.filter((o) => !o.allDay);
     const allDay = occs.filter((o) => o.allDay);
     const tasks = props.showTasks && Array.isArray(data.tasks) ? data.tasks.filter((t) => t.due && !t.done) : [];
-    const hh = mobile ? Math.max(HH[props.density] || 56, 64) : HH[props.density] || 56;
+    const hs = big ? 1 + (bs - 1) * 0.6 : 1; // Stundenhöhe wächst mit der Schrift, damit Termine Platz für Text haben
+    const hh = Math.round((mobile ? Math.max(HH[props.density] || 56, 64) : HH[props.density] || 56) * hs);
     let s0 = Number(props.startHour), e0 = Number(props.endHour);
     for (const o of timed) { s0 = Math.min(s0, Math.floor(minutesOf(o._s) / 60)); e0 = Math.max(e0, Math.ceil(Math.max(minutesOf(o._e), minutesOf(o._s) + 15) / 60)); }
     e0 = Math.min(24, Math.max(e0, s0 + 1));
@@ -131,7 +143,7 @@ export const calendarWeek = {
       openCreateDialog(ctx, setData, { date: dayKey(d), start: hm(m), end: hm(m + 60) });
     };
     // Überlappungen: höchstens so viele Spalten je Tag, dass jeder Block mindestens ~48 px breit bleibt; der Rest wird zu „+N“.
-    const maxCols = Math.max(2, Math.min(4, Math.floor((((ctx.blockWidth || ctx.width || 390) - 44) / n) / 48)));
+    const maxCols = Math.max(2, Math.min(4, Math.floor(((bw - 44) / n) / (48 * (big ? bs : 1)))));
     const collapse = (list) => {
       const keep = [], chips = []; let cur = null;
       for (const it of list) {
@@ -143,7 +155,7 @@ export const calendarWeek = {
     const openMore = (d, c) => ctx.openDialog({ title: `Weitere Termine · ${longDay(d)}`, body: (close) => html`<div role="list">${c.list.map(({ ev }) => html`<button type="button" role="listitem" class="tk-cw__morerow" style=${`--ec:${catColor(ev)}`} onClick=${() => { close(); openEvent(ctx, setData, ev, all, props); }}><i></i><time>${timeStr(ev._s)}</time><span class="tk-grow">${ev.title}</span></button>`)}</div>` });
     const nowMin = minutesOf(ctx.today);
     const showNow = props.showNow && nowMin >= s0 * 60 && nowMin <= e0 * 60;
-    const strip = mobile && n > 1 ? html`<div class="tk-cw__strip" role="group" aria-label="Woche">${Array.from({ length: 7 }, (_, i) => addDays(startOfWeek(sel), i)).map((d, i) => {
+    const strip = mobile && (n > 1 || cappedBig) ? html`<div class="tk-cw__strip" role="group" aria-label="Woche">${Array.from({ length: 7 }, (_, i) => addDays(startOfWeek(sel), i)).map((d, i) => {
       const k = dayKey(d); const inWin = d >= first && d < end;
       return html`<button type="button" class="tk-cw__stripbtn" data-in=${inWin} data-today=${k === todayKey} data-sel=${k === dayKey(sel)} onClick=${() => pick(d)} aria-label=${`${WEEKDAYS[i]} ${d.getDate()}.`}>${WEEKDAYS[i]}<b>${d.getDate()}</b></button>`;
     })}</div>` : null;
@@ -174,15 +186,15 @@ export const calendarWeek = {
             </div>`; })}
         </div>` : null}
         <div class="tk-cw__grid" style=${`--n:${n};--hh:${hh}px`}>
-          <div class="tk-cw__gutter" style=${`height:${H}px`}>${Array.from({ length: hours }, (_, i) => i > 0 && html`<span class="tk-cw__hour" style=${`top:${i * hh}px`}>${String(s0 + i).padStart(2, '0')}:00</span>`)}</div>
-          ${days.map((d) => { const k = dayKey(d); const { keep: items, chips } = collapse(layoutDay(onDay(timed, d), Math.ceil(((mobile ? 32 : 20) + 2) / hh * 60)));
+          <div class="tk-cw__gutter" style=${`height:${H}px`}>${Array.from({ length: hours }, (_, i) => i > 0 && html`<span class="tk-cw__hour" style=${`top:${i * hh}px`}>${String(s0 + i).padStart(2, '0')}${big ? '' : ':00'}</span>`)}</div>
+          ${days.map((d) => { const k = dayKey(d); const { keep: items, chips } = collapse(layoutDay(onDay(timed, d), Math.ceil(((mobile ? 32 : 20) * (big ? bs : 1) + 2) / hh * 60)));
             return html`<div class="tk-cw__col" data-today=${k === todayKey} style=${`height:${H}px`} onClick=${(e) => createAt(d, e)} aria-label=${`Freie Zeit am ${k}`}>
-              ${items.map(({ ev, col, cols, s, e }) => { const top = (s - s0 * 60) / 60 * hh; const h = Math.max(mobile ? 32 : 20, (e - s) / 60 * hh - 2); const lineH = props.density === 'spacious' ? 16 : 14, padV = props.density === 'spacious' ? 12 : 6; const lines = Math.floor((h - padV) / lineH); const narrow = cols > 1 && n > 4 && ctx.bp !== 'desktop'; const one = lines < 2 || narrow; const tl = Math.max(1, lines - 1);
+              ${items.map(({ ev, col, cols, s, e }) => { const top = (s - s0 * 60) / 60 * hh; const h = Math.max((mobile ? 32 : 20) * (big ? bs : 1), (e - s) / 60 * hh - 2); const lineH = (props.density === 'spacious' ? 16 : 14) * (big ? bs : 1), padV = props.density === 'spacious' ? 12 : 6; const lines = Math.floor((h - padV) / lineH); const narrow = cols > 1 && n > 4 && ctx.bp !== 'desktop'; const one = lines < 2 || narrow; const tl = Math.max(1, lines - 1);
                 return html`<div class="tk-cw__ev" role="button" tabindex="0" data-clip-ok data-one=${one} style=${`--ec:${catColor(ev)};--tl:${tl};top:${top + 1}px;height:${h}px;left:calc(${col} / ${cols} * 100% + 1px);width:calc(100% / ${cols} - 3px)`}
                     onClick=${() => openEvent(ctx, setData, ev, all, props)} onKeyDown=${(k2) => k2.key === 'Enter' && openEvent(ctx, setData, ev, all, props)} aria-label=${`${ev.title}, ${timeStr(ev._s)} bis ${timeStr(ev._e)}`}>
                   ${one ? html`<b>${ev.title}</b>${cols === 1 && html`<span>${timeStr(ev._s)}</span>`}` : html`<b>${ev.title}</b><span>${timeStr(ev._s)}–${timeStr(ev._e)}</span>${(props.showLocation || props.density === 'spacious') && ev.location && lines > 3 && html`<span>${ev.location}</span>`}`}
                 </div>`; })}
-              ${chips.map((c) => html`<button type="button" class="tk-cw__more" style=${`top:${(c.s - s0 * 60) / 60 * hh + 1}px;height:${Math.max(mobile ? 36 : 28, (c.e - c.s) / 60 * hh - 2)}px;left:calc(${maxCols - 1} / ${maxCols} * 100% + 1px);width:calc(100% / ${maxCols} - 3px)`}
+              ${chips.map((c) => html`<button type="button" class="tk-cw__more" style=${`top:${(c.s - s0 * 60) / 60 * hh + 1}px;height:${Math.max((mobile ? 36 : 28) * (big ? bs : 1), (c.e - c.s) / 60 * hh - 2)}px;left:calc(${maxCols - 1} / ${maxCols} * 100% + 1px);width:calc(100% / ${maxCols} - 3px)`}
                   onClick=${(ev) => { ev.stopPropagation(); openMore(d, c); }} aria-label=${`${c.list.length} weitere Termine am ${shortDay(d)} anzeigen`}>+${c.list.length}</button>`)}
               ${showNow && k === todayKey && html`<div class="tk-cw__now" style=${`top:${(nowMin - s0 * 60) / 60 * hh}px`} aria-hidden="true"></div>`}
             </div>`; })}

@@ -12,7 +12,7 @@ export const calendarMonth = {
   name: 'Kalender Monat',
   category: 'Kalender',
   description: 'Monatsraster mit Termin-Chips (Mobile: Punkte), Tag wählen setzt ctx.ui.selectedDate; optional Tagesliste unter dem Raster.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'maxChips', label: 'Chips je Tag (Desktop)', type: 'number', default: 3 },
     { name: 'dayList', label: 'Tagesliste', type: 'select', options: ['auto', 'always', 'never'], default: 'auto' },
@@ -49,7 +49,14 @@ export const calendarMonth = {
   .tk-cm__ev { display:flex; align-items:center; gap:12px; width:100%; border:0; background:transparent; text-align:left; font:inherit; color:var(--tk-c-text); padding:10px 16px; min-height:52px; border-bottom:1px solid var(--tk-c-border); cursor:pointer; }
   .tk-cm__ev:last-child { border-bottom:0; }
   .tk-cm__ev:hover { background:var(--tk-c-surface2); }
-  .tk-cm__bar2 { width:4px; align-self:stretch; border-radius:2px; background:var(--ec); flex:none; }`,
+  .tk-cm__bar2 { width:4px; align-self:stretch; border-radius:2px; background:var(--ec); flex:none; }
+  [data-tk-large-text] .tk-cm__bar { flex-wrap:wrap; row-gap:var(--tk-space-2); }
+  [data-tk-large-text] .tk-cm__title { flex:1 1 100%; order:-1; margin:0; }
+  [data-tk-large-text] .tk-cm__num { width:1.9em; height:1.9em; }
+  [data-tk-large-text] .tk-cm__dow { padding:8px 0; letter-spacing:0; }
+  [data-tk-large-text] .tk-cm__dayhead { flex-wrap:wrap; }
+  [data-tk-large-text] .tk-cm__dayhead > .tk-grow { flex:1 1 8em; }
+  [data-tk-large-text] .tk-cm__ev { align-items:flex-start; }`,
   example: { data: { events: [
     { id: 'a', title: 'Daily Stand-up', start: '2026-11-24T09:45:00', end: '2026-11-24T10:00:00', category: 'Arbeit', tone: 'accent' },
     { id: 'b', title: 'Zahnarzt', start: '2026-11-26T08:00:00', end: '2026-11-26T09:00:00', category: 'Gesundheit', tone: 'danger' },

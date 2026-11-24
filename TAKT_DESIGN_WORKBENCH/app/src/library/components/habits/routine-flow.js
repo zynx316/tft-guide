@@ -13,7 +13,7 @@ export const routineFlow = {
   name: 'Routine-Abfolge',
   category: 'Gewohnheiten',
   description: 'Morgen- und Abendroutine als Folge von Schritten mit Uhrzeit und Dauer. Schritte können an Gewohnheiten hängen (Haken zählt dort mit). Stile: Liste, Zeitstrahl, geführt (ein Schritt nach dem anderen).',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'style', label: 'Stil', type: 'select', options: ['list', 'timeline', 'guided'], default: 'list' },
     { name: 'routineId', label: 'Nur Routine (ID, leer = alle)', type: 'text', default: '' },
@@ -37,7 +37,12 @@ export const routineFlow = {
   .tk-rf__card { padding:6px 0 16px; min-width:0; } .tk-rf__card b { display:block; font-weight:var(--tk-fw-medium); } .tk-rf__node[data-done="true"] .tk-rf__card b { color:var(--tk-c-text-muted); text-decoration:line-through; } .tk-rf__card span { font-size:var(--tk-fs-sm); color:var(--tk-c-text-subtle); }
   .tk-rf__guide { display:flex; flex-direction:column; align-items:center; text-align:center; gap:14px; padding:28px 20px 22px; } .tk-rf__guide h3 { font-size:var(--tk-fs-2xl); letter-spacing:var(--tk-ls-tight); margin:0; } .tk-rf__pips { display:flex; gap:6px; } .tk-rf__pips i { width:22px; height:5px; border-radius:3px; background:var(--tk-c-surface3); } .tk-rf__pips i[data-on="true"] { background:var(--tk-c-success); } .tk-rf__pips i[data-now="true"] { background:var(--tk-c-accent); }
   .tk-rf__acts { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; } .tk-rf__acts .tk-btn--primary { min-width:200px; }
-  .bp-mobile .tk-rf__node { grid-template-columns:42px 34px 1fr; } .bp-mobile .tk-rf__dot button { width:34px; height:34px; } .bp-mobile .tk-rf__node:not(:last-child) .tk-rf__dot::after { left:16px; top:34px; bottom:-30px; } .bp-mobile .tk-rf__time { padding-top:8px; } .bp-mobile .tk-rf__step { min-height:60px; padding:8px 12px; } .bp-mobile .tk-rf__guide h3 { font-size:var(--tk-fs-xl); }`,
+  .bp-mobile .tk-rf__node { grid-template-columns:42px 34px 1fr; } .bp-mobile .tk-rf__dot button { width:34px; height:34px; } .bp-mobile .tk-rf__node:not(:last-child) .tk-rf__dot::after { left:16px; top:34px; bottom:-30px; } .bp-mobile .tk-rf__time { padding-top:8px; } .bp-mobile .tk-rf__step { min-height:60px; padding:8px 12px; } .bp-mobile .tk-rf__guide h3 { font-size:var(--tk-fs-xl); }
+  [data-tk-large-text] .tk-rf__head { flex-wrap:wrap; row-gap:8px; } [data-tk-large-text] .tk-rf__head > div { flex:1 1 8em; }
+  [data-tk-large-text] .tk-rf__step { flex-wrap:wrap; row-gap:0; column-gap:10px; } [data-tk-large-text] .tk-rf__no { width:1.9em; height:1.9em; }
+  [data-tk-large-text] .tk-rf__t { flex:1 1 8em; } [data-tk-large-text] .tk-rf__m { flex:1 0 100%; white-space:normal; padding-left:calc(2.9em + 44px); }
+  [data-tk-large-text] .tk-rf__node, .bp-mobile[data-tk-large-text] .tk-rf__node { grid-template-columns:auto 34px minmax(0,1fr); } [data-tk-large-text] .tk-rf__time { text-align:left; }
+  [data-tk-large-text] .tk-rf__acts .tk-btn--primary { min-width:0; }`,
   example: { data: sample },
   render: function RoutineFlow({ props, data, setData, ctx }) {
     const routines = (Array.isArray(data.routines) ? data.routines : []).filter((r) => !props.routineId || r.id === props.routineId), habits = list(data.habits), today = todayKey(ctx);

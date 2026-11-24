@@ -41,7 +41,7 @@ export const weekReview = {
   name: 'Wochenrückblick',
   category: 'Start',
   description: 'Rückblick auf die Woche, automatisch aus den Modulen zusammengestellt: Kennzahlen mit Vergleich zur Vorwoche, Highlights und drei Fragen, die sich als Notiz sichern lassen. Umfang „Alles“ (Aufgaben, Fokuszeit, Training, Gewohnheiten, Budget, Sparquote, Shop) oder „Gewohnheiten“.',
-  version: '1.3',
+  version: '1.4',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Wochenrückblick' },
     { name: 'scope', label: 'Umfang', type: 'select', options: ['all', 'habits'], default: 'all' },
@@ -67,7 +67,11 @@ export const weekReview = {
   .tk-wr__cl { display:flex; align-items:center; gap:6px; font-size:var(--tk-fs-sm); color:var(--tk-c-text-muted); min-width:0; } .tk-wr__cv { font-size:var(--tk-fs-2xl); font-weight:var(--tk-fw-bold); letter-spacing:var(--tk-ls-tight); font-variant-numeric:tabular-nums; line-height:1.1; } .tk-wr__cv small { font-size:var(--tk-fs-md); color:var(--tk-c-text-muted); margin-left:3px; } .tk-wr__cs { font-size:var(--tk-fs-xs); color:var(--tk-c-text-subtle); }
   .tk-wr__row { display:flex; align-items:center; gap:12px; width:100%; padding:10px 16px; min-height:52px; border:0; border-top:1px solid var(--tk-c-border); background:none; color:inherit; font:inherit; text-align:left; cursor:pointer; min-width:0; } .tk-wr__row:hover { background:var(--tk-c-surface2); } .tk-wr__row b { font-variant-numeric:tabular-nums; white-space:nowrap; }
   .tk-wr__hl { margin:0 16px 14px; padding:12px 14px; border-radius:var(--tk-radius-md); background:var(--tk-c-accent-soft); display:flex; flex-direction:column; gap:6px; font-size:var(--tk-fs-sm); } .tk-wr__hl b { display:inline-flex; align-items:center; gap:6px; } .tk-wr__hl div { display:flex; gap:8px; align-items:flex-start; }
-  .tk-wr__q { padding:4px 16px 16px; display:flex; flex-direction:column; gap:12px; border-top:1px solid var(--tk-c-border); padding-top:14px; } .tk-wr__q label { display:flex; flex-direction:column; gap:6px; font-weight:var(--tk-fw-medium); font-size:var(--tk-fs-sm); } .tk-wr__q .tk-textarea { min-height:64px; }`,
+  .tk-wr__q { padding:4px 16px 16px; display:flex; flex-direction:column; gap:12px; border-top:1px solid var(--tk-c-border); padding-top:14px; } .tk-wr__q label { display:flex; flex-direction:column; gap:6px; font-weight:var(--tk-fw-medium); font-size:var(--tk-fs-sm); } .tk-wr__q .tk-textarea { min-height:64px; }
+  [data-tk-large-text] .tk-wr__grid, .bp-mobile[data-tk-large-text] .tk-wr__grid { grid-template-columns:minmax(0, 1fr); }
+  [data-tk-large-text] .tk-wr__row { flex-wrap:wrap; row-gap:2px; } [data-tk-large-text] .tk-wr__row > .tk-grow { flex:1 1 7em; }
+  [data-tk-large-text] .tk-wr__row > .tk-subtle { flex:1 0 100%; max-width:none !important; white-space:normal; order:5; padding-left:calc(17px + 12px); }
+  [data-tk-large-text] .tk-wr__top .tk-card__title { flex:1 1 100%; }`,
   example: { data: SAMPLE },
   render: function WeekReview({ props, data, ctx }) {
     const [last, setLast] = useState(true), [ans, setAns] = useState(['', '', '']), [saved, setSaved] = useState(false);
