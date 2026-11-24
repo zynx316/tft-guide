@@ -52,7 +52,8 @@ export const taskList = {
 
 ## Regeln
 1. **Keine Hex-Farben** in Komponenten – nur `var(--tk-…)`. Themes duerfen nur Farben ändern.
-2. Primitive aus `library/ui.js` verwenden (Button, Badge, Card, Input, Segmented, EmptyState …).
+2. Primitive aus `library/ui.js` verwenden (Button, Badge, Card, Input, Segmented, EmptyState …). Achtung: `Input`, `Textarea` und
+   `Search` rufen `onInput` mit dem **Wert** (String) auf, nicht mit dem Event – `onInput=${(v) => setText(v)}`.
 3. Responsive über `ctx.bp` oder Selektoren `.bp-mobile …` – Touchziele auf Mobile >= 36 px (Ziel 44 px).
 4. Kein horizontaler Überlauf. Lange Texte: `.tk-truncate` oder Umbruch.
 5. Jede Interaktion, die für das Feature relevant ist, ruft `ctx.emit('<bereich>.<aktion>')` auf.

@@ -134,14 +134,14 @@ const contracts = {
       description: '+ Alle Verträge vergleichbar  − Auf Mobile wird die Zeile hoch',
       layout: { type: 'stack' },
       blocks: [hdr({ title: 'Verträge', subtitle: 'Laufzeit, Frist und Kosten', primaryLabel: 'Vertrag', primaryIcon: 'scan' }), blk('list', 'dok-contracts', 'main', { style: 'table' }, { bind: bind('contracts') }),
-        LEGAL('Die Textvorlage ist ein Entwurf und keine Rechtsberatung. Frist und Anschrift prüfst du im Vertrag.', 'keine-beratung', 'inline')],
+        LEGAL('', 'dokumente', 'inline')],
     },
     {
       id: 'B', name: 'Karten mit Laufzeit', direction: 'visuell', concept: 'Eine Karte je Vertrag mit Laufzeit-Balken, Frist und Kosten. Aktion und Erinnerung am Kartenfuß.',
       description: '+ Laufzeit sofort sichtbar  − Weniger Verträge pro Bildschirm',
       layout: { type: 'stack' },
       blocks: [hdr({ title: 'Verträge', subtitle: 'Wie weit sind sie gelaufen?', primaryLabel: 'Vertrag', primaryIcon: 'scan' }), blk('list', 'dok-contracts', 'main', { style: 'cards' }, { bind: bind('contracts') }),
-        LEGAL('Die Textvorlage ist ein Entwurf und keine Rechtsberatung. Frist und Anschrift prüfst du im Vertrag.', 'keine-beratung', 'inline')],
+        LEGAL('', 'dokumente', 'inline')],
     },
   ],
   selectedVariantId: 'A', links: ['documents.contract', 'documents.home', 'finance.subscriptions'],
@@ -178,12 +178,12 @@ const contract = {
     {
       id: 'A', name: 'Faktenblatt', direction: 'kompakt', concept: 'Frist-Kopf, daneben Laufzeit und Kosten, Dokumente in der zweiten Spalte, Aktionen darunter.',
       description: '+ Alles sichtbar  − Viele Blöcke', layout: { type: 'stack' },
-      blocks: [hdr({ title: 'Vertrag', subtitle: 'Frist, Dokumente, Kosten' }), blk('cd', 'dok-contract-detail', 'main', { style: 'facts' }, { bind: bind('contracts', 'documents') }), LEGAL('Die Textvorlage ist ein Entwurf und keine Rechtsberatung. Frist und Anschrift prüfst du im Vertrag.', 'keine-beratung', 'inline')],
+      blocks: [hdr({ title: 'Vertrag', subtitle: 'Frist, Dokumente, Kosten' }), blk('cd', 'dok-contract-detail', 'main', { style: 'facts' }, { bind: bind('contracts', 'documents') }), LEGAL('', 'dokumente', 'inline')],
     },
     {
       id: 'B', name: 'Frist zuerst', direction: 'fokus', concept: 'Die Frist mit Tage-Zähler steht oben, direkt darunter die Hauptaktion; Dokumente und Fakten folgen.',
       description: '+ Klare nächste Aktion  − Fakten erst beim Scrollen', layout: { type: 'stack', narrow: true },
-      blocks: [hdr({ title: 'Vertrag', subtitle: 'Das Wichtigste zuerst' }), blk('cd', 'dok-contract-detail', 'main', { style: 'focus' }, { bind: bind('contracts', 'documents') }), LEGAL('Die Textvorlage ist ein Entwurf und keine Rechtsberatung. Frist und Anschrift prüfst du im Vertrag.', 'keine-beratung', 'inline')],
+      blocks: [hdr({ title: 'Vertrag', subtitle: 'Das Wichtigste zuerst' }), blk('cd', 'dok-contract-detail', 'main', { style: 'focus' }, { bind: bind('contracts', 'documents') }), LEGAL('', 'dokumente', 'inline')],
     },
   ],
   selectedVariantId: 'B', links: ['documents.contracts', 'documents.detail', 'finance.subscriptions'],
@@ -262,9 +262,9 @@ const warranties = {
   viewports: ALL_VP, demoData: only('warranties', 'documents'),
   variants: [
     { id: 'A', name: 'Liste', direction: 'kompakt', concept: 'Zeilen mit Fortschrittsbalken und Enden, sortiert nach dem nächsten Ende.', description: '+ Dicht  − Wenig Raum', layout: { type: 'stack' },
-      blocks: [hdr({ title: 'Garantien', subtitle: 'Gewährleistung und Hersteller' }), blk('w', 'dok-warranties', 'main', { style: 'rows' }, { bind: bind('warranties', 'documents') }), LEGAL('Gesetzliche Gewährleistung und Herstellergarantie sind verschieden. Maßgeblich sind Kaufvertrag und Garantiebedingungen. Keine Rechtsberatung.', 'keine-beratung', 'inline')] },
+      blocks: [hdr({ title: 'Garantien', subtitle: 'Gewährleistung und Hersteller' }), blk('w', 'dok-warranties', 'main', { style: 'rows' }, { bind: bind('warranties', 'documents') }), LEGAL('', 'gewaehrleistung', 'inline')] },
     { id: 'B', name: 'Karten', direction: 'visuell', concept: 'Eine Karte je Gerät mit Balken und Stufe.', description: '+ Übersichtlich  − Weniger Einträge je Bildschirm', layout: { type: 'stack' },
-      blocks: [hdr({ title: 'Garantien', subtitle: 'Was noch gilt' }), blk('w', 'dok-warranties', 'main', { style: 'cards' }, { bind: bind('warranties', 'documents') }), LEGAL('Gesetzliche Gewährleistung und Herstellergarantie sind verschieden. Maßgeblich sind Kaufvertrag und Garantiebedingungen. Keine Rechtsberatung.', 'keine-beratung', 'inline')] },
+      blocks: [hdr({ title: 'Garantien', subtitle: 'Was noch gilt' }), blk('w', 'dok-warranties', 'main', { style: 'cards' }, { bind: bind('warranties', 'documents') }), LEGAL('', 'gewaehrleistung', 'inline')] },
   ],
   selectedVariantId: 'A', links: ['documents.detail', 'documents.home'],
 };
@@ -289,9 +289,9 @@ const tax = {
   viewports: ALL_VP, demoData: { ...only('tax', 'documents', 'receipts', 'transactions', 'contracts'), events: W('events') },
   variants: [
     { id: 'A', name: 'Kategorien', direction: 'kompakt', concept: 'Aufklappbare Kategorien mit Einträgen und Status, darunter der Export.', description: '+ Alles prüfbar  − Viel Text', layout: { type: 'stack' },
-      blocks: [hdr({ title: 'Steuerordner 2026', subtitle: 'Für die Steuerberatung', eyebrow: 'Steuer' }), LEGAL('', 'keine-beratung', 'inline'), blk('tx', 'dok-tax-folder', 'main', { style: 'categories' }, { bind: { ...bind('tax', 'documents', 'receipts', 'transactions', 'contracts'), events: 'events' } })] },
+      blocks: [hdr({ title: 'Steuerordner 2026', subtitle: 'Für die Steuerberatung', eyebrow: 'Steuer' }), LEGAL('', 'steuer-ordner', 'inline'), blk('tx', 'dok-tax-folder', 'main', { style: 'categories' }, { bind: { ...bind('tax', 'documents', 'receipts', 'transactions', 'contracts'), events: 'events' } })] },
     { id: 'B', name: 'Überblick', direction: 'visuell', concept: 'Fortschrittsring, Kategorien als Kacheln, geöffnete Kategorie darunter.', description: '+ Stand sofort klar  − Ein Tipp mehr bis zum Eintrag', layout: { type: 'stack' },
-      blocks: [hdr({ title: 'Steuerordner 2026', subtitle: 'Wie weit bist du?', eyebrow: 'Steuer' }), LEGAL('', 'keine-beratung', 'inline'), blk('tx', 'dok-tax-folder', 'main', { style: 'overview' }, { bind: { ...bind('tax', 'documents', 'receipts', 'transactions', 'contracts'), events: 'events' } })] },
+      blocks: [hdr({ title: 'Steuerordner 2026', subtitle: 'Wie weit bist du?', eyebrow: 'Steuer' }), LEGAL('', 'steuer-ordner', 'inline'), blk('tx', 'dok-tax-folder', 'main', { style: 'overview' }, { bind: { ...bind('tax', 'documents', 'receipts', 'transactions', 'contracts'), events: 'events' } })] },
   ],
   selectedVariantId: 'A', links: ['documents.home', 'documents.detail', 'picture-to-text.receipt', 'finance.transaction'],
 };
@@ -326,7 +326,7 @@ const settings = {
   ],
   interactions: [], viewports: ['mobile', 'tablet', 'desktop'], demoData: { prefs: W('prefs'), folders: W('documentFolders') },
   variants: [{ id: 'A', name: 'Liste', direction: 'kompakt', concept: 'Einstellungszeilen mit Schalter und Auswahl.', description: '+ Vertraut  − Wenig Erklärung', layout: { type: 'stack', narrow: true },
-    blocks: [hdr({ title: 'Einstellungen', subtitle: 'Sperre, Speicherort, Aufbewahrung' }), blk('set', 'dok-settings', 'main', {}, { bind: bind('prefs', 'folders') }), LEGAL('Aufbewahrungsfristen sind Richtwerte. Gesetzliche Fristen hängen vom Einzelfall ab, keine Rechtsberatung.', 'keine-beratung', 'inline')] }],
+    blocks: [hdr({ title: 'Einstellungen', subtitle: 'Sperre, Speicherort, Aufbewahrung' }), blk('set', 'dok-settings', 'main', {}, { bind: bind('prefs', 'folders') }), LEGAL('', 'aufbewahrung', 'inline')] }],
   selectedVariantId: 'A', links: ['documents.home'],
 };
 

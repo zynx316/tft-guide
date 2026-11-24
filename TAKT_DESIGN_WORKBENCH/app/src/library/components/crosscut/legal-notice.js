@@ -15,14 +15,18 @@ const PRESETS = {
   kursdaten: { icon: 'clock', title: 'Kursdaten', text: 'Kurse sind verzögert und können Fehler enthalten. Maßgeblich sind die Kurse deiner Bank oder Börse.' },
   krypto: { icon: 'alert-triangle', title: 'Kryptowerte', text: 'Kryptowerte schwanken stark im Kurs, ein Totalverlust ist möglich. Keine Anlageberatung.' },
   daten: { icon: 'lock', title: 'Deine Daten', text: 'Alle Daten bleiben lokal auf deinem Gerät. Beträge lassen sich jederzeit ausblenden.' },
+  dokumente: { icon: 'file-text', title: 'Keine Rechtsberatung', text: 'Die Kündigung ist ein Entwurf zum Kopieren, TAKT versendet nichts. Frist und Anschrift prüfst du im Vertrag.' },
+  gewaehrleistung: { icon: 'shield', title: 'Hinweis', text: 'Gesetzliche Gewährleistung und Herstellergarantie sind verschieden. Maßgeblich sind Kaufvertrag und Garantiebedingungen. Keine Rechtsberatung.' },
+  'steuer-ordner': { icon: 'scale', title: 'Keine Steuerberatung', text: 'Der Steuerordner sammelt nur Verweise auf Belege und Buchungen. Was absetzbar ist, klärst du mit deiner Steuerberatung. Der Export ist eine Simulation.' },
+  aufbewahrung: { icon: 'archive', title: 'Richtwerte', text: 'Aufbewahrungsfristen sind Richtwerte. Gesetzliche Fristen hängen vom Einzelfall ab, keine Rechtsberatung.' },
 };
 
 export const legalNotice = {
   id: 'legal-notice',
   name: 'Sachlicher Hinweis',
   category: 'Querschnitt',
-  description: 'Einheitliche, unaufdringliche Pflicht- und Vertrauenshinweise mit zentralen Texten: Simulation, keine Beratung, Modellrechnung, Steuer, Kursdaten, Krypto, Gesundheit (sowie Finanzen, Trading, Sparplan, Daten). Als Fußnote, Inline-Zeile, Karte, Banner oder aufklappbar.',
-  version: '1.1',
+  description: 'Einheitliche, unaufdringliche Pflicht- und Vertrauenshinweise mit zentralen Texten: Simulation, keine Beratung, Modellrechnung, Steuer, Kursdaten, Krypto, Gesundheit (sowie Finanzen, Trading, Sparplan, Daten, Dokumente, Gewährleistung, Steuerordner, Aufbewahrung). Als Fußnote, Inline-Zeile, Karte, Banner oder aufklappbar.',
+  version: '1.2',
   props: [
     { name: 'kind', label: 'Art', type: 'select', options: Object.keys(PRESETS), default: 'finanzen' },
     { name: 'style', label: 'Darstellung', type: 'select', options: ['footnote', 'footer', 'inline', 'card', 'banner', 'collapsible'], default: 'footnote' },
