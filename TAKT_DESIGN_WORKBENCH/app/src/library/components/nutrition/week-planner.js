@@ -36,7 +36,7 @@ export const weekPlanner = {
   name: 'Wochenplaner',
   category: 'Ernährung',
   description: 'Mahlzeiten vorausplanen: Raster Mo bis So × Mahlzeiten (Desktop) oder Tagesliste mit Tagesleiste (Mobil). Tagessummen gegen das Ziel, Slots aus Rezepten, Zuletzt, Resten oder Auswärts füllen, verschieben, „wie geplant gegessen“ und Woche kopieren.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Wochenplan' },
     { name: 'view', label: 'Ansicht', type: 'select', options: ['auto', 'grid', 'day'], default: 'auto' },
@@ -60,7 +60,7 @@ export const weekPlanner = {
   .tk-wp__item[data-status="done"] { background:var(--tk-c-success-soft); border-color:transparent; } .tk-wp__item[data-status="done"] span, .tk-wp__row[data-status="done"] .tk-nu-meta { color:var(--tk-c-text); } .tk-wp__item b { font-weight:var(--tk-fw-medium); font-size:var(--tk-nfs-sm); line-height:1.25; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; } .tk-wp__item span { font-size:var(--tk-nfs-xs); color:var(--tk-c-text-muted); font-variant-numeric:tabular-nums; }
   .tk-wp__add { margin:auto; width:100%; min-height:36px; border:0; background:transparent; color:var(--tk-c-text-subtle); cursor:pointer; border-radius:8px; display:grid; place-items:center; } .tk-wp__add:hover { background:var(--tk-c-surface2); color:var(--tk-c-text); }
   .tk-wp__sum { font-size:var(--tk-nfs-xs); text-align:center; color:var(--tk-c-text-muted); font-variant-numeric:tabular-nums; padding-top:4px; } .tk-wp__sum .tk-progress { margin-top:4px; height:5px; }
-  .tk-wp__days { display:grid; grid-auto-flow:column; grid-auto-columns:minmax(0,1fr); gap:4px; }
+  .tk-wp__days { display:grid; grid-template-columns:repeat(auto-fit, minmax(3em,1fr)); gap:4px; font-size:var(--tk-nfs-xs); }
   .tk-wp__day { display:flex; flex-direction:column; align-items:center; gap:2px; padding:6px 2px; min-height:56px; border-radius:var(--tk-radius-md); border:1px solid transparent; background:transparent; color:var(--tk-c-text-muted); font:inherit; font-size:var(--tk-nfs-xs); cursor:pointer; } .tk-wp__day strong { font-size:var(--tk-nfs-lg); color:var(--tk-c-text); } .tk-wp__day[aria-pressed="true"] { background:var(--tk-c-accent-soft); color:var(--tk-c-accent); } .tk-wp__day[aria-pressed="true"] strong { color:var(--tk-c-accent); }
   .tk-wp__slot { padding:10px 0; border-top:1px solid var(--tk-c-border); display:flex; flex-direction:column; gap:8px; }
   .tk-wp__row { display:flex; align-items:center; gap:10px; min-height:52px; padding:6px 10px; border-radius:var(--tk-radius-md); border:1px solid var(--tk-c-border); background:var(--tk-c-surface2); width:100%; color:inherit; font:inherit; text-align:left; cursor:pointer; min-width:0; } .tk-wp__row[data-status="done"] { background:var(--tk-c-success-soft); border-color:transparent; }
