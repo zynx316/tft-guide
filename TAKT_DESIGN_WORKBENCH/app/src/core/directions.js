@@ -150,3 +150,15 @@ const AREA_BY_MODULE = { home: 'Tag & Organisation', calendar: 'Tag & Organisati
   notes: 'Wissen & Inhalte', knowledge: 'Wissen & Inhalte', 'picture-to-text': 'Wissen & Inhalte', documents: 'Wissen & Inhalte',
   sales: 'Business', weather: 'Umgebung', settings: 'System' };
 export const areaOf = (m) => m.area || AREA_BY_MODULE[m.id] || 'Weitere';
+
+// ---------------------------------------------------------------- Ausbaustufen (Roadmap, Bauplan Abschnitt 3) ---
+export const STAGES = [
+  { id: 1, label: 'Stufe 1 · Fundament & Querschnitt', hint: 'Kern (Erfassen, Suche, Mitteilungen), Einstellungen, Start' },
+  { id: 2, label: 'Stufe 2 · Kern-Alltag', hint: 'Kalender, Aufgaben, Notizen, Wetter, Gewohnheiten' },
+  { id: 3, label: 'Stufe 3 · Lebensbereiche', hint: 'Fitness, Ernährung, Finanzen, Sparpläne' },
+  { id: 4, label: 'Stufe 4 · Business & Wissen', hint: 'Sales, Trading, Wissensdatenbank, Picture to Text' },
+];
+const STAGE_BY_MODULE = { system: 1, settings: 1, home: 1, calendar: 2, tasks: 2, notes: 2, weather: 2, habits: 2, goals: 2,
+  fitness: 3, nutrition: 3, finance: 3, savings: 3, shopping: 3, sales: 4, trading: 4, documents: 4, knowledge: 4, 'picture-to-text': 4 };
+/** Ausbaustufe eines Moduls (Feld `stage`, sonst Zuordnung laut Bauplan, sonst 4). */
+export const stageOf = (m) => Number(m.stage) || STAGE_BY_MODULE[m.id] || 4;

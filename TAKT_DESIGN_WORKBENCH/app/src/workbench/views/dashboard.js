@@ -4,7 +4,8 @@ import { Icon } from '../../lib/icons.js';
 import { Card, Kpi, Btn, Badge, StatusBadge, QaCell, Empty } from '../ui/kit.js';
 import { StatusPipeline, moduleProgress, newFeatureDialog, moduleDialog, decisionDialog, DecisionRow } from './common.js';
 import { newRoundDialog } from './rounds.js';
-import { rankDecisions, appDone, gateSummary } from '../../core/process.js';
+import { rankDecisions, appDone, gateSummary, tierOf } from '../../core/process.js';
+import { STAGES, stageOf } from '../../core/directions.js';
 import { featureHref, moduleHref, studioHref } from '../router.js';
 import { fmt } from '../../lib/util.js';
 import { statusIndex } from '../../core/schema.js';
@@ -69,6 +70,16 @@ export function Dashboard({ state }) {
       <div class="wb-grow"><div style="font-weight:650;font-size:15px">Demo-Launcher: die ganze App in ${state.directions.length} Versionen</div>
         <div class="wb-small wb-muted">Auf dem Laptop nebeneinander oder auf dem Handy klicken, bewerten, Ebene für Ebene entscheiden.${state.app.directionId ? ` App-Richtung: ${state.directions.find((d) => d.id === state.app.directionId)?.name}.` : ' App-Richtung noch offen.'}</div></div>
       <span class="wb-btn wb-btn--primary" onClick=${(e) => { e.preventDefault(); window.open('./launcher.html', '_blank'); }}><${Icon} name="external-link" size=${15} />Öffnen</span></a>
+
+    <${Card} title="Fahrplan nach Ausbaustufen" icon="milestone" sub="Eine Stufe ist fertig, wenn alle Tier-1-Features ihrer Module freigegeben sind. Die nächste darf parallel starten.">
+      <div class="wb-grid wb-grid-4" data-qa="stages">${STAGES.map((stg) => { const ms = mods.filter((m) => stageOf(m) === stg.id); const fsx = fs.filter((f) => ms.some((m) => m.id === f.moduleId));
+        const t1 = fsx.filter((f) => tierOf(f) === 1); const rel = (f) => statusIndex(f.status) >= statusIndex('released'); const done = t1.filter(rel).length;
+        const designed = fsx.filter((f) => f.variants.length).length;
+        return html`<div class="wb-card wb-card--pad" style="display:flex;flex-direction:column;gap:6px"><strong class="wb-small">${stg.label}</strong>
+          <div class="wb-xs wb-subtle">${ms.map((m) => m.name).join(' · ') || '–'}</div>
+          <div class="wb-row wb-small"><span class="wb-muted wb-grow">Tier 1 freigegeben</span><strong class="wb-num">${done}/${t1.length}</strong></div>
+          <div class="wb-bar"><span style=${`width:${t1.length ? (done / t1.length) * 100 : 0}%;background:var(--wb-success)`}></span></div>
+          <div class="wb-row wb-small"><span class="wb-muted wb-grow">Features mit Design</span><span class="wb-num">${designed}/${fsx.length}</span></div></div>`; })}</div><//>
 
     <${Card} title="Fortschritt nach Status" icon="activity" actions=${html`<span class="wb-small wb-subtle">${fs.length} Features</span>`}><${StatusPipeline} features=${fs} height=${12} legend /><//>
 
