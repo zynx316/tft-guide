@@ -30,8 +30,8 @@ const samples = [
 // Belege: Summen stimmen mit den Positionen überein; darin enthaltene MwSt wird von der Komponente berechnet.
 const receipts = [
   { id: 'r1', captureId: 'c1', merchant: 'Bäckerei Hoffmann', date: '2026-11-24', time: '08:05', total: 4.5, vatRate: 7, category: 'Lebensmittel', account: 'Girokonto', payment: 'Karte', status: 'offen', conf: { merchant: 0.98, date: 0.96, total: 0.97 }, lines: [{ name: 'Brötchen', qty: 2, total: 1.6 }, { name: 'Kaffee', qty: 1, total: 2.9 }] },
-  { id: 'r2', captureId: 'c8', merchant: 'Buchhandlung Neumann', date: '2026-11-23', time: '15:40', total: 49.8, vatRate: 7, category: 'Betriebsausgaben', account: 'Geschäftskonto', payment: 'Rechnung', status: 'offen', conf: { merchant: 0.95, date: 0.9, total: 0.96 }, lines: [{ name: 'Fachbuch Typografie', qty: 2, total: 49.8 }] },
-  { id: 'r4', captureId: 'c9', merchant: 'Karton & Pack GmbH', date: '2026-11-20', time: '11:15', total: 128.35, vatRate: 19, category: 'Betriebsausgaben', account: 'Geschäftskonto', payment: 'Überweisung', status: 'offen', conf: { merchant: 0.93, date: 0.74, total: 0.9 }, lines: [{ name: 'Versandkarton M', qty: 50, total: 62.4 }, { name: 'Polsterfolie 50 m', qty: 1, total: 24.95 }, { name: 'Packband', qty: 6, total: 21 }, { name: 'Versand', qty: 1, total: 20 }] },
+  { id: 'r2', captureId: 'c8', merchant: 'Buchhandlung Neumann', date: '2026-11-23', time: '15:40', total: 49.8, vatRate: 7, category: 'Business', account: 'Geschäftskonto', payment: 'Rechnung', status: 'offen', conf: { merchant: 0.95, date: 0.9, total: 0.96 }, lines: [{ name: 'Fachbuch Typografie', qty: 2, total: 49.8 }] },
+  { id: 'r4', captureId: 'c9', merchant: 'Karton & Pack GmbH', date: '2026-11-20', time: '11:15', total: 128.35, vatRate: 19, category: 'Business', account: 'Geschäftskonto', payment: 'Überweisung', status: 'offen', conf: { merchant: 0.93, date: 0.74, total: 0.9 }, lines: [{ name: 'Versandkarton M', qty: 50, total: 62.4 }, { name: 'Polsterfolie 50 m', qty: 1, total: 24.95 }, { name: 'Packband', qty: 6, total: 21 }, { name: 'Versand', qty: 1, total: 20 }] },
   { id: 'r3', captureId: 'c10', merchant: 'Thalia Bücher', date: '2026-11-16', time: '14:22', total: 42.5, vatRate: 7, category: 'Freizeit', account: 'Kreditkarte', payment: 'Karte', status: 'offen', conf: { merchant: 0.97, date: 0.97, total: 0.98 }, lines: [{ name: 'Buch „Deep Work“', qty: 1, total: 24 }, { name: 'Buch „Atomic Habits“', qty: 1, total: 18.5 }] },
 ];
 
@@ -168,6 +168,7 @@ export default {
         { trigger: 'Eintrag im Verlauf antippen', result: 'Ergebnis der Erfassung öffnet', event: 'item.open' },
       ],
       acceptance: ['Während der Erkennung sind alle drei Schritte mit Fortschritt sichtbar und abbrechbar.', 'Nach „Fertig“ steht die Zahl erkannter Zeilen und unsicherer Wörter.', 'Ohne Treffer in der Quelle nutzt die Simulation die nächste Testdatei.'],
+      flows: [{ id: 'fl-erfassen', name: 'Foto erkennen', steps: [{ featureId: 'picture-to-text.capture', action: 'Quelle „Kamera“ wählen, Foto aufnehmen' }, { featureId: 'picture-to-text.capture', action: 'Fortschritt abwarten, Ergebnis prüfen' }, { featureId: 'picture-to-text.result', action: 'Unsicheres Wort übernehmen, „Als Notiz speichern“' }] }],
       viewports: ['desktop', 'tablet', 'mobile'],
       demoData: { captures, samples, notes },
       variants: [
@@ -289,7 +290,7 @@ export default {
           description: '+ Klarer Ablauf bis zur Buchung  − Positionen nur bei Bedarf',
           layout: { type: 'split' },
           blocks: [hdr({ eyebrow: 'Picture to Text', title: 'Beleg prüfen', primaryLabel: '' }), { id: 'rcp', component: 'receipt-review', region: 'main', props: { mode: 'review', title: 'Erkannte Angaben', showItems: false } },
-            { id: 'list', component: 'receipt-review', region: 'aside', props: { mode: 'list', title: 'Weitere Belege' } }],
+            { id: 'list', component: 'receipt-review', region: 'aside', props: { mode: 'list', title: 'Alle Belege' } }],
         },
         {
           id: 'B', name: 'Belegliste & Detail', direction: 'kompakt', concept: 'Liste aller Belege mit Betrag und Status, darunter Formular mit Positionen und MwSt. Für viele Belege auf einmal.',

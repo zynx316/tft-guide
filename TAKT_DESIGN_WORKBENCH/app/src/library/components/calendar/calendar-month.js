@@ -25,6 +25,7 @@ export const calendarMonth = {
   states: ['empty'],
   css: `${EVENT_CSS}
   .tk-cm { display:flex; flex-direction:column; gap:var(--tk-space-3); min-width:0; }
+  .tk-cm__bar > .tk-btn { flex:none; min-width:36px; }
   .tk-cm__bar { display:flex; align-items:center; gap:var(--tk-space-2); }
   .tk-cm__title { font-size:var(--tk-fs-lg); font-weight:var(--tk-fw-semibold); margin:0 var(--tk-space-2); }
   .tk-cm__frame { background:var(--tk-c-surface); border:1px solid var(--tk-c-border); border-radius:var(--tk-radius-lg); overflow:hidden; }

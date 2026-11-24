@@ -51,7 +51,7 @@ export const savingsSliders = {
   .tk-svs__top { display:flex; align-items:center; justify-content:space-between; gap:12px; }
   .tk-svs__lab { font-size:var(--tk-fs-sm); color:var(--tk-c-text-muted); font-weight:var(--tk-fw-medium); }
   .tk-svs__val { display:inline-flex; align-items:center; gap:6px; color:var(--tk-c-text-muted); font-size:var(--tk-fs-sm); }
-  .tk-svs__num { width:92px; height:34px; text-align:right; padding:0 10px; border-radius:var(--tk-radius-md); border:1px solid var(--tk-c-border-strong); background:var(--tk-c-surface2); color:var(--tk-c-text); font-weight:var(--tk-fw-semibold); font-size:var(--tk-fs-lg); font-variant-numeric:tabular-nums; outline:none; }
+  .tk-svs__num { width:max(92px, 6.4em); max-width:100%; box-sizing:border-box; height:34px; text-align:right; padding:0 10px; border-radius:var(--tk-radius-md); border:1px solid var(--tk-c-border-strong); background:var(--tk-c-surface2); color:var(--tk-c-text); font-weight:var(--tk-fw-semibold); font-size:var(--tk-fs-lg); font-variant-numeric:tabular-nums; outline:none; }
   .tk-svs__num:focus { border-color:var(--tk-c-accent); box-shadow:0 0 0 3px var(--tk-c-accent-soft); } .bp-mobile .tk-svs__num { height:44px; font-size:16px; }
   .tk-svs__range { -webkit-appearance:none; appearance:none; width:100%; height:32px; margin:0; background:transparent; cursor:pointer; }
   .bp-mobile .tk-svs__range { height:44px; }

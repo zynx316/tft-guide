@@ -4,7 +4,7 @@ import { useState } from 'preact/hooks';
 import { Card, Button, Badge, Icon, EmptyState } from '../../ui.js';
 import { fmtDate, fmtRelativeDay } from '../../../lib/format.js';
 import { addMonths, addDays, dayDiff, daysInMonth, isoWeekday, toIsoDay, toDate, MONTHS_LONG, WEEKDAYS_SHORT } from '../../../lib/date.js';
-import { arr, todayOf, eur, eur2, Tile, TrackerNote, SV_CSS, plural, whenLabel } from './_savings.js';
+import { arr, todayOf, eur, eur2, Tile, TrackerNote, SV_CSS, plural, whenLabel, QuietNote, QUIET_PROP } from './_savings.js';
 import { allExecutions, confirmedSet, confirmExecution, planTarget, isTradingDay, holidayName } from './_plans.js';
 import { coverageCheck, DEFAULT_BUFFER, COVER_TONE, COVER_LABEL, COVER_ICON } from './_coverage.js';
 
@@ -18,6 +18,7 @@ export const executionCalendar = {
   version: '1.0',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Ausführungen' },
+    QUIET_PROP,
     { name: 'view', label: 'Ansicht', type: 'select', options: ['list', 'month', 'next'], default: 'list' },
     { name: 'months', label: 'Horizont Liste (Monate)', type: 'number', default: 3 },
     { name: 'limit', label: 'Max. Tage (0 = alle)', type: 'number', default: 0 },
@@ -59,13 +60,14 @@ export const executionCalendar = {
     const [last, setLast] = useState(null), [off, setOff] = useState(0);
     const today = todayOf(ctx), plans = arr(data.plans), conf = confirmedSet(data.transactions);
     const wrap = (b, actions) => (props.framed ? html`<${Card} title=${props.title} icon="calendar-check" actions=${actions}>${b}<//>` : b);
+    if (props.quietEmpty && !plans.some((p) => p.active || p.pausedUntil)) return html`<${QuietNote} icon="calendar-check" text="Ausführungstermine erscheinen, sobald ein Sparplan aktiv ist." />`;
     if (!plans.some((p) => p.active || p.pausedUntil)) return wrap(html`<${EmptyState} icon="calendar-check" title="Keine Ausführungen geplant" text="Sobald ein Sparplan aktiv ist, erscheinen hier seine Termine, inklusive Verschiebung auf Handelstage." action=${html`<${Button} variant="primary" icon="plus" onClick=${() => ctx.emit('plan.create')}>Sparplan anlegen<//>`} />${props.showTracker ? html`<div style="margin-top:12px"><${TrackerNote} plural /></div>` : ''}`);
     const buffer = ctx.ui.buffer ?? DEFAULT_BUFFER;
     const cov = new Map(coverageCheck({ plans, accounts: data.accounts, subscriptions: data.subscriptions, transactions: data.transactions, today, buffer }).rows.map((r) => [r.iso, r]));
     const horizon = props.view === 'month' ? addMonths(today, 13) : addMonths(today, Math.max(1, props.months));
     const all = allExecutions(plans, today, { perPlan: 16, until: horizon }, conf);
     const byDay = new Map(); for (const e of all) { if (!byDay.has(e.iso)) byDay.set(e.iso, []); byDay.get(e.iso).push(e); }
-    const confirm = (list) => { const undos = list.map((ex) => confirmExecution({ ex, positions: data.positions, accounts: data.accounts, setData, today })); list.forEach((ex) => ctx.emit('execution.confirm', { id: ex.planId, date: ex.iso })); setLast({ text: list.length === 1 ? `${list[0].plan.name} als ausgeführt vermerkt: ${eur2(ctx, list[0].amount)} umgebucht.` : `${list.length} Ausführungen vermerkt, ${eur2(ctx, list.reduce((s, e) => s + e.amount, 0))} umgebucht.`, undo: () => undos.reverse().forEach((u) => u()) }); };
+    const confirm = (list) => { const undos = list.map((ex) => confirmExecution({ ex, positions: data.positions, accounts: data.accounts, setData, today, ctx })); list.forEach((ex) => ctx.emit('execution.confirm', { id: ex.planId, date: ex.iso })); setLast({ text: list.length === 1 ? `${list[0].plan.name} als ausgeführt vermerkt: ${eur2(ctx, list[0].amount)} umgebucht.` : `${list.length} Ausführungen vermerkt, ${eur2(ctx, list.reduce((s, e) => s + e.amount, 0))} umgebucht.`, undo: () => undos.reverse().forEach((u) => u()) }); };
     const undo = html`${last && html`<div class="tk-sv-undo" role="status"><span>${last.text}</span><${Button} size="sm" variant="ghost" icon="undo-2" onClick=${() => { last.undo(); ctx.emit('execution.undo'); setLast(null); }}>Rückgängig<//></div>`}`;
     const item = (e) => html`<div class="tk-sve__it"><button type="button" class="m" onClick=${() => { ctx.emit('execution.open', { id: e.planId }); ctx.setUi('selectedId', e.planId); }} aria-label=${`${e.plan.name} öffnen`}>
         <${Tile} tone=${e.plan.tone || 1} icon=${planTarget(e.plan, data.positions, data.accounts).icon} size=${16} /><div class="tk-grow" style="min-width:0"><strong>${e.plan.name}</strong><small>${e.shifted ? `Verschoben vom ${fmtDate(e.nominal, { style: 'short' })} (${e.why || 'kein Handelstag'})` : planTarget(e.plan, data.positions, data.accounts).label}</small></div><span class="tk-sve__amt">${eur2(ctx, e.amount)}</span></button>
@@ -89,6 +91,7 @@ export const executionCalendar = {
       const pastTx = arr(data.transactions).filter((t) => t.type === 'transfer' && t.category === 'Sparen');
       const ym = `${y}-${String(m + 1).padStart(2, '0')}`, sel = ctx.ui.selectedDate?.startsWith(ym) ? ctx.ui.selectedDate : [...byDay.keys()].find((k) => k.startsWith(ym)) || (off === 0 ? toIsoDay(today) : null);
       const selList = byDay.get(sel) || [], selDate = sel ? toDate(sel) : null;
+      const nextEx = !selList.length ? all.find((e) => !sel || e.iso > sel) : null;
       const nav = html`<div class="tk-sve__mh"><${Button} size="sm" variant="ghost" icon="chevron-left" aria-label="Vorheriger Monat" disabled=${off <= 0} onClick=${() => setOff(off - 1)} /><strong>${MONTHS_LONG[m]} ${y}</strong><${Button} size="sm" variant="ghost" icon="chevron-right" aria-label="Nächster Monat" disabled=${off >= 12} onClick=${() => setOff(off + 1)} /></div>`;
       return wrap(html`<div class="tk-sve">${nav}<div class="tk-sve__grid" role="grid" aria-label=${`${MONTHS_LONG[m]} ${y}`}>${WEEKDAYS_SHORT.map((w) => html`<div class="tk-sve__wd" role="columnheader">${w}</div>`)}
         ${Array.from({ length: cells }, (_, i) => { const dn = i - lead + 1; if (dn < 1 || dn > n) return html`<div></div>`; const d = new Date(y, m, dn), iso = toIsoDay(d), ex = byDay.get(iso) || [], done = pastTx.filter((t) => toIsoDay(t.date) === iso), sum = ex.reduce((s, e) => s + e.amount, 0), isPast = dayDiff(today, d) < 0;
@@ -96,7 +99,7 @@ export const executionCalendar = {
             aria-label=${`${fmtDate(d, { style: 'weekday' })}${ex.length ? `: ${plural(ex.length, 'Ausführung', 'Ausführungen')}, ${eur(ctx, sum)}` : done.length ? ': ausgeführt' : ''}${!isTradingDay(d) ? `, ${holidayName(d) || 'kein Handelstag'}` : ''}`} onClick=${() => { ctx.setUi('selectedDate', iso); ctx.emit('calendar.day', { date: iso }); }}>
             <span class="n">${dn}</span><span class="dots">${ex.slice(0, 4).map((e) => html`<i style=${`background:var(--tk-chart-${e.plan.tone || 1})`}></i>`)}${done.slice(0, 4).map(() => html`<i class="done"></i>`)}</span>${ex.length > 0 && html`<span class="a">${eur(ctx, sum)}</span>`}</button>`; })}</div>
         <div class="tk-sv-legend"><span><i style="border:0;width:10px;height:10px;border-radius:50%;background:var(--tk-c-accent)"></i>geplant</span><span><i style="border:2px solid var(--tk-c-success);width:10px;height:10px;border-radius:50%"></i>ausgeführt</span><span>Grau: kein Handelstag</span></div>
-        <div class="tk-sve__day" aria-live="polite">${selList.length ? html`<div class="tk-sve__dh"><strong class="tk-grow">${dayHead(ctx, selDate, today)}</strong><span class="tk-sve__amt">${eur(ctx, selList.reduce((s, e) => s + e.amount, 0))}</span>${covBadge(sel)}</div>${selList.map(item)}` : html`<div class="tk-sve__it"><span class="tk-sv-meta">${selDate ? `${fmtDate(selDate, { style: 'weekday' })}: keine Ausführung${!isTradingDay(selDate) ? ` (${holidayName(selDate) || 'kein Handelstag'})` : ''}.` : 'Tag wählen, um Ausführungen zu sehen.'}</span></div>`}</div>${undo}${tracker}</div>`);
+        <div class="tk-sve__day" aria-live="polite">${selList.length ? html`<div class="tk-sve__dh"><strong class="tk-grow">${dayHead(ctx, selDate, today)}</strong><span class="tk-sve__amt">${eur(ctx, selList.reduce((s, e) => s + e.amount, 0))}</span>${covBadge(sel)}</div>${selList.map(item)}` : html`<div class="tk-sve__it" style="flex-wrap:wrap"><span class="tk-sv-meta">${selDate ? `${fmtDate(selDate, { style: 'weekday' })}: keine Ausführung${!isTradingDay(selDate) ? ` (${holidayName(selDate) || 'kein Handelstag'})` : ''}.` : 'Tag wählen, um Ausführungen zu sehen.'}</span>${nextEx && html`<${Button} size="sm" variant="ghost" iconRight="chevron-right" onClick=${() => { setOff((nextEx.date.getFullYear() - today.getFullYear()) * 12 + nextEx.date.getMonth() - today.getMonth()); ctx.setUi('selectedDate', nextEx.iso); ctx.emit('calendar.day', { date: nextEx.iso }); }}>Nächste: ${fmtDate(nextEx.date, { style: 'weekday' })}<//>`}</div>`}</div>${undo}${tracker}</div>`);
     }
     let days = [...byDay.entries()];
     const moreDays = props.limit > 0 && days.length > props.limit;

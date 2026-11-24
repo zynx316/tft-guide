@@ -175,9 +175,9 @@ export const patchPlan = (setData, id, patch) => setData('plans', (list) => arr(
 export const pauseUntil = (today, months) => (months ? toIsoDay(addMonths(dayStart(today), months)) : null);
 
 /** Ausführung bestätigen: Umbuchung, Position (Stück/Einstand) und Kontostände fortschreiben. Liefert eine Rückgängig-Funktion. */
-export function confirmExecution({ ex, positions, accounts, setData, today }) {
+export function confirmExecution({ ex, positions, accounts, setData, today, ctx }) {
   const plan = ex.plan, pos = planPosition(plan, positions), tgt = planTarget(plan, positions, accounts);
-  const from = fromAccountId(plan), amt = ex.amount, id = sid('t');
+  const from = fromAccountId(plan), amt = ex.amount, id = sid('t', ctx);
   const day = dayDiff(ex.date, today) < 0 ? ex.date : dayStart(today);
   const tx = { id, date: `${toIsoDay(day)}T07:00:00`, title: `Sparplan ${plan.name}`, category: 'Sparen', amount: -amt, account: from, type: 'transfer', to: tgt.toId, planId: plan.id, execDate: ex.iso, icon: 'piggy-bank' };
   setData('transactions', (l) => [tx, ...arr(l)]);

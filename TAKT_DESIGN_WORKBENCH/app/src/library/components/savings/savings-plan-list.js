@@ -3,7 +3,7 @@ import { html } from '../../../lib/html.js';
 import { useState } from 'preact/hooks';
 import { Card, Button, Badge, Icon, EmptyState } from '../../ui.js';
 import { fmtDate } from '../../../lib/format.js';
-import { arr, todayOf, eur, eur2, Tile, TrackerNote, Gain, SV_CSS, sum, whenLabel } from './_savings.js';
+import { arr, todayOf, eur, eur2, Tile, TrackerNote, Gain, SV_CSS, sum, whenLabel, QuietNote, QUIET_PROP } from './_savings.js';
 import { CHART_CSS } from './_chart.js';
 import { planTarget, planStatus, rhythmLabel, planExecutions, planStats, confirmedSet, monthlyTotal, setPlanActive, pauseUntil, perExecution } from './_plans.js';
 
@@ -17,6 +17,7 @@ export const savingsPlanList = {
   version: '1.0',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Sparpläne' },
+    QUIET_PROP,
     { name: 'style', label: 'Darstellung', type: 'select', options: ['table', 'cards', 'compact'], default: 'table' },
     { name: 'limit', label: 'Max. Einträge (0 = alle)', type: 'number', default: 0 },
     { name: 'showActions', label: 'Pausieren in der Zeile', type: 'boolean', default: true },
@@ -95,6 +96,7 @@ export const savingsPlanList = {
     const act = (r) => props.showActions && html`<${Button} size="sm" variant="ghost" icon=${r.p.active ? 'pause' : 'play'} aria-label=${r.p.active ? `${r.p.name} pausieren` : `${r.p.name} fortsetzen`} onClick=${() => toggle(r.p)} />`;
     const action = html`<${Button} size="sm" icon="plus" onClick=${() => ctx.emit('plan.create')}>Neu<//>`;
     if (!plans.length && arr(data.plans).length) return html`<${Card} title=${props.title} icon="piggy-bank"><${EmptyState} icon="search" title="Keine Treffer" text="Kein Sparplan passt zum Filter." /><//>`;
+    if (!plans.length && !arr(data.plans).length && props.quietEmpty) return html`<${QuietNote} icon="piggy-bank" text="Deine Sparpläne erscheinen hier, mit Rate, Termin und Wert." />`;
     if (!plans.length) return html`<${Card} title=${props.title} icon="piggy-bank">${empty}${props.showTracker && html`<div style="margin-top:12px"><${TrackerNote} /></div>`}<//>`;
 
     if (props.style === 'cards') {
@@ -120,7 +122,7 @@ export const savingsPlanList = {
         <button type="button" class="tk-svpl__main" onClick=${() => open(r.p)} aria-label=${`${r.p.name} öffnen`}>
           <div class="tk-svpl__name"><${Tile} tone=${r.p.tone || 1} icon=${r.tgt.icon} size=${17} /><div><strong>${r.p.name}</strong><span>${r.tgt.label}${r.st.id !== 'aktiv' ? ` · ${r.st.label}` : ''}</span></div></div>
           <div class="tk-svpl__cell"><strong>${eur(ctx, r.p.monthly)}</strong><span>${rhythmLabel(r.p)}</span></div>
-          <div class="tk-svpl__cell"><strong>${nextText(r)}</strong><span>${r.next ? `${eur2(ctx, perExecution(r.p))}${r.next.shifted ? ' · verschoben' : ''}` : r.st.label}</span></div>
+          <div class="tk-svpl__cell"><strong>${r.next ? fmtDate(r.next.date, { style: 'weekday' }) : nextText(r)}</strong><span>${r.next ? `${eur2(ctx, perExecution(r.p))}${r.next.shifted ? ' · verschoben' : ''}` : r.st.label}</span></div>
           <div class="tk-svpl__cell tk-svpl__cell--r"><strong>${eur(ctx, r.stats.value)}</strong><span><${Gain} ctx=${ctx} value=${r.stats.gain} ratio=${r.stats.ratio} showAmount=${false} /></span></div></button>
         <div class="tk-svpl__acts">${act(r)}</div></div>`)}
       <div class="tk-svpl__sum"><span>${shown.length} ${shown.length === 1 ? 'Plan' : 'Pläne'}</span><span>Sparrate <strong>${eur(ctx, totals.monthly)}</strong> pro Monat</span><span>Wert <strong>${eur(ctx, totals.value)}</strong></span></div>

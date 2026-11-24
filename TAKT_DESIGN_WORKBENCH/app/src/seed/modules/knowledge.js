@@ -174,6 +174,7 @@ export default {
         { trigger: 'Filterchip wählen (Bereich)', result: 'Baum/Karten zeigen nur den Bereich', event: 'filter.change' },
       ],
       acceptance: ['Der Filterchip „Technik“ blendet alle anderen Bereiche im Baum aus.', 'Eine Suche klappt alle Treffer im Baum auf.', 'Im Baum ist der aktive Artikel mit Balken markiert.'],
+      flows: [{ id: 'fl-bereich', name: 'Im Bereich stöbern', steps: [{ featureId: 'knowledge.browse', action: 'Bereich „Arbeit & Prozesse“ wählen' }, { featureId: 'knowledge.browse', action: 'Kategorie „Vertrieb“ öffnen, Artikel antippen' }] }],
       viewports: ALL_VP, demoData: demo,
       variants: [
         {
@@ -221,6 +222,7 @@ export default {
         { trigger: 'Lesezeichen antippen', result: 'Artikel wird gemerkt', event: 'kb.bookmark' },
       ],
       acceptance: ['Speichern setzt „Aktualisiert“ auf heute und zeigt „Artikel gespeichert“.', 'Ein verwandter Artikel öffnet sich in einem neuen Schritt, Zurück zeigt den vorigen.', 'Hinweisblöcke zeigen ihre Art auch ohne Farbe (Beschriftung „Hinweis:“, „Tipp:“).'],
+      flows: [{ id: 'fl-lesen', name: 'Artikel lesen und vertiefen', steps: [{ featureId: 'knowledge.article', action: 'Inhaltsverzeichnis nutzen, zum Abschnitt springen' }, { featureId: 'knowledge.article', action: 'Verwandten Artikel antippen' }, { featureId: 'knowledge.article', action: 'Zurück zeigt den vorigen Artikel' }] }],
       viewports: ['desktop', 'tablet', 'mobile'],
       demoData: { articles, areas },
       variants: [

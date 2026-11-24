@@ -69,7 +69,7 @@ export const ocrResult = {
     const conf = Math.round(cap.confidence * 100);
     const copy = () => { try { navigator.clipboard?.writeText(cap.text); } catch { /* Vorschau */ } ctx.emit('ocr.copy', { id: cap.id }); ctx.toast('Text kopiert'); };
     const toNote = () => {
-      const id = `n${Date.now().toString(36)}`;
+      const id = (ctx.newId ? ctx.newId("n") : `n${Date.now().toString(36)}`);
       setData('notes', (a) => [{ id, title: cap.title, body: `${cap.text.split('\n').join('\n\n')}`, tags: ['OCR'], inbox: true, updated: isoLocal(ctx.today) }, ...(Array.isArray(a) ? a : [])]);
       setSaved(cap.id); ctx.emit('ocr.save-note', { id: cap.id }); ctx.toast('Als Notiz gespeichert');
     };
@@ -126,7 +126,7 @@ export const ocrResult = {
 };
 
 // ------------------------------------------------------------------------------------------------ Beleg erkennen ---
-const CATS = ['Lebensmittel', 'Haushalt', 'Mobilität', 'Freizeit', 'Gesundheit', 'Betriebsausgaben'];
+const CATS = ['Lebensmittel', 'Haushalt', 'Mobilität', 'Freizeit', 'Gesundheit', 'Business'];
 const ACCOUNTS = { Girokonto: 'acc-giro', Kreditkarte: 'acc-kreditkarte', Geschäftskonto: 'acc-business' };
 const toNum = (v) => parseFloat(String(v).replace(/\./g, '').replace(',', '.'));
 const Conf = ({ c }) => (c != null && c < 0.85 ? html`<${Badge} tone="warning" icon="alert-triangle">Bitte prüfen<//>` : null);
@@ -193,6 +193,7 @@ export const receiptReview = {
   .tk-rcpt__line { display:flex; justify-content:space-between; gap:12px; font-size:var(--tk-fs-sm); color:var(--tk-c-text-muted); }
   .tk-rcpt__row { display:flex; align-items:center; gap:12px; width:100%; min-height:60px; padding:10px 16px; border:0; border-bottom:1px solid var(--tk-c-border); background:transparent; color:inherit; font:inherit; text-align:left; cursor:pointer; }
   .tk-rcpt__row:hover { background:var(--tk-c-surface2); }
+  .tk-rcpt__row[aria-current="true"] { background:var(--tk-c-accent-soft); }
   .tk-rcpt__row:last-child { border-bottom:0; }
   .tk-rcpt__ico { width:38px; height:38px; border-radius:12px; display:grid; place-items:center; flex:none; background:var(--tk-c-accent-soft); color:var(--tk-c-accent); }
   .tk-rcpt__next { display:flex; flex-direction:column; gap:10px; padding:var(--tk-space-5); border-radius:var(--tk-radius-lg); background:var(--tk-c-surface); border:1px solid var(--tk-c-border); border-left:4px solid var(--tk-c-warning); }
@@ -207,7 +208,7 @@ export const receiptReview = {
     if (!all.length) return html`<${Card} title=${props.title} icon="receipt"><${EmptyState} icon="receipt" title="Noch kein Beleg" text="Fotografiere einen Kassenbon oder eine Rechnung, TAKT liest Händler, Datum und Betrag aus." /><//>`;
     if (props.mode === 'list') {
       const list = props.limit > 0 ? all.slice(0, props.limit) : all;
-      return html`<${Card} flush title=${props.title} icon="receipt" actions=${html`<${Badge} tone="warning">${all.filter((r) => r.status === 'offen').length} offen<//>`}>${list.map((r) => html`<button type="button" class="tk-rcpt__row" onClick=${() => open(r)}>
+      return html`<${Card} flush title=${props.title} icon="receipt" actions=${html`<${Badge} tone="warning">${all.filter((r) => r.status === 'offen').length} offen<//>`}>${list.map((r) => html`<button type="button" class="tk-rcpt__row" aria-current=${r.id === sel.id && ctx.ui.selectedId ? 'true' : 'false'} onClick=${() => open(r)}>
         <span class="tk-rcpt__ico"><${Icon} name="receipt" size=${18} /></span><div class="tk-grow" style="min-width:0"><div style="font-weight:var(--tk-fw-medium)" class="tk-truncate">${r.merchant}</div><div class="tk-subtle" style="font-size:var(--tk-fs-sm)">${fmt.date(r.date)} · ${r.category}</div></div>
         <div style="text-align:right"><div class="tk-num" style="font-weight:var(--tk-fw-semibold)">${money(ctx, r.total)}</div><${Badge} tone=${r.status === 'gebucht' ? 'success' : 'info'}>${r.status === 'gebucht' ? 'Gebucht' : 'Offen'}<//></div></button>`)}<//>`;
     }

@@ -64,7 +64,7 @@ export const trdDepotHero = {
     return html`<${Card}>${wrap(html`<div class="tk-trd-hero"><div class="tk-trd-hero__top"><div><div class="tk-row" style="gap:8px"><span class="tk-trd-cap">${props.title}</span>${sim}</div><div class="tk-trd-big" data-qa="depot-total">${money(ctx, hd.total)}</div></div>
       <div class="tk-trd-hero__chg" style="margin:0">${dayRow}</div></div>
       <div class="tk-trd-stats"><${Stat} label="Gesamt seit Kauf"><${Gain} ctx=${ctx} v=${hd.gain} pct=${hd.gainPct} /><//>
-        <${Stat} label="Investiert">${money(ctx, hd.invested)}<//><${Stat} label="Einstand">${money(ctx, hd.cost)}<//><${Stat} label="Verrechnungskonto">${money(ctx, hd.cash)}<//></div></div>`)}<//>`;
+        <${Stat} label="In Wertpapieren">${money(ctx, hd.invested)}<//><${Stat} label="Einstand">${money(ctx, hd.cost)}<//><${Stat} label="Verrechnungskonto">${money(ctx, hd.cash)}<//></div></div>`)}<//>`;
   },
 };
 export default [trdDepotHero];

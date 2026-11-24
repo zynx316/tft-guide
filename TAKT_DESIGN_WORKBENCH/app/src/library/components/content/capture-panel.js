@@ -82,7 +82,7 @@ export const capturePanel = {
       const s = list[all.length % Math.max(list.length, 1)];
       if (!s) { ctx.toast('Keine Testdaten für die Erkennung vorhanden'); return; }
       const lines = s.text.split('\n').length;
-      const entry = { id: `c${Date.now().toString(36)}`, title: s.title, subtitle: s.text.split('\n').join(' · ').slice(0, 70), meta: 'Gerade eben', badge: `${Math.round(s.confidence * 100)} %`, tone: s.confidence > 0.9 ? 'success' : 'warning',
+      const entry = { id: (ctx.newId ? ctx.newId("c") : `c${Date.now().toString(36)}`), title: s.title, subtitle: s.text.split('\n').join(' · ').slice(0, 70), meta: 'Gerade eben', badge: `${Math.round(s.confidence * 100)} %`, tone: s.confidence > 0.9 ? 'success' : 'warning',
         icon: from === 'camera' ? 'camera' : from === 'clipboard' ? 'clipboard' : 'image', source: from, group: SOURCES.find((x) => x.value === from)?.label, text: s.text, lang: lang === 'Automatisch' ? s.lang : lang, confidence: s.confidence, uncertain: s.uncertain || [], created: isoLocal(ctx.today) };
       setData('captures', (a) => [entry, ...(Array.isArray(a) ? a : [])]); ctx.setUi('selectedId', entry.id);
       setDone({ lines, conf: s.confidence, unsure: (s.uncertain || []).length });
@@ -176,9 +176,9 @@ export const captureLauncher = {
   render: ({ props, ctx }) => {
     const go = (w) => ctx.emit(w.event);
     const head = props.title && html`<div class="tk-h3">${props.title}</div>`;
-    if (props.style === 'row') return html`<div class="tk-launch tk-launch--row" role="group" aria-label="Erkennen starten">${WAYS.map((w) => html`<${Button} icon=${w.icon} onClick=${() => go(w)}>${w.label}<//>`)}</div>`;
+    if (props.style === 'row') return html`<div class="tk-launch tk-launch--row" role="group" aria-label="Erkennen starten">${WAYS.map((w) => html`<${Button} icon=${w.icon} aria-label=${w.label} onClick=${() => go(w)}>${ctx.bp === 'mobile' && w.event === 'scan.document' ? 'Scannen' : w.label}<//>`)}</div>`;
     if (props.style === 'hero') return html`<div class="tk-launch--hero">${head}<${Button} variant="primary" icon="scan" onClick=${() => go(WAYS[0])}>Dokument scannen<//>
-      <div class="tk-launch__alt">${WAYS.slice(1).map((w) => html`<${Button} icon=${w.icon} aria-label=${w.label} onClick=${() => go(w)}>${ctx.bp === 'mobile' ? w.label.split(' ')[0] : w.label}<//>`)}</div></div>`;
+      <div class="tk-launch__alt">${WAYS.slice(1).map((w) => html`<${Button} icon=${w.icon} aria-label=${w.label} onClick=${() => go(w)}>${ctx.bp === 'mobile' ? (w.event === 'scan.card' ? 'Karte' : w.label.split(' ')[0]) : w.label}<//>`)}</div></div>`;
     return html`<div class="tk-col" style="gap:12px">${head}<div class="tk-launch">${WAYS.map((w) => html`<button type="button" class="tk-card tk-card--interactive tk-launch__tile" onClick=${() => go(w)}>
       <span class="tk-launch__ico"><${Icon} name=${w.icon} size=${22} /></span><strong>${w.label}</strong><span>${w.sub}</span></button>`)}</div></div>`;
   },
@@ -227,7 +227,9 @@ export const docScanner = {
   .tk-scan__flash[data-on="true"] { opacity:.85; }
   .tk-scan__shutter { align-self:center; width:72px; height:72px; border-radius:50%; border:4px solid var(--tk-c-accent); background:var(--tk-c-surface); display:grid; place-items:center; cursor:pointer; padding:0; color:var(--tk-c-accent); }
   .tk-scan__shutter:hover { background:var(--tk-c-accent-soft); }
-  .tk-scan__bar { display:flex; align-items:center; justify-content:center; gap:var(--tk-space-4); }
+  .tk-scan__bar { display:grid; grid-template-columns:minmax(0,1fr) auto minmax(0,1fr); align-items:center; gap:var(--tk-space-4); }
+  .tk-scan__bar > :first-child { justify-self:end; }
+  .tk-scan__bar > :last-child { justify-self:start; }
   .tk-scan__strip { display:flex; gap:10px; overflow-x:auto; padding:2px 2px 6px; scrollbar-width:none; }
   .tk-scan__thumb { position:relative; flex:none; width:56px; height:76px; border-radius:var(--tk-radius-sm); border:2px solid var(--tk-c-border); background:var(--tk-c-surface3); padding:4px; cursor:pointer; display:grid; place-items:center; }
   .tk-scan__thumb[aria-current="true"] { border-color:var(--tk-c-accent); }
@@ -257,7 +259,7 @@ export const docScanner = {
     const fromFile = () => { const n = pages.length + 1; setPages((a) => [...a, mk(n + Date.now() % 1000)]); setSel(pages.length); setPerm('erteilt'); ctx.emit('permission.alternative'); ctx.toast(`Seite ${n} aus Datei hinzugefügt`); };
     const move = (d) => { const j = sel + d; if (j < 0 || j >= pages.length) return; setPages((a) => { const b = a.slice(); [b[sel], b[j]] = [b[j], b[sel]]; return b; }); setSel(j); ctx.emit('scan.edit', { action: 'move' }); };
     const del = () => { setPages((a) => a.filter((_, i) => i !== sel)); setSel(Math.max(0, sel - 1)); ctx.emit('scan.edit', { action: 'delete' }); ctx.toast('Seite entfernt'); };
-    const entry = (title, kind, ocr) => { const text = pages.map((_, i) => (samples[i % Math.max(samples.length, 1)]?.text || 'Text der Seite')).join('\n'); return { id: `c${Date.now().toString(36)}`, title, kind, pages: pages.length, subtitle: `${pages.length} ${pages.length === 1 ? 'Seite' : 'Seiten'} · ${kind === 'document' ? 'PDF' : 'Text'}`, meta: 'Gerade eben', badge: '94 %', tone: 'success', icon: 'file-text', source: 'camera', group: 'Kamera', text, lang: 'Deutsch', confidence: 0.94, uncertain: [], created: isoLocal(ctx.today), searchable: ocr }; };
+    const entry = (title, kind, ocr) => { const text = pages.map((_, i) => (samples[i % Math.max(samples.length, 1)]?.text || 'Text der Seite')).join('\n'); return { id: (ctx.newId ? ctx.newId("c") : `c${Date.now().toString(36)}`), title, kind, pages: pages.length, subtitle: `${pages.length} ${pages.length === 1 ? 'Seite' : 'Seiten'} · ${kind === 'document' ? 'PDF' : 'Text'}`, meta: 'Gerade eben', badge: '94 %', tone: 'success', icon: 'file-text', source: 'camera', group: 'Kamera', text, lang: 'Deutsch', confidence: 0.94, uncertain: [], created: isoLocal(ctx.today), searchable: ocr }; };
     const save = (name, ocr) => { setProg(0); const t0 = Date.now(); const iv = setInterval(() => { const p = Math.min(1, (Date.now() - t0) / 1400); if (p >= 1) { clearInterval(iv); setProg(null); const e = entry(name, 'document', ocr); setData('captures', (a) => [e, ...(Array.isArray(a) ? a : [])]); ctx.setUi('selectedId', e.id); setSaved({ name, n: pages.length }); ctx.emit('scan.export', { id: e.id }); ctx.toast(`PDF gespeichert · ${pages.length} ${pages.length === 1 ? 'Seite' : 'Seiten'}`); } else setProg(p); }, 100); };
     const ocr = () => { const e = entry(`Scan ${pages.length} ${pages.length === 1 ? 'Seite' : 'Seiten'}`, 'text', true); setData('captures', (a) => [e, ...(Array.isArray(a) ? a : [])]); ctx.setUi('selectedId', e.id); ctx.emit('scan.ocr', { id: e.id }); ctx.toast('Text erkannt'); };
     const reset = () => { setPages([]); setSel(0); setSaved(null); setPhase('camera'); };
@@ -275,7 +277,7 @@ export const docScanner = {
             ${[[52, 66], [248, 52], [258, 350], [42, 342]].map(([x, y]) => html`<circle cx=${x} cy=${y} r="7" fill="var(--tk-c-surface)" stroke=${found ? 'var(--tk-c-success)' : 'var(--tk-c-accent)'} stroke-width="3" />`)}</svg>
           <span class="tk-scan__flash" data-on=${flash ? 'true' : 'false'}></span></div>
           <div class="tk-scan__bar"><${Button} icon="upload" aria-label="Aus Datei hinzufügen" onClick=${fromFile}>${ctx.bp === 'mobile' ? null : 'Datei'}<//><button type="button" class="tk-scan__shutter" aria-label="Seite aufnehmen" onClick=${snap}><${Icon} name="camera" size=${28} /></button>
-            ${!bench && pages.length > 0 ? html`<${Button} variant="primary" onClick=${() => { setPhase('edit'); ctx.emit('scan.edit', { action: 'open' }); }}>Fertig (${pages.length})<//>` : html`<span style="width:${bench ? 0 : 88}px"></span>`}</div></div>`;
+            ${!bench && pages.length > 0 ? html`<${Button} variant="primary" onClick=${() => { setPhase('edit'); ctx.emit('scan.edit', { action: 'open' }); }}>Fertig (${pages.length})<//>` : html`<span></span>`}</div></div>`;
 
     const strip = pages.length > 0 && html`<div class="tk-scan__strip" role="group" aria-label="Seiten">${pages.map((pg, i) => html`<button type="button" class="tk-scan__thumb" aria-current=${i === sel ? 'true' : 'false'} aria-label=${`Seite ${i + 1}`} onClick=${() => setSel(i)}><${Paper} pg=${pg} mini=${true} /><small>${i + 1}</small></button>`)}
       ${!bench && html`<button type="button" class="tk-scan__thumb" aria-label="Weitere Seite aufnehmen" style="border-style:dashed" onClick=${() => setPhase('camera')}><${Icon} name="plus" size=${20} /></button>`}</div>`;

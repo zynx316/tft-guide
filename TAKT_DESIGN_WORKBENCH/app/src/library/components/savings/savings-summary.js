@@ -3,22 +3,26 @@ import { html } from '../../../lib/html.js';
 import { Card, Button, EmptyState } from '../../ui.js';
 import { fmtDate } from '../../../lib/format.js';
 import { dayDiff } from '../../../lib/date.js';
-import { arr, sum, r2, todayOf, eur, Stat, Gain, SV_CSS, plural } from './_savings.js';
-import { monthlyTotal, planPosition, planAccount, allExecutions, confirmedSet, goalForecast } from './_plans.js';
+import { arr, sum, r2, todayOf, eur, Stat, Gain, SV_CSS, plural, QuietNote, QUIET_PROP } from './_savings.js';
+import { monthlyTotal, planPosition, planStats, allExecutions, confirmedSet, goalForecast } from './_plans.js';
 import { CHART_CSS } from './_chart.js';
 
 /** Kennzahlen für Übersichten (rein, auch von anderen Savings-Komponenten genutzt). */
 export function summarize({ plans, positions, accounts, goals, transactions, today }) {
   const list = arr(plans), active = list.filter((p) => p.active);
-  const pos = [...new Set(list.map((p) => planPosition(p, positions)).filter(Boolean))];
-  const acc = [...new Set(list.map((p) => planAccount(p, accounts)).filter(Boolean))];
-  const depot = sum(pos, (p) => p.value), cost = sum(pos, (p) => p.cost), konto = sum(acc, (a) => a.balance);
+  // Gleiche Definition wie die Plan-Liste: Wert je Plan (Position bzw. Modell bei Konto-Plänen), Position nur einmal gezählt.
+  const seen = new Set(); let depot = 0, cost = 0, konto = 0, kontoCost = 0;
+  for (const p of list) {
+    const ps = planPosition(p, positions);
+    if (ps) { if (!seen.has(ps.id)) { seen.add(ps.id); depot += ps.value; cost += ps.cost; } continue; }
+    const st = planStats(p, { positions, accounts, today }); konto += st.value; kontoCost += st.invested;
+  }
   const nextAll = allExecutions(list, today, { perPlan: 1 }, confirmedSet(transactions));
   const nextDate = nextAll[0]?.date || null;
   const sameDay = nextDate ? nextAll.filter((e) => dayDiff(e.date, nextDate) === 0) : [];
   const fc = arr(goals).map((g) => goalForecast(g, list, today));
-  return { count: list.length, active: active.length, monthly: monthlyTotal(list), total: r2(depot + konto), invested: r2(cost + konto), gain: r2(depot - cost), depot, cost, konto,
-    ratio: cost ? (depot - cost) / cost : 0, nextDate, nextAmount: r2(sum(sameDay, (e) => e.amount)), nextCount: sameDay.length, goals: fc, onTrack: fc.filter((f) => ['im Plan', 'erreicht'].includes(f.status)).length };
+  return { count: list.length, active: active.length, monthly: monthlyTotal(list), total: r2(depot + konto), invested: r2(cost + kontoCost), gain: r2(depot + konto - cost - kontoCost), depot, cost, konto,
+    ratio: cost + kontoCost ? (depot + konto - cost - kontoCost) / (cost + kontoCost) : 0, nextDate, nextAmount: r2(sum(sameDay, (e) => e.amount)), nextCount: sameDay.length, goals: fc, onTrack: fc.filter((f) => ['im Plan', 'erreicht'].includes(f.status)).length };
 }
 
 export const savingsSummary = {
@@ -31,6 +35,7 @@ export const savingsSummary = {
     { name: 'title', label: 'Titel', type: 'text', default: 'Sparen im Überblick' },
     { name: 'style', label: 'Darstellung', type: 'select', options: ['strip', 'hero'], default: 'strip' },
     { name: 'framed', label: 'In Karte', type: 'boolean', default: true },
+    QUIET_PROP,
   ],
   data: [
     { slot: 'plans', label: 'Sparpläne', default: 'plans', shape: '{id,name,monthly,day,active,positionId?,accountId?}[]', required: true },
@@ -61,6 +66,7 @@ export const savingsSummary = {
     const today = todayOf(ctx);
     const plans = arr(data.plans);
     const wrap = (body) => (props.framed ? html`<${Card} title=${props.style === 'hero' ? undefined : props.title} icon=${props.style === 'hero' ? undefined : 'piggy-bank'}>${body}<//>` : body);
+    if (!plans.length && props.quietEmpty) return html`<${QuietNote} icon="piggy-bank" text="Sparrate, Wert und nächste Ausführung erscheinen, sobald ein Sparplan angelegt ist." />`;
     if (!plans.length) return html`<${Card} title=${props.title} icon="piggy-bank"><${EmptyState} icon="piggy-bank" title="Noch kein Sparplan" text="Lege einen Plan an. TAKT erinnert dich an jede Ausführung und zeigt, wie das Vermögen wächst." action=${html`<${Button} variant="primary" icon="plus" onClick=${() => ctx.emit('plan.create')}>Sparplan anlegen<//>`} /><//>`;
     const s = summarize({ plans, positions: data.positions, accounts: data.accounts, goals: data.goals, transactions: data.transactions, today });
     const cells = [
@@ -72,7 +78,7 @@ export const savingsSummary = {
     if (props.style === 'hero') {
       const eShare = s.total ? clamp01(s.gain / s.total) : 0;
       return wrap(html`<div class="tk-svsum--hero"><div class="tk-svsum__top">
-          <${Stat} big label=${props.title} value=${eur(ctx, s.total)} sub=${html`<${Gain} ctx=${ctx} value=${s.gain} ratio=${s.ratio} /> <span>seit Start (ETF-Positionen)</span>`} />
+          <${Stat} big label=${props.title} value=${eur(ctx, s.total)} sub=${html`<${Gain} ctx=${ctx} value=${s.gain} ratio=${s.ratio} /> <span>seit Start</span>`} />
           <button type="button" class="tk-svsum__cell" style="text-align:right" onClick=${() => ctx.emit('summary.rate')} aria-label=${`Sparrate ${eur(ctx, s.monthly)} pro Monat, Sparpläne öffnen`}><${Stat} label="Sparrate pro Monat" value=${eur(ctx, s.monthly)} sub=${cells[0].sub} /></button></div>
         <div class="tk-svsum__bar"><div class="tk-sv-bar" role="img" aria-label=${`Eingezahlt ${eur(ctx, s.invested)}, Ertrag ${eur(ctx, s.gain)}`}><i style=${`flex:${Math.max(1, 1 - eShare) * 100};background:var(--tk-c-text-subtle);opacity:.55`}></i><i style=${`flex:${Math.max(0.01, eShare) * 100};background:var(--tk-c-accent)`}></i></div>
           <div class="tk-svsum__split"><span><i style="background:var(--tk-c-text-subtle);opacity:.55"></i>Eingezahlt ${eur(ctx, s.invested)}</span><span><i style="background:var(--tk-c-accent)"></i>Ertrag ${eur(ctx, s.gain, { sign: true })}</span></div></div>

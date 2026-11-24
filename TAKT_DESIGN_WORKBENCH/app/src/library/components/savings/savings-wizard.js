@@ -35,8 +35,8 @@ export const savingsWizard = {
       const bad = [0, 1, 2].find((s) => Object.keys(validate(w, s, ctx, data, today)).length);
       if (bad != null) { set({ tried: { 0: true, 1: true, 2: true }, ...(props.mode === 'steps' ? { step: bad } : {}) }); ctx.emit('form.invalid', { step: bad }); return; }
       const inst = p.inst, plans = arr(data.plans);
-      const goalId = w.goalMode === 'existing' ? w.goalId : w.goalMode === 'new' ? sid('g-') : null;
-      const plan = { id: sid('sp-'), name: w.name.trim() || p.draft.name, ...(inst.positionId ? { positionId: inst.positionId } : inst.accountId ? { accountId: inst.accountId } : { instrumentName: inst.name, instrumentShort: inst.short }), isin: inst.isin, monthly: p.monthly, day: w.day, intervalMonths: w.interval, startDate: w.startDate, active: true, dynamicPa: w.dynamicPa,
+      const goalId = w.goalMode === 'existing' ? w.goalId : w.goalMode === 'new' ? sid('g-', ctx) : null;
+      const plan = { id: sid('sp-', ctx), name: w.name.trim() || p.draft.name, ...(inst.positionId ? { positionId: inst.positionId } : inst.accountId ? { accountId: inst.accountId } : { instrumentName: inst.name, instrumentShort: inst.short }), isin: inst.isin, monthly: p.monthly, day: w.day, intervalMonths: w.interval, startDate: w.startDate, active: true, dynamicPa: w.dynamicPa,
         expectedReturnPa: w.ratePa ?? inst.ratePa, goalId, tone: (plans.length % 6) + 1, fromAccount: w.fromAccount };
       setData('plans', (l) => [...arr(l), plan]);
       if (w.goalMode === 'new') setData('goals', (l) => [...arr(l), { id: goalId, name: w.newGoal.name.trim(), target: w.newGoal.target, current: 0, icon: 'target', tone: plan.tone, due: w.newGoal.due, monthly: p.monthly }]);

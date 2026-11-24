@@ -95,14 +95,14 @@ export const noteList = {
     if (props.limit > 0) items = items.slice(0, props.limit);
     const activeId = ctx.ui.selectedId ?? (props.autoSelect ? items[0]?.id : null);
     const open = (n) => {
-      ctx.setUi('selectedId', n.id); ctx.emit('note.open', { id: n.id });
-      if (props.openIn === 'dialog') ctx.openDialog({ title: 'Notiz bearbeiten', body: (close) => html`<${DialogEditor} note=${n} setData=${setData} ctx=${ctx} close=${close} />` });
+      ctx.setUi('selectedId', n.id); const nav = ctx.emit('note.open', { id: n.id });
+      if (props.openIn === 'dialog' && !nav) ctx.openDialog({ title: 'Notiz bearbeiten', body: (close) => html`<${DialogEditor} note=${n} setData=${setData} ctx=${ctx} close=${close} />` });
     };
     const pin = (e, n) => { e.stopPropagation(); setData('notes', (a) => a.map((x) => (x.id === n.id ? { ...x, pinned: !x.pinned } : x))); ctx.emit('note.pin', { id: n.id, pinned: !n.pinned }); ctx.toast(n.pinned ? 'Anheften aufgehoben' : 'Notiz angeheftet'); };
     const create = () => {
-      const id = `n${Date.now().toString(36)}`; const n = { id, title: '', body: '', tags: [], updated: isoLocal(ctx.today) };
-      setData('notes', (a) => [n, ...a]); ctx.setUi('selectedId', id); ctx.emit('note.create', { id, ui: { newNote: n } });
-      if (props.openIn === 'dialog') open(n); else ctx.toast('Neue Notiz angelegt');
+      const id = (ctx.newId ? ctx.newId("n") : `n${Date.now().toString(36)}`); const n = { id, title: '', body: '', tags: [], updated: isoLocal(ctx.today) };
+      setData('notes', (a) => [n, ...a]); ctx.setUi('selectedId', id); const nav = ctx.emit('note.create', { id, ui: { newNote: n } });
+      if (props.openIn === 'dialog' && !nav) open(n); else if (!nav) ctx.toast('Neue Notiz angelegt');
     };
     const addBtn = props.showCreate && html`<${Button} size="sm" variant="primary" icon="plus" aria-label="Neue Notiz" onClick=${create}>${ctx.bp === 'mobile' ? null : 'Neu'}<//>`;
     const empty = html`<${EmptyState} icon=${f === 'Archiv' ? 'archive' : f === 'Eingang' ? 'inbox' : 'sticky-note'} title=${f === 'Archiv' ? 'Archiv ist leer' : f === 'Eingang' ? 'Eingang ist leer' : 'Keine Notizen gefunden'}
@@ -245,7 +245,7 @@ export const noteInbox = {
     const tags = Array.isArray(props.tags) ? props.tags : String(props.tags).split(',').map((s) => s.trim()).filter(Boolean);
     const patch = (id, p) => setData('notes', (all) => all.map((n) => (n.id === id ? { ...n, ...p } : n)));
     const add = () => {
-      const t = text.trim(); if (!t) return; const id = `n${Date.now().toString(36)}`;
+      const t = text.trim(); if (!t) return; const id = (ctx.newId ? ctx.newId("n") : `n${Date.now().toString(36)}`);
       setData('notes', (all) => [{ id, title: t.slice(0, 70), body: t.length > 70 ? t : '', tags: [], inbox: true, updated: isoLocal(ctx.today) }, ...all]);
       ctx.emit('note.inbox.add', { id }); ctx.toast('Im Eingang gespeichert'); setText('');
     };

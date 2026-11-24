@@ -18,7 +18,8 @@ export const eventForm = {
   data: [{ slot: 'events', label: 'Termine', default: 'events', shape: 'Array von Terminen', required: false }],
   events: ['event.create', 'form.invalid', 'event.create.open'],
   states: ['empty', 'loading', 'error'],
-  css: EVENT_CSS,
+  css: `${EVENT_CSS}
+  .tk-eventform .tk-input, .tk-eventform .tk-select { height:auto; min-height:var(--tk-size-control); padding-block:6px; }`,
   example: { props: { title: 'Termin anlegen' }, data: { events: [] } },
   render: function EventFormBlock({ props, setData, ctx }) {
     const [n, setN] = useState(0);

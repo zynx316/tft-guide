@@ -186,7 +186,7 @@ export default {
       demoData: { notes },
       variants: [
         {
-          id: 'A', name: 'Karten-Raster', direction: 'visuell', concept: 'Visueller Überblick: Notizen als Karten mit Farbstreifen, Auszug und Listen-Fortschritt im Raster, Bearbeiten in einem Dialog (Bottom-Sheet auf Mobile). Die Übersicht bleibt immer sichtbar.',
+          id: 'A', name: 'Karten-Raster', direction: 'visuell', nav: [{ event: 'note.open', to: 'notes.editor' }, { event: 'note.create', to: 'notes.editor' }], concept: 'Visueller Überblick: Notizen als Karten mit Farbstreifen, Auszug und Listen-Fortschritt im Raster, Bearbeiten in einem Dialog (Bottom-Sheet auf Mobile). Die Übersicht bleibt immer sichtbar.',
           description: '+ Starker Überblick, gut für wenige bis mittlere Notizmengen  − Wechsel zwischen Notizen kostet jeweils Dialog öffnen/schließen',
           layout: { type: 'stack' },
           blocks: [

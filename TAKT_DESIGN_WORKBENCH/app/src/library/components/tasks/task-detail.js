@@ -21,6 +21,7 @@ export const taskDetail = {
   events: ['task.update', 'task.toggle', 'subtask.toggle', 'subtask.add', 'task.delete', 'focus.open'],
   states: ['empty'],
   css: `${TASK_CSS}
+  .tk-td .tk-input, .tk-td .tk-select { height:auto; min-height:var(--tk-size-control); padding-block:6px; }
   .tk-td { display:flex; flex-direction:column; gap:var(--tk-space-4); }
   .tk-td__title { font-size:var(--tk-fs-xl); font-weight:var(--tk-fw-semibold); background:transparent; border:1px solid transparent; border-radius:var(--tk-radius-sm); padding:4px 8px; margin:-4px -8px; width:calc(100% + 16px); color:var(--tk-c-text); font-family:inherit; text-overflow:ellipsis; }
   .tk-td__title:hover { border-color:var(--tk-c-border); } .tk-td__title:focus { outline:none; border-color:var(--tk-c-accent); background:var(--tk-c-surface2); }

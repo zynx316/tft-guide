@@ -72,7 +72,7 @@ export const savingsPlanDetail = {
     const open = tgt.pos && (() => ctx.emit('position.open', { id: tgt.pos.id }));
     const acts = [
       { i: 'sliders-horizontal', t: 'Rate ändern', s: `Aktuell ${eur(ctx, plan.monthly)}`, f: rate }, { i: plan.active ? 'pause' : 'play', t: plan.active ? 'Pausieren' : 'Fortsetzen', s: plan.active ? 'Bis auf Weiteres anhalten' : st.label, f: toggle },
-      { i: 'trending-up', t: 'Dynamik', s: plan.dynamicPa ? `${pct(plan.dynamicPa)} pro Jahr` : 'Keine Steigerung', f: dynamic }, { i: 'calculator', t: 'Was wäre wenn?', s: 'Im Rechner weiterrechnen', f: whatIf },
+      { i: 'trending-up', t: 'Dynamik', s: plan.dynamicPa ? `${pct(plan.dynamicPa)} pro Jahr` : 'Keine Steigerung', f: dynamic }, { i: 'calculator', t: 'Was wäre wenn?', s: 'Im Rechner testen', f: whatIf },
       ...(open ? [{ i: 'candlestick-chart', t: 'Wertpapier', s: `${tgt.label} ansehen`, f: open }] : []),
     ];
     const head = html`<div class="tk-svd__id"><${Tile} tone=${plan.tone || 1} icon=${tgt.icon} /><div class="tk-grow" style="min-width:160px"><h2>${plan.name}</h2><span class="tk-sv-meta">${tgt.label}${tgt.sub ? ` · ${tgt.sub}` : ''}</span></div><${Badge} tone=${st.tone} icon=${st.icon}>${st.label}<//></div>`;

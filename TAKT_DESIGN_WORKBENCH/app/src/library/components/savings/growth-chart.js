@@ -4,7 +4,7 @@ import { useState } from 'preact/hooks';
 import { Card, Segmented, EmptyState } from '../../ui.js';
 import { addMonths, toDate } from '../../../lib/date.js';
 import { fmtDate } from '../../../lib/format.js';
-import { arr, obj, todayOf, SV_CSS } from './_savings.js';
+import { arr, obj, todayOf, SV_CSS, QuietNote, QUIET_PROP } from './_savings.js';
 import { GrowthChart, GrowthLegend, CHART_CSS } from './_chart.js';
 import { getCalc, runCalc, calcPoints, forwardRun } from './_calc.js';
 import { planHistory } from './_plans.js';
@@ -32,6 +32,7 @@ export const growthChart = {
   version: '1.0',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Eingezahlt und Wert' },
+    QUIET_PROP,
     { name: 'source', label: 'Quelle', type: 'select', options: ['calc', 'plan', 'depot'], default: 'calc' },
     { name: 'height', label: 'Höhe (px)', type: 'number', default: 260 },
     { name: 'showBand', label: 'Spanne zeigen', type: 'boolean', default: true },
@@ -54,7 +55,7 @@ export const growthChart = {
   render: function GrowthChartBlock({ props, data, ctx }) {
     const [fwd, setFwd] = useState(Number(props.outlook) || 0);
     const wrap = (body, head) => (props.framed ? html`<${Card} title=${props.title} icon="line-chart" actions=${head}>${body}<//>` : html`<div>${head}${body}</div>`);
-    const empty = (t, x) => wrap(html`<${EmptyState} icon="line-chart" title=${t} text=${x} />`);
+    const empty = (t, x) => props.quietEmpty ? html`<${QuietNote} icon="line-chart" text=${x} />` : wrap(html`<${EmptyState} icon="line-chart" title=${t} text=${x} />`);
     const common = { ctx, height: props.height, compact: props.compact };
     if (props.source === 'depot') {
       const h = obj(data.history), find = (n) => arr(h.series).find((s) => String(s.name).startsWith(n));

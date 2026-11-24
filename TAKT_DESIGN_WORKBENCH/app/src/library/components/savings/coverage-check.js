@@ -3,7 +3,7 @@ import { html } from '../../../lib/html.js';
 import { useState } from 'preact/hooks';
 import { Card, Badge, Chip, Icon, EmptyState } from '../../ui.js';
 import { fmtDate } from '../../../lib/format.js';
-import { arr, todayOf, eur, eur2, Tile, SV_CSS, plural } from './_savings.js';
+import { arr, todayOf, eur, eur2, Tile, SV_CSS, plural, QuietNote, QUIET_PROP } from './_savings.js';
 import { coverageCheck, BUFFERS, DEFAULT_BUFFER, COVER_TONE, COVER_LABEL, COVER_ICON } from './_coverage.js';
 
 export const coverageCheckCard = {
@@ -15,6 +15,7 @@ export const coverageCheckCard = {
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Deckung Girokonto' },
     { name: 'limit', label: 'Ausführungstage', type: 'number', default: 3 },
+    QUIET_PROP,
     { name: 'showBuffer', label: 'Puffer wählbar', type: 'boolean', default: true },
     { name: 'showDetails', label: '„Wie berechnet?“', type: 'boolean', default: true },
     { name: 'framed', label: 'In Karte', type: 'boolean', default: true },
@@ -44,6 +45,7 @@ export const coverageCheckCard = {
     const today = todayOf(ctx);
     const wrap = (b) => (props.framed ? html`<${Card} title=${props.title} icon="shield-check">${b}<//>` : b);
     const cov = coverageCheck({ plans: data.plans, accounts: data.accounts, subscriptions: data.subscriptions, transactions: data.transactions, today, buffer });
+    if ((!cov.giro || !cov.rows.length) && props.quietEmpty) return html`<${QuietNote} icon="shield-check" text="Der Deckungs-Check für das Girokonto startet mit dem ersten Sparplan." />`;
     if (!cov.giro || !cov.rows.length) return wrap(html`<${EmptyState} icon="shield-check" title="Nichts zu prüfen" text=${!cov.giro ? 'Ohne Girokonto kann TAKT die Deckung nicht prüfen.' : 'In den nächsten Wochen steht keine Ausführung an.'} />`);
     const rows = cov.rows.slice(0, Math.max(1, props.limit)), lead = cov.problem || cov.tight, first = lead || cov.rows[0];
     const tone = cov.problem ? 'warning' : cov.tight ? 'warning' : 'success';

@@ -24,6 +24,8 @@ export const eventAttendees = {
   css: `
   .tk-ev-people__row { display:flex; align-items:center; gap:12px; min-height:56px; padding:6px 0; border-bottom:1px solid var(--tk-c-border); min-width:0; }
   .tk-ev-people__row:last-of-type { border-bottom:0; }
+  .tk-ev-people__row > .tk-btn { flex:none; min-width:36px; }
+  .bp-mobile .tk-ev-people__row > .tk-btn { min-width:44px; }
   .tk-ev-people__sum { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:6px; }
   .tk-ev-people__status { border:0; background:transparent; padding:0; cursor:pointer; min-height:36px; display:inline-flex; align-items:center; }
   .tk-ev-people__add { display:flex; gap:8px; margin-top:10px; }

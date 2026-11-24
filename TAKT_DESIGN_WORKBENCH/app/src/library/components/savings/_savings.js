@@ -12,7 +12,8 @@ export const obj = (v) => (v && typeof v === 'object' && !Array.isArray(v) ? v :
 export const r2 = (x) => Math.round(x * 100) / 100;
 export const sum = (list, f) => list.reduce((s, x) => s + (f(x) || 0), 0);
 let seq = 0;
-export const sid = (p) => `${p}${(++seq).toString(36)}${Math.random().toString(36).slice(2, 5)}`;
+/** Deterministische ID: ctx.newId (Zähler der Vorschau-Sitzung), ohne Kontext ein Modulzähler. Kein Zufall. */
+export const sid = (p, ctx) => (ctx && ctx.newId ? ctx.newId(p.replace(/-$/, '')) : `${p}x${++seq}`);
 
 /** Heute (Tagesbeginn) aus dem Kontext (ctx.today). */
 export const todayOf = (ctx) => dayStart(ctx.today);
@@ -42,6 +43,10 @@ export const spanLabel = (months) => {
   if (!y) return plural(m, 'Monat', 'Monate');
   return m ? `${plural(y, 'Jahr', 'Jahre')} ${plural(m, 'Monat', 'Monate')}` : plural(y, 'Jahr', 'Jahre');
 };
+
+/** Ruhiger Einzeiler statt voller Leer-Karte (Erststart: nur ein Block führt zur ersten Aktion, die übrigen schweigen). */
+export const QuietNote = ({ icon = 'info', text }) => html`<p class="tk-sv-quiet" role="note"><${Icon} name=${icon} size=${14} /><span>${text}</span></p>`;
+export const QUIET_PROP = { name: 'quietEmpty', label: 'Leerzustand als Einzeiler', type: 'boolean', default: false };
 
 /** Fortschrittsring (SVG), Inhalt zentriert. Farbe nie allein: Text steht im Inhalt. */
 export function Ring({ size = 96, stroke = 10, value = 0, tone = 'accent', label, children }) {
@@ -85,6 +90,7 @@ export function Gain({ ctx, value, ratio, digits = 0, showAmount = true }) {
 }
 
 export const SV_CSS = `
+  .tk-sv-quiet { display:flex; align-items:flex-start; gap:8px; margin:0; padding:var(--tk-space-2) var(--tk-space-1); color:var(--tk-c-text-muted); font-size:var(--tk-fs-sm); line-height:var(--tk-lh-snug); } .tk-sv-quiet svg { flex:none; margin-top:2px; }
   .tk-sv-step { display:inline-flex; align-items:center; gap:6px; max-width:100%; }
   .tk-sv-step > button { width:var(--tk-size-control); height:var(--tk-size-control); border-radius:var(--tk-radius-md); border:1px solid var(--tk-c-border-strong); background:var(--tk-c-surface2); color:var(--tk-c-text); display:grid; place-items:center; cursor:pointer; flex:none; padding:0; }
   .tk-sv-step > button:hover:not(:disabled) { background:var(--tk-c-surface3); } .tk-sv-step > button:disabled { opacity:.4; cursor:default; }

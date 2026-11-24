@@ -27,7 +27,7 @@ export const goalCalculator = {
   states: [],
   css: `${SV_CSS}${CHART_CSS}
   .tk-svg { display:flex; flex-direction:column; gap:var(--tk-space-5); min-width:0; }
-  .tk-svg__in { display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%,210px),1fr)); gap:var(--tk-space-4); }
+  .tk-svg__in { display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%,max(210px,13em)),1fr)); gap:var(--tk-space-4); }
   .tk-svg__res { padding:var(--tk-space-5); border-radius:var(--tk-radius-xl); background:var(--tk-c-accent-soft); border:1px solid color-mix(in srgb, var(--tk-c-accent) 40%, transparent); display:flex; flex-direction:column; gap:6px; }
   .tk-svg__big { font-size:clamp(28px, 7vw, 40px); font-weight:var(--tk-fw-bold); letter-spacing:var(--tk-ls-tight); line-height:1.1; font-variant-numeric:tabular-nums; overflow-wrap:anywhere; }
   .tk-svg__alt { display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%,150px),1fr)); gap:var(--tk-space-3); }

@@ -98,7 +98,7 @@ export const channelCards = {
       ${props.title && html`<div class="tk-h3">${props.title}</div>`}
       <div class=${`tk-channel-cards tk-channel-cards--${props.density}`} style=${`--minw:${props.minWidth}px`}>
         ${items.map((ch, i) => { const st = STATUS[ch.status] || STATUS.paused; const isBusy = !!busy[ch.id]; const col = `var(--tk-chart-${(i % 6) + 1})`;
-          return html`<article class="tk-card tk-card--interactive tk-channel-card" data-status=${ch.status} onClick=${() => { ctx.setUi('selectedId', ch.id); ctx.emit('channel.open', { id: ch.id }); }}>
+          return html`<article class="tk-card tk-card--interactive tk-channel-card" role="button" tabindex="0" aria-label=${`${ch.name} öffnen`} data-status=${ch.status} onClick=${() => { ctx.setUi('selectedId', ch.id); ctx.emit('channel.open', { id: ch.id }); }} onKeyDown=${(e) => { if (e.target === e.currentTarget && e.key === 'Enter') { ctx.setUi('selectedId', ch.id); ctx.emit('channel.open', { id: ch.id }); } }}>
             <div class="tk-channel-card__head">
               <span class="tk-channel-card__logo" style=${`background:color-mix(in srgb, ${col} 16%, transparent);color:${col}`}><${Icon} name=${ch.icon || 'store'} size=${20} /></span>
               <div class="tk-grow"><div class="tk-channel-card__name tk-truncate">${ch.name}</div>${ch.pending > 0 && ch.status === 'connected' && html`<div class="tk-channel-card__sub">${ch.pending} neue noch nicht importiert</div>`}</div>

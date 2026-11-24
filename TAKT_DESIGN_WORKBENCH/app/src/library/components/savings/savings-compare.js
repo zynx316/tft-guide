@@ -43,7 +43,7 @@ export const savingsCompare = {
     if (!list.length) return html`<${Card} title=${props.title} icon="git-compare"><${EmptyState} icon="git-compare" title="Noch kein Szenario" text="Lege ein Szenario an und vergleiche, wie Rate, Laufzeit und Rendite-Annahme wirken." action=${html`<${Button} variant="primary" icon="plus" onClick=${() => setData('scenarios', [mk(1, { name: 'Basis' })])}>Szenario anlegen<//>`} /><//>`;
     const runs = list.map((s) => runCalc({ ...CALC_DEFAULT, ...s, real: false, tax: false }));
     const patch = (id, p) => setData('scenarios', (l) => arr(l).map((s) => (s.id === id ? { ...s, ...p } : s)));
-    const add = (src) => { if (list.length >= MAX) return; setData('scenarios', (l) => [...arr(l), mk(arr(l).length + 1, src ? { ...src, id: sid('sc-'), name: `${src.name} (Kopie)`, fromCalc: false } : { ...list[0], id: sid('sc-'), name: `Szenario ${list.length + 1}`, fromCalc: false })]); ctx.emit('compare.add'); };
+    const add = (src) => { if (list.length >= MAX) return; setData('scenarios', (l) => [...arr(l), mk(arr(l).length + 1, src ? { ...src, id: sid('sc-', ctx), name: `${src.name} (Kopie)`, fromCalc: false } : { ...list[0], id: sid('sc-', ctx), name: `Szenario ${list.length + 1}`, fromCalc: false })]); ctx.emit('compare.add'); };
     const remove = (s) => { setData('scenarios', (l) => arr(l).filter((x) => x.id !== s.id)); setLast(s); setOpenId(null); ctx.emit('compare.remove', { id: s.id }); };
     const base = runs[0].annahme.value;
     const lines = list.map((s, i) => ({ name: s.name, tone: i + 1, points: runs[i].annahme.series.filter((p, k) => k % (s.years > 25 ? 3 : 1) === 0 || k === runs[i].annahme.series.length - 1).map((p) => ({ m: p.month, value: p.value })) }));

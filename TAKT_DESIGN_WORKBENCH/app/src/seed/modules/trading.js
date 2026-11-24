@@ -111,7 +111,7 @@ const home = {
       description: '+ Klare nächste Handlung, Alarm anlegen ohne Umweg, wenig Ablenkung  − Positionen und Verlauf erst über „Depot“',
       layout: { type: 'stack', narrow: true },
       blocks: [
-        hdr({ title: 'Was ist wichtig?', subtitle: 'Di, 24.11. · Simulation' }),
+        hdr({ title: 'Was ist wichtig?', subtitle: 'Di, 24.11. · Simulation', primaryLabel: 'Order (Simulation)', primaryIcon: 'trending-up', primaryEvent: 'order.new' }),
         SIM(),
         blk('hints', 'trd-hints', 'main', { limit: 3, title: 'Wichtig' }),
         blk('hero', 'trd-depot-hero', 'main', { style: 'focus' }),
