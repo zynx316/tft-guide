@@ -250,3 +250,12 @@ export const fitnessMetrics = [
   { label: 'Ruhepuls', value: 58, unit: 'bpm', icon: 'heart-pulse', tone: 'success', delta: -1, suffix: '', invert: true, spark: sleepLog.slice(-7).map((s) => s.restingHr) },
 ];
 export const fitnessSummary = { sessionsTotal: fitnessProfile.lifetimeBefore + workoutHistory.length, sessions8w: workoutHistory.length, volume8w: sum(workoutHistory.map((h) => h.volume)), plannedSets: plannedSets(trainingProgram, library), avgSleep7: r1(avg(sleepLog.slice(-7).map((s) => s.hours))), avgSteps7: 8400, workoutDays: ['Mo', 'Mi', 'Fr'], runDays: ['Sa', 'So'], nextWorkoutDay: 'Mi', todayKind: 'rest', stand: '24.11.2026 09:30' };
+
+// --- Szenario „Erster Start“: noch kein Training, keine Serie, kein Rückblick (Leerzustände und erste Aktion prüfen) ---
+export const scenarios = {
+  erststart: {
+    fitnessStreak: { weeks: 0, best: 0, since: null, jokersPerQuarter: 2, jokersLeft: 2, paused: false, history: [], current: { week: weekStartNow, sessions: 0, goal: fitnessProfile.weeklyGoal } },
+    weeklyRecap: { week: '', range: '', done: [], learned: '', next: '' },
+    fitnessToday: { ...fitnessToday, kind: 'rest', headline: 'Noch kein Plan', text: 'Wähle ein Programm – dann erscheint hier deine nächste Einheit.', nextDayId: null, nextExercises: [], weekSessions: 0 },
+  },
+};
