@@ -5,6 +5,7 @@ import { Card, Button, Badge, Icon, Segmented, EmptyState, Input, Field, Progres
 import { isoLocal, wordCount } from './content-util.js';
 import { money } from '../../helpers.js';
 import { fmt } from '../../../lib/util.js';
+import { maskMoney } from '../../../lib/format.js';
 
 const clean = (w) => w.replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, '');
 
@@ -22,7 +23,7 @@ export const ocrResult = {
   name: 'Erkennungsergebnis',
   category: 'Inhalte',
   description: 'Erkannter Text der gewählten Erfassung (ctx.ui.selectedId) mit Markierung unsicherer Wörter (Tippen übernimmt den Korrekturvorschlag), Sprache, Konfidenz, Bildvorschau und Aktionen Kopieren / Als Notiz speichern / Teilen. Layout „review“ führt Wort für Wort durch alle unsicheren Stellen. Erkennt Belege und Visitenkarten und bietet die passende Auswertung an.',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'showImage', label: 'Bildvorschau', type: 'boolean', default: true },
     { name: 'showConfidence', label: 'Unsichere Wörter markieren', type: 'boolean', default: true },
@@ -78,6 +79,7 @@ export const ocrResult = {
     const fix = (u) => { setData('captures', (all) => all.map((c) => (c.id === cap.id ? { ...c, text: c.text.replace(u.word, u.alt), uncertain: (c.uncertain || []).filter((x) => x.word !== u.word) } : c))); ctx.emit('ocr.correct', { word: u.word, alt: u.alt }); ctx.toast(`„${u.word}“ → „${u.alt}“`); };
     const renderLine = (line) => line.split(/(\s+)/).map((tok) => { const u = props.showConfidence && unsure.find((x) => clean(tok) === clean(x.word) && tok.trim()); return u ? html`<button type="button" class="tk-ocr__word" title=${`Unsicher (${Math.round(u.conf * 100)} %) – tippen für „${u.alt}“`} aria-label=${`Unsicheres Wort ${tok}, Vorschlag ${u.alt}`} onClick=${() => fix(u)}>${tok}</button>` : tok; });
     const words = wordCount(cap.text);
+    const mask = (t) => (ctx.privacy ? t.replace(/\d[\d.]*,\d{2}\s?(€|EUR)/g, maskMoney('0 €')) : t); // Privatsphäre: erkannte Beträge nur in der Ansicht ausblenden
     const sugg = cap.kind === 'receipt' || cap.kind === 'card';
     const suggestion = sugg && html`<div class="tk-ocr__sugg"><span style="color:var(--tk-c-accent)"><${Icon} name=${cap.kind === 'receipt' ? 'receipt' : 'user'} size=${18} /></span>
       <div class="tk-grow"><strong>${cap.kind === 'receipt' ? 'Das sieht nach einem Beleg aus' : 'Das sieht nach einer Visitenkarte aus'}</strong><div class="tk-muted" style="font-size:var(--tk-fs-sm)">${cap.kind === 'receipt' ? 'Betrag, Händler und Datum erkennen und als Ausgabe vorschlagen.' : 'Name, Firma und Kontaktdaten übernehmen.'}</div></div>
@@ -95,7 +97,7 @@ export const ocrResult = {
           <div class="tk-col" style="gap:8px"><${Button} variant="primary" icon="check" onClick=${() => apply(u.alt)}>„${u.alt}“ übernehmen<//><${Button} onClick=${keep}>So lassen<//>
             <div class="tk-row" style="gap:8px"><${Input} value=${own} onInput=${setOwn} placeholder="Eigene Schreibweise" aria-label="Eigene Schreibweise" /><${Button} disabled=${!own.trim()} onClick=${() => apply(own.trim())}>Ersetzen<//></div></div>`
           : html`<div class="tk-col" style="align-items:center;text-align:center;gap:8px;padding:var(--tk-space-4) 0"><span style="color:var(--tk-c-success)"><${Icon} name="check-circle-2" size=${32} /></span><strong>Alle Stellen geprüft</strong><div class="tk-muted" style="font-size:var(--tk-fs-sm)">${words} Wörter · Konfidenz ${conf} %</div></div>
-            <div class="tk-ocr__text">${cap.text}</div>
+            <div class="tk-ocr__text">${mask(cap.text)}</div>
             <div class="tk-ocr__actions"><${Button} icon="copy" onClick=${copy}>Kopieren<//><${Button} variant="primary" icon=${saved === cap.id ? 'check' : 'notebook-pen'} onClick=${toNote} disabled=${saved === cap.id}>${saved === cap.id ? 'Als Notiz gespeichert' : 'Als Notiz speichern'}<//></div>`}
       </div><//>`;
     }
@@ -112,7 +114,7 @@ export const ocrResult = {
           </div>
           ${mode === 'edit'
             ? html`<textarea class="tk-textarea" style="min-height:180px;line-height:1.7" aria-label="Erkannten Text bearbeiten" value=${cap.text} onInput=${(e) => { const v = e.currentTarget.value; setData('captures', (all) => all.map((c) => (c.id === cap.id ? { ...c, text: v } : c))); }}></textarea>`
-            : html`<div class="tk-ocr__text">${cap.text.split('\n').map((l, i, a) => html`<span>${renderLine(l)}${i < a.length - 1 ? '\n' : ''}</span>`)}</div>`}
+            : html`<div class="tk-ocr__text">${cap.text.split('\n').map((l, i, a) => html`<span>${renderLine(mask(l))}${i < a.length - 1 ? '\n' : ''}</span>`)}</div>`}
           ${suggestion}
           ${unsure.length > 0 && props.showConfidence && mode === 'view' && html`<div class="tk-ocr__legend"><${Icon} name="info" size=${14} />Markierte Wörter sind unsicher – antippen, um den Vorschlag zu übernehmen.</div>`}
           <div class="tk-ocr__actions">

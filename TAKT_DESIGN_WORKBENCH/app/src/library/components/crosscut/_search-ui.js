@@ -39,6 +39,7 @@ export const GS_CSS = `
   .tk-xc-gs__tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: var(--tk-space-2); }
   .tk-xc-gs__tile { display: flex; flex-direction: column; align-items: center; gap: var(--tk-space-2); padding: var(--tk-space-3) var(--tk-space-1); border: 1px solid var(--tk-c-border); border-radius: var(--tk-radius-lg); background: var(--tk-c-surface); color: var(--tk-c-text); font: inherit; font-size: var(--tk-fs-sm); cursor: pointer; min-width: 0; min-height: 84px; }
   .tk-xc-gs__tile span:last-child { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  [data-tk-large-text] .tk-xc-gs__tile span:last-child { overflow: visible; text-overflow: clip; white-space: normal; overflow-wrap: anywhere; text-align: center; }
   .tk-xc-gs__tile:hover { border-color: var(--tk-c-accent); }
   .tk-xc-gs__cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 230px), 1fr)); gap: var(--tk-space-3); }
   .tk-xc-gs__card { display: flex; flex-direction: column; gap: var(--tk-space-2); align-items: flex-start; padding: var(--tk-space-4); border: 1px solid var(--tk-c-border); border-radius: var(--tk-radius-lg); background: var(--tk-c-surface); color: var(--tk-c-text); font: inherit; text-align: left; cursor: pointer; min-width: 0; }
