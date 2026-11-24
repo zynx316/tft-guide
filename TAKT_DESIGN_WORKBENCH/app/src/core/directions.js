@@ -20,21 +20,21 @@ export const DEFAULT_DIRECTIONS = [
     claim: 'Alles im Blick, schnell bedient',
     description: 'Hohe Informationsdichte: Listen, Tabellen, kleine Karten, wenige Grafiken. Für Power-User, die viel auf einmal sehen und mit wenigen Taps arbeiten wollen.',
     principles: ['Dichte vor Weißraum', 'Listen & Tabellen statt großer Kacheln', 'Aktionen direkt in der Zeile', 'Zahlen exakt statt gerundet'],
-    nav: 'bottom', theme: 'graphite',
+    nav: 'bottom', shell: 'tabs', theme: 'graphite',
   },
   {
     id: 'visuell', name: 'Visuell', icon: 'layout-grid', tone: 'accent',
     claim: 'Ruhig, klar, auf einen Blick verständlich',
     description: 'Große Karten, Diagramme, viel Raum und klare Hierarchie. Orientierung über Bilder, Farben und Fortschrittsanzeigen statt Zahlenkolonnen.',
     principles: ['Eine Botschaft pro Karte', 'Diagramme vor Tabellen', 'Großzügige Abstände', 'Fortschritt sichtbar machen'],
-    nav: 'bottom', theme: 'horizon',
+    nav: 'bottom', shell: 'launchpad', theme: 'horizon',
   },
   {
     id: 'fokus', name: 'Fokus', icon: 'target', tone: 'success',
     claim: 'Was ist als Nächstes zu tun?',
     description: 'Handlungsorientiert: priorisiert das Wichtigste, kombiniert Kontext aus anderen Modulen, schlägt nächste Schritte vor und blendet Nebensächliches aus.',
     principles: ['Nächste Aktion zuerst', 'Kontext aus anderen Modulen', 'Hinweise statt Datenwüsten', 'Erfassen ohne Umweg'],
-    nav: 'bottom', theme: 'intensiv',
+    nav: 'bottom', shell: 'fokus', theme: 'intensiv',
   },
 ];
 
@@ -71,6 +71,14 @@ function resolveMix(state, feature, selected) {
     return { variant: selected, demoData: feature.demoData, source: selected ? 'fallback' : 'none', reason: `${why} „${dir}“ – keine passende Variante` };
   }
   return { variant: selected, demoData: feature.demoData, source: selected ? 'selected' : 'none', reason: 'Noch nichts entschieden – Arbeitsstand' };
+}
+
+const SHELL_OF = { kompakt: 'tabs', visuell: 'launchpad', fokus: 'fokus' };
+/** App-Rahmen einer Version: Richtung → ihr Rahmen; sonst App-Einstellung bzw. Rahmen der gewählten App-Richtung. */
+export function shellOf(state, version) {
+  if (version?.kind === 'direction') return version.shell || SHELL_OF[version.directionId] || 'tabs';
+  const appDir = (state.directions || []).find((d) => d.id === state.app?.directionId);
+  return state.app?.shell || appDir?.shell || SHELL_OF[state.app?.directionId] || 'tabs';
 }
 
 /** Version per ID – inkl. Pseudoversion pin:<featureId>:<variantId> („In App ansehen“ aus dem Studio). */

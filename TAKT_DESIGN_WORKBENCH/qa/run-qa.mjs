@@ -346,6 +346,21 @@ async function e2eStage(browser, base, log) {
     await lp.locator('[data-qa="ln-scenario"]').selectOption('alltag'); await lp.locator('[data-qa="ln-offline"]').click(); await lp.locator('[data-qa="ln-scale"]').selectOption('1');
     await lp.close();
   });
+  await T('App-Rahmen: Launchpad öffnet Module, Fokus-Erfassen schreibt in die gemeinsame Welt', async () => {
+    const ap = await ctx.newPage(); await ap.setViewportSize({ width: 390, height: 844 });
+    ap.on('pageerror', (e) => consoleErrors.push('App: ' + e.message));
+    await ap.goto(base + '/preview.html?app=1&version=dir:visuell'); await ap.waitForSelector('body[data-ready]');
+    await ap.locator('[data-qa="launchpad"]').waitFor({ timeout: 8000 });
+    await expect(ap.locator('[data-launchpad-module]').count().then((c) => c >= 8), 'Launchpad zeigt zu wenige Module');
+    await ap.locator('[data-launchpad-module="calendar"]').click();
+    await eventually(async () => /Kalender|Tag|Woche|Monat/.test(await ap.locator('.tk-app__crumb').innerText()), 'Launchpad öffnet das Modul nicht', 6000);
+    await ap.locator('[data-nav-launchpad]').click(); await ap.locator('[data-qa="launchpad"]').waitFor({ timeout: 5000 });
+    await ap.goto(base + '/preview.html?app=1&version=dir:fokus'); await ap.waitForSelector('body[data-ready]');
+    await ap.locator('[data-qa="nav-capture"]').click(); await ap.locator('[data-qa="capture-input"]').fill('QA-Aufgabe aus dem Erfassen');
+    await ap.locator('[data-qa="capture-save"]').click();
+    await ap.getByText(/Erfasst als Aufgabe/).first().waitFor({ timeout: 4000 });
+    await ap.close();
+  });
   await T('Demo & Entscheidung: Ebenen-Leiter und Feedback-Eingang', async () => {
     await go('#/decide'); await page.getByRole('heading', { name: 'Demo & Entscheidung' }).waitFor();
     await page.locator('[data-tab="feedback"]').click(); await page.getByRole('button', { name: 'Vom Server laden' }).click(); await page.waitForTimeout(600);

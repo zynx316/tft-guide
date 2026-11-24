@@ -33,6 +33,33 @@ strukturell verschiedene Versionen, echte Interaktionen, realistische Daten und 
    für 1–3 typische Wege.
 5. **Status realistisch** verteilen (nicht alles „Design in Arbeit“). Mindestens 2 Entscheidungen, davon 1 offen.
 
+## Neu seit Stand 24.11.2026, 03:00 (verbindlich – gilt für alle Pakete, die danach starten)
+- **Bauplan:** `docs/BAUPLAN.md` (Abschnitt 5 Verträge, 6 Modulkatalog mit Feature-IDs und Tier). Leitlinien:
+  `docs/FINANCE_GUIDELINES.md`, `docs/HEALTH_GUIDELINES.md` (Verbotsbegriffe prüft `npm run check`), `docs/TEXT_STIL.md`,
+  `docs/DATENWELT.md` (Eigentümer je Datenobjekt – nur der Eigentümer legt Daten an, andere binden per `@world:`).
+- **Geteilte Daten immer binden:** Aufgaben, Termine, Konten, Buchungen, Sparpläne, Depot, Trainings, Mahlzeiten …
+  per `demoData: { items: '@world:tasks' }`. Nur so wirken Aktionen modulübergreifend (z. B. „Erfassen“ im Fokus-Rahmen
+  schreibt eine Aufgabe in `world.tasks`, die dann in Aufgaben, Start und Kalender erscheint). Kopien sind ein Fehler.
+- **Launchpad-Kennzahl:** Welt-Datei des Moduls exportiert `<modulCamelCase>Summary = { kpis: [{ label, value, unit? }] }`
+  (z. B. `savingsSummary = { kpis: [{ label: 'Sparrate/Monat', value: '575 €' }] }`). Die erste Kennzahl steht auf der
+  Modulkachel des Rahmens „Launchpad“ (`app/src/preview/launchpad.js`).
+- **Szenarien:** `?scenario=erststart` leert alle Sammlungen (prüft Leerzustände + erste Aktion), `?scenario=stress`
+  verdreifacht Listen und verlängert Titel. Gezielte Werte optional per `export const scenarios = { erststart: {…}, stress: {…} }`
+  in der Welt-Datei. Jede Startseite und jedes Tier-1-Feature muss in beiden Szenarien gut aussehen.
+- **Umgebung:** `&env=offline` (Hinweisleiste), `&env=privacy` (Beträge maskiert), `&scale=2` (Schrift 200 % – nichts
+  darf abgeschnitten werden oder überlappen). Komponenten erhalten `ctx.env`, `ctx.privacy`, `ctx.fmt`, `ctx.now()`.
+- **Formatieren & Rechnen:** `ctx.fmt` = `app/src/lib/format.js` (fmtMoney, fmtPercent, fmtPP, fmtNumber, fmtDate,
+  fmtRelativeDay, fmtDuration, fmtWeight; de-DE, geschütztes Leerzeichen, echtes Minus). Beträge weiterhin über
+  `money(ctx, …)` (Privatsphäre). Wiederholungen nur über `app/src/core/recurrence.js` (`nextOccurrences`, `describeRule`),
+  Gesundheitswerte über `app/src/core/health.js`, Finanzmathematik über `app/src/core/finmath.js`.
+- **App-Rahmen:** Drei Rahmen (Tab-Leiste, Launchpad, Fokus mit Erfassen-Knopf) liefert die Runtime. Startseiten bauen
+  **keine eigene Modul-Navigation** (keine zweite Leiste unten). Die Bottom-Leiste ist 56–64 px hoch: fixierte Elemente
+  am unteren Rand vermeiden bzw. `var(--tk-size-bottom-nav)` als Abstand nutzen.
+- **Feature-Felder:** `tier` (1 täglich/kritisch, 2 regelmäßig, 3 selten), `acceptance`, `flows`, `interactions[].to`.
+  Module mit rechtlichem Bezug (Finanzen, Sparen, Trading) zeigen `legal-notice` in jeder Variante.
+- **Querschnitt-Bausteine** (in `components/crosscut/`, sobald vorhanden): `offline-banner`, `sync-status`,
+  `permission-card`, `recurrence-picker`, `undo-toast`, `link-chips`, `firstrun-card` – nutzen statt nachbauen.
+
 ## Gemeinsame Datenwelt (Persona „Ein Tag“)
 - `app/src/seed/world/`: `persona.js` (Jonas Keller, Bielefeld, Online-Shop „Nordlicht Studio“), `organisation.js`
   (Termine, Aufgaben), `finance.js` (Konten, Buchungen, Budgets, Abos, Sparpläne, Sparziele, Depot, Watchlist,
@@ -70,6 +97,9 @@ den Kern gehören in den Abschlussbericht.
    `await page.evaluate(() => window.__taktQA.run())`. Ziel: **kein fail, kein warn**.
 4. Zustände: `&state=empty`, `&state=loading`, `&state=error` (Mobile + Desktop) → kein fail.
 5. App-Modus (Launcher): `preview.html?app=1&version=dir:kompakt` (bzw. `dir:visuell`, `dir:fokus`) bei 390×844.
+   Rahmen je Version: kompakt = Tab-Leiste, visuell = Launchpad (Start ist das Modulraster; Modul über
+   `[data-launchpad-module="<modul>"]`), fokus = Heute + „Module“-Blatt + Erfassen (`[data-qa="nav-capture"]`).
+   Zusätzlich `&scenario=erststart`, `&scenario=stress`, `&env=offline`, `&scale=2` stichprobenartig prüfen.
    Über `[data-nav-module="<modul>"]` oder `window.__taktPreview.navigate('<featureId>')` zum Modul, dann die
    Navigationswege klicken. Die Route erkennst du an `.tk-app__crumb strong`. Alle `to`-Wege müssen funktionieren.
 6. Komponenten-Galerie: `preview.html?component=<id>&theme=horizon` für jede neue Komponente.

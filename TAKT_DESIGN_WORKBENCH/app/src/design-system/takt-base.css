@@ -252,3 +252,18 @@ h1, h2, h3, h4, p { margin: 0; }
 /* Umgebungshinweis (Offline / veraltet) */
 .tk-envbar { display: flex; align-items: center; gap: var(--tk-space-2); padding: var(--tk-space-2) var(--tk-space-3); margin-bottom: var(--tk-space-3); border-radius: var(--tk-radius-md);
   background: var(--tk-c-surface2); color: var(--tk-c-text-muted); font-size: var(--tk-fs-sm); border: 1px solid var(--tk-c-border); }
+
+/* ---- App-Rahmen (Shells) im App-Modus ---- */
+.tk-lpgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: var(--tk-space-3); }
+.bp-mobile .tk-lpgrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.tk-lptile { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; min-width: 0; min-height: 104px; padding: var(--tk-space-3) var(--tk-space-3); text-align: left;
+  border: 1px solid var(--tk-c-border); border-radius: var(--tk-radius-lg); background: var(--tk-c-surface); color: var(--tk-c-text); font: inherit; cursor: pointer; }
+.tk-lptile:hover { border-color: var(--tk-c-border-strong); }
+.tk-lptile:focus-visible { outline: 2px solid var(--tk-c-accent); outline-offset: 2px; }
+.tk-lptile__icon { width: 40px; height: 40px; border-radius: var(--tk-radius-md); display: grid; place-items: center; background: var(--tk-c-accent-soft); color: var(--tk-c-accent); margin-bottom: 4px; }
+.tk-lptile__kpi { font-size: var(--tk-fs-sm); color: var(--tk-c-text-muted); max-width: 100%; }
+.tk-bottomnav--fokus { align-items: center; }
+.tk-bottomnav--fokus .tk-navfab { flex: 0 0 auto; width: 56px; height: 56px; margin-top: -22px; border-radius: 50%; background: var(--tk-c-accent); color: var(--tk-c-text-on-accent);
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--tk-c-accent) 35%, transparent); gap: 0; }
+.tk-bottomnav--fokus .tk-navfab:focus-visible { outline: 2px solid var(--tk-c-text); outline-offset: 2px; }
+.tk-app__capture { margin-left: var(--tk-space-2); }

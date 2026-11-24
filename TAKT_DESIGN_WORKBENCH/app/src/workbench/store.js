@@ -95,8 +95,9 @@ export async function syncFromServer() {
   } catch { return false; } finally { syncing = false; }
 }
 
-async function persistNow(keepalive = false) {
+async function persistNow(keepalive = false, attempt = 0) {
   const json = JSON.stringify(state);
+  const sentSeq = opSeq;
   try { localStorage.setItem(STORAGE_KEY, json); } catch (e) { persistence.error = 'Browser-Speicher voll: ' + e.message; }
   if (!persistence.server) { persistence.status = 'saved'; persistence.lastSaved = nowIso(); notify(); return; }
   persistence.status = 'saving'; notify();
@@ -110,6 +111,7 @@ async function persistNow(keepalive = false) {
     if (serverRev != null) headers['X-Base-Rev'] = String(serverRev);
     const sentRev = state.meta.rev;
     const r = await fetch('/api/state', { method: 'PUT', headers, body: json, keepalive });
+    if (r.status === 409 && attempt < 2 && await rebaseOnServer()) { notify(); return persistNow(keepalive, attempt + 1); }
     if (r.status === 409) {
       persistence.status = 'conflict'; persistence.mode = 'browser';
       persistence.error = 'Konflikt: Ein anderer Tab oder Prozess hat die Datei zwischenzeitlich gespeichert. Dein Stand liegt im Browser-Speicher. Seite neu laden, um den Datei-Stand zu sehen (dein Stand bleibt als Konflikt-Kopie unter „Daten & Backup“).';
@@ -117,7 +119,7 @@ async function persistNow(keepalive = false) {
       notify(); return;
     }
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
-    serverRev = sentRev;
+    serverRev = sentRev; pendingOps = pendingOps.filter((o) => o.seq > sentSeq);
     persistence.status = persistence.status === 'dirty' ? 'dirty' : 'saved'; persistence.lastSaved = nowIso(); persistence.error = null; persistence.mode = 'file';
   } catch (e) {
     persistence.status = 'error'; persistence.error = `Datei-Speichern fehlgeschlagen (${e.message}) – Stand liegt im Browser-Speicher.`; persistence.mode = 'browser';
@@ -147,16 +149,40 @@ export function mutate(summary, recipe, meta = {}) {
   }
   lastCoalesce = { key: meta.coalesce || null, ts: Date.now() };
   state = draft;
+  pendingOps.push({ seq: ++opSeq, summary, recipe, meta });
   schedulePersist();
   notify();
   return result;
+}
+
+// ---- Konflikt-Auflösung (Rebase) ----
+// Noch nicht gespeicherte Änderungen werden als Rezepte gemerkt. Meldet der Server einen Konflikt (anderer Tab,
+// z. B. Demo-Launcher, hat zwischenzeitlich gespeichert), werden sie auf den Server-Stand neu angewendet.
+let pendingOps = []; let opSeq = 0;
+const opaque = () => pendingOps.push({ seq: ++opSeq, opaque: true }); // Undo/Redo/Import: nicht wiederholbar
+async function rebaseOnServer() {
+  if (pendingOps.some((o) => o.opaque)) return false;
+  try {
+    const r = await fetchJson('/api/state'); if (!r.ok) return false;
+    const srv = await r.json();
+    let next = migrate(srv); const baseRev = srv.meta?.rev || 0;
+    for (const op of pendingOps) {
+      const draft = clone(next); op.recipe(draft);
+      draft.meta.updatedAt = nowIso();
+      if (op.summary && op.meta?.history !== false) draft.history.unshift({ id: uid('h'), ts: draft.meta.updatedAt, type: op.meta?.type || 'update', entity: op.meta?.entity || null, entityId: op.meta?.entityId || null, featureId: op.meta?.featureId || null, moduleId: op.meta?.moduleId || null, summary: op.summary });
+      next = draft;
+    }
+    next.meta.rev = baseRev + 1;
+    state = next; serverRev = baseRev; adoptPending = null;
+    return true;
+  } catch { return false; }
 }
 export const canUndo = () => undoStack.length > 0;
 export const canRedo = () => redoStack.length > 0;
 // Undo/Redo betreffen nur Inhalte – Einstellungen (Viewport, Theme …) und QA-Ergebnisse bleiben erhalten.
 const restoreFrom = (snap) => ({ ...snap, settings: state.settings, qa: state.qa, meta: { ...snap.meta, updatedAt: nowIso(), rev: (state.meta.rev || 0) + 1 } });
-export function undo() { if (!undoStack.length) return; redoStack.push(state); state = restoreFrom(undoStack.pop()); schedulePersist(); notify(); }
-export function redo() { if (!redoStack.length) return; undoStack.push(state); state = restoreFrom(redoStack.pop()); schedulePersist(); notify(); }
+export function undo() { if (!undoStack.length) return; redoStack.push(state); state = restoreFrom(undoStack.pop()); opaque(); schedulePersist(); notify(); }
+export function redo() { if (!redoStack.length) return; undoStack.push(state); state = restoreFrom(redoStack.pop()); opaque(); schedulePersist(); notify(); }
 
 // -------------------------------------------------------------- Helfer ---
 const F = (s, id) => { const f = s.features.find((x) => x.id === id); if (!f) throw new Error(`Feature ${id} nicht gefunden`); return f; };

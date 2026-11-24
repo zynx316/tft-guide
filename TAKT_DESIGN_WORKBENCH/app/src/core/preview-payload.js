@@ -1,7 +1,7 @@
 // Baut das Payload für die Preview-Runtime (Workbench, Vergleich, QA, Direktlinks).
 import { getComponent } from '../library/registry.js';
 import { migrate } from './schema.js';
-import { resolveVariant, moduleHome, navigationRules, versionById, areaOf } from './directions.js';
+import { resolveVariant, moduleHome, navigationRules, versionById, areaOf, shellOf } from './directions.js';
 import { isWorldRef, worldKey } from '../seed/world/index.js';
 import { getWorld } from './world.js';
 
@@ -89,7 +89,7 @@ export function buildAppPayload(state, versionId = 'arbeitsstand', opts = {}) {
     favorites: (state.app?.favorites || []).filter((id) => modules.some((m) => m.id === id)),
     features: sortedFeatures, startFeatureId: startId, route: opts.route || (version.kind === 'pin' ? version.featureId : null),
     coverage: { own, total }, revision: opts.revision || state.meta?.rev || 0,
-    scenario: opts.scenario || 'alltag', env: envOf(opts),
+    scenario: opts.scenario || 'alltag', env: envOf(opts), shell: opts.shell || shellOf(state, version),
     world: getWorld(state, opts.scenario || 'alltag'), privacy: !!opts.privacy,
   };
 }

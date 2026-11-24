@@ -17,6 +17,7 @@ import { THEME_IDS, themes } from '../design-system/tokens.js';
 import { LAUNCHER_DEVICES, launcherDevice } from './devices.js';
 import { uid, cx } from '../lib/util.js';
 import { SCENARIOS } from '../core/world.js';
+import { SHELLS } from '../preview/launchpad.js';
 import qrcode from '../../vendor/qrcode.module.js';
 
 const LOCAL = ['localhost', '127.0.0.1', '[::1]', ''].includes(location.hostname);
@@ -204,6 +205,7 @@ function Launcher({ initialState }) {
   const [scenario, setScenario] = useState(prefs0.scenario || 'alltag');
   const [offline, setOffline] = useState(!!prefs0.offline);
   const [textScale, setTextScale] = useState(prefs0.textScale || 1);
+  const [shellMode, setShellMode] = useState(prefs0.shellMode || 'version');
   fbCtx = { scenario, stateRev: state.meta?.rev || 0, env: [offline && 'offline', privacy && 'privacy', textScale !== 1 && `schrift-${Math.round(textScale * 100)}`].filter(Boolean).join(',') || undefined };
   const [present, setPresent] = useState(false);
   const [mobileIdx, setMobileIdx] = useState(0);
@@ -212,12 +214,12 @@ function Launcher({ initialState }) {
   const frames = useRef({});
   const mobile = vw < 760;
   useEffect(() => { const on = () => { setVw(window.innerWidth); setVh(window.innerHeight); }; window.addEventListener('resize', on); return () => window.removeEventListener('resize', on); }, []);
-  useEffect(() => { ls.set(PREFS_KEY, { selected, deviceId, themeMode, coupled, level, privacy, scenario, offline, textScale }); }, [selected, deviceId, themeMode, coupled, level, privacy, scenario, offline, textScale]);
+  useEffect(() => { ls.set(PREFS_KEY, { selected, deviceId, themeMode, coupled, level, privacy, scenario, offline, textScale, shellMode }); }, [selected, deviceId, themeMode, coupled, level, privacy, scenario, offline, textScale, shellMode]);
   useEffect(() => { flushQueue(); }, []);
 
   const device = launcherDevice(deviceId);
   const shown = mobile ? [versions.find((v) => v.id === selected[mobileIdx % Math.max(1, selected.length)]) || versions[0]] : selected.map((id) => versions.find((v) => v.id === id)).filter(Boolean);
-  const payloads = useMemo(() => Object.fromEntries(shown.map((v) => [v.id, buildAppPayload(state, v.id, { theme: themeMode === 'version' ? undefined : themeMode, revision: 1, privacy, scenario, env: { offline, scale: textScale } })])), [state, shown.map((v) => v.id).join(), themeMode, privacy, scenario, offline, textScale]);
+  const payloads = useMemo(() => Object.fromEntries(shown.map((v) => [v.id, buildAppPayload(state, v.id, { theme: themeMode === 'version' ? undefined : themeMode, revision: 1, privacy, scenario, env: { offline, scale: textScale }, shell: shellMode === 'version' ? undefined : shellMode })])), [state, shown.map((v) => v.id).join(), themeMode, privacy, scenario, offline, textScale, shellMode]);
 
   // Handy: Android-/Browser-Zurück geht in der App eine Ebene zurück statt den Launcher zu verlassen.
   const depthRef = useRef(1);
@@ -230,7 +232,9 @@ function Launcher({ initialState }) {
   const onRoute = useCallback((vid) => (r) => {
     if (mobile) { if ((r.depth || 1) > depthRef.current) history.pushState({ takt: r.depth }, ''); depthRef.current = r.depth || 1; }
     setRoutes((rs) => ({ ...rs, [vid]: r }));
-    if (coupled && !r.synced) for (const [id, el] of Object.entries(frames.current)) if (id !== vid && el?.contentWindow?.__taktPreview?.navigate) el.contentWindow.__taktPreview.navigate(r.featureId);
+    // Gekoppelt werden nur Wechsel, die der Nutzer in diesem Rahmen ausgelöst hat – keine Startrouten, keine
+    // rahmenspezifischen Seiten (Launchpad) und keine selbst weitergereichten Navigationen (kein Pingpong).
+    if (coupled && !r.initial && !r.external && !r.shellPage) for (const [id, el] of Object.entries(frames.current)) if (id !== vid && el?.contentWindow?.__taktPreview?.navigate) el.contentWindow.__taktPreview.navigate(r.featureId);
   }, [coupled, mobile]);
 
   useEffect(() => {
@@ -245,7 +249,7 @@ function Launcher({ initialState }) {
   }, [mobile, selected.length]);
 
   const toggleVersion = (id) => setSelected((s) => (s.includes(id) ? (s.length > 1 ? s.filter((x) => x !== id) : s) : [...s, id].slice(-4)));
-  const routeText = (vid) => { const r = routes[vid]; const f = state.features.find((x) => x.id === r?.featureId); const m = state.modules.find((x) => x.id === r?.moduleId); return f ? `${m?.name} › ${f.name}` : 'Start'; };
+  const routeText = (vid) => { const r = routes[vid]; if (r?.shellPage) return 'Übersicht (Launchpad)'; const f = state.features.find((x) => x.id === r?.featureId); const m = state.modules.find((x) => x.id === r?.moduleId); return f ? `${m?.name} › ${f.name}` : 'Start'; };
 
   // ---- Handy: Vollbild + schwebender Versionsschalter ----
   if (mobile) {
@@ -290,6 +294,7 @@ function Launcher({ initialState }) {
       <div class="ln-head__row ln-head__row--tools">
         <${Select} size="sm" style="width:auto" value=${deviceId} onChange=${setDeviceId} options=${LAUNCHER_DEVICES.map((d) => ({ value: d.id, label: `${d.label} · ${d.width}×${d.height}` }))} aria-label="Gerät" />
         <${Select} size="sm" style="width:auto" value=${themeMode} onChange=${setThemeMode} options=${[{ value: 'version', label: 'Theme: je Version' }, ...THEME_IDS.map((t) => ({ value: t, label: `Theme: ${themes[t].label}` }))]} aria-label="Theme" />
+        <${Select} size="sm" style="width:auto" value=${shellMode} onChange=${setShellMode} options=${[{ value: 'version', label: 'Rahmen: je Version' }, ...SHELLS.map((x) => ({ value: x.id, label: `Rahmen: ${x.label}` }))]} aria-label="App-Rahmen" title="App-Rahmen (Navigation) – unabhängig von der Richtung vergleichen" data-qa="ln-shell" />
         <${Btn} size="sm" icon="link-2" pressed=${coupled} onClick=${() => setCoupled(!coupled)} title="Navigation in allen Versionen gleichzeitig">Gekoppelt<//>
         <${Btn} size="sm" icon=${privacy ? 'eye-off' : 'eye'} pressed=${privacy} onClick=${() => setPrivacy(!privacy)} title="Beträge ausblenden (Privatsphäre-Modus)">Beträge<//>
         <${Select} size="sm" style="width:auto" value=${scenario} onChange=${setScenario} options=${SCENARIOS.map((x) => ({ value: x.id, label: `Szenario: ${x.label}` }))} aria-label="Szenario" title=${SCENARIOS.find((x) => x.id === scenario)?.hint} data-qa="ln-scenario" />

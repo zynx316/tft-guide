@@ -96,23 +96,26 @@ for (const m of state.modules.filter((x) => !x.archived)) {
   if (orphan.length > 2) warnings.push(`Modul ${m.id}: ${orphan.length} Features nur über das Bereichsmenü erreichbar (${orphan.slice(0, 4).join(', ')}${orphan.length > 4 ? ' …' : ''}) – Navigationsregeln (interaction.to) ergänzen`);
 }
 
-// 3c) Verbotene Begriffe in Gesundheitsbereichen (Liste: docs/HEALTH_GUIDELINES.md)
-const hg = path.join(ROOT, 'docs/HEALTH_GUIDELINES.md');
-if (fs.existsSync(hg)) {
-  const block = (fs.readFileSync(hg, 'utf8').match(/<!-- verbotsbegriffe:start -->([\s\S]*?)<!-- verbotsbegriffe:end -->/) || [])[1] || '';
-  // Format (siehe Leitlinie): je Zeile ein Teilwort (Groß/klein egal) oder /Regex/Flags; „#“ = Kommentar
-  const res = block.split('\n').map((l) => l.trim()).filter((l) => l && !l.startsWith('#') && !l.startsWith('```') && !l.startsWith('<!--')).map((l) => {
+// 3c) Begriffslisten der Leitlinien: Gesundheit (verboten/warnen), Finanzen (verboten). Zitate in „…“ sind erlaubt.
+const termBlock = (file, name) => {
+  const f = path.join(ROOT, 'docs', file); if (!fs.existsSync(f)) return [];
+  const block = (fs.readFileSync(f, 'utf8').match(new RegExp(`<!-- ${name}:start -->([\\s\\S]*?)<!-- ${name}:end -->`)) || [])[1] || '';
+  // Format: je Zeile ein Teilwort (Groß/klein egal) oder /Regex/Flags; „#“ = Kommentar
+  return block.split('\n').map((l) => l.trim()).filter((l) => l && !l.startsWith('#') && !l.startsWith('```') && !l.startsWith('<!--')).map((l) => {
     const m = l.match(/^\/(.+)\/([a-z]*)$/);
     try { return m ? new RegExp(m[1], m[2].includes('u') ? m[2] : `${m[2]}u`) : new RegExp(l.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'iu'); } catch { return null; }
   }).filter(Boolean);
-  const healthFiles = [...['fitness', 'nutrition', 'habits'].flatMap((a) => (fs.existsSync(path.join(SRC, 'library/components', a)) ? walk(path.join(SRC, 'library/components', a)) : [])),
-    ...['fitness', 'nutrition', 'habits'].map((m) => path.join(SRC, 'seed/modules', `${m}.js`)), ...['fitness', 'nutrition'].map((m) => path.join(SRC, 'seed/world', `${m}.js`))].filter((f) => fs.existsSync(f) && f.endsWith('.js'));
-  for (const f of healthFiles) fs.readFileSync(f, 'utf8').split('\n').forEach((line, i) => {
-    if (/^\s*(\/\/|\*)/.test(line)) return;
-    const strs = line.match(/(['`"])(?:(?!\1).)*\1/g) || [];
-    for (const raw of strs) { const st = raw.replace(/„[^“]*“/g, ''); for (const re of res) { const hit = st.match(re); if (hit) { warnings.push(`${rel(f)}:${i + 1}: Begriff „${hit[0].trim()}“ widerspricht den Gesundheits-Leitlinien (docs/HEALTH_GUIDELINES.md)`); break; } } }
-  });
-}
+};
+const filesOf = (areas, modules) => [...areas.flatMap((a) => (fs.existsSync(path.join(SRC, 'library/components', a)) ? walk(path.join(SRC, 'library/components', a)) : [])),
+  ...modules.flatMap((m) => [path.join(SRC, 'seed/modules', `${m}.js`), path.join(SRC, 'seed/world', `${m}.js`)])].filter((f) => fs.existsSync(f) && f.endsWith('.js'));
+const scanTerms = (files, res, msg) => { for (const f of files) fs.readFileSync(f, 'utf8').split('\n').forEach((line, i) => {
+  if (/^\s*(\/\/|\*)/.test(line)) return;
+  for (const raw of line.match(/(['`"])(?:(?!\1).)*\1/g) || []) { const st = raw.replace(/„[^“]*“/g, ''); for (const re of res) { const hit = st.match(re); if (hit) { warnings.push(`${rel(f)}:${i + 1}: „${hit[0].trim()}“ – ${msg}`); break; } } }
+}); };
+const health = filesOf(['fitness', 'nutrition', 'habits', 'health', 'goals'], ['fitness', 'nutrition', 'habits', 'goals']);
+scanTerms(health, termBlock('HEALTH_GUIDELINES.md', 'verbotsbegriffe'), 'widerspricht den Gesundheits-Leitlinien (docs/HEALTH_GUIDELINES.md)');
+scanTerms(health, termBlock('HEALTH_GUIDELINES.md', 'warnbegriffe'), 'Warnbegriff laut docs/HEALTH_GUIDELINES.md – Formulierung prüfen');
+scanTerms(filesOf(['finance', 'savings', 'trading'], ['finance', 'savings', 'trading']), termBlock('FINANCE_GUIDELINES.md', 'finanzbegriffe'), 'widerspricht den Finanz-Leitlinien (docs/FINANCE_GUIDELINES.md)');
 
 // 4) ASCII-Umlaute in sichtbaren Texten (häufige Fälle)
 const ascii = /\b(fuer|Fuer|ueber|Ueber|Uebersicht|waehl\w*|Waehl\w*|moeglich\w*|koennen|muessen|Aenderung\w*|aender\w*|Pruef\w*|pruef\w*|faellig|Faellig\w*|zurueck|Rueck\w*|Loesch\w*|loesch\w*|hinzufueg\w*|Hinzufueg\w*|Oeffn\w*|oeffn\w*|Groesse|groesser|naechst\w*|Naechst\w*|spaeter|Eintraege|Schluessel|Bestaetig\w*|bestaetig\w*)\b/;

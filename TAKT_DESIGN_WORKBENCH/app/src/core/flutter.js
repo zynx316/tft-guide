@@ -105,4 +105,11 @@ export const COMPONENT_FLUTTER = {
 };
 
 /** Flutter-Hinweis für eine Komponente (eigene Angabe im Vertrag > Tabelle > generisch). */
-export const flutterHintFor = (def) => def?.flutter || COMPONENT_FLUTTER[def?.id] || `Eigenes Widget „Takt${(def?.id || 'Komponente').replace(/(^|-)([a-z])/g, (_, __, c) => c.toUpperCase())}“ nach Vorbild der Library-Komponente`;
+/** Flutter-Hinweis einer Komponente: Text oder Vertrag { widget, propMap, events } (neue Komponenten). */
+const fmtFlutter = (f) => {
+  if (!f || typeof f !== 'object') return f;
+  const props = Object.entries(f.propMap || {}).map(([k, v]) => `${k} → ${v}`).join(', ');
+  const events = Array.isArray(f.events) ? f.events.join(', ') : Object.entries(f.events || {}).map(([k, v]) => `${k} → ${v}`).join(', ');
+  return [f.widget, props && `Props: ${props}`, events && `Events: ${events}`].filter(Boolean).join(' · ');
+};
+export const flutterHintFor = (def) => fmtFlutter(def?.flutter) || COMPONENT_FLUTTER[def?.id] || `Eigenes Widget „Takt${(def?.id || 'Komponente').replace(/(^|-)([a-z])/g, (_, __, c) => c.toUpperCase())}“ nach Vorbild der Library-Komponente`;

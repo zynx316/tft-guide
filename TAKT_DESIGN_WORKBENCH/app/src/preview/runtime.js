@@ -17,6 +17,7 @@ import { Layout } from './layouts.js';
 import { runProbe } from './qa-probe.js';
 import { clone } from '../lib/util.js';
 import * as FMT from '../lib/format.js';
+import { Launchpad, CaptureSheet, LAUNCHPAD } from './launchpad.js';
 import { isWorldRef, worldKey } from '../seed/world/index.js';
 
 const styleEl = document.createElement('style');
@@ -80,7 +81,7 @@ function Block({ block, store, ctx, forcedState }) {
 // ------------------------------------------------------------- App-Shell ---
 // Generischer TAKT-App-Rahmen. Im Feature-Modus melden Klicks nur Events; im App-Modus (Demo-Launcher)
 // navigiert er wirklich (Module, Features eines Moduls, Zurück).
-function AppShell({ chrome, bp, modules = [], activeModule, title, moduleName, canBack, onBack, onNavModule, onMore, onTitle, sideFeatures, activeFeature, onFeature, onSearch, onBell, children }) {
+function AppShell({ chrome, bp, modules = [], activeModule, title, moduleName, canBack, onBack, onNavModule, onMore, onTitle, sideFeatures, activeFeature, onFeature, onSearch, onBell, shell = 'tabs', onHome, onCapture, homeModule = 'home', children }) {
   if (!chrome) return html`<div class="tk-bare">${children}</div>`;
   const mods = modules.slice(0, 12);
   document.documentElement.classList.toggle('tk-has-bottomnav', bp === 'mobile');
@@ -89,27 +90,44 @@ function AppShell({ chrome, bp, modules = [], activeModule, title, moduleName, c
     : strong);
   const back = canBack && html`<button class="tk-btn tk-btn--ghost tk-btn--icon" aria-label="Zurück" onClick=${onBack} data-qa="app-back"><${Icon} name="arrow-left" /></button>`;
   if (bp === 'mobile') {
-    const bottom = mods.slice(0, 4); const act = mods.find((m) => m.id === activeModule);
-    if (act && !bottom.find((m) => m.id === act.id)) bottom[3] = act;
-    return html`<div class="tk-app tk-app--mobile">
+    const navBtn = (m, label = m.name, icon = m.icon) => html`<button type="button" aria-current=${m.id === activeModule ? 'page' : undefined} onClick=${() => onNavModule && onNavModule(m.id)} data-nav-module=${m.id}><${Icon} name=${icon} size=${21} /><span>${label}</span></button>`;
+    let nav;
+    if (shell === 'fokus') {
+      const home = mods.find((m) => m.id === homeModule) || mods[0];
+      nav = html`<nav class="tk-bottomnav tk-bottomnav--fokus" aria-label="Navigation">${home && navBtn(home, 'Heute', 'sun')}
+        <button type="button" onClick=${onMore} data-nav-more aria-current=${home && activeModule && activeModule !== home.id ? 'page' : undefined}><${Icon} name="layout-grid" size=${21} /><span>Module</span></button>
+        <button type="button" class="tk-navfab" onClick=${onCapture} aria-label="Erfassen" data-qa="nav-capture"><${Icon} name="plus" size=${26} /></button>
+        <button type="button" onClick=${onSearch} data-qa="app-search"><${Icon} name="search" size=${21} /><span>Suche</span></button>
+        <button type="button" onClick=${onBell} data-qa="app-bell"><${Icon} name="bell" size=${21} /><span>Mitteilungen</span></button></nav>`;
+    } else if (shell === 'launchpad') {
+      const bottom = mods.filter((m) => m.id !== homeModule).slice(0, 3); const act = mods.find((m) => m.id === activeModule);
+      if (act && act.id !== homeModule && !bottom.find((m) => m.id === act.id)) bottom[2] = act;
+      nav = html`<nav class="tk-bottomnav" aria-label="Module"><button type="button" aria-current=${!activeModule ? 'page' : undefined} onClick=${onHome} data-nav-launchpad><${Icon} name="layout-grid" size=${21} /><span>Start</span></button>
+        ${bottom.map((m) => navBtn(m))}<button type="button" onClick=${onMore} data-nav-more><${Icon} name="menu" size=${21} /><span>Alle</span></button></nav>`;
+    } else {
+      const bottom = mods.slice(0, 4); const act = mods.find((m) => m.id === activeModule);
+      if (act && !bottom.find((m) => m.id === act.id)) bottom[3] = act;
+      nav = html`<nav class="tk-bottomnav" aria-label="Module">${bottom.map((m) => navBtn(m))}
+        <button type="button" onClick=${onMore} data-nav-more><${Icon} name="menu" size=${21} /><span>Mehr</span></button></nav>`;
+    }
+    return html`<div class=${`tk-app tk-app--mobile tk-shell--${shell}`}>
       <div class="tk-app__top">${back}<div class="tk-app__crumb">${titleBtn(html`<strong class="tk-truncate">${title || moduleName}</strong>`)}</div>
-        <button class="tk-btn tk-btn--ghost tk-btn--icon" aria-label="Suche" onClick=${onSearch} data-qa="app-search"><${Icon} name="search" /></button>
-        <button class="tk-btn tk-btn--ghost tk-btn--icon" aria-label="Mitteilungen" onClick=${onBell} data-qa="app-bell"><${Icon} name="bell" /></button></div>
-      <main class="tk-app__content">${children}</main>
-      <nav class="tk-bottomnav" aria-label="Module">${bottom.map((m) => html`<button type="button" aria-current=${m.id === activeModule ? 'page' : undefined} onClick=${() => onNavModule && onNavModule(m.id)} data-nav-module=${m.id}><${Icon} name=${m.icon} size=${21} /><span>${m.name}</span></button>`)}
-        <button type="button" onClick=${onMore} data-nav-more><${Icon} name="menu" size=${21} /><span>Mehr</span></button></nav>
+        ${shell !== 'fokus' && html`<button class="tk-btn tk-btn--ghost tk-btn--icon" aria-label="Suche" onClick=${onSearch} data-qa="app-search"><${Icon} name="search" /></button>
+        <button class="tk-btn tk-btn--ghost tk-btn--icon" aria-label="Mitteilungen" onClick=${onBell} data-qa="app-bell"><${Icon} name="bell" /></button>`}</div>
+      <main class="tk-app__content">${children}</main>${nav}
     </div>`;
   }
   return html`<div class=${`tk-app tk-app--${bp}`}>
     <nav class="tk-app__nav" aria-label="Module">
       <div class="tk-app__brand"><span class="tk-app__logo">T</span><span>TAKT</span></div>
-      <div class="tk-app__navlist">${mods.map((m) => html`<button type="button" class="tk-navitem" aria-current=${m.id === activeModule ? 'page' : undefined} onClick=${() => onNavModule && onNavModule(m.id)} title=${m.name} data-nav-module=${m.id}><${Icon} name=${m.icon} size=${bp === 'tablet' ? 20 : 18} /><span>${m.name}</span></button>
+      <div class="tk-app__navlist">${shell === 'launchpad' && onHome && html`<button type="button" class="tk-navitem" aria-current=${!activeModule ? 'page' : undefined} onClick=${onHome} title="Alle Module" data-nav-launchpad><${Icon} name="layout-grid" size=${bp === 'tablet' ? 20 : 18} /><span>Übersicht</span></button>`}${mods.map((m) => html`<button type="button" class="tk-navitem" aria-current=${m.id === activeModule ? 'page' : undefined} onClick=${() => onNavModule && onNavModule(m.id)} title=${m.name} data-nav-module=${m.id}><${Icon} name=${m.icon} size=${bp === 'tablet' ? 20 : 18} /><span>${m.name}</span></button>
         ${bp === 'desktop' && m.id === activeModule && sideFeatures?.length > 1 && html`<div class="tk-navsub">${sideFeatures.map((f) => html`<button type="button" class="tk-navsub__item" aria-current=${f.id === activeFeature ? 'page' : undefined} onClick=${() => onFeature(f.id)}>${f.name}</button>`)}</div>`}`)}</div>
     </nav>
     <div class="tk-app__main">
       <div class="tk-app__top">${back}<div class="tk-app__crumb"><span>${moduleName}</span><${Icon} name="chevron-right" size=${14} />${titleBtn(html`<strong class="tk-truncate">${title}</strong>`)}</div>
         <button class="tk-btn tk-btn--ghost tk-btn--icon" aria-label="Suche" onClick=${onSearch} data-qa="app-search"><${Icon} name="search" /></button>
         <button class="tk-btn tk-btn--ghost tk-btn--icon" aria-label="Mitteilungen" onClick=${onBell} data-qa="app-bell"><${Icon} name="bell" /></button>
+        ${shell === 'fokus' && onCapture && html`<button class="tk-btn tk-btn--primary tk-app__capture" onClick=${onCapture} data-qa="nav-capture"><${Icon} name="plus" size=${16} />Erfassen</button>`}
         <span class="tk-avatar" style="width:30px;height:30px" aria-label="Profil"><${Icon} name="user" size=${16} /></span></div>
       <main class="tk-app__content">${children}</main>
     </div>
@@ -229,9 +247,11 @@ let appBack = null;
 function AppPlayer({ payload }) {
   const { width, bp } = useViewport();
   const features = payload.features || {};
-  const start = features[payload.route] ? payload.route : features[payload.startFeatureId] ? payload.startFeatureId : Object.keys(features)[0];
+  const shell = payload.shell || 'tabs';
+  const start = features[payload.route] ? payload.route : shell === 'launchpad' ? LAUNCHPAD : features[payload.startFeatureId] ? payload.startFeatureId : Object.keys(features)[0];
   const [stack, setStack] = useState([{ fid: start, params: null }]);
   const cache = useRef(new Map()).current;
+  const routed = useRef(false); const externalNav = useRef(false);
   const world = useWorld(payload.world);
   const top = stack[stack.length - 1];
   const fid = top.fid;
@@ -240,13 +260,18 @@ function AppPlayer({ payload }) {
   const moduleFeatures = (payload.modules || []).length ? Object.values(features).filter((x) => x.moduleId === f?.moduleId) : [];
 
   const go = (to, { replace = false, reset = false, params = null } = {}) => {
-    if (!features[to] || (to === fid && !params)) return;
+    if ((!features[to] && to !== LAUNCHPAD) || (to === fid && !params)) return;
     if (params) cache.delete(`${to}|${JSON.stringify(params)}`);
     const entry = { fid: to, params };
     setStack((st) => (reset ? [entry] : replace ? [...st.slice(0, -1), entry] : [...st, entry]));
   };
   // Von außen (gekoppelte Launcher-Rahmen): Modulwechsel setzt den Verlauf zurück wie ein Tipp auf die Leiste.
-  appNavigate = (to, params = null) => go(to, { reset: features[to] && features[to].moduleId !== f?.moduleId, params });
+  appNavigate = (to, params = null) => {
+    if (to === LAUNCHPAD && shell !== 'launchpad') return;
+    if ((!features[to] && to !== LAUNCHPAD) || (to === fid && !params)) return;
+    externalNav.current = true;
+    go(to, { reset: to === LAUNCHPAD || (features[to] && features[to].moduleId !== f?.moduleId), params });
+  };
   const goModule = (mid) => { const m = (payload.modules || []).find((x) => x.id === mid); if (m?.home) go(m.home, { reset: true }); };
   const back = () => { if (ov.dialogs?.length) return ov.closeDialog(ov.dialogs[ov.dialogs.length - 1].id); setStack((st) => (st.length > 1 ? st.slice(0, -1) : st)); };
   appBack = back;
@@ -259,7 +284,8 @@ function AppPlayer({ payload }) {
 
   useEffect(() => {
     probePayload = f ? { mode: 'feature', theme: payload.theme, state: payload.state, feature: { id: f.id, name: f.name }, variant: f.variant } : null;
-    post({ type: 'route', featureId: fid, moduleId: f?.moduleId, depth: stack.length, title: f?.name, sketch: !f?.variant });
+    post({ type: 'route', featureId: fid, moduleId: f?.moduleId, depth: stack.length, title: fid === LAUNCHPAD ? 'Übersicht' : f?.name, sketch: fid !== LAUNCHPAD && !f?.variant, initial: !routed.current, shellPage: fid === LAUNCHPAD, external: externalNav.current });
+    routed.current = true; externalNav.current = false;
     document.querySelector('.tk-app__content')?.scrollTo?.(0, 0); window.scrollTo(0, 0);
   }, [fid]);
   useEffect(() => {
@@ -278,11 +304,15 @@ function AppPlayer({ payload }) {
       <span class="tk-modgrid__icon"><${Icon} name=${m.icon} size=${22} /></span><span class="tk-truncate" style="max-width:100%">${m.name}</span></button>`)}</div>`)}` });
 
   const navModules = payload.favorites?.length ? [...payload.favorites.map((id) => payload.modules.find((m) => m.id === id)).filter(Boolean), ...payload.modules.filter((m) => !payload.favorites.includes(m.id))] : payload.modules;
-  return html`<${AppShell} chrome=${payload.chrome !== false} bp=${bp} modules=${navModules} activeModule=${f?.moduleId} moduleName=${mod?.name} title=${f?.name}
+  const capture = () => (features['system.capture']?.variant ? go('system.capture') : ov.openDialog({ title: 'Erfassen', body: (close) => html`<${CaptureSheet} close=${close} world=${world} today=${new Date(payload.today || DEFAULT_TODAY)} toast=${ov.toast} emit=${emit} />` }));
+  const isPad = fid === LAUNCHPAD;
+  return html`<${AppShell} chrome=${payload.chrome !== false} bp=${bp} modules=${navModules} activeModule=${f?.moduleId} moduleName=${isPad ? 'TAKT' : mod?.name} title=${isPad ? 'Übersicht' : f?.name}
+      shell=${shell} onHome=${() => go(LAUNCHPAD, { reset: true })} onCapture=${capture} homeModule=${(payload.modules || [])[0]?.id}
       canBack=${stack.length > 1} onBack=${back} onNavModule=${goModule} onMore=${moreSheet} onTitle=${moduleFeatures.length > 1 ? featureSheet : null}
       sideFeatures=${moduleFeatures.filter((x) => x.variant)} activeFeature=${fid} onFeature=${(id) => go(id)}
       onSearch=${() => (features['system.search'] ? go('system.search') : ov.toast('Globale Suche – noch kein Design'))} onBell=${() => (features['system.notifications'] ? go('system.notifications') : ov.toast('Mitteilungen – noch kein Design'))}>
-    ${f?.variant ? html`<${Screen} key=${`${fid}|${JSON.stringify(top.params)}`} cacheKey=${`${fid}|${JSON.stringify(top.params)}`} cache=${cache} variant=${f.variant} demoData=${f.demoData} theme=${payload.theme} today=${payload.today} forcedState=${payload.state} overlays=${ov} emit=${emit} bp=${bp} width=${width} world=${world} privacy=${payload.privacy} params=${top.params} env=${payload.env} />` : f ? html`<${SketchScreen} feature=${f} />` : html`<${NoVariant} />`}
+    ${isPad ? html`<${Launchpad} modules=${payload.modules || []} world=${world.data} today=${new Date(payload.today || DEFAULT_TODAY)} privacy=${payload.privacy} onOpen=${goModule} />`
+    : f?.variant ? html`<${Screen} key=${`${fid}|${JSON.stringify(top.params)}`} cacheKey=${`${fid}|${JSON.stringify(top.params)}`} cache=${cache} variant=${f.variant} demoData=${f.demoData} theme=${payload.theme} today=${payload.today} forcedState=${payload.state} overlays=${ov} emit=${emit} bp=${bp} width=${width} world=${world} privacy=${payload.privacy} params=${top.params} env=${payload.env} />` : f ? html`<${SketchScreen} feature=${f} />` : html`<${NoVariant} />`}
   <//><${Overlays} dialogs=${ov.dialogs} closeDialog=${ov.closeDialog} toasts=${ov.toasts} />`;
 }
 
@@ -322,7 +352,7 @@ if (params.get('feature') || params.get('component') || params.get('app')) {
     const opts = { theme: params.get('theme') || undefined, state: params.get('state') || 'default', chrome: params.get('chrome') !== '0', scenario: params.get('scenario') || undefined,
       privacy: envList.includes('privacy'), env: { offline: envList.includes('offline'), stale: envList.includes('stale'), scale: Number(params.get('scale')) || 1 } };
     if (params.get('component')) return renderPayload(buildComponentPayload(params.get('component'), opts));
-    if (params.get('app')) { const st = await loadStateStandalone(); return renderPayload(buildAppPayload(st, params.get('version') || 'arbeitsstand', { ...opts, route: params.get('feature') || undefined })); }
+    if (params.get('app')) { const st = await loadStateStandalone(); return renderPayload(buildAppPayload(st, params.get('version') || 'arbeitsstand', { ...opts, route: params.get('feature') || params.get('route') || undefined, shell: params.get('shell') || undefined })); }
     const state = await loadStateStandalone();
     renderPayload(buildFeaturePayload(state, params.get('feature'), params.get('variant'), opts));
   }).catch((err) => { document.body.dataset.ready = 'error'; mount.textContent = 'Preview-Fehler: ' + err.message; console.error(err); });
