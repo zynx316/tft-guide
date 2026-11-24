@@ -661,6 +661,7 @@ const business = {
 export default {
   module: {
     id: 'finance', name: 'Finanzen', icon: 'wallet', status: 'active', area: 'Finanzen', theme: 'graphite', designVersion: '0.4', isReference: true, stage: 3,
+    legal: ['keine-beratung'], // Pflichthinweis in jeder Variante (npm run check, QA-Sonde legal-present)
     description: 'Konten, Buchungen, Budgets, Abos, Cashflow und Vermögen: ruhig erfassen, jederzeit wissen, was frei ist. Anzeige, Planung und Auswertung, keine Anlage- oder Steuerberatung.',
     source: 'Auftrag 2026-11 (Ausbau Finanzen). Referenzmodul: mit bestehendem TAKT-Finanzkonzept in Phase 1 abgleichen',
     infoArchitecture: 'Heute (Frei verfügbar, Anstehendes, Budgets, Vermögen) → Konten → Buchungen → Buchungs-Detail; Erfassen (Zeile, Numpad) von überall; Planung: Budgets (Hüllen), Abos und Fixkosten; Auswertung: Cashflow, Vermögen; Einstellungen: Kategorien und Regeln, Privatsphäre; später Import und Selbstständige.',

@@ -563,6 +563,7 @@ const tax = {
 export default {
   module: {
     id: 'trading', name: 'Trading', icon: 'candlestick-chart', area: 'Finanzen', status: 'active', theme: 'graphite', designVersion: '0.3', isReference: false,
+    legal: ['simulation', 'keine-beratung', 'kursdaten'], // Pflichthinweise in jeder Variante (npm run check, QA-Sonde legal-present)
     description: 'Depot, Watchlist, Wertpapiere, simulierte Orders, Kursalarme, Dividenden und Auswertung: Märkte beobachten und das eigene Depot verstehen, ohne echte Orderausführung.',
     source: 'Auftrag 2026-11 (Ausbau Trading), Leitplanken docs/FINANCE_GUIDELINES.md. Referenz: in Phase 1 gegen das TAKT-Modulregister verifizieren',
     infoArchitecture: 'Übersicht (Depotwert, Bewegungen, Watchlist, Termine, Alarme) → Depot (Positionen, Aufteilung) → Wertpapier (Verlauf, Kennzahlen, Position, Sparplan) → Order (Simulation) mit Orderliste; Märkte: Watchlist, Kursalarme; Auswertung: Dividenden, Transaktionen, Performance und Aufteilung, Steuer-Orientierung. Die Auswahl eines Papiers steuert Diagramm, Position, Alarm und Ticket.',

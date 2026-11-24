@@ -641,6 +641,7 @@ const assumptions = {
 export default {
   module: {
     id: 'savings', name: 'Sparpläne', icon: 'piggy-bank', status: 'active', area: 'Finanzen', theme: 'graphite', designVersion: '0.2',
+    legal: ['modellrechnung', 'keine-beratung'], // Pflichthinweise in jeder Variante (npm run check, QA-Sonde legal-present)
     description: 'ETF- und Konto-Sparpläne planen, überblicken und mit Zielen verbinden: Rate, Rhythmus, Ausführungstermine, Deckung, Rechner mit Spanne, Sparziele und Steuer-Orientierung. Plan-Tracker, keine Ausführung beim Broker.',
     source: 'Workbench V2 (Bauplan Brainstorming 24.11.2026), Leitplanken docs/FINANCE_GUIDELINES.md',
     infoArchitecture: 'Startseite Übersicht (Kennzahlen, Pläne, nächste Ausführungen, Ziele). Von dort: Sparplan-Detail (Rate, Pause, Dynamik, Ausblick) → Rechner (Was wäre wenn?) → Szenarien vergleichen; Alle Sparpläne; Sparziele; Ausführungskalender mit Deckungs-Check; Sparplan anlegen (Assistent); Steuern und Freistellungsauftrag. Sparplan-Detail verweist auf das Wertpapier im Trading.',
