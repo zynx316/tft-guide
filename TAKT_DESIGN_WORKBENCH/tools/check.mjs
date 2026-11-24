@@ -117,6 +117,22 @@ scanTerms(health, termBlock('HEALTH_GUIDELINES.md', 'verbotsbegriffe'), 'widersp
 scanTerms(health, termBlock('HEALTH_GUIDELINES.md', 'warnbegriffe'), 'Warnbegriff laut docs/HEALTH_GUIDELINES.md – Formulierung prüfen');
 scanTerms(filesOf(['finance', 'savings', 'trading'], ['finance', 'savings', 'trading']), termBlock('FINANCE_GUIDELINES.md', 'finanzbegriffe'), 'widerspricht den Finanz-Leitlinien (docs/FINANCE_GUIDELINES.md)');
 
+// 3e) CSS-Klassen-Kollisionen zwischen Bereichen: dieselbe Klasse als Regelanfang in zwei Bereichen definiert
+const baseCss = fs.readFileSync(path.join(SRC, 'design-system/takt-base.css'), 'utf8');
+const baseClasses = new Set([...baseCss.matchAll(/\.(tk-[a-z0-9-]+)/g)].map((m) => m[1]));
+const owners = new Map();
+for (const area of fs.readdirSync(path.join(SRC, 'library/components'))) {
+  const dir = path.join(SRC, 'library/components', area); if (!fs.statSync(dir).isDirectory()) continue;
+  const defined = new Set();
+  for (const f of walk(dir).filter((x) => x.endsWith('.js'))) {
+    const code = fs.readFileSync(f, 'utf8');
+    for (const rule of code.split('}')) { const sel = rule.split('{')[0]; const m = sel.match(/^\s*\.(tk-[a-z0-9]+(?:-[a-z0-9]+)*)/); if (m && rule.includes('{') && !baseClasses.has(m[1])) defined.add(m[1]); }
+  }
+  for (const c of defined) { if (!owners.has(c)) owners.set(c, new Set()); owners.get(c).add(area); }
+}
+const clashes = [...owners].filter(([, a]) => a.size > 1);
+if (clashes.length) warnings.push(`CSS-Klassen in mehreren Bereichen definiert (Präfix je Bereich verwenden, CONTRACT.md): ${clashes.slice(0, 8).map(([c, a]) => `${c} (${[...a].join(', ')})`).join('; ')}${clashes.length > 8 ? ' …' : ''}`);
+
 // 4) ASCII-Umlaute in sichtbaren Texten (häufige Fälle)
 const ascii = /\b(fuer|Fuer|ueber|Ueber|Uebersicht|waehl\w*|Waehl\w*|moeglich\w*|koennen|muessen|Aenderung\w*|aender\w*|Pruef\w*|pruef\w*|faellig|Faellig\w*|zurueck|Rueck\w*|Loesch\w*|loesch\w*|hinzufueg\w*|Hinzufueg\w*|Oeffn\w*|oeffn\w*|Groesse|groesser|naechst\w*|Naechst\w*|spaeter|Eintraege|Schluessel|Bestaetig\w*|bestaetig\w*)\b/;
 for (const f of [...compFiles, ...walk(path.join(SRC, 'seed')), ...walk(path.join(SRC, 'workbench'))].filter((x) => x.endsWith('.js'))) {

@@ -13,7 +13,7 @@ export const nextWorkout = {
   name: 'Nächstes Training',
   category: 'Fitness',
   description: 'Was steht an: heute trainieren oder Erholungstag mit Blick auf die nächste Einheit. Zeigt Übungen, Dauer, Termine davor aus dem Kalender und startet das Training.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'style', label: 'Darstellung', type: 'select', options: ['hero', 'plain'], default: 'hero' },
     { name: 'showExercises', label: 'Übungen zeigen', type: 'boolean', default: true },
@@ -22,6 +22,7 @@ export const nextWorkout = {
   ],
   data: [
     { slot: 'today', label: 'Heute', default: 'today', shape: '{kind,headline,text,nextDayId,nextDate,nextWhen,nextName,nextMinutes,nextSets,nextExercises,lastTitle,weekSessions,weekGoal}', required: true },
+    { slot: 'program', label: 'Programm (leer = noch kein Plan)', default: 'program', shape: '{days}' },
     { slot: 'events', label: 'Termine', default: 'events', shape: '{id,title,start,end,category}[]' },
   ],
   events: ['workout.open', 'plan.open'],
@@ -36,7 +37,8 @@ export const nextWorkout = {
     events: [{ id: 'e9', title: 'Physiotherapie', start: '2026-11-25T16:30:00', end: '2026-11-25T17:30:00', category: 'Gesundheit' }] } },
   render: function NextWorkout({ props, data, ctx }) {
     const t = data.today;
-    if (!t || !t.nextDayId) return html`<${Card} title="Training"><${EmptyState} icon="dumbbell" title="Kein Training geplant" text="Wähle im Plan einen Rhythmus, dann erscheint hier dein nächstes Training." /><//>`;
+    const noPlan = data.program && !(data.program.days || []).length;
+    if (!t || !t.nextDayId || noPlan) return html`<${Card} title="Training"><${EmptyState} icon="dumbbell" title="Kein Training geplant" text="Wähle im Plan einen Rhythmus, dann erscheint hier dein nächstes Training." action=${html`<${Button} size="sm" icon="calendar-days" onClick=${() => ctx.emit('plan.open')}>Plan wählen<//>`} /><//>`;
     const isToday = t.kind === 'strength'; const evs = props.showContext ? dayEvents(data.events, t.nextDate) : [];
     const before = evs.filter((e) => clockOf(e.end) <= '18:30').pop();
     const open = () => ctx.emit('workout.open', { id: t.nextDayId });

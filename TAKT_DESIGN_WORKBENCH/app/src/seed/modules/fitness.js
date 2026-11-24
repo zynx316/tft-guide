@@ -63,7 +63,7 @@ export default {
   features: [
     // ====================================================================== ÜBERSICHT
     {
-      id: 'fitness.home', name: 'Übersicht', group: 'Übersicht', status: 'design',
+      id: 'fitness.home', name: 'Übersicht', group: 'Übersicht', status: 'design', tier: 1, usage: 'täglich',
       purpose: 'Einstieg ins Modul: was heute ansteht (Training oder Erholung), Wochenziel und Serie, Aktivität und das nächste Highlight – in drei Richtungen von dicht bis handlungsorientiert.',
       requirements: [
         { text: 'Heute klar benennen: Trainingstag mit Start-Knopf oder Erholungstag mit Blick auf die nächste Einheit', type: 'info', priority: 'must' },
@@ -104,7 +104,7 @@ export default {
           description: '+ Alles exakt und auf einen Blick, Aktionen direkt in der Zeile  − Wenig Raum, Atmosphäre eher nüchtern',
           layout: { type: 'grid' },
           blocks: [
-            { id: 'hdr', component: 'page-header', region: 'header', props: { eyebrow: 'Gesundheit', title: 'Fitness', subtitle: 'Di, 24.11. · Erholungstag · morgen Oberkörper A', primaryLabel: 'Training', primaryIcon: 'play', primaryEvent: 'workout.open', secondaryLabel: 'Fortschritt', secondaryIcon: 'trending-up' } },
+            { id: 'hdr', component: 'page-header', region: 'header', props: { eyebrow: 'Gesundheit', title: 'Fitness', subtitle: 'Di, 24.11. · Erholungstag', primaryLabel: 'Training', primaryIcon: 'play', primaryEvent: 'workout.open', secondaryLabel: 'Fortschritt', secondaryIcon: 'trending-up' } },
             { id: 'kpi', component: 'metric-row', region: 'main', span: 12, bind: { metrics: 'metrics' } },
             { id: 'next', component: 'next-workout', region: 'main', span: 5, props: { style: 'plain', contextNote: 'Mittwoch: Sturmböen ab Mittag – im Studio bist du drinnen gut aufgehoben.' } },
             { id: 'week', component: 'training-week', region: 'main', span: 7, props: { layout: 'list', title: 'Diese Woche' } },
@@ -134,7 +134,7 @@ export default {
           layout: { type: 'stack', narrow: true },
           blocks: [
             { id: 'hdr', component: 'page-header', region: 'header', props: { eyebrow: 'Gesundheit', title: 'Heute', subtitle: 'Erholungstag – ein kurzer Check-in genügt', primaryLabel: '', secondaryLabel: 'Fortschritt', secondaryIcon: 'trending-up' } },
-            { id: 'ready', component: 'readiness-card', region: 'main', props: { layout: 'decision', title: 'Erholung heute', openEvent: 'recovery.open' } },
+            { id: 'ready', component: 'readiness-card', region: 'main', props: { layout: 'decision', title: 'Erholung heute', openEvent: 'recovery.open', showFactors: false } },
             { id: 'next', component: 'next-workout', region: 'main', props: { style: 'hero', contextNote: 'Mittwoch: Sturmböen ab Mittag – im Studio bist du drinnen gut aufgehoben.' } },
             { id: 'wt', component: 'weight-entry', region: 'main', props: { title: 'Heute wiegen', layout: 'card', openEvent: 'body.open' } },
             { id: 'streak', component: 'streak-card', region: 'main', props: { layout: 'compact' } },
@@ -147,7 +147,7 @@ export default {
     },
     // ====================================================================== TRAINING
     {
-      id: 'fitness.session', name: 'Workout', group: 'Training', status: 'review',
+      id: 'fitness.session', name: 'Workout', group: 'Training', status: 'review', tier: 1, usage: '3× pro Woche',
       purpose: 'Training im Studio bedienen – auch mit schwitzigen Fingern: Vorgabe und „letztes Mal“ je Satz, ein Tap pro Satz, Pause-Timer, Übung tauschen, Abschluss mit Zusammenfassung.',
       requirements: [
         { text: 'Satz mit Vorgabe aus dem letzten Training loggen = 1 Tap (✓); Gewicht und Wiederholungen per Stepper mit Dezimalkomma änderbar', type: 'action', priority: 'must' },
@@ -222,7 +222,7 @@ export default {
       seedHistory: [{ kind: 'draft', note: 'Erster Entwurf: Tabelle (A), Karten (B), Fokus-Satz (C)' }, { kind: 'review', note: 'Satz-Logger, Timer und Zusammenfassung zur Prüfung' }],
     },
     {
-      id: 'fitness.plan', name: 'Trainingsplan', group: 'Training', status: 'design',
+      id: 'fitness.plan', name: 'Trainingsplan', group: 'Training', status: 'design', tier: 2, usage: 'wöchentlich',
       purpose: 'Festlegen, was wann trainiert wird: Wochenrhythmus, Programm mit Übungen und Progressionsregel, Start einer Einheit direkt am Trainingstag.',
       requirements: [
         { text: 'Wochenrhythmus Mo–So mit Trainings-, Lauf- und Erholungstagen', type: 'info', priority: 'must' },
@@ -291,7 +291,7 @@ export default {
       links: ['fitness.session', 'fitness.exercises', 'calendar.week'],
     },
     {
-      id: 'fitness.exercises', name: 'Übungen', group: 'Training', status: 'design',
+      id: 'fitness.exercises', name: 'Übungen', group: 'Training', status: 'design', tier: 2, usage: 'mehrmals pro Woche',
       purpose: 'Übungen finden, verstehen und im Training austauschen: Suche, Filter nach Muskelgruppe und Equipment, Favoriten und passende Alternativen.',
       requirements: [
         { text: 'Liste mit Suche und Filtern Muskelgruppe × Equipment × Favoriten', type: 'info', priority: 'must' },
@@ -312,6 +312,7 @@ export default {
         'Antippen einer Übung öffnet im Launcher das Detail mit der gewählten Übung.',
         '„Ersetzen“ tauscht die Übung in der Live-Einheit, bereits erledigte Sätze bleiben.',
       ],
+      flows: [{ id: 'f-ex', name: 'Übung finden', steps: [{ featureId: 'fitness.exercises', action: 'Muskelgruppe und Equipment wählen' }, { featureId: 'fitness.exercise', action: 'Anleitung und Verlauf ansehen' }] }, { id: 'f-swap', name: 'Gerät belegt – Ersatz finden', steps: [{ featureId: 'fitness.exercises', action: 'Alternative zur Übung wählen' }, { featureId: 'fitness.session', action: 'Übung ist getauscht, erledigte Sätze bleiben' }] }],
       viewports: ALL_VP, demoData: pick('library', 'history', 'session'),
       variants: [
         {
@@ -322,6 +323,7 @@ export default {
             { id: 'hdr', component: 'page-header', region: 'header', props: { eyebrow: 'Fitness', title: 'Übungen', subtitle: '32 Übungen mit Anleitung', primaryLabel: '' } },
             { id: 'list', component: 'exercise-list', region: 'main', props: { view: 'list', title: 'Übungen' } },
             { id: 'detail', component: 'exercise-detail', region: 'aside', hideOn: ['mobile', 'tablet'], props: { showChart: true } },
+            legal,
           ],
         },
         {
@@ -331,6 +333,7 @@ export default {
           blocks: [
             { id: 'hdr', component: 'page-header', region: 'header', props: { eyebrow: 'Fitness', title: 'Übungen', subtitle: 'Stöbern nach Muskelgruppe und Gerät', primaryLabel: '' } },
             { id: 'list', component: 'exercise-list', region: 'main', props: { view: 'grid', title: 'Alle Übungen' } },
+            legal,
           ],
         },
         {
@@ -341,6 +344,7 @@ export default {
             { id: 'hdr', component: 'page-header', region: 'header', props: { eyebrow: 'Fitness', title: 'Übung ersetzen', subtitle: 'Gerät belegt oder Schulter zwickt?', primaryLabel: '' } },
             { id: 'alt', component: 'exercise-alternatives', region: 'main', props: { title: 'Ersatz finden' } },
             { id: 'list', component: 'exercise-list', region: 'main', props: { view: 'list', title: 'Bibliothek', limit: 8 } },
+            legal,
           ],
         },
       ],
@@ -348,7 +352,7 @@ export default {
       links: ['fitness.exercise', 'fitness.session'],
     },
     {
-      id: 'fitness.exercise', name: 'Übungs-Detail', group: 'Training', status: 'design',
+      id: 'fitness.exercise', name: 'Übungs-Detail', group: 'Training', status: 'design', tier: 2, usage: 'mehrmals pro Woche',
       purpose: 'Eine Übung verstehen: Ausführung in Schritten, beteiligte Muskeln, häufige Fehler, eigener Verlauf und passende Alternativen.',
       requirements: [
         { text: 'Ausführung in 3 bis 5 Schritten, häufige Fehler und Atemhinweis', type: 'info', priority: 'must' },
@@ -370,14 +374,14 @@ export default {
         id: 'A', name: 'Detailseite', direction: 'visuell', concept: 'Eine Karte mit Kopf (Name, Badges, Favorit), Kennzahlen, Anleitung links und Muskeln, Verlauf und Alternativen rechts.',
         description: '+ Alles zur Übung an einem Ort  − Lang auf Mobile',
         layout: { type: 'stack' },
-        blocks: [{ id: 'detail', component: 'exercise-detail', region: 'main', props: { showChart: true, showAlternatives: true } }],
+        blocks: [{ id: 'detail', component: 'exercise-detail', region: 'main', props: { showChart: true, showAlternatives: true } }, legal],
       }],
       selectedVariantId: 'A',
       links: ['fitness.exercises', 'fitness.session', 'fitness.progress'],
     },
     // ====================================================================== AUSWERTUNG
     {
-      id: 'fitness.progress', name: 'Fortschritt & Rekorde', group: 'Auswertung', status: 'design',
+      id: 'fitness.progress', name: 'Fortschritt & Rekorde', group: 'Auswertung', status: 'design', tier: 2, usage: 'wöchentlich',
       purpose: 'Entwicklung über Wochen sehen – Volumen, Bestwerte und Balance der Muskelgruppen – ohne Rangliste und ohne Vergleichsdruck.',
       requirements: [
         { text: 'Bestwerte je Übung (geschätzte 1RM nach Epley bis 10 Wdh., Wiederholungen, Haltezeit) mit Datum und Zuwachs', type: 'info', priority: 'must' },
@@ -443,7 +447,7 @@ export default {
       links: ['fitness.exercise', 'fitness.exercises', 'fitness.goals'],
     },
     {
-      id: 'fitness.body', name: 'Körperwerte', group: 'Auswertung', status: 'design',
+      id: 'fitness.body', name: 'Körperwerte', group: 'Auswertung', status: 'design', tier: 1, usage: 'täglich',
       purpose: 'Entwicklung erkennen, ohne sich von Tagesschwankungen verunsichern zu lassen: geglätteter Gewichtstrend, Umfänge und Körperfett – Werte lassen sich ausblenden.',
       requirements: [
         { text: 'Gewicht schnell erfassen (Stepper 0,1 kg, ein Tap speichern); Standard morgens', type: 'action', priority: 'must' },
@@ -465,6 +469,7 @@ export default {
         'Mit „Werte ausblenden“ zeigt das Feature keine Gewichtszahl mehr (Trend, Wochenänderung, Achsen, Umfänge).',
         'Ein Eintrag mit mehr als 3 kg Abstand zum letzten Wert löst eine Rückfrage aus.',
       ],
+      flows: [{ id: 'f-weigh', name: 'Morgens wiegen', steps: [{ featureId: 'fitness.body', action: 'Wert mit Stepper einstellen, speichern' }, { featureId: 'fitness.body', action: 'Trend ansehen – Tageswert ist nur ein Punkt' }] }],
       viewports: ALL_VP, demoData: { ...pick('log', 'summary', 'measures'), bmetrics: bodyMetrics },
       variants: [
         {
@@ -508,7 +513,7 @@ export default {
       links: ['fitness.progress', 'fitness.goals'],
     },
     {
-      id: 'fitness.activity', name: 'Aktivität', group: 'Auswertung', status: 'design',
+      id: 'fitness.activity', name: 'Aktivität', group: 'Auswertung', status: 'design', tier: 2, usage: 'täglich',
       purpose: 'Alltagsbewegung sehen und mit wenig Aufwand ergänzen: Schritte mit Stundenverlauf, aktive Minuten, Läufe und Spaziergänge.',
       requirements: [
         { text: 'Schritte heute mit Stundenverlauf, 7/30 Tage, Wochenschnitt, aktive Minuten und Distanz', type: 'info', priority: 'must' },
@@ -520,6 +525,7 @@ export default {
       ],
       interactions: [{ trigger: 'Zeitraum wechseln', result: 'Diagramm zeigt 7 oder 30 Tage', event: 'activity.range' }, { trigger: '„Ziel ändern“', result: 'Tagesziel angepasst', event: 'activity.goal' }, { trigger: 'Lauf antippen', result: 'Details (Folgeversion)', event: 'item.open' }],
       acceptance: ['Das Tagesziel lässt sich in 500er-Schritten ändern; Balken und Fortschritt folgen.', 'Der heutige Tag ist als „läuft noch“ gekennzeichnet.', 'Läufe zeigen Distanz, Pace und Puls.'],
+      flows: [{ id: 'f-steps', name: 'Tagesziel anpassen', steps: [{ featureId: 'fitness.activity', action: '„Ziel ändern“ antippen' }, { featureId: 'fitness.activity', action: 'Neues Schrittziel im Diagramm sehen' }] }],
       viewports: ALL_VP, demoData: pick('activity', 'stepsToday', 'rings', 'activityItems'),
       variants: [
         {
@@ -551,7 +557,7 @@ export default {
       links: ['fitness.goals', 'weather.hourly'],
     },
     {
-      id: 'fitness.recovery', name: 'Erholung', group: 'Auswertung', status: 'design',
+      id: 'fitness.recovery', name: 'Erholung', group: 'Auswertung', status: 'design', tier: 2, usage: 'täglich',
       purpose: 'Training und Erholung ausbalancieren, ohne Medizin vorzutäuschen: Schlaf, Ruhepuls, Check-in und eine Tagesempfehlung, deren Gründe immer sichtbar sind.',
       requirements: [
         { text: 'Schlafdauer letzte Nacht und 14 Nächte gegen den Richtwert 7–9 Std., Qualität 1–5', type: 'info', priority: 'must' },
@@ -564,6 +570,7 @@ export default {
       ],
       interactions: [{ trigger: 'Check-in-Wert antippen', result: 'Empfehlung aktualisiert', event: 'recovery.checkin' }, { trigger: '„Warum?“', result: 'Erklärung der Faktoren', event: 'recovery.explain' }, { trigger: 'Balken antippen', result: 'Nacht mit Zeiten', event: 'chart.point' }],
       acceptance: ['Die Empfehlung listet ihre Gründe (z. B. „Schlaf bei 6,9 Std.“).', 'Der Check-in ist mit drei Taps abgeschlossen und ändert Faktoren und Empfehlung sofort.', '„Keine medizinische Diagnose“ steht in jeder Variante sichtbar.'],
+      flows: [{ id: 'f-check', name: 'Check-in in drei Taps', steps: [{ featureId: 'fitness.recovery', action: 'Energie, Muskelkater, Stress antippen' }, { featureId: 'fitness.recovery', action: 'Empfehlung mit Gründen lesen' }] }],
       viewports: ALL_VP, demoData: pick('sleep', 'checkins', 'history', 'today'),
       variants: [
         {
@@ -594,7 +601,7 @@ export default {
     },
     // ====================================================================== ZIELE
     {
-      id: 'fitness.goals', name: 'Ziele & Motivation', group: 'Ziele', status: 'design',
+      id: 'fitness.goals', name: 'Ziele & Motivation', group: 'Ziele', status: 'design', tier: 2, usage: 'wöchentlich',
       purpose: 'Dranbleiben, ohne dass Aussetzer bestraft werden: Wochenziele, Serie mit Joker, Meilensteine und ein Wochenrückblick in drei Zeilen.',
       requirements: [
         { text: 'Wochenziele (Einheiten, Lauf, Schritte, aktive Minuten, Gewichtstrend) mit ruhigem Fortschritt', type: 'info', priority: 'must' },
@@ -607,6 +614,7 @@ export default {
       ],
       interactions: [{ trigger: 'Joker einsetzen', result: 'Serie bleibt bestehen, Joker −1', event: 'joker.use' }, { trigger: 'Ziel antippen', result: 'Details (Folgeversion)', event: 'goal.open' }, { trigger: 'Meilenstein antippen', result: 'Details (Folgeversion)', event: 'milestone.open' }, { trigger: 'Vorschlag übernehmen', result: 'Rückblick-Vorschlag in den Plan', event: 'recap.apply' }],
       acceptance: ['Joker lässt sich einsetzen, solange das Wochenziel noch offen ist; danach ist der Joker verbraucht.', 'Kein Text enthält „verloren“, „versagt“ oder ähnliche Wertungen.', 'Der Wochenrückblick lässt sich in drei Schritten durchgehen und übernehmen.'],
+      flows: [{ id: 'f-recap', name: 'Wochenrückblick', steps: [{ featureId: 'fitness.goals', action: 'Drei Zeilen lesen' }, { featureId: 'fitness.goals', action: '„Vorschlag übernehmen“ für die nächste Woche' }] }],
       viewports: ALL_VP, demoData: pick('goals', 'streak', 'milestones', 'recap'),
       variants: [
         {
@@ -651,7 +659,7 @@ export default {
     },
     // ====================================================================== OFFENE FEATURES (ohne Variante)
     {
-      id: 'fitness.history', name: 'Verlauf der Einheiten', group: 'Training', status: 'analyzed',
+      id: 'fitness.history', name: 'Verlauf der Einheiten', group: 'Training', status: 'analyzed', tier: 3, usage: 'gelegentlich',
       purpose: 'Alle vergangenen Einheiten nachlesen: Datum, Übungen, Sätze, Volumen, Befinden und Notizen; Einheit wiederholen oder bearbeiten.',
       requirements: [
         { text: 'Chronologische Liste mit Titel, Datum, Dauer und Volumen; Kalenderansicht als Heatmap (Folgeversion)', type: 'info', priority: 'must' },
@@ -663,7 +671,7 @@ export default {
       interactions: [{ trigger: 'Einheit antippen', result: 'Details der Einheit', event: 'session.open' }], viewports: ALL_VP, variants: [],
     },
     {
-      id: 'fitness.custom', name: 'Eigene Übung anlegen', group: 'Training', status: 'not_analyzed',
+      id: 'fitness.custom', name: 'Eigene Übung anlegen', group: 'Training', status: 'not_analyzed', tier: 3, usage: 'selten',
       purpose: 'Übungen ergänzen, die nicht in der Bibliothek stehen (Name, Muskelgruppe, Gerät, Einheit kg/Wiederholungen/Zeit).',
       requirements: [
         { text: 'Pflichtfelder Name, Muskelgruppe, Gerät, Einheit', type: 'rule', priority: 'must' },
@@ -671,7 +679,7 @@ export default {
       ], interactions: [], viewports: ALL_VP, variants: [],
     },
     {
-      id: 'fitness.sources', name: 'Datenquellen & Datenschutz', group: 'Ziele', status: 'not_analyzed',
+      id: 'fitness.sources', name: 'Datenquellen & Datenschutz', group: 'Ziele', status: 'not_analyzed', tier: 3, usage: 'selten',
       purpose: 'Health Connect und Waagen anbinden, Berechtigungen verstehen, Daten exportieren oder löschen – Gesundheitsdaten bleiben lokal.',
       requirements: [
         { text: 'Berechtigungsfluss simulieren: erlaubt, verweigert, Quelle wählen', type: 'state', priority: 'must' },

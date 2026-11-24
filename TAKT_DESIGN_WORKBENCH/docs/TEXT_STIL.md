@@ -195,3 +195,8 @@ Workbench-Begriffe (nicht in der App): Feature, Variante, Richtung, Version, Fre
 - **Leerzustände** `pattern-empty`: Empfehlung „Erklärung plus eine Aktion“, offen.
 - **Zahlenformat** `pattern-formats`: Empfehlung de-DE, offen.
 - **Mehrsprachigkeit** ist nicht geplant; alle Texte deutsch.
+
+## Nachtrag: Versalien und „ß“
+CSS-Großschreibung (`text-transform: uppercase`, z. B. `.tk-label`) macht aus „ß“ ein „SS“ („EIWEISS“). Für Beschriftungen mit
+„ß“ die Klasse `tk-label--nocaps` bzw. `tk-nocaps` verwenden oder die Beschriftung in normaler Schreibung setzen.
+Bei großer Schrift (≥ 125 %) brechen Buttons automatisch um; lange Beschriftungen trotzdem kurz halten (Verb + Objekt).

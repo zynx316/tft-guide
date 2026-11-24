@@ -196,7 +196,11 @@ const EnvBar = ({ env }) => html`<div class="tk-envbar" role="status" data-qa="e
   <span class="tk-grow">${env.offline ? 'Offline – Stand heute 09:15. Änderungen werden gespeichert und später abgeglichen.' : 'Daten von heute 09:15 – Aktualisierung läuft.'}</span></div>`;
 
 /** Schriftskalierung (Barrierefreiheit): wirkt über --tk-text-scale auf alle Schriftgrößen-Tokens. */
-const applyEnv = (env) => { document.documentElement.style.setProperty('--tk-text-scale', String(env?.scale || 1)); document.documentElement.toggleAttribute('data-tk-offline', !!env?.offline); };
+const applyEnv = (env) => {
+  const sc = Number(env?.scale) || 1; const root = document.documentElement;
+  root.style.setProperty('--tk-text-scale', String(sc)); root.toggleAttribute('data-tk-offline', !!env?.offline);
+  root.toggleAttribute('data-tk-large-text', sc >= 1.25); // große Schrift: Buttons dürfen umbrechen (siehe takt-base.css)
+};
 
 /** Gemeinsamer Weltzustand (Persona-Daten), geteilt von allen Screens einer Vorschau. */
 function useWorld(initial) {

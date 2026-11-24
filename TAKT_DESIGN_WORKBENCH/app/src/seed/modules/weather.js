@@ -157,7 +157,7 @@ export default {
         {
           id: 'B', name: 'Visuell', direction: 'visuell', concept: 'Eine Botschaft pro Karte: große Jetzt-Karte, „Regen in 12 Min.“ mit Balkenkurve, Warn-Banner, Tagesverlauf als Kurve, Radar-Kachel, Kleidung und Umwelt, dann Stunden- und Tageskarten zum Wischen.',
           description: '+ Sofort verständlich, ruhig, viel Wetter-Gefühl  − Mehr Scrollen, weniger Zahlen gleichzeitig',
-          layout: { type: 'grid' },
+          layout: { type: 'grid', stretch: true },
           blocks: [
             hdr({ eyebrow: 'Wetter', title: 'Wetter', subtitle: 'Dienstag, 24. November', primaryLabel: '', secondaryLabel: 'Orte', secondaryIcon: 'map-pin' }),
             B('hero', 'wx-now', 'main', { layout: 'hero' }, { span: 7, spanTablet: 12 }),

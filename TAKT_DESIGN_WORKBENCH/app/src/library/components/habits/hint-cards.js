@@ -12,14 +12,22 @@ export const hintCards = {
   name: 'Smart-Hinweise',
   category: 'Start',
   description: 'Regelbasierte Hinweise aus mehreren Modulen („Sturmböen und Termin“, „Frist heute“, „Abo ungenutzt“) mit Quelle, Aktion, Wegwischen und „Später erinnern“. Stile: Liste, Karten, Banner (nur der wichtigste Hinweis).',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Hinweise' },
     { name: 'style', label: 'Stil', type: 'select', options: ['list', 'cards', 'banner'], default: 'list' },
     { name: 'limit', label: 'Max. Hinweise (0 = alle)', type: 'number', default: 0 },
     { name: 'dense', label: 'Kompakt', type: 'boolean', default: false },
   ],
-  data: [{ slot: 'hints', label: 'Hinweise', default: 'hints', shape: '{id,tone,icon,title,text,source,module?,actionLabel?}[]', required: true }],
+  data: [
+    { slot: 'hints', label: 'Hinweise', default: 'hints', shape: '{id,tone,icon,title,text,source,module?,actionLabel?,needs?}[]', required: true },
+    // Optionale Quellen: Ein Hinweis mit `needs` erscheint nur, solange seine Grundlage in den Daten existiert (z. B. offene Aufgabe, Termin, Warnung).
+    { slot: 'tasks', label: 'Aufgaben (Grundlage)', default: 'tasks', shape: '{id,done?}[]', required: false },
+    { slot: 'events', label: 'Termine (Grundlage)', default: 'events', shape: '{id}[]', required: false },
+    { slot: 'weather', label: 'Wetter (Grundlage)', default: 'weather', shape: '{alerts?}', required: false },
+    { slot: 'plans', label: 'Sparpläne (Grundlage)', default: 'plans', shape: '{id,active?}[]', required: false },
+    { slot: 'subs', label: 'Abos (Grundlage)', default: 'subs', shape: '{id}[]', required: false },
+  ],
   events: ['hint.open', 'hint.dismiss', 'hint.snooze', 'hint.open.weather', 'hint.open.tasks', 'hint.open.calendar', 'hint.open.finance', 'hint.open.savings', 'hint.open.habits'],
   states: ['empty'],
   css: `
@@ -34,7 +42,11 @@ export const hintCards = {
   .bp-mobile .tk-hc__item { padding-right:6px; }`,
   example: { data: { hints: EXAMPLE } },
   render: ({ props, data, setData, ctx }) => {
-    const all = Array.isArray(data.hints) ? data.hints : [];
+    const has = (xs, id, open) => !Array.isArray(xs) || xs.some((x) => x.id === id && !(open && x.done));
+    const ok = (h) => { const n = h.needs; if (!n) return true; const w = data.weather;
+      return (!n.task || has(data.tasks, n.task, true)) && (!n.events || [].concat(n.events).every((id) => has(data.events, id))) && (!n.alert || !w || !w.current || (w.alerts || []).length > 0)
+        && (!n.plans || !Array.isArray(data.plans) || data.plans.some((p) => p.active !== false)) && (!n.sub || has(data.subs, n.sub)); };
+    const all = (Array.isArray(data.hints) ? data.hints : []).filter(ok);
     const hints = props.limit > 0 || props.style === 'banner' ? all.slice(0, props.style === 'banner' ? 1 : props.limit) : all;
     if (!all.length) return html`<${Card} title=${props.title}><${EmptyState} icon="sparkles" title="Keine Hinweise" text="Alles im Griff – hier erscheint etwas, sobald es wichtig wird." /><//>`;
     const act = (h) => ctx.emit(h.module ? `hint.open.${h.module}` : 'hint.open', { id: h.id });

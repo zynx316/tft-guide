@@ -9,14 +9,14 @@ export const activityRings = {
   name: 'Aktivitätsringe',
   category: 'Fitness',
   description: 'Konzentrische Ziel-Ringe (z. B. Bewegung, Training, Schritte) mit Wert/Ziel-Legende. Antippen eines Rings zeigt Details in der Mitte. Referenzbaustein für Fortschrittsdarstellung.',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Heute' },
     { name: 'size', label: 'Durchmesser (px)', type: 'number', default: 168 },
     { name: 'layout', label: 'Anordnung', type: 'select', options: ['side', 'stacked'], default: 'side' },
     { name: 'showLegend', label: 'Legende zeigen', type: 'boolean', default: true },
   ],
-  data: [{ slot: 'rings', label: 'Ringe', default: 'rings', shape: '{id,label,value,goal,unit?,tone?,icon?}[]', required: true }],
+  data: [{ slot: 'rings', label: 'Ringe', default: 'rings', shape: '{id,label,value,goal,unit?,unit1?,tone?,icon?}[]', required: true }],
   events: ['ring.open'],
   states: ['empty'],
   css: `
@@ -24,10 +24,10 @@ export const activityRings = {
   .tk-rings--stacked { flex-direction:column; align-items:stretch; }
   .tk-rings__svg { flex:none; margin:0 auto; }
   .tk-rings__legend { flex:1 1 200px; display:flex; flex-direction:column; gap:var(--tk-space-2); min-width:0; }
-  .tk-rings__item { display:flex; align-items:center; gap:var(--tk-space-3); padding:8px 10px; border-radius:var(--tk-radius-md); border:1px solid transparent; background:transparent; text-align:left; color:inherit; cursor:pointer; min-height:48px; min-width:0; }
+  .tk-rings__item { display:flex; align-items:center; gap:var(--tk-space-3); padding:8px 10px; border-radius:var(--tk-radius-md); border:1px solid transparent; background:transparent; text-align:left; color:inherit; cursor:pointer; min-height:48px; min-width:0; flex-wrap:wrap; }
   .tk-rings__item:hover, .tk-rings__item[aria-pressed="true"] { background:var(--tk-c-surface2); border-color:var(--tk-c-border); }
   .tk-rings__dot { width:32px; height:32px; border-radius:10px; display:grid; place-items:center; flex:none; }
-  .tk-rings__val { font-variant-numeric:tabular-nums; white-space:nowrap; text-align:right; }
+  .tk-rings__val { font-variant-numeric:tabular-nums; text-align:right; margin-left:auto; max-width:100%; }
   .tk-rings__val strong { display:block; }
   .tk-rings__val small { color:var(--tk-c-text-subtle); font-size:var(--tk-fs-xs); }`,
   example: { data: { rings: [
@@ -56,7 +56,7 @@ export const activityRings = {
         return html`<button type="button" class="tk-rings__item" aria-pressed=${String(sel === r.id)} onClick=${() => choose(r)}>
           <span class="tk-rings__dot" style=${`background:color-mix(in srgb, ${col} 16%, transparent);color:${col}`}><${Icon} name=${done ? 'check' : r.icon || 'activity'} size=${16} /></span>
           <span class="tk-grow tk-truncate" style="font-weight:500">${r.label}</span>
-          <span class="tk-rings__val"><strong>${fmt.number(r.value)} ${r.unit || ''}</strong><small>von ${fmt.number(r.goal)} ${r.unit || ''}</small></span></button>`; })}</div>`}
+          <span class="tk-rings__val"><strong>${fmt.number(r.value)} ${(r.value === 1 && r.unit1) || r.unit || ''}</strong><small>von ${fmt.number(r.goal)} ${r.unit || ''}</small></span></button>`; })}</div>`}
     </div><//>`;
   },
 };

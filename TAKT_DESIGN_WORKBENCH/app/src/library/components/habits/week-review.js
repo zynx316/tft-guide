@@ -24,7 +24,7 @@ export const weekReview = {
   name: 'Wochenrückblick',
   category: 'Start',
   description: 'Rückblick auf die Woche, automatisch aus den Modulen zusammengestellt: Kennzahlen mit Vergleich zur Vorwoche, Highlights und drei Fragen, die sich als Notiz sichern lassen. Umfang „Alles“ (Aufgaben, Fokuszeit, Training, Gewohnheiten, Budget, Sparquote, Shop) oder „Gewohnheiten“.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Wochenrückblick' },
     { name: 'scope', label: 'Umfang', type: 'select', options: ['all', 'habits'], default: 'all' },
@@ -70,9 +70,9 @@ export const weekReview = {
       const jk = per.reduce((n, p) => n + [...p.st.jokers].filter((k) => k >= ws && k <= we).length, 0), pz = habits.reduce((n, h) => n + (h.pauses || []).filter((k) => k >= ws && k <= we).length, 0);
       cards.push({ key: 'rate', label: 'Erfüllungsquote', text: `${Math.round(rate * 100)} %`, icon: 'repeat', tone: 'success', sub: `${tot.done} von ${tot.due} Tagen`, open: 'habits' });
       if (best) cards.push({ key: 'best', label: 'Am besten', text: best.h.name, icon: 'trophy', tone: 'accent', sub: `${best.done} von ${best.due}`, open: 'habits', small: true });
-      if (low && low !== best) cards.push({ key: 'low', label: 'Braucht Aufmerksamkeit', text: low.h.name, icon: 'leaf', tone: 'info', sub: `${low.done} von ${low.due} – alles gut`, open: 'habits', small: true });
+      if (low && low !== best) cards.push({ key: 'low', label: 'Spielraum', text: low.h.name, icon: 'leaf', tone: 'info', sub: `${low.done} von ${low.due} – kein Druck`, open: 'habits', small: true });
       if (long) cards.push({ key: 'streak', label: 'Längste Serie', text: `${long.st.current}`, unit: long.st.unit, icon: 'flame', tone: 'accent2', sub: long.h.name, open: 'habits' });
-      cards.push({ key: 'joker', label: 'Gnadentage genutzt', text: String(jk), icon: 'shield', tone: 'accent', sub: pz ? `${pz} Pausentage` : 'Serien blieben heil', open: 'habits' });
+      cards.push({ key: 'joker', label: 'Gnadentage', text: String(jk), icon: 'shield', tone: 'accent', sub: pz ? `${pz} Pausentage` : 'Serien blieben heil', open: 'habits' });
     }
     const hl = []; const long = [...per].sort((a, b) => b.st.current - a.st.current)[0];
     if (long && long.st.current >= 7) hl.push(`${long.h.name}: ${long.st.current} ${long.st.unit} in Folge.`);

@@ -86,8 +86,8 @@ export const SEED = {
   ],
   orders: [
     { id: 'o1', securityId: 'p-allianz', side: 'buy', type: 'limit', qty: 2, limit: 280, price: 280, fee: 1, total: 561, status: 'offen', validity: '30 Tage', created: day(-1, 18, 40) },
-    { id: 'o2', securityId: 'p-apple', side: 'sell', type: 'stop', qty: 4, stop: 198, price: 198, fee: 1, total: 791, status: 'offen', validity: '30 Tage', created: day(-3, 11, 5) },
-    { id: 'o3', securityId: 'p-em', side: 'buy', type: 'markt', qty: 10, price: 33.85, fee: 1, total: 339.5, status: 'simuliert', validity: 'Tag', created: day(-4, 10, 20) },
+    { id: 'o2', securityId: 'p-apple', side: 'sell', type: 'stop', qty: 4, stop: 198, price: 198, fee: 1, total: 791, status: 'offen', validity: '30 Tage', created: day(-4, 11, 5) },
+    { id: 'o3', securityId: 'p-em', side: 'buy', type: 'markt', qty: 10, price: 33.85, fee: 1, total: 339.5, status: 'simuliert', validity: 'Tag', created: day(-7, 10, 20) },
   ],
   // Soll-Anteile je Baustein in Prozent (Summe 100); „cash“ = Verrechnungskonto
   targets: { 'p-allworld': 60, 'p-em': 15, 'p-tech': 8, 'p-allianz': 6, 'p-apple': 6, cash: 5 },

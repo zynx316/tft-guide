@@ -294,3 +294,9 @@ h1, h2, h3, h4, p { margin: 0; }
 .tk-layout--stretch.tk-layout--grid .tk-region--main > .tk-block { display: flex; flex-direction: column; }
 .tk-layout--stretch.tk-layout--grid .tk-region--main > .tk-block > * { flex: 1 1 auto; }
 .bp-desktop .tk-layout--aside-sticky .tk-region--aside { position: sticky; top: var(--tk-space-4); align-self: start; max-height: calc(100vh - 2 * var(--tk-space-4)); overflow: auto; }
+
+/* ---- Große Schrift (≥ 125 %): Beschriftungen umbrechen statt abschneiden/überlaufen ---- */
+[data-tk-large-text] .tk-btn, .tk-btn--wrap { white-space: normal; height: auto; min-height: var(--tk-size-control); padding-top: 6px; padding-bottom: 6px; text-align: center; line-height: 1.25; }
+[data-tk-large-text] .tk-chip { height: auto; min-height: 32px; white-space: normal; }
+/* Großbuchstaben-Labels ohne Versalien-Umwandlung (CSS macht aus „ß“ sonst „SS“, z. B. EIWEISS) */
+.tk-label--nocaps, .tk-nocaps { text-transform: none; letter-spacing: normal; }

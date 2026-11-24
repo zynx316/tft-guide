@@ -210,12 +210,12 @@ export const fitnessStreak = (() => {
 })();
 const squat = exerciseSeries(workoutHistory, 'kniebeuge'); const bench = exerciseSeries(workoutHistory, 'bankdruecken');
 export const fitnessMilestones = [
-  { id: 'm-sessions', title: '100. Einheit', text: 'Seit dem Start hast du 96 Trainingseinheiten abgeschlossen.', icon: 'dumbbell', tone: 'accent', value: fitnessProfile.lifetimeBefore + workoutHistory.length, target: 100, unit: 'Einheiten', done: false },
+  { id: 'm-sessions', title: '100. Einheit', text: `Seit dem Start hast du ${fitnessProfile.lifetimeBefore + workoutHistory.length} Trainingseinheiten abgeschlossen.`, icon: 'dumbbell', tone: 'accent', value: fitnessProfile.lifetimeBefore + workoutHistory.length, target: 100, unit: 'Einheiten', done: false },
   { id: 'm-streak', title: '12 Wochen in Folge', text: 'Zwölf Wochen mit erreichtem Wochenziel – ein Joker war dabei.', icon: 'flame', tone: 'warning', value: 12, target: 12, unit: 'Wochen', done: true, date: '2026-11-22' },
-  { id: 'm-squat', title: 'Kniebeuge: 90 kg (1RM geschätzt)', text: 'Mit 72,5 kg × 8 liegt die Schätzung jetzt bei knapp 92 kg.', icon: 'trophy', tone: 'success', value: squat.at(-1).e1rm, target: 90, unit: 'kg', done: true, date: squat.find((s) => s.e1rm >= 90)?.date || '2026-11-16' },
-  { id: 'm-bench', title: 'Bankdrücken 85 kg (1RM geschätzt)', text: 'Aktuell 60 kg × 10 – die Schätzung liegt bei etwa 80 kg.', icon: 'medal', tone: 'info', value: bench.at(-1).e1rm, target: 85, unit: 'kg', done: false },
+  { id: 'm-squat', title: 'Kniebeuge: 90 kg (1RM geschätzt)', text: `Mit ${fmtKg(squat.at(-1).kg)} × ${squat.at(-1).reps} liegt die Schätzung jetzt bei etwa ${fmtKg(Math.round(squat.at(-1).e1rm))}.`, icon: 'trophy', tone: 'success', value: squat.at(-1).e1rm, target: 90, unit: 'kg', done: true, date: squat.find((s) => s.e1rm >= 90)?.date || '2026-11-16' },
+  { id: 'm-bench', title: 'Bankdrücken 85 kg (1RM geschätzt)', text: `Aktuell ${fmtKg(bench.at(-1).kg)} × ${bench.at(-1).reps} – die Schätzung liegt bei etwa ${fmtKg(Math.round(bench.at(-1).e1rm))}.`, icon: 'medal', tone: 'info', value: bench.at(-1).e1rm, target: 85, unit: 'kg', done: false },
   { id: 'm-weight', title: '−3 kg Trend', text: `Gewichtstrend aktuell ${fmtKg(r1(trendNow))}, Ziel ${fmtKg(fitnessProfile.goalKg)}.`, icon: 'scale', tone: 'accent2', value: Math.max(0, bodySummary.lostKg), target: 3, unit: 'kg', done: false },
-  { id: 'm-10k', title: 'Erster 10-km-Lauf', text: 'Längster Lauf bisher: 9,5 km am 22.11.', icon: 'footprints', tone: 'accent', value: Math.max(...runLog.map((r) => r.km)), target: 10, unit: 'km', done: false },
+  { id: 'm-10k', title: 'Erster 10-km-Lauf', text: (() => { const l = [...runLog].sort((a, b) => b.km - a.km)[0]; return `Längster Lauf bisher: ${num(l.km, 1)} km am ${dateShort(l.date)}`; })(), icon: 'footprints', tone: 'accent', value: Math.max(...runLog.map((r) => r.km)), target: 10, unit: 'km', done: false },
 ];
 const lastWeek = weeklyTraining[weeklyTraining.length - 2];
 export const weeklyRecap = {
@@ -241,7 +241,7 @@ export const activeWorkout = (() => {
 export const fitnessRings = [
   { id: 'steps', label: 'Schritte', value: 3240, goal: fitnessProfile.stepGoal, unit: '', tone: 3, icon: 'footprints' },
   { id: 'active', label: 'Aktive Minuten', value: 22, goal: fitnessProfile.activeMinGoal, unit: 'Min.', tone: 2, icon: 'timer' },
-  { id: 'week', label: 'Wochenziel', value: wkNow.sessions, goal: fitnessProfile.weeklyGoal, unit: 'Einheiten', tone: 1, icon: 'dumbbell' },
+  { id: 'week', label: 'Wochenziel', value: wkNow.sessions, goal: fitnessProfile.weeklyGoal, unit: 'Einheiten', unit1: 'Einheit', tone: 1, icon: 'dumbbell' },
 ];
 export const fitnessMetrics = [
   { label: 'Training (Woche)', value: `${wkNow.sessions}`, unit: `/ ${fitnessProfile.weeklyGoal}`, icon: 'dumbbell', tone: 'accent', delta: null },

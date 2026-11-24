@@ -12,6 +12,8 @@ function useWidth(dep) {
   }, [dep]);
   return [box, W];
 }
+/** Runde Achsenwerte (1, 2, 5 × 10ⁿ) innerhalb [lo, hi]. */
+const niceTicks = (lo, hi, n = 3) => { const raw = (hi - lo) / n || 1; const mag = 10 ** Math.floor(Math.log10(raw)); const f = raw / mag; const step = (f < 1.5 ? 1 : f < 3 ? 2 : f < 7 ? 5 : 10) * mag; const out = []; for (let t = Math.ceil(lo / step - 1e-9) * step; t <= hi + 1e-9; t += step) out.push(Math.round(t * 1e6) / 1e6); return out.length ? out : [lo, hi]; };
 const niceRange = (vals, pad = 0.08) => { const lo = Math.min(...vals), hi = Math.max(...vals), d = hi - lo || 1; return [lo - d * pad, hi + d * pad]; };
 
 /** lines: [{values:(number|null)[], tone, dots, dim, width, dashed}], xs: optionale numerische x-Positionen. */
@@ -23,7 +25,7 @@ export function LineChart({ labels = [], lines = [], xs, height = 180, yMin, yMa
   const P = { l: 40, r: 10, t: 10, b: 22 }; const n = labels.length || lines[0].values.length;
   const px = xs || Array.from({ length: n }, (_, i) => i); const x0 = Math.min(...px), x1 = Math.max(...px) || 1;
   const x = (i) => P.l + ((px[i] - x0) / (x1 - x0 || 1)) * (W - P.l - P.r); const y = (v) => P.t + (1 - (v - lo) / (hi - lo || 1)) * (height - P.t - P.b);
-  const ticks = [0, 0.5, 1].map((t) => lo + t * (hi - lo));
+  const ticks = niceTicks(lo, hi);
   const pick = (e) => { const r = e.currentTarget.getBoundingClientRect(); const rel = ((e.clientX - r.left) / r.width) * W; let b = 0; for (let i = 0; i < n; i++) if (Math.abs(x(i) - rel) < Math.abs(x(b) - rel)) b = i; setSel(b); onPoint && onPoint(b); };
   const path = (l) => { let d = '', pen = false; l.values.forEach((v, i) => { if (v == null) { pen = false; return; } d += `${pen ? 'L' : 'M'}${x(i).toFixed(1)},${y(v).toFixed(1)}`; pen = true; }); return d; };
   const step = Math.max(1, Math.ceil(n / xLabels));

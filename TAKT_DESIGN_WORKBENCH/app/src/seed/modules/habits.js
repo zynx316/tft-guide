@@ -115,7 +115,7 @@ export default {
   features: withLegal([
     // ------------------------------------------------------------------ Heute (Startseite)
     {
-      id: 'habits.home', name: 'Heute', group: 'Übersicht', status: 'design',
+      id: 'habits.home', name: 'Heute', group: 'Übersicht', status: 'design', tier: 1,
       purpose: 'Die Gewohnheiten des Tages auf einen Blick: abhaken oder hochzählen, Serien im Blick, Routinen in Reichweite – ruhig und ohne Druck.',
       requirements: [
         { text: 'Gesundheits-Leitplanken 3 (T4, T5): Joker sichtbar, nach einer Unterbrechung „Neustart“ statt Verlustwort, nie Alarmfarbe im Wasser-Kontext', type: 'rule', priority: 'must' },
@@ -192,7 +192,7 @@ export default {
     },
     // ------------------------------------------------------------------ Gewohnheit (Detail)
     {
-      id: 'habits.detail', name: 'Gewohnheit', group: 'Gewohnheiten', status: 'design',
+      id: 'habits.detail', name: 'Gewohnheit', group: 'Gewohnheiten', status: 'design', tier: 2,
       purpose: 'Eine Gewohnheit im Detail: Serie mit Gnadentag, Kalender-Heatmap, Statistik und Wochentags-Muster – verständlich, nicht bewertend.',
       requirements: [
         { text: 'Gesundheits-Leitplanken 3 (T4, T5): Joker sichtbar, nach einer Unterbrechung „Neustart“ statt Verlustwort, nie Alarmfarbe im Wasser-Kontext', type: 'rule', priority: 'must' },
@@ -253,7 +253,7 @@ export default {
     },
     // ------------------------------------------------------------------ Gewohnheit anlegen
     {
-      id: 'habits.create', name: 'Gewohnheit anlegen', group: 'Gewohnheiten', status: 'design',
+      id: 'habits.create', name: 'Gewohnheit anlegen', group: 'Gewohnheiten', status: 'design', tier: 2,
       purpose: 'Eine neue Gewohnheit in unter einer Minute anlegen: Name, Rhythmus, Erinnerung, Ziel – mit Vorlagen und Vorschau.',
       requirements: [
         { text: 'Pflicht: Name; Rhythmus (täglich, werktags, bestimmte Tage, X-mal pro Woche) und Tageszeit', type: 'rule', priority: 'must' },
@@ -314,7 +314,7 @@ export default {
     },
     // ------------------------------------------------------------------ Routinen
     {
-      id: 'habits.routines', name: 'Routinen', group: 'Gewohnheiten', status: 'design',
+      id: 'habits.routines', name: 'Routinen', group: 'Gewohnheiten', status: 'design', tier: 2,
       purpose: 'Morgen- und Abendroutine als Abfolge von Schritten mit Uhrzeit und Dauer. Schritte können Gewohnheiten sein und zählen dort mit.',
       requirements: [
         { text: 'Routine = geordnete Folge aus Schritten mit Dauer; Startzeit ergibt die Uhrzeit je Schritt', type: 'rule', priority: 'must' },
@@ -374,7 +374,7 @@ export default {
     },
     // ------------------------------------------------------------------ Wochenrückblick
     {
-      id: 'habits.review', name: 'Wochenrückblick', group: 'Auswertung', status: 'review',
+      id: 'habits.review', name: 'Wochenrückblick', group: 'Auswertung', status: 'review', tier: 2,
       purpose: 'Die Woche in Gewohnheiten rückblickend sehen: was gelang, was war schwer, was ändert sich – in zwei Minuten und ohne Bewertung.',
       requirements: [
         { text: 'Gesundheits-Leitplanken 3 (T4, T5): Joker sichtbar, nach einer Unterbrechung „Neustart“ statt Verlustwort, nie Alarmfarbe im Wasser-Kontext', type: 'rule', priority: 'must' },
@@ -433,7 +433,7 @@ export default {
     },
     // ------------------------------------------------------------------ Pause & Gnadentag
     {
-      id: 'habits.pause', name: 'Pause & Gnadentag', group: 'Gewohnheiten', status: 'design',
+      id: 'habits.pause', name: 'Pause & Gnadentag', group: 'Gewohnheiten', status: 'design', tier: 3,
       purpose: 'Erklärt und steuert, wie Serien geschützt werden: ein Gnadentag pro Woche, Pausentage bei Krankheit oder Reise.',
       requirements: [
         { text: 'Gnadentag: einmal pro Kalenderwoche wird ein verpasster Tag verziehen (pro Gewohnheit abschaltbar)', type: 'rule', priority: 'must' },
@@ -458,7 +458,7 @@ export default {
     },
     // ------------------------------------------------------------------ ohne Variante
     {
-      id: 'habits.templates', name: 'Vorlagen', group: 'Gewohnheiten', status: 'analyzed',
+      id: 'habits.templates', name: 'Vorlagen', group: 'Gewohnheiten', status: 'analyzed', tier: 3,
       purpose: 'Eine kleine Bibliothek sinnvoller Gewohnheiten (Wasser, Schritte, Lesen, Dehnen, Meditieren) als Startpunkt – auch für den Leerzustand.',
       requirements: [
         { text: 'Vorlagen nach Lebensbereich (Gesundheit, Fokus, Abend) mit sinnvollen Standardwerten', type: 'info', priority: 'should' },
@@ -467,7 +467,7 @@ export default {
       interactions: [], viewports: ALL_VP, demoData, variants: [], links: ['habits.create'],
     },
     {
-      id: 'habits.integrations', name: 'Verknüpfungen', group: 'Gewohnheiten', status: 'analyzed',
+      id: 'habits.integrations', name: 'Verknüpfungen', group: 'Gewohnheiten', status: 'analyzed', tier: 3,
       purpose: 'Daten anderer Module zählen automatisch: Training aus Fitness, Wasser aus Ernährung, erledigte Aufgabe aus Aufgaben.',
       requirements: [
         { text: 'Fitness: abgeschlossenes Training erfüllt „Krafttraining“ am selben Tag', type: 'rule', priority: 'must' },
@@ -477,7 +477,7 @@ export default {
       interactions: [], viewports: ALL_VP, demoData, variants: [], links: ['habits.home'],
     },
     {
-      id: 'habits.reminders', name: 'Erinnerungen', group: 'Einstellungen', status: 'not_analyzed',
+      id: 'habits.reminders', name: 'Erinnerungen', group: 'Einstellungen', status: 'not_analyzed', tier: 3,
       purpose: 'Ruhige Erinnerungen zur gewünschten Zeit, mit „Später“ und ohne Mahnton.',
       requirements: [
         { text: 'Erinnerung je Gewohnheit zu fester Uhrzeit oder im Zeitfenster (offen)', type: 'rule', priority: 'must' },
@@ -486,7 +486,7 @@ export default {
       interactions: [], viewports: ALL_VP, demoData, variants: [],
     },
     {
-      id: 'habits.settings', name: 'Einstellungen', group: 'Einstellungen', status: 'not_analyzed',
+      id: 'habits.settings', name: 'Einstellungen', group: 'Einstellungen', status: 'not_analyzed', tier: 3,
       purpose: 'Wochenstart, Gnadentag an/aus, Archivieren statt Löschen, Datenexport.',
       requirements: [
         { text: 'Gnadentag global und je Gewohnheit schaltbar', type: 'action', priority: 'should' },

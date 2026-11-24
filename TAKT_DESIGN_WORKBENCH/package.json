@@ -14,6 +14,8 @@
     "qa:e2e": "node qa/run-qa.mjs --only e2e",
     "qa:visual": "node qa/run-qa.mjs --only visual",
     "qa:baseline": "node qa/run-qa.mjs --only visual --update-baseline",
+    "qa:scale": "node qa/run-qa.mjs --only visual --viewports mobile,mobile-s --scale 2",
+    "qa:scenarios": "node qa/run-qa.mjs --only visual --viewports mobile --scenario erststart && node qa/run-qa.mjs --only visual --viewports mobile --scenario stress",
     "check": "node tools/check.mjs",
     "test": "node --import ./tools/register.mjs --test tests/*.test.mjs",
     "verify": "node tools/verify.mjs"

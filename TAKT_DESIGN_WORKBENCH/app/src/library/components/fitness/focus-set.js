@@ -27,7 +27,7 @@ export const focusSet = {
   .tk-fs__name { font-size:var(--tk-fs-2xl); font-weight:var(--tk-fw-bold); letter-spacing:var(--tk-ls-tight); line-height:1.15; }
   .tk-fs__ctl { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:var(--tk-space-3); } .tk-fs__ctl > div { display:flex; flex-direction:column; gap:6px; align-items:center; min-width:0; }
   .tk-fs__ctl .tk-fit-step { width:100%; } .tk-fs__ctl .tk-fit-step input { flex:1 1 0; width:auto; } .tk-fs__ctl .tk-label { text-align:center; }
-  .tk-fs__ok { min-height:68px; font-size:var(--tk-fs-xl); font-weight:var(--tk-fw-bold); border-radius:var(--tk-radius-lg); } .tk-fs__nav { display:flex; justify-content:space-between; gap:var(--tk-space-2); }
+  .tk-fs__ok { min-height:68px; font-size:var(--tk-fs-xl); font-weight:var(--tk-fw-bold); border-radius:var(--tk-radius-lg); } .tk-fs__nav { display:flex; flex-wrap:wrap; justify-content:space-between; gap:var(--tk-space-2); } .tk-fs__nav .tk-btn { max-width:100%; }
   .tk-fs__up { display:flex; flex-direction:column; gap:2px; } .tk-fs__up button { display:flex; gap:10px; align-items:center; min-height:44px; padding:0 4px; border:0; border-bottom:1px solid var(--tk-c-border); background:none; color:inherit; cursor:pointer; text-align:left; }
   .tk-fs__up button:last-child { border-bottom:0; } .tk-fs__dots { display:flex; gap:8px; justify-content:center; } .tk-fs__dots i { width:12px; height:12px; border-radius:50%; border:2px solid var(--tk-c-border-strong); display:block; }
   .tk-fs__dots i[data-done="true"] { background:var(--tk-c-success); border-color:var(--tk-c-success); } .tk-fs__dots i[data-cur="true"] { border-color:var(--tk-c-accent); background:var(--tk-c-accent-soft); }

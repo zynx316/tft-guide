@@ -10,7 +10,7 @@ export const streakPanel = {
   name: 'Serien-Anzeige',
   category: 'Gewohnheiten',
   description: 'Aktuelle und beste Serie einer Gewohnheit mit Gnadentag („Pause statt Serie verlieren“), nächstem Meilenstein und Wochenpunkten. Modus „Überblick“ zeigt alle Serien als Rangliste. Bewusst ohne Punkte oder Druck.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'mode', label: 'Modus', type: 'select', options: ['selected', 'overview'], default: 'selected' },
     { name: 'title', label: 'Titel (Überblick)', type: 'text', default: 'Serien' },
@@ -51,7 +51,7 @@ export const streakPanel = {
     const paused = isPaused(h, today);
     const pause = () => { setData('habits', (xs) => xs.map((x) => (x.id === h.id ? { ...x, pauses: paused ? (x.pauses || []).filter((k) => k !== today) : [...(x.pauses || []), today] } : x))); ctx.emit('habit.pause', { id: h.id, paused: !paused }); ctx.toast(paused ? 'Pause beendet' : 'Pausentag eingelegt – deine Serie ist sicher'); };
     return html`<${Card} flush class="tk-sp" style=${`--hc:${toneColor(h.tone || 1)}`}>
-      ${props.showPicker && all.length > 1 && html`<div class="tk-sp__pick" role="group" aria-label="Gewohnheit wählen">${all.map((x) => html`<${Chip} active=${x.id === h.id} icon=${x.icon || 'repeat'} onClick=${() => { ctx.setUi('selectedId', x.id); ctx.emit('habit.select', { id: x.id }); }}>${x.name}<//>`)}</div>`}
+      ${props.showPicker && all.length > 1 && html`<div class="tk-sp__pick" role="group" aria-label="Gewohnheit wählen" ref=${(el) => { const a = el && el.querySelector('[aria-pressed="true"]'); if (a && el.scrollWidth > el.clientWidth) el.scrollLeft = Math.max(0, a.offsetLeft - (el.clientWidth - a.offsetWidth) / 2); }}>${all.map((x) => html`<${Chip} active=${x.id === h.id} icon=${x.icon || 'repeat'} onClick=${() => { ctx.setUi('selectedId', x.id); ctx.emit('habit.select', { id: x.id }); }}>${x.name}<//>`)}</div>`}
       <div class="tk-sp__hero"><div class="tk-sp__big"><${Streak} n=${s.current} unit=${s.unit} big=${true} /><span class="tk-sp__unit">${s.current === 0 ? (s.best > 0 ? 'Neustart – dein Verlauf bleibt erhalten' : 'Bereit für den Start') : `${s.unit} in Folge${s.perWeek ? ' (Wochenziel erreicht)' : ''}`}</span></div>
         <div class="tk-sp__stats"><div class="tk-sp__stat"><b>${s.best}</b><span>Beste Serie</span></div><div class="tk-sp__stat"><b>${Math.round(rateOf(h, today, 30) * 100)} %</b><span>Quote 30 Tage</span></div><div class="tk-sp__stat"><b>${totalDone(h)}</b><span>Mal erledigt</span></div></div></div>
       <div class="tk-sp__ms"><div class="tk-sp__ms-t"><span>Nächster Meilenstein: <strong>${ms} ${s.perWeek ? 'Wochen' : 'Tage'}</strong></span><span class="tk-num">${s.current}/${ms}</span></div><${Bar} value=${(s.current - prev) / (ms - prev)} color=${toneColor(h.tone || 1)} /></div>

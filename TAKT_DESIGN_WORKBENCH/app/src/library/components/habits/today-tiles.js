@@ -14,7 +14,7 @@ export const todayTiles = {
   name: 'Tageskacheln',
   category: 'Start',
   description: 'Modulübergreifende Kacheln für den Tag: Termine, Aufgaben, Gewohnheiten, Wetter, Finanzen, nächste Sparplan-Ausführung, Training und Ernährung. Stile: Streifen (Kennzahlen), Liste (dicht), Karten (eine Botschaft je Kachel). Jede Kachel öffnet ihr Modul.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Dein Tag im Überblick' },
     { name: 'layout', label: 'Stil', type: 'select', options: ['strip', 'list', 'cards'], default: 'list' },
@@ -38,7 +38,7 @@ export const todayTiles = {
   .tk-tt__k { display:flex; flex-direction:column; gap:4px; padding:12px 14px; border-radius:var(--tk-radius-lg); background:var(--tk-c-surface); border:1px solid var(--tk-c-border); text-align:left; color:inherit; font:inherit; cursor:pointer; min-width:0; min-height:44px; } .tk-tt__k:hover { border-color:var(--tk-c-border-strong); }
   .tk-tt__kl { display:flex; align-items:center; gap:6px; font-size:var(--tk-fs-sm); color:var(--tk-c-text-muted); min-width:0; } .tk-tt__kv { font-size:var(--tk-fs-xl); font-weight:var(--tk-fw-bold); letter-spacing:var(--tk-ls-tight); font-variant-numeric:tabular-nums; line-height:1.15; } .tk-tt__ks { font-size:var(--tk-fs-xs); color:var(--tk-c-text-subtle); }
   .tk-tt__row { display:flex; align-items:center; gap:12px; width:100%; padding:9px 16px; min-height:60px; border:0; border-bottom:1px solid var(--tk-c-border); background:none; color:inherit; font:inherit; text-align:left; cursor:pointer; min-width:0; } .tk-tt__row:last-child { border-bottom:0; } .tk-tt__row:hover { background:var(--tk-c-surface2); }
-  .tk-tt__ic { width:36px; height:36px; border-radius:11px; display:grid; place-items:center; flex:none; background:color-mix(in srgb, var(--tc) 15%, transparent); color:var(--tc); } .tk-tt__main { flex:1; min-width:0; } .tk-tt__main b { display:block; font-weight:var(--tk-fw-medium); } .tk-tt__sub { font-size:var(--tk-fs-sm); color:var(--tk-c-text-subtle); }
+  .tk-tt__ic { width:36px; height:36px; border-radius:11px; display:grid; place-items:center; flex:none; background:color-mix(in srgb, var(--tc) 15%, transparent); color:var(--tc); } .tk-tt__main { flex:1; min-width:0; } .tk-tt__main b { display:block; font-weight:var(--tk-fw-medium); } .tk-tt__sub { font-size:var(--tk-fs-sm); color:var(--tk-c-text-subtle); } .tk-tt__sub, .tk-tt__ks { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; overflow-wrap:anywhere; }
   .tk-tt__val { text-align:right; font-weight:var(--tk-fw-semibold); font-variant-numeric:tabular-nums; white-space:nowrap; } .tk-tt__val small { display:block; font-size:var(--tk-fs-xs); color:var(--tk-c-text-subtle); font-weight:var(--tk-fw-regular, 400); }
   .tk-tt__cards { display:grid; grid-template-columns:repeat(var(--cols, 3), minmax(0, 1fr)); gap:var(--tk-space-3); } .bp-tablet .tk-tt__cards { grid-template-columns:repeat(2, minmax(0, 1fr)); } .bp-mobile .tk-tt__cards { grid-template-columns:repeat(2, minmax(0, 1fr)); gap:var(--tk-space-2); }
   .tk-tt__c { display:flex; flex-direction:column; gap:10px; padding:16px; min-height:150px; border-radius:var(--tk-radius-xl, 16px); background:var(--tk-c-surface); border:1px solid var(--tk-c-border); text-align:left; color:inherit; font:inherit; cursor:pointer; min-width:0; transition:border-color var(--tk-motion-fast); } .tk-tt__c:hover { border-color:var(--tk-c-border-strong); }
@@ -56,12 +56,12 @@ export const todayTiles = {
     const col = (t) => toneColor(t.tone);
     if (props.layout === 'strip') return html`<div class="tk-tt__strip">${shown.map((t) => html`<button type="button" class="tk-tt__k" onClick=${() => open(t)} aria-label=${`${t.label}: ${t.value}. ${t.sub}`}>
       <span class="tk-tt__kl"><span style=${`color:${col(t)}`}><${Icon} name=${t.icon} size=${15} /></span><span class="tk-truncate">${t.label}</span></span><span class="tk-tt__kv">${t.value}</span>
-      ${t.progress != null ? html`<${Bar} value=${t.progress} color=${col(t)} />` : html`<span class="tk-tt__ks tk-truncate">${t.sub}</span>`}</button>`)}</div>`;
+      ${t.progress != null ? html`<${Bar} value=${t.progress} color=${col(t)} />` : html`<span class="tk-tt__ks">${t.sub}</span>`}</button>`)}</div>`;
     if (props.layout === 'cards') return html`<div class="tk-tt__cards" style=${`--cols:${props.columns}`}>${shown.map((t) => html`<button type="button" class="tk-tt__c" style=${`--tc:${col(t)}`} data-alert=${!!t.alert} onClick=${() => open(t)}>
       <span class="tk-tt__ch"><${Icon} name=${t.icon} size=${18} /><span class="tk-tt__chl tk-truncate">${t.label}</span>${t.progress != null && html`<${Ring} value=${t.progress} size=${34} stroke=${4} color=${col(t)} label=${`${Math.round(t.progress * 100)} Prozent`}><small style="font-size:10px">${Math.round(t.progress * 100)}</small><//>`}</span>
       <span class="tk-tt__cv">${t.value}</span><span class="tk-tt__cs">${t.sub}</span></button>`)}</div>`;
     return html`<${Card} flush title=${props.title}>${shown.map((t) => html`<button type="button" class="tk-tt__row" style=${`--tc:${col(t)}`} onClick=${() => open(t)}>
-      <span class="tk-tt__ic"><${Icon} name=${t.icon} size=${18} /></span><span class="tk-tt__main"><b>${t.label}</b><span class="tk-tt__sub tk-truncate" style="display:block">${t.sub}</span></span>
+      <span class="tk-tt__ic"><${Icon} name=${t.icon} size=${18} /></span><span class="tk-tt__main"><b>${t.label}</b><span class="tk-tt__sub">${t.sub}</span></span>
       <span class="tk-tt__val">${t.value}${t.meta && ctx.bp !== 'mobile' && html`<small>${t.meta}</small>`}</span><span class="tk-subtle"><${Icon} name="chevron-right" size=${16} /></span></button>`)}<//>`;
   },
 };

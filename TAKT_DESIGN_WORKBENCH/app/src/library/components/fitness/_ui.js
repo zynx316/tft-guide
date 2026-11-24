@@ -5,8 +5,6 @@ import { useState, useEffect, useRef } from 'preact/hooks';
 import { Icon, toneColor } from '../../ui.js';
 import { numAuto, num, MUSCLES } from './_calc.js';
 
-/** Unter Test/QA (Playwright) laufen Timer nicht, damit Screenshots deterministisch bleiben. */
-export const FROZEN = typeof navigator !== 'undefined' && navigator.webdriver === true;
 export const muscleColor = (m) => toneColor({ Brust: 1, Rücken: 2, Schulter: 3, Bizeps: 4, Trizeps: 5, Beine: 6, Gesäß: 'accent2', Core: 'info' }[m] || 'neutral');
 export const hideVal = (ctx, text) => (ctx.ui?.hideWeight ? '•••' : text);
 export const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
@@ -47,7 +45,7 @@ export function useSessionTicker(session, setSession, ctx) {
   const ref = useRef(session); ref.current = session;
   const cx = useRef(ctx); cx.current = ctx;
   useEffect(() => {
-    if (FROZEN) return undefined;
+    if (!cx.current.live) return undefined; // Uhr läuft nur im Launcher (ctx.live), in QA/Workbench bleibt sie fest
     const me = Math.random();
     const t = setInterval(() => {
       if (!tickOwner) tickOwner = me;

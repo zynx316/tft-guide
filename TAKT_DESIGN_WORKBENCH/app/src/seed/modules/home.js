@@ -24,11 +24,11 @@ const links = (prefix, keys, what) => keys.filter((k) => NAV[k]).map((k) => ({ t
 // --- Lokale Kurzdaten der Persona (Di, 24.11.2026 09:30) -----------------------------------------------------------
 // Wetter, Training und Ernährung kommen aus der gemeinsamen Datenwelt (Wetter-Ort, Fitness heute, Ernährung heute).
 const HINTS = [
-  { id: 'hi1', tone: 'danger', icon: 'alert-circle', title: 'Angebot Müller GmbH heute 14:00 fällig', text: 'Noch offen: PDF erzeugen und an den Kunden senden – etwa 60 Minuten eingeplant.', source: 'Aufgaben', module: 'tasks', actionLabel: 'Aufgabe öffnen' },
-  { id: 'hi2', tone: 'warning', icon: 'wind', title: 'Sturmböen ab 14 Uhr', text: 'Der Lieferanten-Call um 15:00 läuft per Zoom – Wege am besten vor 14 Uhr erledigen.', source: 'Wetter · Kalender', module: 'weather', actionLabel: 'Wetter ansehen' },
-  { id: 'hi3', tone: 'accent', icon: 'calendar-clock', title: 'Überschneidung um 11:00', text: 'Sprint-Planung und „Fokus: Workbench-Review“ liegen übereinander.', source: 'Kalender', module: 'calendar', actionLabel: 'Im Kalender ansehen' },
-  { id: 'hi4', tone: 'info', icon: 'piggy-bank', title: 'Sparpläne laufen am 01.12.', text: 'Die nächste Ausführung ist am Dienstag; das Girokonto ist ausreichend gedeckt.', source: 'Sparpläne · Finanzen', module: 'savings', actionLabel: 'Sparpläne ansehen' },
-  { id: 'hi5', tone: 'neutral', icon: 'tv', title: 'Netflix seit 34 Tagen nicht genutzt', text: 'Das Abo läuft monatlich weiter – prüfen, ob es noch gebraucht wird.', source: 'Finanzen (Abos)', module: 'finance', actionLabel: 'Abos prüfen' },
+  { id: 'hi1', tone: 'danger', icon: 'alert-circle', title: 'Angebot Müller GmbH heute 14:00 fällig', text: 'Noch offen: PDF erzeugen und an den Kunden senden – etwa 60 Minuten eingeplant.', source: 'Aufgaben', module: 'tasks', actionLabel: 'Aufgabe öffnen', needs: { task: 't1' } },
+  { id: 'hi2', tone: 'warning', icon: 'wind', title: 'Sturmböen ab 14 Uhr', text: 'Der Lieferanten-Call um 15:00 läuft per Zoom – Wege am besten vor 14 Uhr erledigen.', source: 'Wetter · Kalender', module: 'weather', actionLabel: 'Wetter ansehen', needs: { alert: true, events: 'e6' } },
+  { id: 'hi3', tone: 'accent', icon: 'calendar-clock', title: 'Überschneidung um 11:00', text: 'Sprint-Planung und „Fokus: Workbench-Review“ liegen übereinander.', source: 'Kalender', module: 'calendar', actionLabel: 'Im Kalender ansehen', needs: { events: ['e3', 'e4'] } },
+  { id: 'hi4', tone: 'info', icon: 'piggy-bank', title: 'Sparpläne laufen am 01.12.', text: 'Die nächste Ausführung ist am Dienstag; das Girokonto ist ausreichend gedeckt.', source: 'Sparpläne · Finanzen', module: 'savings', actionLabel: 'Sparpläne ansehen', needs: { plans: true } },
+  { id: 'hi5', tone: 'neutral', icon: 'tv', title: 'Netflix seit 34 Tagen nicht genutzt', text: 'Das Abo läuft monatlich weiter – prüfen, ob es noch gebraucht wird.', source: 'Finanzen (Abos)', module: 'finance', actionLabel: 'Abos prüfen', needs: { sub: 'sub-netflix' } },
 ];
 const TILES = [
   { id: 'hints', label: 'Hinweise', icon: 'sparkles', tone: 'accent', on: true, size: 'M' }, { id: 'rings', label: 'Tag in Ringen', icon: 'target', tone: 'success', on: true, size: 'M' },
@@ -46,7 +46,7 @@ const stats = [
   { key: 'payout', label: 'Shop-Auszahlungen', value: 2952.4, money: true, prev: 2410, icon: 'store', tone: 'accent2', module: 'finance' },
 ];
 
-const world = { events: '@world:events', tasks: '@world:tasks', finance: '@world:financeSummary', plans: '@world:savingsPlans', budgets: '@world:budgets', weather: '@world:wxActive', training: '@world:fitnessToday', nutrition: '@world:nutSummary' };
+const world = { events: '@world:events', tasks: '@world:tasks', finance: '@world:financeSummary', plans: '@world:savingsPlans', budgets: '@world:budgets', subs: '@world:subscriptions', weather: '@world:wxActive', training: '@world:fitnessToday', nutrition: '@world:nutSummary' };
 const local = { habits: HABITS, hints: HINTS };
 const ALL_VP = ['desktop', 'notebook', 'tablet', 'mobile'];
 const demoToday = { ...world, ...local, tiles: TILES, week };
@@ -87,7 +87,7 @@ export default {
   features: withLegal([
     // ----------------------------------------------------------------------------------------- Heute
     {
-      id: 'home.today', name: 'Heute', group: 'Übersicht', status: 'design',
+      id: 'home.today', name: 'Heute', group: 'Übersicht', status: 'design', tier: 1,
       purpose: 'Beim Öffnen der App in unter fünf Sekunden erfassen, was heute ansteht, was Aufmerksamkeit braucht und wie der Tag läuft – modulübergreifend, mit Sprung in jedes Modul.',
       requirements: [
         { text: 'Gesundheits-Leitplanken 3: Training, Ernährung und Gewohnheiten ohne Bewertung und ohne Alarmfarbe; Zahlen lassen sich ausblenden (Leitplanken 4)', type: 'rule', priority: 'must' },
@@ -173,7 +173,7 @@ export default {
     },
     // ------------------------------------------------------------------------------------ Tagesbriefing
     {
-      id: 'home.briefing', name: 'Tagesbriefing', group: 'Rituale', status: 'design',
+      id: 'home.briefing', name: 'Tagesbriefing', group: 'Rituale', status: 'design', tier: 1,
       purpose: 'Das Morgenbriefing in 30 Sekunden: Wetter, erster Termin, wichtigste Aufgaben, Gewohnheiten, Geld und Training – als lesbare Karte und als Mitteilung um 07:00.',
       requirements: [
         { text: 'Gesundheits-Leitplanken 3: Training, Ernährung und Gewohnheiten ohne Bewertung und ohne Alarmfarbe; Zahlen lassen sich ausblenden (Leitplanken 4)', type: 'rule', priority: 'must' },
@@ -231,7 +231,7 @@ export default {
     },
     // ----------------------------------------------------------------------------------------- Rückblick
     {
-      id: 'home.review', name: 'Rückblick', group: 'Rituale', status: 'review',
+      id: 'home.review', name: 'Rückblick', group: 'Rituale', status: 'review', tier: 2,
       purpose: 'Abends den Tag abschließen (Aufgaben verschieben, Gewohnheiten bestätigen, Top 3 für morgen) und sonntags die Woche aus allen Modulen zurückblicken.',
       requirements: [
         { text: 'Gesundheits-Leitplanken 3: Training, Ernährung und Gewohnheiten ohne Bewertung und ohne Alarmfarbe; Zahlen lassen sich ausblenden (Leitplanken 4)', type: 'rule', priority: 'must' },
@@ -296,7 +296,7 @@ export default {
     },
     // --------------------------------------------------------------------------- Startseite anpassen
     {
-      id: 'home.customize', name: 'Startseite anpassen', group: 'Einstellungen', status: 'design',
+      id: 'home.customize', name: 'Startseite anpassen', group: 'Einstellungen', status: 'design', tier: 3,
       purpose: 'Die Startseite zusammenstellen: Kacheln ein- und ausblenden, sortieren, Größe wählen – mit Vorlagen für typische Tage.',
       requirements: [
         { text: 'Kacheln ein-/ausblenden und sortieren (Pfeile, auch per Tastatur bedienbar)', type: 'action', priority: 'must' },
@@ -343,7 +343,7 @@ export default {
     },
     // ---------------------------------------------------------------------------------- Hinweise
     {
-      id: 'home.hints', name: 'Hinweise', group: 'Übersicht', status: 'design',
+      id: 'home.hints', name: 'Hinweise', group: 'Übersicht', status: 'design', tier: 2,
       purpose: 'Regelbasierte Hinweise aus allen Modulen („Sturm und Termin“, „Frist heute“, „Abo ungenutzt“) – mit Quelle, Aktion, Wegwischen und „Später“.',
       requirements: [
         { text: 'Jeder Hinweis nennt Quelle (Modul) und eine Aktion', type: 'rule', priority: 'must' },
@@ -353,7 +353,7 @@ export default {
         { text: 'Leerzustand „Alles im Griff“', type: 'state', priority: 'must' },
       ],
       interactions: [...links('hint.open', ['weather', 'tasks', 'calendar', 'finance', 'savings'], 'Hinweis'), { trigger: 'Hinweis wegwischen', result: 'Hinweis verschwindet', event: 'hint.dismiss' }],
-      viewports: ALL_VP, demoData: { hints: HINTS },
+      viewports: ALL_VP, demoData: { ...world, hints: HINTS },
       variants: [
         {
           id: 'A', name: 'Karten', direction: 'fokus', concept: 'Hinweise als Karten mit Farbkante, Quelle und Aktion – der wichtigste zuerst.',
@@ -370,7 +370,7 @@ export default {
     },
     // ------------------------------------------------------------------------------ Erste Schritte
     {
-      id: 'home.firststeps', name: 'Erste Schritte', group: 'Übersicht', status: 'analyzed',
+      id: 'home.firststeps', name: 'Erste Schritte', group: 'Übersicht', status: 'analyzed', tier: 3,
       purpose: 'Leerzustand der Startseite: statt leerer Karten eine Checkliste mit den nächsten Einrichtungsschritten (Kalender verbinden, erste Aufgabe, erste Gewohnheit, Wetterort).',
       requirements: [
         { text: 'Checkliste mit höchstens fünf Schritten, jeder mit direktem Sprung', type: 'action', priority: 'must' },

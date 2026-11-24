@@ -10,9 +10,9 @@ import { useState, useRef, useEffect } from 'preact/hooks';
 
 export { Icon };
 
-export function Button({ variant = 'default', size, icon, iconRight, children, class: c, ...rest }) {
+export function Button({ variant = 'default', size, icon, iconRight, children, class: c, wrap, ...rest }) {
   const iconOnly = icon && !children;
-  return html`<button type="button" class=${cx('tk-btn', variant !== 'default' && `tk-btn--${variant}`, size === 'sm' && 'tk-btn--sm', iconOnly && 'tk-btn--icon', c)} ...${rest}>
+  return html`<button type="button" class=${cx('tk-btn', variant !== 'default' && `tk-btn--${variant}`, size === 'sm' && 'tk-btn--sm', iconOnly && 'tk-btn--icon', wrap && 'tk-btn--wrap', c)} ...${rest}>
     ${icon && html`<${Icon} name=${icon} size=${size === 'sm' ? 15 : 17} />`}${children}${iconRight && html`<${Icon} name=${iconRight} size=${15} />`}
   </button>`;
 }

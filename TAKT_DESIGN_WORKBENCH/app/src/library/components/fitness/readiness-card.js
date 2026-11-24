@@ -13,10 +13,11 @@ export const readinessCard = {
   name: 'Erholung & Check-in',
   category: 'Fitness',
   description: 'Tagesempfehlung mit sichtbaren Faktoren statt undurchsichtiger Zahl: Schlaf, Ruhepuls, Muskelkater, Energie, Stress und Belastung. Check-in in 3 Taps; die Empfehlung nennt immer ihre Gründe. Orientierung, keine medizinische Diagnose.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'layout', label: 'Darstellung', type: 'select', options: ['card', 'decision'], default: 'card' },
     { name: 'openEvent', label: 'Event für „Details“ (leer = kein Knopf)', type: 'text', default: '' },
+    { name: 'showFactors', label: 'Faktoren zeigen', type: 'boolean', default: true },
     { name: 'showCheckin', label: 'Check-in zeigen', type: 'boolean', default: true },
     { name: 'title', label: 'Titel', type: 'text', default: 'Erholung heute' },
   ],
@@ -48,7 +49,7 @@ export const readinessCard = {
     return html`<${Card} title=${props.layout === 'decision' ? undefined : props.title} icon=${props.layout === 'decision' ? undefined : 'bed'}><div class=${`tk-rd tk-rd--${props.layout}`} data-qa="readiness">
       <div class="tk-rd__answer" data-tone=${adv.tone}><span class="tk-rd__ico" style=${`color:var(--tk-c-${adv.tone})`}><${Icon} name=${adv.level === 'go' ? 'battery-full' : adv.level === 'ease' ? 'sun-medium' : 'moon'} size=${24} /></span>
         <div class="tk-grow"><div class="tk-label" style="margin-bottom:4px;color:var(--tk-c-text-muted)">${props.layout === 'decision' ? 'Heute trainieren?' : 'Empfehlung'}</div><div class="tk-rd__t">${adv.title}</div><p class="tk-muted" style="margin-top:6px;font-size:var(--tk-fs-sm)">${adv.text}</p></div></div>
-      <div class="tk-rd__fac">${factors.map((f) => html`<div class="tk-rd__f"><span style=${`color:var(--tk-c-${LEVEL[f.level].tone === 'neutral' ? 'text-subtle' : LEVEL[f.level].tone})`}><${Icon} name=${LEVEL[f.level].icon} size=${18} /></span><div class="tk-grow" style="min-width:0"><strong class="tk-truncate">${f.label}: ${f.value}</strong><small>${f.note}</small></div></div>`)}</div>
+      ${props.showFactors && html`<div class="tk-rd__fac">${factors.map((f) => html`<div class="tk-rd__f"><span style=${`color:var(--tk-c-${LEVEL[f.level].tone === 'neutral' ? 'text-subtle' : LEVEL[f.level].tone})`}><${Icon} name=${LEVEL[f.level].icon} size=${18} /></span><div class="tk-grow" style="min-width:0"><strong class="tk-truncate">${f.label}: ${f.value}</strong><small>${f.note}</small></div></div>`)}</div>`}
       ${props.showCheckin && html`<div class="tk-rd__ci"><div class="tk-row"><span class="tk-label tk-grow">Check-in ${checkedIn ? '· erledigt' : '· 3 Taps'}</span>${checkedIn && html`<${Badge} tone="success" icon="check">Heute eingetragen<//>`}</div>
         ${ROWS.map(([k, l]) => html`<div class="tk-col" style="gap:4px" role="radiogroup" aria-label=${l}><span style="font-size:var(--tk-fs-sm);font-weight:600">${l}</span><div class="tk-rd__scale">${CHECKIN_SCALES[k].map((txt, i) => html`<button type="button" role="radio" aria-checked=${String(cur[k] === i + 1)} aria-label=${`${l}: ${txt}`} onClick=${() => set(k, i + 1)}>${txt}</button>`)}</div></div>`)}</div>`}
       <div class="tk-row" style="gap:8px;flex-wrap:wrap"><span class="tk-subtle tk-grow" style="font-size:var(--tk-fs-xs)">Orientierung, keine medizinische Diagnose.</span>${props.openEvent && html`<${Button} size="sm" icon="bed" onClick=${() => ctx.emit(props.openEvent)}>Details<//>`}${props.layout === 'decision' && html`<${Button} size="sm" icon="calendar-days" onClick=${() => ctx.emit('plan.open')}>Plan<//>`}<${Button} size="sm" icon="info" onClick=${explain}>Warum?<//></div></div><//>`;

@@ -10,7 +10,7 @@ export const wxDays = {
   name: '10-Tage-Vorhersage',
   category: 'Wetter',
   description: 'Zehn Tage mit Symbol, Regenrisiko, Min/Max-Balken über den gesamten Zeitraum, Frost- und Sturm-Hinweis. Als Liste oder wischbare Kacheln. Antippen: Stundenverlauf des Tages öffnen (navigate), Tag nur auswählen (detail) oder zur 10-Tage-Ansicht springen (open).',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'layout', label: 'Darstellung', type: 'select', options: ['list', 'tiles'], default: 'list' },
     { name: 'mode', label: 'Antippen', type: 'select', options: ['navigate', 'detail', 'open'], default: 'navigate' },
@@ -32,7 +32,7 @@ export const wxDays = {
   .tk-wxd__flags { display:flex; gap:4px; justify-content:flex-end; } .tk-wxd__flags span { display:inline-flex; }
   .bp-mobile .tk-wxd__row { grid-template-columns:54px 26px 50px minmax(0,1fr) 22px; gap:var(--tk-space-2); padding:6px var(--tk-space-3); min-height:58px; } .bp-mobile .tk-wxd__range { grid-template-columns:30px minmax(0,1fr) 30px; gap:8px; }
   .tk-wxd__scroll { display:flex; gap:var(--tk-space-2); overflow-x:auto; scrollbar-width:thin; padding-bottom:6px; }
-  .tk-wxd__tile { flex:none; width:82px; display:flex; flex-direction:column; align-items:center; gap:6px; padding:12px 6px; min-height:132px; border:1px solid var(--tk-c-border); border-radius:var(--tk-radius-lg); background:var(--tk-c-surface2); color:var(--tk-c-text); font:inherit; cursor:pointer; font-variant-numeric:tabular-nums; }
+  .tk-wxd__tile { flex:1 0 82px; min-width:82px; display:flex; flex-direction:column; align-items:center; gap:6px; padding:12px 6px; min-height:132px; border:1px solid var(--tk-c-border); border-radius:var(--tk-radius-lg); background:var(--tk-c-surface2); color:var(--tk-c-text); font:inherit; cursor:pointer; font-variant-numeric:tabular-nums; }
   .tk-wxd__tile:hover { border-color:var(--tk-c-border-strong); } .tk-wxd__tile[aria-pressed="true"] { border-color:var(--tk-c-accent); background:var(--tk-c-accent-soft); }
   .tk-wxdd__grid { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:var(--tk-space-3); } .bp-mobile .tk-wxdd__grid { grid-template-columns:repeat(2, minmax(0,1fr)); }
   .tk-wxdd__cell { display:flex; flex-direction:column; align-items:center; gap:6px; padding:var(--tk-space-3); border-radius:var(--tk-radius-lg); background:var(--tk-c-surface2); text-align:center; min-width:0; }

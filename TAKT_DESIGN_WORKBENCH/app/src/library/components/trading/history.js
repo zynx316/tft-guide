@@ -1,7 +1,7 @@
 // Trading: Transaktionen – Käufe, Verkäufe, Sparplan-Ausführungen, Dividenden und simulierte Orders nach Monat; Filter, Suche, Detail, CSV.
 import { html } from '../../../lib/html.js';
 import { useState } from 'preact/hooks';
-import { Card, Button, EmptyState, Segmented, Search, Icon } from '../../ui.js';
+import { Card, Button, EmptyState, Chip, Search, Icon } from '../../ui.js';
 import { money } from '../../helpers.js';
 import { fmtDate, fmtNumber } from '../../../lib/format.js';
 import { MONTHS_LONG, parseLocal } from '../../../lib/date.js';
@@ -53,8 +53,8 @@ export const trdHistory = {
     const summary = props.showSummary && led.length > 0 && html`<div class="tk-trd-stats"><${Stat} label=${`Realisiert ${year}`}>${money(ctx, sum(sells, (e) => e.gain), { sign: true })}<//><${Stat} label="Dividenden erhalten">${money(ctx, sum(led.filter((e) => e.kind === 'dividend'), (e) => e.amount))}<//><${Stat} label="Per Sparplan investiert">${money(ctx, -sum(led.filter((e) => e.kind === 'plan'), (e) => e.amount), { digits: 0 })}<//></div>`;
     if (!led.length) return html`<${Card} title=${props.title} icon="history"><${EmptyState} icon="history" title="Noch keine Transaktionen" text="Käufe, Verkäufe, Sparplan-Ausführungen und Dividenden erscheinen hier. Simulierte Orders sind gekennzeichnet." action=${html`<${Button} icon="trending-up" onClick=${() => ctx.emit('order.new', { to: 'trading.order' })}>Order simulieren<//>`} /><//>`;
     return html`<${Card} title=${props.title} icon="history" actions=${props.showExport && html`<${Button} size="sm" icon="download" onClick=${exportCsv}>CSV<//>`}><div class="tk-trd-hs">${summary}
-      <div class="tk-trd-hs__tools"><${Search} value=${q} onInput=${setQ} placeholder="Transaktionen durchsuchen" /><${Segmented} label="Art der Transaktion" value=${f} onChange=${(v) => { setF(v); ctx.emit('history.filter', { kind: v }); }} options=${FILTERS.map(([v, l]) => ({ value: v, label: `${l} ${cnt(v)}` }))} /></div>
-      ${groups.length ? groups.map((g) => { const [y, m] = g.k.split('-'); return html`<section><div class="tk-trd-hs__m"><strong>${MONTHS_LONG[Number(m) - 1]} ${y}</strong><span class="tk-trd-meta tk-trd-num">${money(ctx, sum(g.items, (e) => e.amount), { sign: true })}</span></div>
+      <div class="tk-trd-hs__tools"><${Search} value=${q} onInput=${setQ} placeholder="Transaktionen durchsuchen" /></div><div class="tk-row" style="gap:6px;flex-wrap:wrap" role="group" aria-label="Art der Transaktion">${FILTERS.map(([v, l]) => html`<${Chip} active=${f === v} onClick=${() => { setF(v); ctx.emit('history.filter', { kind: v }); }}>${l} ${cnt(v)}<//>`)}</div>
+      ${groups.length ? groups.map((g) => { const [y, m] = g.k.split('-'); return html`<section><div class="tk-trd-hs__m"><strong>${MONTHS_LONG[Number(m) - 1]} ${y}</strong><span class="tk-trd-meta tk-trd-num">${money(ctx, sum(g.items.filter((e) => !e.simulated), (e) => e.amount), { sign: true })}</span></div>
         <div class="tk-trd-list">${g.items.map((e) => html`<button type="button" class="tk-trd-hs__row" onClick=${() => detail(e)} aria-label=${`${e.title}, Details`}><${Tile} icon=${ICON[e.kind]} tone=${TONE[e.kind]} size=${34} />
           <span class="tk-trd-grow"><span class="tk-trd-title" style="display:block">${e.title}</span><span class="tk-trd-sub">${fmtDate(parseLocal(e.date), { style: 'weekday' })}${e.kind !== 'dividend' && e.qty ? ` · ${fmtNumber(e.qty, { digits: e.qty % 1 ? 3 : 0 })} Stück` : ''}${e.status === 'offen' ? ' · offen' : ''}</span></span>
           ${e.simulated && html`<span class="tk-trd-pill tk-trd-pill--info">Simulation</span>`}<strong class="tk-trd-num">${money(ctx, e.amount, { sign: true })}</strong></button>`)}</div></section>`; })

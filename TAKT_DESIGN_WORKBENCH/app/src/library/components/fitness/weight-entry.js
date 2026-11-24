@@ -11,7 +11,7 @@ export const weightEntry = {
   name: 'Gewicht erfassen',
   category: 'Fitness',
   description: 'Gewicht in 0,1-kg-Schritten erfassen (Vorbelegung: letzter Wert), speichern mit einem Tap. Bei einem Sprung über 3 kg folgt eine freundliche Rückfrage. Ein vorhandener Wert des Tages wird ersetzt.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Heute wiegen' },
     { name: 'openEvent', label: 'Event für „Verlauf“ (leer = kein Knopf)', type: 'text', default: '' },
@@ -22,7 +22,7 @@ export const weightEntry = {
   states: ['empty'],
   css: `
   .tk-we { display:flex; flex-direction:column; gap:var(--tk-space-3); } .tk-we--inline { flex-direction:row; align-items:center; flex-wrap:wrap; } .tk-we--inline > .tk-grow { min-width:160px; }
-  .bp-mobile .tk-we .tk-btn--primary { min-height:48px; flex:1 1 140px; }`,
+  .bp-mobile .tk-we .tk-btn--primary { min-height:48px; } .bp-mobile .tk-we--inline .tk-btn--primary { flex:1 1 140px; }`,
   example: { data: { log: [{ date: '2026-11-22', kg: 78.2 }, { date: '2026-11-23', kg: 78.7 }] } },
   render: function WeightEntry({ props, data, setData, ctx }) {
     const log = [...(data.log || [])].sort((a, b) => (a.date < b.date ? -1 : 1)); const last = log.at(-1); const today = isoDay(ctx.today);
