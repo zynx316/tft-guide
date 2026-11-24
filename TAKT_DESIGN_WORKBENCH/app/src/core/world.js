@@ -7,7 +7,7 @@
 //   liefern; diese gezielten Werte gewinnen gegenüber der generischen Umformung.
 // Rein (kein DOM), auch in Node nutzbar.
 // ============================================================================
-import { WORLD } from '../seed/world/index.js';
+import { WORLD, WORLD_SCENARIOS } from '../seed/world/index.js';
 import * as persona from '../seed/world/persona.js';
 
 export const SCENARIOS = [
@@ -59,7 +59,7 @@ function stressed(v, depth = 0) {
  * Welt für ein Szenario umformen. Gezielte Szenario-Werte aus den Welt-Dateien (WORLD.scenarios[id])
  * überschreiben die generische Umformung.
  */
-export function applyScenario(world, id = 'alltag') {
+export function applyScenario(world, id = 'alltag', fileScenarios = world === WORLD ? WORLD_SCENARIOS : []) {
   const base = {};
   for (const [k, v] of Object.entries(world || {})) {
     if (k === 'scenarios' || k === 'scenariosByFile') continue;
@@ -69,8 +69,8 @@ export function applyScenario(world, id = 'alltag') {
     else base[k] = clone(v);
   }
   // Gezielte Werte: WORLD.scenarios (eine Datei) oder WORLD.scenariosByFile (mehrere Dateien, zusammengeführt)
-  const sources = [world?.scenarios, ...Object.values(world?.scenariosByFile || {})].filter(isPlain);
-  for (const src of sources) if (isPlain(src[id])) Object.assign(base, clone(src[id]));
+  const sources = [world?.scenarios, ...Object.values(world?.scenariosByFile || {}), ...(fileScenarios || [])].filter(isPlain);
+  for (const src of sources) if (isPlain(src[id])) for (const [k, v] of Object.entries(src[id])) base[k] = isPlain(v) && isPlain(base[k]) ? { ...base[k], ...clone(v) } : clone(v);
   delete base.scenariosByFile;
   return base;
 }

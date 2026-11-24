@@ -99,7 +99,7 @@ export const SV_CSS = `
   .tk-sv-note { display:flex; gap:8px; align-items:flex-start; margin:0; font-size:var(--tk-fs-sm); color:var(--tk-c-text-muted); line-height:var(--tk-lh-snug); }
   .tk-sv-note .icon { margin-top:2px; color:var(--tk-c-text-subtle); }
   .tk-sv-stat { display:flex; flex-direction:column; gap:2px; min-width:0; }
-  .tk-sv-stat__l { font-size:var(--tk-fs-xs); color:var(--tk-c-text-subtle); letter-spacing:var(--tk-ls-wide); text-transform:uppercase; font-weight:var(--tk-fw-semibold); }
+  .tk-sv-stat__l { overflow-wrap:anywhere; font-size:var(--tk-fs-xs); color:var(--tk-c-text-subtle); letter-spacing:var(--tk-ls-wide); text-transform:uppercase; font-weight:var(--tk-fw-semibold); }
   .tk-sv-stat strong { font-size:var(--tk-fs-xl); font-weight:var(--tk-fw-bold); letter-spacing:var(--tk-ls-tight); line-height:1.15; overflow-wrap:anywhere; }
   .tk-sv-stat--big strong { font-size:var(--tk-fs-3xl); }
   .tk-sv-stat__s { font-size:var(--tk-fs-sm); color:var(--tk-c-text-muted); }
@@ -111,6 +111,8 @@ export const SV_CSS = `
   .tk-sv-bar { height:8px; border-radius:4px; background:var(--tk-c-surface3); overflow:hidden; display:flex; gap:2px; }
   .tk-sv-bar > i { display:block; height:100%; min-width:3px; }
   .tk-sv-btnrow { display:flex; gap:var(--tk-space-2); flex-wrap:wrap; align-items:center; }
+  .tk-sv-btnrow .tk-btn { white-space:normal; height:auto; min-height:var(--tk-size-control); padding-top:6px; padding-bottom:6px; text-align:center; }
+  .bp-mobile .tk-sv-btnrow .tk-btn { min-height:var(--tk-size-touch); }
   .tk-sv-undo { display:flex; align-items:center; gap:8px; padding:6px 6px 6px 12px; border-radius:var(--tk-radius-md); background:var(--tk-c-surface2); border:1px solid var(--tk-c-border); font-size:var(--tk-fs-sm); }
   .tk-sv-undo > span { flex:1; min-width:0; }
   .tk-sv-sr { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }

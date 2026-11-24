@@ -54,7 +54,7 @@ export const savingsPlanList = {
   .bp-mobile .tk-svpl__main > :nth-child(3) { grid-area:x; } .bp-mobile .tk-svpl__main > :nth-child(3) span { display:none; }
   .bp-mobile .tk-svpl__main > :nth-child(4) { grid-area:y; text-align:right; } .bp-mobile .tk-svpl__main > :nth-child(4) strong { display:inline; margin-right:8px; } .bp-mobile .tk-svpl__main > :nth-child(4) span { display:inline; }
   .bp-mobile .tk-svpl__acts { align-self:start; }
-  .tk-svpl__cards { display:grid; grid-template-columns:repeat(auto-fill, minmax(250px,1fr)); gap:var(--tk-space-4); }
+  .tk-svpl__cards { display:grid; grid-template-columns:repeat(auto-fill, minmax(min(100%,250px),1fr)); gap:var(--tk-space-4); }
   .tk-svpl__card { all:unset; box-sizing:border-box; display:flex; flex-direction:column; gap:10px; padding:var(--tk-space-4); border-radius:var(--tk-radius-lg); border:1px solid var(--tk-c-border); background:var(--tk-c-surface); cursor:pointer; min-width:0; }
   .tk-svpl__card:hover { border-color:var(--tk-c-border-strong); } .tk-svpl__card:focus-visible { outline:2px solid var(--tk-c-focus); } .tk-svpl__card[aria-selected="true"] { border-color:var(--tk-c-accent); }
   .tk-svpl__big { font-size:var(--tk-fs-2xl); font-weight:var(--tk-fw-bold); letter-spacing:var(--tk-ls-tight); font-variant-numeric:tabular-nums; line-height:1.1; }
@@ -106,7 +106,7 @@ export const savingsPlanList = {
             <div class="tk-sv-row"><${Tile} tone=${r.p.tone || 1} icon=${r.tgt.icon} /><div class="tk-grow"><strong class="tk-truncate" style="display:block">${r.p.name}</strong><span class="tk-sv-meta tk-truncate" style="display:block">${r.tgt.label}</span></div></div>
             <div><div class="tk-svpl__big">${eur(ctx, r.p.monthly)}</div><span class="tk-sv-meta">pro Monat · ${rhythmLabel(r.p)}</span></div>
             <div class="tk-sv-row" style="justify-content:space-between;flex-wrap:wrap;gap:6px"><${Badge} tone=${r.st.tone} icon=${r.st.icon}>${r.st.label}<//><span class="tk-sv-meta tk-num">${r.next ? `Nächste: ${fmtDate(r.next.date, { style: 'weekday' })}` : ''}</span></div>
-            <div class="tk-sv-row" style="justify-content:space-between;border-top:1px solid var(--tk-c-border);padding-top:10px"><span class="tk-sv-meta">Wert</span><span class="tk-num" style="font-weight:600">${eur(ctx, r.stats.value)}</span><${Gain} ctx=${ctx} value=${r.stats.gain} ratio=${r.stats.ratio} showAmount=${false} /></div></button>`)}</div>
+            <div class="tk-sv-row" style="justify-content:space-between;border-top:1px solid var(--tk-c-border);padding-top:10px;flex-wrap:wrap"><span class="tk-sv-meta">Wert</span><span class="tk-num" style="font-weight:600">${eur(ctx, r.stats.value)}</span><${Gain} ctx=${ctx} value=${r.stats.gain} ratio=${r.stats.ratio} showAmount=${false} /></div></button>`)}</div>
         ${foot}<//></div>`;
     }
     if (props.style === 'compact') {

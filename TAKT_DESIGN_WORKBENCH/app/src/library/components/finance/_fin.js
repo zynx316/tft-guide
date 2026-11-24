@@ -58,6 +58,7 @@ export const buildTx = (ctx, list, f) => ({
 // Basis-CSS (einmal geladen über fin-safe-to-spend). Karten im Raster füllen die Zeilenhöhe.
 export const FIN_CSS = `
   .tk-layout--grid .tk-block[data-component^="fin-"] > .tk-card { height:100%; }
+  [data-component^="fin-"] .tk-btn { white-space:normal; height:auto; min-height:var(--tk-size-control); text-align:left; max-width:100%; }
   .tk-fn-ico { border-radius:11px; display:grid; place-items:center; flex:none; }
   .tk-fn-row { display:flex; align-items:center; gap:12px; min-width:0; }
   .tk-fn-grow { flex:1 1 auto; min-width:0; }
@@ -75,7 +76,7 @@ export const FIN_CSS = `
   .tk-fn-tap:hover { background:var(--tk-c-surface2); }
   .tk-fn-tap:focus-visible, .tk-fn-btn:focus-visible { outline:2px solid var(--tk-c-focus); outline-offset:2px; }
   .bp-mobile .tk-fn-tap { min-height:var(--tk-size-touch); }
-  .tk-fn-pill { display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:var(--tk-radius-pill); font-size:var(--tk-fs-xs); font-weight:var(--tk-fw-semibold); background:var(--tk-c-surface3); color:var(--tk-c-text-muted); white-space:nowrap; }
+  .tk-fn-pill { display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:var(--tk-radius-pill); font-size:var(--tk-fs-xs); font-weight:var(--tk-fw-semibold); background:var(--tk-c-surface3); color:var(--tk-c-text-muted); max-width:100%; }
   .tk-fn-pill--warning { background:var(--tk-c-warning-soft); color:var(--tk-c-text); } .tk-fn-pill--success { background:var(--tk-c-success-soft); color:var(--tk-c-text); }
   .tk-fn-pill--info { background:var(--tk-c-info-soft); color:var(--tk-c-text); } .tk-fn-pill--accent { background:var(--tk-c-accent-soft); color:var(--tk-c-text); }
   .tk-fn-list > * + * { border-top:1px solid var(--tk-c-border); }

@@ -159,7 +159,7 @@ function ReceiptForm({ rc, props, setData, ctx, dupe }) {
         <div class="tk-rcpt__vat"><span class="tk-subtle">Darin MwSt ${rc.vatRate} %</span><strong class="tk-num">${money(ctx, vat)}</strong></div></div>
       ${props.showItems && lines.length > 0 && html`<div class="tk-rcpt__lines"><div class="tk-label">Positionen</div>${lines.map((l) => html`<div class="tk-rcpt__line"><span class="tk-truncate">${l.qty} × ${l.name}</span><span class="tk-num">${money(ctx, l.total)}</span></div>`)}</div>`}
       <div class="tk-ocr__actions"><${Button} variant="primary" icon=${booked ? 'check' : 'wallet'} disabled=${booked || !valid} onClick=${book}>${booked ? 'Gebucht' : 'Als Ausgabe buchen'}<//>
-        <${Button} icon="arrow-up-right" onClick=${() => ctx.emit('receipt.finance', { id: rc.id })}>In Finanzen prüfen<//></div>
+        <${Button} icon="arrow-up-right" onClick=${() => ctx.emit('receipt.finance', { id: rc.id, ui: { prefill: { kind: 'expense', title: f.merchant.trim(), amount: -(total > 0 ? total : 0), date: f.date, category: f.cat, account: f.acc, receiptId: rc.id } } })}>In Finanzen prüfen<//></div>
       <div class="tk-subtle" style="font-size:var(--tk-fs-xs)">Die Buchung wird nur vorgeschlagen und erst nach „Als Ausgabe buchen“ angelegt. Beträge stammen aus der Erkennung, bitte vergleiche sie mit dem Beleg.</div>
     </div></div>`;
 }
@@ -253,6 +253,7 @@ export const businessCard = {
   css: `
   .tk-card-bc { display:flex; flex-direction:column; gap:var(--tk-space-4); min-width:0; }
   .tk-card-bc__card { display:flex; align-items:center; gap:14px; padding:var(--tk-space-5); border-radius:var(--tk-radius-lg); background:var(--tk-c-accent-soft); border:1px solid color-mix(in srgb, var(--tk-c-accent) 30%, transparent); min-width:0; }
+  .tk-card-bc .tk-input, .tk-rcpt .tk-input { text-overflow:ellipsis; }
   .tk-card-bc__av { width:56px; height:56px; border-radius:50%; flex:none; display:grid; place-items:center; background:var(--tk-c-accent); color:var(--tk-c-on-accent, var(--tk-c-bg)); font-weight:var(--tk-fw-bold); font-size:var(--tk-fs-lg); }
   .tk-card-bc__name { font-size:var(--tk-fs-xl); font-weight:var(--tk-fw-bold); letter-spacing:var(--tk-ls-tight); overflow-wrap:anywhere; }`,
   example: { data: { cards: [{ id: 'k1', name: 'Dr. Anna Müller', title: 'Steuerberaterin', company: 'Müller & Partner mbB', phone: '+49 521 555 0142', email: 'anna.mueller@mueller-partner.example', web: 'mueller-partner.example', address: 'Marktstraße 4, 33602 Bielefeld', conf: { name: 0.61 } }] } },

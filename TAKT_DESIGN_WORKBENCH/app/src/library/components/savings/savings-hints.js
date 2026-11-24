@@ -57,7 +57,7 @@ export const savingsHints = {
   events: ['hint.coverage', 'hint.goal', 'hint.execution', 'hint.plan', 'hint.tax'],
   states: ['empty'],
   css: `${SV_CSS}
-  .tk-svh { display:flex; flex-direction:column; min-width:0; } .tk-svh--cards { display:grid; grid-template-columns:repeat(auto-fit, minmax(250px,1fr)); gap:var(--tk-space-3); }
+  .tk-svh { display:flex; flex-direction:column; min-width:0; } .tk-svh--cards { display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%,250px),1fr)); gap:var(--tk-space-3); }
   .tk-svh__i { display:flex; gap:12px; align-items:flex-start; padding:12px 0; border-bottom:1px solid var(--tk-c-border); min-width:0; } .tk-svh__i:last-child { border-bottom:0; }
   .tk-svh--cards .tk-svh__i { border:1px solid var(--tk-c-border); border-radius:var(--tk-radius-lg); padding:var(--tk-space-4); background:var(--tk-c-surface); flex-direction:column; }
   .tk-svh__i strong { display:block; font-weight:var(--tk-fw-semibold); overflow-wrap:anywhere; } .tk-svh__i p { margin:2px 0 6px; color:var(--tk-c-text-muted); font-size:var(--tk-fs-sm); line-height:var(--tk-lh-snug); }

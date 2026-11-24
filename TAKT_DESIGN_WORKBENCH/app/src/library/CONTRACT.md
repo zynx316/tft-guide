@@ -90,3 +90,6 @@ export const taskList = {
   `link.open`) viele Ziele haben. `ctx.emit` liefert `true`, wenn navigiert wurde – Hinweis-Toasts nur bei `false` zeigen.
   `ctx.mode` ist `feature` (Einzel-Screen), `app` (Launcher) oder `component` (Galerie); Detailansichten öffnen im App-Modus
   per Navigation statt Dialog (keine DOM-Erkennung über `.tk-app` mehr nötig).
+- **Welt aus Komponenten:** `ctx.world.get/set/add/reset` (gemeinsamer Zustand aller Screens im Launcher) und
+  `ctx.newId(prefix)` (deterministische IDs, kein `Math.random`). Bevorzugt weiterhin über Datenbindung (`@world:`) arbeiten;
+  `ctx.world` für modulübergreifende Aktionen (z. B. Buchung erzeugt auch Saldo-Änderung).

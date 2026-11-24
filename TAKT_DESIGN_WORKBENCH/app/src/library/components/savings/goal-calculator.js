@@ -27,10 +27,10 @@ export const goalCalculator = {
   states: [],
   css: `${SV_CSS}${CHART_CSS}
   .tk-svg { display:flex; flex-direction:column; gap:var(--tk-space-5); min-width:0; }
-  .tk-svg__in { display:grid; grid-template-columns:repeat(auto-fit, minmax(210px,1fr)); gap:var(--tk-space-4); }
+  .tk-svg__in { display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%,210px),1fr)); gap:var(--tk-space-4); }
   .tk-svg__res { padding:var(--tk-space-5); border-radius:var(--tk-radius-xl); background:var(--tk-c-accent-soft); border:1px solid color-mix(in srgb, var(--tk-c-accent) 40%, transparent); display:flex; flex-direction:column; gap:6px; }
   .tk-svg__big { font-size:clamp(28px, 7vw, 40px); font-weight:var(--tk-fw-bold); letter-spacing:var(--tk-ls-tight); line-height:1.1; font-variant-numeric:tabular-nums; overflow-wrap:anywhere; }
-  .tk-svg__alt { display:grid; grid-template-columns:repeat(auto-fit, minmax(150px,1fr)); gap:var(--tk-space-3); }
+  .tk-svg__alt { display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%,150px),1fr)); gap:var(--tk-space-3); }
   .tk-svg__alt > div { padding:var(--tk-space-3); border-radius:var(--tk-radius-lg); border:1px solid var(--tk-c-border); background:var(--tk-c-surface2); display:flex; flex-direction:column; gap:2px; min-width:0; }
   .tk-svg__alt b { font-variant-numeric:tabular-nums; font-size:var(--tk-fs-lg); } .tk-svg__alt small { color:var(--tk-c-text-muted); font-size:var(--tk-fs-sm); }
   .tk-svg__chips { display:flex; gap:6px; flex-wrap:wrap; align-items:center; }`,

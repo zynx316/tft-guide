@@ -2,7 +2,8 @@
 import './_helpers.mjs';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { WORLD } from '../app/src/seed/world/index.js';
+import { WORLD, WORLD_SCENARIOS } from '../app/src/seed/world/index.js';
+const targeted = (id) => new Set(WORLD_SCENARIOS.flatMap((x) => Object.keys(x?.[id] || {})));
 import { applyScenario, getWorld, SCENARIOS, hasWorldKey, isReferenceKey } from '../app/src/core/world.js';
 import { buildSeedState } from '../app/src/seed/index.js';
 import { seedHash, diffSeed, applySeedPatch, userChanged } from '../app/src/core/seedpatch.js';
@@ -19,19 +20,19 @@ test('Szenarien: drei feste IDs, Alltag ist Standard', () => {
 test('Erster Start: Nutzerdaten leer, Kataloge/Wetter/Persona bleiben', () => {
   const w = applyScenario(WORLD, 'erststart');
   for (const [k, v] of arrays(WORLD)) {
-    if (WORLD.scenarios?.erststart && k in WORLD.scenarios.erststart) continue;
+    if (targeted('erststart').has(k)) continue;
     if (isReferenceKey(k)) assert.equal(w[k].length, v.length, `${k} (Referenz) geleert`);
     else assert.equal(w[k].length, 0, `${k} nicht leer`);
   }
   assert.deepEqual(w.persona, WORLD.persona);
-  if (WORLD.tasks) assert.equal(w.tasks.length, 0);
+  if (WORLD.tasks && !targeted('erststart').has('tasks')) assert.equal(w.tasks.length, 0);
   if (WORLD.exerciseLibrary) assert.ok(w.exerciseLibrary.length > 0, 'Übungsbibliothek geleert');
 });
 
 test('Stress-Tag: Listen von Objekten verdreifacht, IDs eindeutig', () => {
   const w = applyScenario(WORLD, 'stress');
   for (const [k, v] of arrays(WORLD)) {
-    if (!v.length || typeof v[0] !== 'object' || (WORLD.scenarios?.stress && k in WORLD.scenarios.stress)) continue;
+    if (!v.length || typeof v[0] !== 'object' || targeted('stress').has(k)) continue;
     assert.equal(w[k].length, v.length * 3, `${k} nicht verdreifacht`);
     const ids = w[k].map((x) => x.id).filter((x) => x != null);
     assert.equal(new Set(ids).size, ids.length, `${k}: doppelte IDs`);
@@ -120,4 +121,13 @@ test('Pseudoversion pin: nur das angeheftete Feature weicht ab', () => {
   const g = st.features.find((x) => x.id !== f.id && x.variants.length);
   assert.equal(resolveVariant(st, g, id).variant.id, g.variants.find((v) => v.id === g.selectedVariantId)?.id || g.variants[0].id);
   assert.ok(versionCoverage(st, 'mix').total > 0);
+});
+
+test('Gezielte Szenario-Werte der Welt-Dateien werden angewendet', () => {
+  for (const id of ['erststart', 'stress']) {
+    const w = applyScenario(WORLD, id);
+    for (const src of WORLD_SCENARIOS) for (const [k, v] of Object.entries(src?.[id] || {})) {
+      if (Array.isArray(v)) assert.deepEqual(w[k], v, `${id}: ${k} nicht übernommen`);
+    }
+  }
 });

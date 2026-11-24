@@ -29,7 +29,7 @@ export const finNetworthChart = {
   .tk-fnn svg { display:block; width:100%; height:auto; overflow:visible; } .tk-fnn__legend { display:flex; flex-wrap:wrap; gap:6px 14px; margin-top:var(--tk-space-3); font-size:var(--tk-fs-xs); color:var(--tk-c-text-muted); } .tk-fnn__legend span { display:inline-flex; align-items:center; gap:6px; } .tk-fnn__legend i { width:10px; height:10px; border-radius:3px; }
   .tk-fnn__head { display:flex; justify-content:space-between; align-items:flex-end; gap:12px; flex-wrap:wrap; margin-bottom:var(--tk-space-3); }
   .tk-fnn__hit { fill:transparent; cursor:pointer; }
-  .tk-fnn__tip { display:grid; grid-template-columns:repeat(auto-fit, minmax(110px, 1fr)); gap:8px; padding:var(--tk-space-3); border-radius:var(--tk-radius-md); background:var(--tk-c-surface2); border:1px solid var(--tk-c-border); margin-top:var(--tk-space-3); }
+  .tk-fnn__tip { display:grid; grid-template-columns:repeat(auto-fit, minmax(calc(110px * var(--tk-text-scale, 1)), 1fr)); gap:8px; padding:var(--tk-space-3); border-radius:var(--tk-radius-md); background:var(--tk-c-surface2); border:1px solid var(--tk-c-border); margin-top:var(--tk-space-3); }
   .tk-fnn__tip strong { display:block; font-variant-numeric:tabular-nums; white-space:nowrap; }`,
   example: { data: ex('accounts', 'history', 'prefs') },
   render: function FinNetworthChart({ props, data, ctx }) {

@@ -179,7 +179,7 @@ function Screen({ variant, demoData, cacheKey, cache, theme, today, forcedState,
     },
   };
   const ctx = {
-    bp, width, theme, today: new Date(today || DEFAULT_TODAY), now: () => (live ? new Date(new Date(today || DEFAULT_TODAY).getTime() + (Date.now() - LIVE_T0)) : new Date(today || DEFAULT_TODAY)), live: !!live, mode, fmt: FMT, emit, ui, privacy: !!privacy, env: env || {},
+    bp, width, theme, today: new Date(today || DEFAULT_TODAY), now: () => (live ? new Date(new Date(today || DEFAULT_TODAY).getTime() + (Date.now() - LIVE_T0)) : new Date(today || DEFAULT_TODAY)), live: !!live, mode, fmt: FMT, newId, world: worldApi(world), emit, ui, privacy: !!privacy, env: env || {},
     setUi: (k, v) => setUiState((u) => ({ ...u, [k]: v })),
     openDialog: overlays.openDialog, toast: overlays.toast,
   };
@@ -197,8 +197,18 @@ const applyEnv = (env) => { document.documentElement.style.setProperty('--tk-tex
 /** Gemeinsamer Weltzustand (Persona-Daten), geteilt von allen Screens einer Vorschau. */
 function useWorld(initial) {
   const [data, setData] = useState(() => clone(initial || {}));
-  return { data, setData: (key, v) => setData((d) => ({ ...d, [key]: typeof v === 'function' ? v(d[key] ?? []) : v })) };
+  return { data, setData: (key, v) => setData((d) => ({ ...d, [key]: typeof v === 'function' ? v(d[key] ?? []) : v })), reset: () => setData(clone(initial || {})) };
 }
+/** Komponenten-Zugriff auf die Welt (ctx.world): lesen, setzen, an Listen vorn anfügen, zurücksetzen. */
+const worldApi = (world) => (world ? {
+  get: (key) => world.data[key],
+  set: (key, v) => world.setData(key, v),
+  add: (key, item) => world.setData(key, (list) => [item, ...(Array.isArray(list) ? list : [])]),
+  reset: () => world.reset(),
+} : null);
+// Deterministische IDs für neu angelegte Objekte (ctx.newId): Zähler je Vorschau-Sitzung, kein Zufall.
+let idSeq = 0;
+const newId = (prefix = 'neu') => `${prefix}-${++idSeq}`;
 
 const NoVariant = () => html`<div class="tk-state"><div class="tk-state__icon"><${Icon} name="palette" size=${22} /></div><div class="tk-state__title">Noch kein Design</div><div class="tk-state__text">Für dieses Feature gibt es noch keine Variante.</div></div>`;
 

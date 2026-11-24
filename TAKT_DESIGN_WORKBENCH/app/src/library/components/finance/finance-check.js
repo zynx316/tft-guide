@@ -24,6 +24,7 @@ export const finFinanceCheck = {
   .tk-fnc__grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap:var(--tk-space-3); }
   .tk-fnc__item { display:flex; flex-direction:column; gap:8px; padding:var(--tk-space-3) var(--tk-space-4); border-radius:var(--tk-radius-md); background:var(--tk-c-surface2); border:1px solid var(--tk-c-border); text-align:left; color:inherit; font:inherit; cursor:pointer; min-width:0; min-height:44px; }
   .tk-fnc__item--list { background:none; border:0; border-radius:0; padding:var(--tk-space-3) 0; }
+  .tk-fnc__item .tk-fn-row { flex-wrap:wrap; } .tk-fnc__item strong { white-space:normal; }
   .tk-fnc__meter { position:relative; height:8px; border-radius:4px; background:var(--tk-c-surface3); } .tk-fnc__meter > i { position:absolute; left:0; top:0; bottom:0; border-radius:4px; background:var(--tk-c-accent); }
   .tk-fnc__band { position:absolute; top:-2px; bottom:-2px; border:1.5px solid var(--tk-c-text-subtle); border-radius:4px; opacity:.8; }`,
   example: { data: ex('accounts', 'transactions', 'months', 'subscriptions', 'subMeta', 'prefs') },

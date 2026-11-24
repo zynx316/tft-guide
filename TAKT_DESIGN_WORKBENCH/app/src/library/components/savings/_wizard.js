@@ -117,7 +117,7 @@ export const WIZ_CSS = `
   .tk-svw__st[data-done="true"] i { background:var(--tk-c-success); color:var(--tk-c-bg); }
   .bp-mobile .tk-svw__st span { display:none; } .bp-mobile .tk-svw__st[aria-current="step"] span { display:inline; } .bp-mobile .tk-svw__st { min-height:44px; }
   .tk-svw__chips { display:flex; gap:6px; flex-wrap:wrap; }
-  .tk-svw__grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(230px,1fr)); gap:var(--tk-space-4); }
+  .tk-svw__grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%,230px),1fr)); gap:var(--tk-space-4); }
   .tk-svw__opts { display:flex; flex-direction:column; gap:8px; }
   .tk-svw__opt { all:unset; box-sizing:border-box; display:flex; align-items:center; gap:12px; padding:10px var(--tk-space-3); min-height:56px; border-radius:var(--tk-radius-lg); border:1px solid var(--tk-c-border); background:var(--tk-c-surface); cursor:pointer; min-width:0; }
   .tk-svw__opt:hover { border-color:var(--tk-c-border-strong); } .tk-svw__opt:focus-visible { outline:2px solid var(--tk-c-focus); } .tk-svw__opt[aria-checked="true"] { border-color:var(--tk-c-accent); background:var(--tk-c-accent-soft); }

@@ -150,6 +150,7 @@ export const channelDetail = {
   .tk-chd__status[data-tone="danger"] { background:var(--tk-c-danger-soft); border-color:color-mix(in srgb, var(--tk-c-danger) 40%, transparent); }
   .tk-chd__status[data-tone="success"] { background:var(--tk-c-success-soft); border-color:color-mix(in srgb, var(--tk-c-success) 30%, transparent); }
   .tk-chd__status[data-tone="warning"] { background:var(--tk-c-warning-soft); }
+  .tk-chd__status .tk-btn { max-width:100%; height:auto; min-height:var(--tk-size-control); white-space:normal; text-align:center; }
   .tk-chd__kpis { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:var(--tk-space-3); }
   .bp-mobile .tk-chd__kpis, .bp-tablet .tk-chd__kpis { grid-template-columns:repeat(2, minmax(0,1fr)); }
   .tk-chd--compact .tk-chd__kpis { grid-template-columns:repeat(2, minmax(0,1fr)); }

@@ -59,13 +59,13 @@ export const savingsGoalCard = {
   .tk-svgl__row small, .tk-svgl__meta { font-size:var(--tk-fs-sm); color:var(--tk-c-text-muted); display:block; }
   .tk-svgl__prog { display:flex; flex-direction:column; gap:6px; min-width:0; } .tk-svgl__prog .tk-sv-meta { font-variant-numeric:tabular-nums; }
   @container (max-width: 560px) { .tk-svgl__row { grid-template-columns:auto minmax(0,1fr) auto; } .tk-svgl__prog { grid-column:1 / -1; order:5; } }
-  .tk-svgl__cards { display:grid; grid-template-columns:repeat(auto-fill, minmax(260px,1fr)); gap:var(--tk-space-4); }
+  .tk-svgl__cards { display:grid; grid-template-columns:repeat(auto-fill, minmax(min(100%,260px),1fr)); gap:var(--tk-space-4); }
   .tk-svgl__card { all:unset; box-sizing:border-box; display:flex; gap:var(--tk-space-4); align-items:center; padding:var(--tk-space-4); border-radius:var(--tk-radius-lg); border:1px solid var(--tk-c-border); background:var(--tk-c-surface); cursor:pointer; min-width:0; }
   .tk-svgl__card:hover { border-color:var(--tk-c-border-strong); } .tk-svgl__card:focus-visible { outline:2px solid var(--tk-c-focus); }
   .tk-svgl__card > div:last-child { min-width:0; display:flex; flex-direction:column; gap:4px; flex:1; } .tk-svgl__card strong { font-weight:var(--tk-fw-semibold); }
   .tk-svgl__hero { display:flex; flex-direction:column; gap:var(--tk-space-4); }
   .tk-svgl__hero h3 { margin:0; font-size:var(--tk-fs-xl); line-height:1.25; }
-  .tk-svgl__facts { display:grid; grid-template-columns:repeat(auto-fit, minmax(120px,1fr)); gap:var(--tk-space-3); }
+  .tk-svgl__facts { display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%,120px),1fr)); gap:var(--tk-space-3); }
   .tk-svgl__ms { display:flex; gap:6px; flex-wrap:wrap; }`,
   example: { data: { goals: [{ id: 'g1', name: 'Notgroschen (6 Monatsausgaben)', target: 15000, current: 9500, icon: 'shield', tone: 3, due: '2029-12-31', monthly: 150 }, { id: 'g2', name: 'Japan-Reise 2027', target: 6000, current: 2150, icon: 'plane', tone: 5, due: '2027-09-01', monthly: 0 }], plans: [{ id: 'sp1', goalId: 'g1', monthly: 150, active: true, expectedReturnPa: 0.025 }] } },
   render: function SavingsGoalCard({ props, data, setData, ctx }) {

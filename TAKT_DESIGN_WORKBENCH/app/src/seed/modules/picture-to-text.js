@@ -270,7 +270,7 @@ export default {
       ],
       interactions: [
         { trigger: '„Als Ausgabe buchen“', result: 'Buchung wird in Finanzen angelegt, Beleg gilt als gebucht', event: 'receipt.book' },
-        { trigger: '„In Finanzen prüfen“', result: 'Finanzen öffnet mit Vorschlag', event: 'receipt.finance' },
+        { trigger: '„In Finanzen prüfen“', result: 'Schnell erfassen in Finanzen öffnet; Händler, Betrag, Datum, Kategorie und Konto stehen als Vorschlag bereit (ctx.ui.prefill)', event: 'receipt.finance', to: 'finance.quickadd' },
         { trigger: 'Beleg in der Liste antippen', result: 'Beleg im Formular', event: 'receipt.open' },
         { trigger: 'Feld ändern', result: 'Eingabe wird geprüft, MwSt aktualisiert sich', event: 'form.invalid' },
       ],
@@ -280,7 +280,7 @@ export default {
         'Nach dem Buchen steht „Gebucht“ und die Buchung erscheint in Finanzen.',
         'Der Hinweis zur Prüfung des Betrags ist in jeder Variante sichtbar.',
       ],
-      flows: [{ id: 'fl-buchen', name: 'Beleg buchen', steps: [{ featureId: 'picture-to-text.receipt', action: 'Betrag und Kategorie prüfen' }, { featureId: 'picture-to-text.receipt', action: '„Als Ausgabe buchen“' }, { featureId: 'finance.home', action: 'Buchung in der Liste sehen' }] }],
+      flows: [{ id: 'fl-buchen', name: 'Beleg buchen', steps: [{ featureId: 'picture-to-text.receipt', action: 'Betrag und Kategorie prüfen' }, { featureId: 'picture-to-text.receipt', action: '„Als Ausgabe buchen“' }, { featureId: 'finance.transactions', action: 'Buchung in der Liste sehen' }] }],
       viewports: ['mobile', 'tablet', 'desktop'],
       demoData: { receipts, transactions: '@world:transactions' },
       variants: [

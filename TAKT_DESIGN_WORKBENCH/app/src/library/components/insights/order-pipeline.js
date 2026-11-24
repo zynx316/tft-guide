@@ -59,6 +59,8 @@ export const orderPipeline = {
   .bp-mobile .tk-order-pipeline__row { flex-wrap:wrap; padding:12px var(--tk-space-3); }
   .bp-mobile .tk-order-pipeline__act { width:100%; }
   .bp-mobile .tk-order-pipeline__act .tk-btn { width:100%; }
+  .bp-mobile .tk-order-pipeline__stats { font-size:var(--tk-fs-xs); grid-template-columns:repeat(auto-fit, minmax(max(60px, 5.4em), 1fr)); }
+  .tk-order-pipeline__stat span { overflow-wrap:anywhere; }
   .bp-mobile .tk-order-pipeline__stat { padding:8px 8px; }
   .bp-mobile .tk-order-pipeline__stat small { display:none; }`,
   example: { props: { title: 'Bestellungen' }, data: { orders: [

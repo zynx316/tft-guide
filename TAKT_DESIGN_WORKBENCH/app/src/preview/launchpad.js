@@ -28,7 +28,10 @@ export function moduleKpi(world, moduleId, today, privacy) {
   const money = (v) => (privacy ? '•••• €' : `${num(v)} €`);
   try {
     const generic = world[`${camel(moduleId)}Summary`]?.kpis?.[0];
-    if (generic) return `${generic.value}${generic.unit ? ` ${generic.unit}` : ''} ${generic.label}`.trim();
+    if (generic) {
+      const value = privacy && /€|\d[\d.,]*\s*(EUR|USD)/.test(`${generic.value}${generic.unit || ''}`) ? '••••' : `${generic.value}${generic.unit ? ` ${generic.unit}` : ''}`;
+      return `${value} ${generic.label}`.trim();
+    }
     switch (moduleId) {
       case 'home': { const n = (world.tasks || []).filter((x) => !x.done && String(x.due || '').slice(0, 10) <= t).length; return `${n} fällig heute`; }
       case 'calendar': { const n = (world.events || []).filter((e) => String(e.start || '').startsWith(t)).length; return `${n} Termine heute`; }
@@ -75,8 +78,18 @@ export function CaptureSheet({ close, world, today, toast, emit }) {
   const save = () => {
     const t = text.trim(); if (!t) return;
     if (eff === 'task' && world) world.setData('tasks', (list) => [{ id: `t-neu-${(list || []).length + 1}`, title: t.replace(/^!\s*/, ''), due: day(today), priority: t.startsWith('!') ? 'hoch' : 'mittel', status: 'Offen', category: 'Eingang', subtasks: [] }, ...(list || [])]);
+    if (eff === 'expense' && world) {
+      // „-12,50 Rewe“ → Ausgabe vom Girokonto (Finanzen rechnen live aus der Welt: Frei verfügbar, Budgets, Saldo)
+      const m = t.match(/[-−]?\s*(\d{1,3}(?:\.\d{3})*(?:,\d{1,2})?|\d+(?:[.,]\d{1,2})?)\s*€?/);
+      const amount = m ? Number(m[1].replace(/\./g, '').replace(',', '.')) : 0;
+      const title = t.replace(m ? m[0] : '', '').trim() || 'Ausgabe';
+      if (amount > 0) {
+        world.setData('transactions', (list) => [{ id: `tx-neu-${(list || []).length + 1}`, date: `${day(today)}T${String(today.getHours()).padStart(2, '0')}:${String(today.getMinutes()).padStart(2, '0')}:00`, title, category: 'Unkategorisiert', amount: -amount, account: 'acc-giro', type: 'expense', icon: 'receipt' }, ...(list || [])]);
+        world.setData('accounts', (list) => (list || []).map((a) => (a.id === 'acc-giro' ? { ...a, balance: Math.round((a.balance - amount) * 100) / 100 } : a)));
+      }
+    }
     emit('capture.add', { type: eff, text: t });
-    toast(`Erfasst als ${CAPTURE_TYPES.find((c) => c.id === eff).label}${eff === 'task' ? ' – erscheint in Aufgaben und Heute' : ''}`);
+    toast(`Erfasst als ${CAPTURE_TYPES.find((c) => c.id === eff).label}${eff === 'task' ? ' – erscheint in Aufgaben und Heute' : eff === 'expense' ? ' – gebucht vom Girokonto' : ''}`);
     close();
   };
   return html`<div class="tk-col" style="gap:var(--tk-space-3)">

@@ -21,12 +21,12 @@ export const finSubscriptionOverview = {
   events: ['sub.open', 'sub.cancel', 'sub.keep'],
   states: ['empty'],
   css: `
-  .tk-fnsub__sum { display:grid; grid-template-columns:repeat(auto-fit, minmax(120px, 1fr)); gap:var(--tk-space-3); margin-bottom:var(--tk-space-4); }
+  .tk-fnsub__sum { display:grid; grid-template-columns:repeat(auto-fit, minmax(calc(120px * var(--tk-text-scale, 1)), 1fr)); gap:var(--tk-space-3); margin-bottom:var(--tk-space-4); }
   .tk-fnsub__sum > div { padding:var(--tk-space-3); border-radius:var(--tk-radius-md); background:var(--tk-c-surface2); border:1px solid var(--tk-c-border); min-width:0; }
   .tk-fnsub__sum strong { display:block; font-size:var(--tk-fs-xl); font-variant-numeric:tabular-nums; white-space:nowrap; }
   .tk-fnsub__h { margin:var(--tk-space-4) 0 var(--tk-space-2); display:flex; align-items:center; gap:8px; }
-  .tk-fnsub__row { display:flex; align-items:center; gap:12px; padding:8px 0; min-height:52px; min-width:0; }
-  .tk-fnsub__row > .tk-fn-tap { flex:1 1 auto; min-width:0; padding:2px 4px; }
+  .tk-fnsub__row { display:flex; flex-wrap:wrap; align-items:center; gap:4px 12px; padding:8px 0; min-height:52px; min-width:0; }
+  .tk-fnsub__row > .tk-fn-tap { flex:1 1 220px; min-width:0; padding:2px 4px; } .bp-mobile .tk-fnsub__row > .tk-fn-tap { flex-basis:100%; }
   .tk-fnsub__call { display:flex; flex-direction:column; gap:8px; padding:var(--tk-space-3) var(--tk-space-4); border-radius:var(--tk-radius-md); background:var(--tk-c-warning-soft); border:1px solid var(--tk-c-border); }
   .tk-fnsub__calls { display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 250px), 1fr)); gap:var(--tk-space-3); }
   .tk-fnsub__call .tk-fn-sub { color:var(--tk-c-text-muted); }

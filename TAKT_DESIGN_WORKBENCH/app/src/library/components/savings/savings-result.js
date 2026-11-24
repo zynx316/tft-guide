@@ -53,8 +53,8 @@ export const savingsResult = {
       <${Button} variant="primary" icon="plus" onClick=${() => ctx.emit('calc.create', { ui: { draft: { monthly: c.monthly, dynamicPa: c.dynamicPa, ratePa: c.ratePa } } })}>Als Sparplan anlegen<//></div>`;
     const note = html`<p class="tk-sv-note"><${Icon} name="calculator" size=${14} /><span>Annahme: ${pc(c.ratePa)} Rendite p. a. abzüglich ${fmtPercent(c.costPa, { digits: 2 })} Kosten, monatlich umgerechnet, Einzahlung am Monatsende. Stand ${fmtDate(today)}. Kein Versprechen, keine Prognose.</span></p>`;
     if (props.style === 'compact') {
-      return html`<${Card} title=${props.title} icon="calculator" actions=${tag.length ? html`<${Badge}>${tag[0]}<//>` : null}><table class="tk-svr__tbl"><thead><tr><th>Annahme</th><th>Wert</th><th>Ertrag</th></tr></thead><tbody>
-        ${keys.map((k) => html`<tr><td>${SCENARIO_NAMES[k]} · ${pc(run.nominal[k])}</td><td><strong>${eur(ctx, val(k))}</strong></td><td>${eur(ctx, run[k].gain, { sign: true })}</td></tr>`)}</tbody></table>
+      return html`<${Card} title=${props.title} icon="calculator" actions=${tag.length ? html`<${Badge}>${tag[0]}<//>` : null}><div style="overflow-x:auto" data-scroll-x><table class="tk-svr__tbl"><thead><tr><th>Annahme</th><th>Wert</th><th>Ertrag</th></tr></thead><tbody>
+        ${keys.map((k) => html`<tr><td>${SCENARIO_NAMES[k]} · ${pc(run.nominal[k])}</td><td><strong>${eur(ctx, val(k))}</strong></td><td>${eur(ctx, run[k].gain, { sign: true })}</td></tr>`)}</tbody></table></div>
         <p class="tk-sv-meta" style="margin:8px 0">Eingezahlt ${eur(ctx, a.invested)} nach ${c.years} Jahren (davon Start ${eur(ctx, c.initial)}).</p>${actions}${note}<//>`;
     }
     return html`<${Card} title=${props.title} icon="calculator" actions=${tag.map((t) => html`<${Badge} tone="info">${t}<//>`)}><div class="tk-svr">

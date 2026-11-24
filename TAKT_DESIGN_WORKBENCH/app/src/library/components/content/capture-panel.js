@@ -161,10 +161,12 @@ export const captureLauncher = {
   .bp-mobile .tk-launch { grid-template-columns:repeat(2, minmax(0,1fr)); gap:var(--tk-space-2); }
   .tk-launch__tile { display:flex; flex-direction:column; align-items:flex-start; gap:10px; padding:var(--tk-space-4); text-align:left; color:inherit; font:inherit; cursor:pointer; min-width:0; min-height:132px; }
   .tk-launch__ico { width:44px; height:44px; border-radius:14px; display:grid; place-items:center; background:var(--tk-c-accent-soft); color:var(--tk-c-accent); }
-  .tk-launch__tile strong { font-weight:var(--tk-fw-semibold); font-size:var(--tk-fs-md); }
+  .tk-launch__tile strong { font-weight:var(--tk-fw-semibold); font-size:var(--tk-fs-md); overflow-wrap:anywhere; }
+  .tk-launch__tile span:last-child { overflow-wrap:anywhere; }
+  .tk-launch--hero .tk-btn, .tk-launch__alt .tk-btn { min-width:0; height:auto; white-space:normal; overflow-wrap:anywhere; }
   .tk-launch__tile span:last-child { font-size:var(--tk-fs-sm); color:var(--tk-c-text-muted); }
   .tk-launch--row { display:flex; flex-wrap:wrap; gap:8px; }
-  .tk-launch--row .tk-btn { flex:1 1 auto; justify-content:center; }
+  .tk-launch--row .tk-btn { flex:1 1 auto; justify-content:center; min-width:0; height:auto; min-height:var(--tk-size-control); white-space:normal; text-align:center; overflow-wrap:anywhere; }
   .bp-mobile .tk-launch--row { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); }
   .tk-launch--hero { display:flex; flex-direction:column; gap:10px; }
   .tk-launch--hero .tk-btn--primary { min-height:64px; font-size:var(--tk-fs-lg); justify-content:center; gap:10px; }
@@ -275,7 +277,7 @@ export const docScanner = {
           <div class="tk-scan__bar"><${Button} icon="upload" aria-label="Aus Datei hinzufügen" onClick=${fromFile}>${ctx.bp === 'mobile' ? null : 'Datei'}<//><button type="button" class="tk-scan__shutter" aria-label="Seite aufnehmen" onClick=${snap}><${Icon} name="camera" size=${28} /></button>
             ${!bench && pages.length > 0 ? html`<${Button} variant="primary" onClick=${() => { setPhase('edit'); ctx.emit('scan.edit', { action: 'open' }); }}>Fertig (${pages.length})<//>` : html`<span style="width:${bench ? 0 : 88}px"></span>`}</div></div>`;
 
-    const strip = pages.length > 0 && html`<div class="tk-scan__strip" role="list" aria-label="Seiten">${pages.map((pg, i) => html`<button type="button" role="listitem" class="tk-scan__thumb" aria-current=${i === sel ? 'true' : 'false'} aria-label=${`Seite ${i + 1}`} onClick=${() => setSel(i)}><${Paper} pg=${pg} mini=${true} /><small>${i + 1}</small></button>`)}
+    const strip = pages.length > 0 && html`<div class="tk-scan__strip" role="group" aria-label="Seiten">${pages.map((pg, i) => html`<button type="button" class="tk-scan__thumb" aria-current=${i === sel ? 'true' : 'false'} aria-label=${`Seite ${i + 1}`} onClick=${() => setSel(i)}><${Paper} pg=${pg} mini=${true} /><small>${i + 1}</small></button>`)}
       ${!bench && html`<button type="button" class="tk-scan__thumb" aria-label="Weitere Seite aufnehmen" style="border-style:dashed" onClick=${() => setPhase('camera')}><${Icon} name="plus" size=${20} /></button>`}</div>`;
     const editor = !cur ? html`<${EmptyState} icon="scan" title="Noch keine Seite" text="Nimm die erste Seite auf, sie erscheint hier zum Bearbeiten." />`
       : html`<div class="tk-col" style="gap:var(--tk-space-3)">${strip}
