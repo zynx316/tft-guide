@@ -124,3 +124,12 @@ export function buildLedger({ trades, orders, transactions, dividends, plans, in
   for (const d of arr(dividends).filter((x) => x.status === 'gezahlt')) out.push({ id: `dv-${d.id}`, kind: 'dividend', date: d.payDate, securityId: d.positionId, title: `Dividende ${d.title}`, qty: d.quantity, price: d.perShare, fee: 0, amount: d.amount, simulated: false });
   return out.filter((e) => e.date <= isoT || e.simulated).sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : String(b.id).localeCompare(String(a.id))));
 }
+
+// ------------------------------------------------------------ Handelszeiten ---
+/** Börsenzeiten (Annahme Xetra: Mo–Fr 09:00–17:30, ohne Feiertage). Krypto handelt rund um die Uhr. */
+export function marketState(now) {
+  const d = toDate(now), wd = isoWeekday(d), mins = d.getHours() * 60 + d.getMinutes(), open = wd <= 5 && mins >= 540 && mins < 1050;
+  let next = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 9, 0);
+  if (open) next = null; else { if (wd > 5 || mins >= 1050) next = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1, 9, 0); while (isoWeekday(next) > 5) next = new Date(next.getFullYear(), next.getMonth(), next.getDate() + 1, 9, 0); }
+  return { open, closesAt: '17:30', next };
+}

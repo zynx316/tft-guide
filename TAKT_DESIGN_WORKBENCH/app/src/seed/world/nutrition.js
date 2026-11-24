@@ -202,3 +202,12 @@ export const nutSummary = {
   nextMeal: dinner ? { meal: 'Abend', title: REC[dinner.recipeId]?.title, kcal: planNutrition(dinner, nutRecipes, nutFoods).kcal } : null,
   weightKg: nutProfile.weightKg, goalWeightKg: nutProfile.goalWeightKg, foodBudgetLeft: r1(nutShopping.budgetMonth - nutShopping.spentMonth),
 };
+
+/** Launchpad-Kennzahl (Vertrag `<modul>Summary`): die erste Kennzahl steht auf der Modulkachel. */
+export const nutritionSummary = {
+  kpis: [
+    { label: 'übrig', value: nutSummary.leftKcal.toLocaleString('de-DE'), unit: 'kcal' },
+    { label: 'Eiweiß', value: String(Math.round(nutSummary.protein)), unit: 'g' },
+    { label: 'Wasser', value: nutSummary.waterMl.toLocaleString('de-DE'), unit: 'ml' },
+  ],
+};
