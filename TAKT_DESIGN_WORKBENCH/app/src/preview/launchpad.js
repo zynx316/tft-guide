@@ -38,7 +38,7 @@ export function moduleKpi(world, moduleId, today, privacy) {
       case 'tasks': { const n = (world.tasks || []).filter((x) => !x.done).length; return `${n} offen`; }
       case 'finance': return world.financeSummary ? `${money(world.financeSummary.netWorth)} Vermögen` : null;
       case 'savings': { const p = world.savingsPlans; return Array.isArray(p) ? `${p.length} Sparpläne` : null; }
-      case 'fitness': return world.fitnessSummary ? (world.fitnessSummary.todayKind === 'rest' ? `Ruhetag · nächstes Training ${world.fitnessSummary.nextWorkoutDay}` : 'Training heute') : null;
+      case 'fitness': { const fs = world.fitnessSummary; if (!fs) return null; if (!fs.nextWorkoutDay || fs.nextWorkoutDay === '–') return 'Noch kein Programm'; return fs.todayKind === 'rest' ? `Ruhetag · nächstes Training ${fs.nextWorkoutDay}` : 'Training heute'; }
       case 'nutrition': return world.nutSummary ? `${num(world.nutSummary.leftKcal)} kcal übrig` : null;
       case 'weather': { const h = (world.wxActive?.hours || []).find((x) => String(x.time).startsWith(`${t}T09`)); return h ? `${Math.round(h.temp)} °C ${world.wxActive.name || ''}`.trim() : null; }
       default: return null;

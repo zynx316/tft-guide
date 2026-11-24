@@ -316,7 +316,7 @@ export const scenarios = {
     trainingProgram: { id: null, name: '', short: '', level: '', startDate: null, description: '', progression: '', deload: '', rhythm: [], days: [], alternatives: [] },
     activeWorkout: { id: null, dayId: null, title: '', subtitle: '', status: 'ready', elapsed: 0, rest: null, rating: null, saved: false, prs: [], exercises: [] },
     fitnessToday: { ...fitnessToday, kind: 'rest', headline: 'Noch kein Programm', text: 'Wähle ein Programm – dann erscheint hier deine nächste Einheit.', nextDayId: null, nextDate: null, nextWhen: '', nextName: '', nextMinutes: 0, nextSets: 0, nextExercises: [], lastTitle: '', lastDate: null, lastVolume: 0, weekSessions: 0 },
-    fitnessSummary: { ...fitnessSummary, sessionsTotal: 0, sessions8w: 0, volume8w: 0, avgSleep7: 0, avgSteps7: 0, kpis: fitnessKpis('Programm wählen', 0, fitnessProfile.weeklyGoal, 0), plannedSets: plannedSets(null, library), workoutDays: [], runDays: [], nextWorkoutDay: '–', todayKind: 'rest' },
+    fitnessSummary: { ...fitnessSummary, sessionsTotal: 0, sessions8w: 0, volume8w: 0, avgSleep7: 0, avgSteps7: 0, kpis: [{ label: 'Trainingsprogramm', value: 'Noch kein', icon: 'dumbbell', tone: 'accent', to: 'fitness.plan' }, ...fitnessKpis('', 0, fitnessProfile.weeklyGoal, 0).slice(1)] /* Launchpad: „Noch kein Trainingsprogramm“ */, plannedSets: plannedSets(null, library), workoutDays: [], runDays: [], nextWorkoutDay: '–', todayKind: 'rest' },
     fitnessMetrics: [],
     fitnessRings: fitnessRings.map((r) => ({ ...r, value: 0 })),
     fitnessHints: [], fitnessNotifications: [],
