@@ -90,6 +90,7 @@ export function Gain({ ctx, value, ratio, digits = 0, showAmount = true }) {
 }
 
 export const SV_CSS = `
+  .tk-sv-segwrap .tk-seg { flex-wrap:wrap; overflow:visible; } .tk-sv-segwrap .tk-seg button { flex:0 0 auto; height:auto; min-height:28px; padding-block:4px; } .bp-mobile .tk-sv-segwrap .tk-seg button { min-height:36px; }
   .tk-sv-quiet { display:flex; align-items:flex-start; gap:8px; margin:0; padding:var(--tk-space-2) var(--tk-space-1); color:var(--tk-c-text-muted); font-size:var(--tk-fs-sm); line-height:var(--tk-lh-snug); } .tk-sv-quiet svg { flex:none; margin-top:2px; }
   .tk-sv-step { display:inline-flex; align-items:center; gap:6px; max-width:100%; }
   .tk-sv-step > button { width:var(--tk-size-control); height:var(--tk-size-control); border-radius:var(--tk-radius-md); border:1px solid var(--tk-c-border-strong); background:var(--tk-c-surface2); color:var(--tk-c-text); display:grid; place-items:center; cursor:pointer; flex:none; padding:0; }
