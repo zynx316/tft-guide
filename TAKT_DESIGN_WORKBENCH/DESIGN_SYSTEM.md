@@ -38,72 +38,51 @@ focus, navBg, navActive` + `chart-1…6` + Schatten `sm/md/lg`.
 | Breakpoints | Mobile < 600 · Tablet 600–1023 · Desktop ≥ 1024 (wide ≥ 1366) |
 | Bewegung | fast 120 ms · base 180 ms · slow 280 ms · Easing `cubic-bezier(.2,.7,.2,1)` · `prefers-reduced-motion` respektiert |
 
+## Richtungen (Versionen der App)
+| Richtung | Leitidee | App-Rahmen | Theme-Vorschlag |
+|---|---|---|---|
+| **Kompakt** | Dichte vor Weißraum, Listen/Tabellen, Aktionen in der Zeile, Zahlen exakt | Tab-Leiste (4 Favoriten + Mehr) | Graphite |
+| **Visuell** | Eine Botschaft pro Karte, Diagramme, Raum, Fortschritt sichtbar | Launchpad (Start = Modulraster mit Live-Kennzahlen) | Horizon |
+| **Fokus** | Nächste Aktion zuerst, Kontext aus anderen Modulen, Erfassen ohne Umweg | Heute + Module-Blatt + zentraler Erfassen-Knopf | Intensiv |
+
+Richtungen unterscheiden sich **strukturell** (Layout, Hierarchie, Komponentenwahl, Bedienkonzept), nicht nur in Farben. Themes
+bleiben frei kombinierbar; der App-Rahmen ist im Launcher und auf der App-Ebene unabhängig wählbar.
+
 ## App-Shell & Layouts
-- **App-Rahmen:** Desktop Sidebar mit Modulen · Tablet Navigationsleiste (Icons + Kurzlabel) · Mobile App-Bar + Bottom-Navigation (4 Module + „Mehr“).
-- **Layouts für Varianten:** `stack` (eine Spalte, optional schmal) · `split` (2/3 + 1/3, Mobile untereinander) · `sidebar` (Panel + Inhalt,
-  Mobile einklappbar) · `grid` (12er-Raster, Spannweite je Block) · `tabs` (Reiter). Regionen: Kopf, Hauptbereich, Seitenspalte,
-  Seitenleiste, Fuß, unten fixiert. Blöcke können je Breakpoint ausgeblendet werden.
+- **App-Rahmen:** Desktop Sidebar mit Modulen · Tablet Navigationsleiste · Mobile App-Bar + Rahmen je Richtung (siehe oben).
+  „Mehr“/„Alle Module“ gruppiert nach Lebensbereich. Suche und Glocke führen zu `system.search`/`system.notifications`.
+- **Layouts für Varianten:** `stack` (optional schmal) · `split` (2/3 + 1/3; Optionen gleich breit, Seitenspalte zuerst,
+  **Seitenspalte läuft mit**) · `sidebar` (Panel einklappbar) · `grid` (12er-Raster; Option **Karten gleich hoch**) · `tabs`.
+  Regionen: Kopf, Hauptbereich, Seitenspalte, Seitenleiste, Fuß, unten fixiert. Blöcke je Breakpoint ausblendbar.
+- **Schriftskalierung:** alle Schriftgrößen-Tokens rechnen mit `--tk-text-scale` (Launcher: 100/130/200 %). Layouts dürfen bei
+  200 % nichts abschneiden – prüfbar mit `?scale=2` bzw. `npm run qa -- --scale 2`.
 
 ## Primitive (`library/ui.js`)
 Button (default/primary/ghost/danger, sm, Icon-only) · IconButton · Badge (Töne) · Chip (Filter) · Card · SectionHeader · Field ·
-Input · Textarea · Select · Search · Check (Touch-Fläche 40 px mobil) · Switch · Segmented · Tabs · Progress · Avatar ·
-EmptyState · ErrorState · Skeleton · Sparkline · Delta · `toneColor()`. Zusätzlich in der Runtime: Dialog/Bottom-Sheet, Toast.
+Input · Textarea · Select · Search · Check (Touch-Fläche 40 px mobil) · **Switch (Trefferfläche 44 px mobil)** · Segmented
+(≥ 44 px breit mobil) · Tabs · Progress · **NumberStepper** (− / +, 44 px, Komma-Eingabe, Dauerdruck) · **Ring**
+(Fortschrittsring, Überschreitung gedämpft statt Warnfarbe) · Avatar · EmptyState · ErrorState · Skeleton · Sparkline · Delta ·
+`toneColor()`. Zusätzlich in der Runtime: Dialog/Bottom-Sheet, Toast, Umgebungshinweis (Offline/veraltet).
+Formatierung ausschließlich über `lib/format.js` (`ctx.fmt`; de-DE, geschütztes Leerzeichen vor Einheit, echtes Minus).
+Inhaltliche Leitplanken: `docs/HEALTH_GUIDELINES.md` (keine Alarmfarben bei Kalorien/Gewicht, keine Moralwörter),
+`docs/FINANCE_GUIDELINES.md` (Hinweisarten, Spannen, Privatsphäre), `docs/TEXT_STIL.md`.
 
 ## Zustände
-Jede Variante ist in **Standard, Leer, Lädt, Fehler** prüfbar (Vorschau-Werkzeugleiste). Leer = alle gebundenen Daten leer →
+Jede Variante ist in **Standard, Leer, Lädt, Fehler** prüfbar (Vorschau-Werkzeugleiste), zusätzlich mit den **Datenszenarien**
+Alltag, Erster Start (Nutzerdaten leer) und Stress-Tag (dreifache Listen, lange Texte) sowie den Umgebungen Offline und
+Privatsphäre. Leer = alle gebundenen Daten leer →
 Komponenten zeigen `EmptyState`. Lädt/Fehler rendert die Runtime generisch (Skeleton / Fehler mit „Erneut versuchen“), sofern die
 Komponente das nicht selbst übernimmt.
 
-## Komponenten (45)
-| Kategorie | ID | Name | Zweck | Datei |
-|---|---|---|---|---|
-| Struktur | page-header | Seitenkopf | Titel, Untertitel und Primäraktion eines Feature-Screens. Auf Mobile kompakt, Aktion als Icon-Button. | core/structure.js |
-| Navigation | action-bar | Aktionsleiste | Reihe von Schnellaktionen. Auf Mobile als horizontal scrollbare Icon-Buttons mit Beschriftung. | core/structure.js |
-| Navigation | search-filter | Suche & Filter | Suchfeld plus Filterchips. Setzt ctx.ui.query und ctx.ui.filter – Listen, Tabellen und Karten filtern automati … | core/structure.js |
-| Navigation | view-switcher | Ansichts-Umschalter | Segmentierter Umschalter (z. B. Tag/Woche/Monat). Schreibt in den geteilten UI-Zustand (ctx.ui[uiKey]); andere … | core/structure.js |
-| Daten | activity-feed | Aktivitäts-Verlauf | Chronologische Zeitleiste von Ereignissen (Änderungen, Verlauf, Log). | core/data.js |
-| Daten | card-grid | Kartenraster | Raster aus Inhaltskarten (Notizen, Artikel, Kanäle …) mit Icon/Farbfeld, Text-Auszug und Tags. Spaltenzahl res … | core/data.js |
-| Daten | data-table | Tabelle | Sortierbare Tabelle. Spalten per "key:Label:typ" (typ: text|number|currency|percent|date|badge|spark). Mobile: … | core/data.js |
-| Daten | detail-panel | Detailansicht | Zeigt das in ctx.ui.selectedId gewählte Element (Master-Detail). Felder frei konfigurierbar, Aktionen Bearbeit … | core/data.js |
-| Daten | item-list | Liste | Universelle Liste (Titel, Untertitel, Meta, Badge, optional Checkbox). Respektiert Suche/Filter, wählt Element … | core/data.js |
-| Daten | metric-row | Kennzahlen-Reihe | KPI-Kacheln mit Wert, Einheit, Trend und optionaler Sparkline. Desktop als Reihe, Mobile als 2er-Raster oder h … | core/data.js |
-| Daten | progress-list | Fortschrittsliste | Beschriftete Fortschrittsbalken (Budgets, Ziele, Kapazitäten) mit Ist/Soll und Warnfarbe bei Überschreitung. | core/data.js |
-| Diagramme | chart | Diagramm | SVG-Diagramm: Balken, Linie, Fläche oder Ring. Mehrere Serien, Tooltip per Hover/Tap, Zeitraum-Umschalter opti … | core/charts-forms.js |
-| Formulare | form-card | Formular | Konfigurierbares Formular ("key:Label:typ[:opt1|opt2]", Pflichtfelder mit *). Validiert, fügt Eintrag in einen … | core/charts-forms.js |
-| Formulare | quick-add | Schnelleingabe | Einzeilige Eingabe zum schnellen Anlegen (Enter). Fügt in den gebundenen Datenslot ein – gebundene Listen aktu … | core/charts-forms.js |
-| Feedback | notice-banner | Hinweis-Banner | Kontextueller Hinweis (Info, Warnung, Erfolg, Fehler) mit optionaler Aktion; schliessbar. | core/structure.js |
-| Kalender | agenda | Agenda | Chronologische Termin-Liste für einen oder mehrere Tage, gruppiert nach Tag, mit Hinweis auf freie Zeitfenster … | calendar/agenda.js |
-| Kalender | calendar-legend | Kategorien-Legende | Kategorien mit Farbe und Anzahl der Termine der gewählten Woche. Antippen filtert alle Kalenderblöcke (ctx.ui. … | calendar/calendar-legend.js |
-| Kalender | calendar-month | Kalender Monat | Monatsraster mit Termin-Chips (Mobile: Punkte), Tag wählen setzt ctx.ui.selectedDate; optional Tagesliste unte … | calendar/calendar-month.js |
-| Kalender | calendar-week | Kalender Tag/Woche | Zeitraster mit Terminen nach Uhrzeit, Überlappungen nebeneinander, Jetzt-Linie und Anlegen per Klick auf freie … | calendar/calendar-week.js |
-| Kalender | event-form | Termin-Formular | Vollständiges Formular zum Anlegen eines Termins mit Kategorie-Chips, Dauer-Schnellwahl, Wiederholung und Vali … | calendar/event-form.js |
-| Kalender | mini-month | Mini-Monat | Kompakter Monatsnavigator mit Terminpunkten. Auswahl setzt ctx.ui.selectedDate; die gewählte Woche wird hervor … | calendar/mini-month.js |
-| Aufgaben | focus-next | Fokus: Als Nächstes | Verbindet Termine und Aufgaben zur Tagesfokus-Liste: laufender/nächster Termin, überfällige Aufgaben, Zeitleis … | tasks/focus-next.js |
-| Aufgaben | kanban-board | Kanban-Board | Spalten nach Status, Karten per Drag & Drop oder über das Verschieben-Menü bewegbar. Mobile: wischbare Spalten … | tasks/kanban-board.js |
-| Aufgaben | project-list | Projekte | Projekte aus den Aufgaben abgeleitet: offene/erledigte Aufgaben, Fortschritt und nächste Fälligkeit. Antippen  … | tasks/project-list.js |
-| Aufgaben | task-detail | Aufgaben-Detail | Detailpanel zur gewählten Aufgabe (ctx.ui.selectedId): Titel, Priorität, Status, Fälligkeit, Projekt, Wiederho … | tasks/task-detail.js |
-| Aufgaben | task-list | Aufgabenliste | Aufgaben mit Priorität, Fälligkeit relativ zu „heute“ (überfällig rot), Projekt, Unteraufgaben-Zähler und Abha … | tasks/task-list.js |
-| Inhalte | capture-panel | Bild erfassen | Quelle wählen (Kamera, Datei, Zwischenablage – simuliert), Dropzone, Verarbeitungsfortschritt (laden → erkenne … | content/capture-panel.js |
-| Inhalte | kb-article | Wissensartikel | Zeigt den gewählten Artikel (ctx.ui.selectedId) mit Markdown-Darstellung, Inhaltsverzeichnis (Desktop), Metada … | content/kb-article.js |
-| Inhalte | kb-tree | Wissensbaum | Hierarchische Navigation (Bereiche › Kategorien › Artikel), auf-/zuklappbar. Aktiver Artikel = ctx.ui.selected … | content/kb-tree.js |
-| Inhalte | note-editor | Notiz-Editor | Bearbeitet die gewählte Notiz (ctx.ui.selectedId): Titel, Markdown-Textbereich mit Formatierungsleiste, Tags,  … | content/note-editor.js |
-| Inhalte | note-list | Notizliste | Notizen als kompakte Liste oder Karten-Raster: angeheftete zuerst, Auszug, Tags, relatives Datum. Beachtet Suc … | content/note-list.js |
-| Inhalte | ocr-result | Erkennungsergebnis | Erkannter Text der gewählten Erfassung (ctx.ui.selectedId) mit Markierung unsicherer Wörter (Tippen übernimmt  … | content/ocr-result.js |
-| Wetter | weather-alerts | Wetterwarnungen | Amtliche Warnungen nach Schweregrad (Hinweis, markant, Unwetter) mit Zeitraum und Details zum Aufklappen. Warn … | content/weather-alerts.js |
-| Wetter | weather-daily | Tagesvorhersage | 7–10-Tage-Vorhersage mit Zustands-Icon, Regenwahrscheinlichkeit und Min/Max-Balken über den gesamten Zeitraum. … | content/weather-daily.js |
-| Wetter | weather-hourly | Stündliche Vorhersage | Temperaturkurve (SVG) mit Zustands-Icons und Niederschlagsbalken je Stunde. Auf Mobile horizontal wischbar (nu … | content/weather-hourly.js |
-| Wetter | weather-now | Aktuelles Wetter | Aktuelle Bedingungen groß: Temperatur, gefühlte Temperatur, Zustand mit Icon, Wind, Niederschlag, Luftfeuchte  … | content/weather-now.js |
-| Vertrieb | channel-cards | Kanal-Karten | Verkaufskanäle (Shopify, Etsy, Amazon …) als Karten mit Status, Umsatz, Bestellungen und letztem Sync. Aktion  … | insights/channel-cards.js |
-| Vertrieb | order-pipeline | Bestell-Pipeline | Bestellungen nach Status (neu → bezahlt → versendet → zugestellt) mit Zählern, Summen und Weiterschalten per A … | insights/order-pipeline.js |
-| Trading | order-ticket | Order-Ticket (Simulation) | Kauf/Verkauf erfassen mit Stückzahl, Markt-/Limit-Order, Validierung (Guthaben, Bestand) und Bestätigungsdialo … | insights/order-ticket.js |
-| Trading | portfolio-summary | Depot-Übersicht | Depotwert, Gewinn/Verlust (absolut und prozentual), Tagesveränderung, Allokation und Positionsliste. Per „layo … | insights/portfolio-summary.js |
-| Trading | price-chart | Kursdiagramm | Kursverlauf eines Wertpapiers als Linie, Fläche oder Kerzen (OHLC) mit Zeitraum-Umschalter (1T/1W/1M/1J) und C … | insights/price-chart.js |
-| Fitness | activity-rings | Aktivitätsringe | Konzentrische Ziel-Ringe (z. B. Bewegung, Training, Schritte) mit Wert/Ziel-Legende. Antippen eines Rings zeig … | insights/activity-rings.js |
-| Fitness | workout-card | Workout-Karte | Ein Training mit Übungen und Sätzen (Wdh. × Gewicht). Sätze sind abhakbar, Fortschrittsbalken und „Training be … | insights/workout-card.js |
-| Finanzen | account-cards | Konten-Karten | Konten (Giro, Tagesgeld, Kreditkarte, Depot) mit Saldo, maskierter IBAN und Mini-Verlauf plus Gesamtvermögen.  … | insights/account-cards.js |
-| Finanzen | transaction-list | Transaktionsliste | Umsätze nach Datum gruppiert (Heute/Gestern/Datum) mit Kategorie-Icon, farbigem Betrag und Tagessumme. Reagier … | insights/transaction-list.js |
+## Komponenten
+Vollständiger, automatisch erzeugter Katalog mit Version, Zweck, Datenslots, Events, Verwendung und Flutter-Hinweis:
+**`docs/KOMPONENTEN.md`** (`node --import ./tools/register.mjs tools/component-catalog.mjs`). Bereiche: Kern (generisch),
+Querschnitt (Hinweise, Offline, Sync, Berechtigung, Wiederholung, Rückgängig, Verknüpfungen, Erststart), Kalender, Aufgaben,
+Inhalte, Einblicke, Finanzen, Sparpläne, Trading, Fitness, Ernährung, Wetter, Gewohnheiten/Start. CSS-Präfix je Bereich.
 
 ## Flutter-Überführung (Vorbereitung)
 - `Daten & Backup › Design-Tokens exportieren` liefert `takt-design-tokens.json` (Basis, Themes, Farbrollen).
-- Geplant (TASKS.md): semantischer Export (ARGB, TextTheme-Rollen, ColorScheme-Mapping), je Komponente `flutter: { widget, propMap }`,
-  Export einer freigegebenen Feature-Spezifikation (Anforderungen, Interaktionen, Variante, Bindungen) als Umsetzungsvorlage.
+- Dart-Export (`core/flutter.js`): `ThemeExtension` mit allen Farbrollen je Theme plus `ThemeData`-Grundgerüst.
+- Feature-/Modul-Spezifikation als Markdown (Anforderungen, Akzeptanzkriterien, Interaktionen mit Navigation, Variante mit
+  Blöcken, Bindungen, Flutter-Hinweis je Komponente). Neue Komponenten tragen `flutter: { widget, propMap, events }`.
+- Offen (TASKS.md): Entitäten/ARB/Widgetbook erst nach Richtungswahl und Phase 1.
