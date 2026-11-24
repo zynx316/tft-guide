@@ -94,6 +94,16 @@ for (const f of state.features) {
   if (!f.requirements.length && f.status !== 'not_analyzed') warnings.push(`${f.id}: keine Anforderungen`);
 }
 
+// 3a) Integritätsprüfung (core/validate.js) – nur die Punkte, die oben nicht schon geprüft werden
+{
+  const { validateState } = await import(pathToFileURL(path.join(SRC, 'core/validate.js')).href);
+  const { WORLD } = await import(pathToFileURL(path.join(SRC, 'seed/world/index.js')).href);
+  const covered = new Set(['feature-id', 'modul-id', 'feature-modul', 'variante-id', 'auswahl', 'komponente', 'block-id']);
+  const v = validateState(state, { worldKeys: new Set(Object.keys(WORLD)) });
+  for (const e of v.errors) if (!covered.has(e.code)) errors.push(`Integrität: ${e.msg}`);
+  for (const w of v.warnings) if (!covered.has(w.code)) warnings.push(`Integrität: ${w.msg}`);
+}
+
 // 3b) Navigationsgraph, Startseiten und Richtungen (Hinweise – Module entstehen schrittweise)
 const { moduleHome } = await import(pathToFileURL(path.join(SRC, 'core/directions.js')).href);
 const featById = new Map(state.features.map((f) => [f.id, f]));

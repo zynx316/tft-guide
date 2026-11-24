@@ -5,19 +5,34 @@ import { Icon } from '../../lib/icons.js';
 import { Card, Btn, Badge, Empty, confirmDialog, openDialog, toast, Field } from '../ui/kit.js';
 import { act } from './common.js';
 import { actions, exportState, persistence } from '../store.js';
-import { inspectImport, SCHEMA_VERSION } from '../../core/schema.js';
+import { inspectImport, migrate, SCHEMA_VERSION } from '../../core/schema.js';
+import { validateState } from '../../core/validate.js';
+import { getComponent } from '../../library/registry.js';
+import { WORLD } from '../../seed/world/index.js';
 import { SEED_VERSION, buildSeedState } from '../../seed/index.js';
 import { diffSeed } from '../../core/seedpatch.js';
 import { tokensJson } from '../../design-system/tokens.js';
 import { tokensToDart } from '../../core/flutter.js';
 import { download, fmt } from '../../lib/util.js';
 
+const integrity = (s) => validateState(s, { getComponent, worldKeys: new Set(Object.keys(WORLD)) });
+/** Befundliste der Integritätsprüfung (Fehler zuerst, aufklappbar ab 6 Einträgen). */
+function IntegrityList({ report }) {
+  const items = [...report.errors.map((e) => ({ ...e, tone: 'danger' })), ...report.warnings.map((w) => ({ ...w, tone: 'warning' }))];
+  if (!items.length) return html`<div class="wb-row wb-small" style="gap:6px"><${Icon} name="check-circle-2" size=${15} /><span>Keine Auffälligkeiten – alle Verweise stimmen.</span></div>`;
+  const row = (x) => html`<div class="wb-listrow wb-small"><${Badge} tone=${x.tone} sq>${x.tone === 'danger' ? 'Fehler' : 'Hinweis'}<//><span class="wb-grow">${x.msg}</span></div>`;
+  return html`<div class="wb-col" style="gap:0" data-qa="integrity-list">${items.slice(0, 6).map(row)}${items.length > 6 && html`<details><summary class="wb-small wb-muted" style="cursor:pointer;padding:6px 0">${items.length - 6} weitere anzeigen</summary>${items.slice(6).map(row)}</details>`}</div>`;
+}
+
 function importDialog(obj, source) {
-  const check = inspectImport(obj);
+  const base = inspectImport(obj);
+  let rep = null; try { rep = base.ok ? integrity(migrate(JSON.parse(JSON.stringify(obj)))) : null; } catch (e) { base.ok = false; base.errors.push(`Nicht lesbar: ${e.message}`); }
+  const check = rep && !rep.ok ? { ...base, ok: false, errors: [...base.errors, `${rep.counts.errors} Integritätsfehler (siehe Liste)`] } : base;
   openDialog({ title: `Import prüfen – ${source}`, body: ({ close }) => html`<div class="wb-col" style="gap:12px">
     ${check.ok ? html`<div class="wb-banner wb-banner--info"><${Icon} name="info" size=${16} /><span>${check.summary.modules} Module · ${check.summary.features} Features · ${check.summary.versions} Versionen · ${check.summary.decisions} Entscheidungen${check.summary.updatedAt ? ` · Stand ${fmt.dateTime(check.summary.updatedAt)}` : ''}</span></div>
       <p class="wb-muted">Der aktuelle Zustand wird <strong>ersetzt</strong>. Vorher wird automatisch eine Sicherung heruntergeladen. Rückgängig mit Strg+Z ist ebenfalls möglich.</p>`
     : html`<div class="wb-banner wb-banner--warn"><${Icon} name="alert-triangle" size=${16} /><span>Ungültige Datei: ${check.errors.join('; ')}</span></div>`}
+    ${rep && (rep.counts.errors + rep.counts.warnings) > 0 && html`<div class="wb-card" style="max-height:240px;overflow:auto;padding:4px 12px"><${IntegrityList} report=${rep} /></div>`}
     <div class="wb-row" style="justify-content:flex-end"><${Btn} onClick=${close}>Abbrechen<//><${Btn} variant="primary" icon="upload" disabled=${!check.ok} data-confirm onClick=${() => {
       download(`takt-workbench-vor-import-${new Date().toISOString().replace(/[:.]/g, '-')}.json`, exportState());
       act(() => actions.importState(obj)); toast('Import abgeschlossen'); close(); }}>Importieren<//></div></div>` });
@@ -39,7 +54,7 @@ export function DataView({ state }) {
       <${Card} title="Speicherort" icon="save">
         <div class="wb-col wb-small" style="gap:6px">
           <div class="wb-row wb-between"><span class="wb-muted">Modus</span><${Badge} tone=${persistence.mode === 'file' ? 'success' : 'warning'}>${persistence.mode === 'file' ? 'Datei (data/workbench.json)' : 'Nur Browser-Speicher'}<//></div>
-          <div class="wb-row wb-between"><span class="wb-muted">Status</span><span>${persistence.status}</span></div>
+          <div class="wb-row wb-between"><span class="wb-muted">Status</span><span>${({ saved: 'Gespeichert', saving: 'Speichert …', dirty: 'Ungespeicherte Änderungen', conflict: 'Konflikt – Kopie im Browser', error: 'Fehler beim Speichern' })[persistence.status] || persistence.status}</span></div>
           <div class="wb-row wb-between"><span class="wb-muted">Zuletzt gespeichert</span><span class="wb-num">${persistence.lastSaved ? fmt.dateTime(persistence.lastSaved) : '–'}</span></div>
           <div class="wb-row wb-between"><span class="wb-muted">Größe</span><span class="wb-num">${(size / 1024).toFixed(0)} KB</span></div>
           <div class="wb-row wb-between"><span class="wb-muted">Schema / Seed</span><span class="wb-num">v${SCHEMA_VERSION} · ${state.meta.seedVersion || '–'}</span></div>
@@ -60,6 +75,8 @@ export function DataView({ state }) {
         ${backups && !backups.length && !err && html`<div class="wb-small wb-subtle">Noch keine Backups.</div>`}
         ${backups?.length > 0 && html`<div class="wb-col" style="gap:0;margin:-8px -16px -16px;max-height:300px;overflow:auto">${backups.map((b) => html`<div class="wb-listrow"><${Icon} name="file-json" size=${15} /><span class="wb-grow wb-mono wb-trunc">${b.name}</span><span class="wb-small wb-subtle wb-num">${(b.size / 1024).toFixed(0)} KB</span>
           <${Btn} size="sm" variant="ghost" icon="rotate-ccw" onClick=${() => restore(b.name)}>Wiederherstellen<//></div>`)}</div>`}<//>
+      <${Card} title="Integrität" icon="shield-check" sub="Prüft Verweise: Features ↔ Module, Varianten, Freigaben, Entscheidungen, Runden, Anmerkungen, Navigationsziele, Komponenten, Welt-Schlüssel.">
+        ${(() => { const r = integrity(state); return html`<div class="wb-col" style="gap:8px"><div class="wb-row" style="gap:8px"><${Badge} tone=${r.counts.errors ? 'danger' : r.counts.warnings ? 'warning' : 'success'}>${r.counts.errors} Fehler · ${r.counts.warnings} Hinweise<//></div><${IntegrityList} report=${r} /></div>`; })()}<//>
       <${Card} title="Seed & Zurücksetzen" icon="package">
         <p class="wb-small wb-muted">Der Seed (app/src/seed/) ist der Startinhalt. „Seed abgleichen“ ergänzt Neues, aktualisiert nur Features, die du nicht verändert hast (vorher gesichert), und lässt Freigegebenes unberührt (dafür entsteht ein Vorschlag). Aktueller Seed: <span class="wb-mono">${SEED_VERSION}</span>${state.meta.seedVersion && state.meta.seedVersion !== SEED_VERSION ? html` · <strong style="color:var(--wb-warning)">dein Stand: ${state.meta.seedVersion}</strong>` : ''}.</p>
         <div class="wb-row wb-wrap" style="gap:8px;margin-top:10px">

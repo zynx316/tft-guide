@@ -42,7 +42,7 @@ app/src/
   library/        registry.js · CONTRACT.md · ui.js (Primitive) · helpers.js (money/percent → lib/format.js) · components/<bereich>/
   preview/        runtime.js (Renderer + App-Player) · launchpad.js (App-Rahmen tabs/launchpad/fokus) · layouts.js · qa-probe.js
   core/           schema · directions (Versionen, Meine Auswahl, Rahmen) · process (Inbox, Gates, Tiers) · world (Szenarien)
-                  seedpatch · workorder · spec (+ spec-json: JSON, specHash, Routen) · flutter · finmath · recurrence · health · preview-payload · versioning · impact
+                  seedpatch · validate (Integrität) · workorder · spec (+ spec-json: JSON, specHash, Routen) · flutter · finmath · recurrence · health · preview-payload · versioning · impact
   seed/           index.js · catalog.js (Grundsatzfragen + Muster) · modules/*.js · world/*.js (Datenwelt)
   launcher/       Demo-Launcher (Versionen nebeneinander, Handy-Vollbild, Bewertung, Feedback)
   workbench/      store.js (EINZIGER Ort für Zustandsänderungen: actions.*; Konflikt-Rebase) · app.js · views/*
