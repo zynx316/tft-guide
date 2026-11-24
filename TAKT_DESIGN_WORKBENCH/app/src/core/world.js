@@ -24,7 +24,9 @@ const PROTECTED = new Set([...Object.keys(persona), 'prefs', 'scenarios']);
  * Wetter (kommt von außen, nicht vom Nutzer), Einstellungen, Steuer-/Marktparameter und abgeleitete Zusammenfassungen.
  */
 const REFERENCE = [/^wx/, /Library$/i, /Foods$/i, /Catalog$/i, /Places$/i, /Settings$/i, /Params$/i, /^TAX/, /Summary$/, /Units$/i, /Alerts?Levels$/i];
-export const isReferenceKey = (k) => PROTECTED.has(k) || REFERENCE.some((re) => re.test(k));
+/** Konfiguration (Objekt): Ziele, Profil, Plan, Programm, Einstellungen – bleibt beim „Ersten Start“ erhalten. */
+const CONFIG = /(Goals|Profile|Plan|Program|Prefs|Config|Targets|Rules|Venues|Active)$/i;
+export const isReferenceKey = (k, v) => PROTECTED.has(k) || REFERENCE.some((re) => re.test(k)) || (v !== undefined && isPlain(v) && CONFIG.test(k));
 const LONG = ' – mit ausführlichem Zusatztext, der Umbrüche und Kürzungen auf schmalen Geräten prüft';
 const TEXT_FIELDS = ['title', 'name', 'text', 'note', 'label', 'subtitle', 'description'];
 
@@ -33,7 +35,7 @@ const isPlain = (v) => v && typeof v === 'object' && !Array.isArray(v);
 
 function emptied(v, depth = 0) {
   if (Array.isArray(v)) return [];
-  if (depth === 0 && typeof v === 'number') return 0; // Summen ohne Daten (z. B. savingsMonthlyTotal, depotValue, netWorth)
+  if (depth <= 1 && typeof v === 'number') return 0; // Summen/Zähler ohne Daten (savingsMonthlyTotal, depotValue, Serie, Tageswerte)
   if (isPlain(v) && depth < 2) return Object.fromEntries(Object.entries(v).map(([k, x]) => [k, emptied(x, depth + 1)]));
   return v;
 }
@@ -65,7 +67,7 @@ export function applyScenario(world, id = 'alltag', fileScenarios = world === WO
   for (const [k, v] of Object.entries(world || {})) {
     if (k === 'scenarios' || k === 'scenariosByFile') continue;
     if (id === 'alltag' || PROTECTED.has(k)) base[k] = clone(v);
-    else if (id === 'erststart') base[k] = isReferenceKey(k) ? clone(v) : emptied(clone(v));
+    else if (id === 'erststart') base[k] = isReferenceKey(k, v) ? clone(v) : emptied(clone(v));
     else if (id === 'stress') base[k] = stressed(clone(v));
     else base[k] = clone(v);
   }

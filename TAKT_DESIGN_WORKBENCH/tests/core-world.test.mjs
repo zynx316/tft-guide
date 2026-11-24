@@ -21,7 +21,7 @@ test('Erster Start: Nutzerdaten leer, Kataloge/Wetter/Persona bleiben', () => {
   const w = applyScenario(WORLD, 'erststart');
   for (const [k, v] of arrays(WORLD)) {
     if (targeted('erststart').has(k)) continue;
-    if (isReferenceKey(k)) assert.equal(w[k].length, v.length, `${k} (Referenz) geleert`);
+    if (isReferenceKey(k, v)) assert.equal(w[k].length, v.length, `${k} (Referenz) geleert`);
     else assert.equal(w[k].length, 0, `${k} nicht leer`);
   }
   assert.deepEqual(w.persona, WORLD.persona);
@@ -134,5 +134,7 @@ test('Gezielte Szenario-Werte der Welt-Dateien werden angewendet', () => {
 
 test('Erster Start: Summen-Zahlen der Nutzerdaten sind 0', () => {
   const w = applyScenario(WORLD, 'erststart');
-  for (const [k, v] of Object.entries(WORLD)) if (typeof v === 'number' && !isReferenceKey(k) && !targeted('erststart').has(k)) assert.equal(w[k], 0, `${k} nicht 0`);
+  for (const [k, v] of Object.entries(WORLD)) if (typeof v === 'number' && !isReferenceKey(k, v) && !targeted('erststart').has(k)) assert.equal(w[k], 0, `${k} nicht 0`);
+  // Konfiguration bleibt (z. B. Ernährungsziele, Profil)
+  for (const [k, v] of Object.entries(WORLD)) if (v && typeof v === 'object' && !Array.isArray(v) && /(Goals|Profile)$/.test(k) && !targeted('erststart').has(k)) assert.deepEqual(w[k], v, `${k} verändert`);
 });
