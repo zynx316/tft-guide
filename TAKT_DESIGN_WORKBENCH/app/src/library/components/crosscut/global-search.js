@@ -2,7 +2,7 @@
 import { html } from '../../../lib/html.js';
 import { useState, useMemo } from 'preact/hooks';
 import { Icon, Button, Card, Chip, EmptyState, Badge } from '../../ui.js';
-import { buildIndex, runSearch, matchCommands, COMMANDS, SCOPES, GROUPS } from './_search.js';
+import { buildIndex, runSearch, matchCommands, COMMANDS, SCOPES } from './_search.js';
 import { ResultRow, CommandRow, Field, GS_CSS } from './_search-ui.js';
 import { XC_CSS } from './_xc-css.js';
 import { MODULES, moduleMeta } from './_system.js';

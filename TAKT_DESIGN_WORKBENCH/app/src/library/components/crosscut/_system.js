@@ -80,3 +80,6 @@ export function agoLabel(ctx, iso) {
   return cap(fmtRelativeDay(d, ctx.today)) + (min < 60 * 48 ? `, ${fmtTime(d)}` : '');
 }
 export const sameIsoDay = (a, b) => String(a).slice(0, 10) === String(b).slice(0, 10);
+
+/** Privatmodus: Geldbeträge in Fließtexten maskieren („812,40 €“ → „•••• €“). */
+export const priv = (ctx, text) => (ctx?.privacy ? String(text ?? '').replace(/[−-]?\d{1,3}(?:\.\d{3})*(?:,\d{1,2})?[\s ]?€/g, '•••• €') : text);
