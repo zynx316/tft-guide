@@ -1,7 +1,8 @@
 # TAKT Design Workbench – Projektkontext für Claude Code
 
-> Diese Datei lädt Claude Code automatisch. **Beim Sessionstart zuerst:** `/takt-start` (oder `HANDOFF.md`, `TASKS.md` und das
-> Ende von `WORK_LOG.md` lesen). Original-Auftrag: `docs/MISSION.md`. Bauplan mit allen Verträgen: `docs/BAUPLAN.md`.
+> Diese Datei lädt Claude Code automatisch, dazu liefert ein SessionStart-Hook (`tools/session-brief.mjs`, eingetragen in
+> `.claude/settings.json`) eine Kurzlage: Live-Stand, offene Entscheidungen, Phase 1, letzte QA, nächste P1-Aufgaben.
+> **Für die ausführliche Lage:** `/takt-start` (oder `HANDOFF.md`, `TASKS.md` und das Ende von `WORK_LOG.md` lesen). Original-Auftrag: `docs/MISSION.md`. Bauplan mit allen Verträgen: `docs/BAUPLAN.md`.
 > Slash-Commands: `/takt-start`, `/takt-phase1`, `/takt-round-prep`, `/takt-work-order`, `/takt-spec`, `/takt-feature <id>`, `/takt-qa`, `/takt-review`.
 
 ## Was ist das?

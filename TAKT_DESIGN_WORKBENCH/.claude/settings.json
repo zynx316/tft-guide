@@ -18,7 +18,13 @@
       "Bash(git -C * branch:*)",
       "Bash(git -C * rev-parse:*)",
       "Bash(git -C * ls-files:*)",
-      "Bash(git -C * diff --stat:*)"
+      "Bash(git -C * diff --stat:*)",
+      "Bash(npm test)",
+      "Bash(npm run spec:*)",
+      "Bash(npm run spec)",
+      "Bash(node tools/session-brief.mjs)",
+      "Bash(node tools/work-order.mjs:*)",
+      "Bash(node tools/feature-ids.mjs)"
     ],
     "ask": [
       "Bash(git commit:*)",
@@ -39,6 +45,19 @@
       "Bash(git -C * reset:*)",
       "Bash(git -C * stash:*)",
       "Bash(git -C * checkout:*)"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node tools/session-brief.mjs",
+            "timeout": 10
+          }
+        ]
+      }
     ]
   }
 }

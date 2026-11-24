@@ -41,7 +41,8 @@ npm install; npx playwright install chromium                            # nur f�
 npm start                       # Workbench → http://127.0.0.1:4317 · Launcher → /launcher.html
 npm run check; npm test; npm run qa                                     # erzeugt Baselines für diesen Rechner
 ```
-Danach **Claude Code im selben Ordner starten** (`claude`) und **`/takt-start`** aufrufen.
+Danach **Claude Code im Workbench-Ordner starten** (`claude`). Nach der Bestätigung „Ordner vertrauen“ gibt ein SessionStart-Hook
+automatisch die Kurzlage aus (Live-Stand, offene Entscheidungen, nächste Aufgaben); **`/takt-start`** liefert die ausführliche Lage.
 Handy: `npm run lan`, im Launcher „Aufs Handy“ → QR-Code (gleiches WLAN, Windows-Firewall für Node erlauben). Der QR-Link enthält
 eine WLAN-PIN (neu bei jedem Start, in der Konsole angezeigt); andere Geräte im Netz kommen ohne sie nicht an die Daten.
 
