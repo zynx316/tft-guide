@@ -3,7 +3,7 @@ import { html } from '../../../lib/html.js';
 import { useState } from 'preact/hooks';
 import { Icon, Button, Card, Chip, Badge, EmptyState } from '../../ui.js';
 import { toDate } from '../../../lib/date.js';
-import { moduleMeta, plural, agoLabel } from './_system.js';
+import { moduleMeta, plural, agoLabel, priv } from './_system.js';
 import { pushUndo } from './_crosscut.js';
 import { XC_CSS } from './_xc-css.js';
 
@@ -65,7 +65,7 @@ export const trashList = {
       : [{ label: 'Läuft bald ab', items: shown.filter((t) => t.left <= 7) }, { label: 'Zuletzt gelöscht', items: shown.filter((t) => t.left > 7) }].filter((g) => g.items.length);
     const row = (t) => html`<div class="tk-xc-tr__item" key=${t.id} data-trash=${t.id}>
       <span class="tk-xc-ic tk-xc-ic--neutral"><${Icon} name=${t.meta.icon} size=${18} /></span>
-      <span class="tk-xc-main"><span class="tk-xc-t">${t.title}</span><span class="tk-xc-s">${t.meta.name} · gelöscht ${agoLabel(ctx, t.deletedAt).toLowerCase()}${t.detail ? ` · ${t.detail}` : ''}</span></span>
+      <span class="tk-xc-main"><span class="tk-xc-t">${t.title}</span><span class="tk-xc-s">${t.meta.name} · gelöscht ${agoLabel(ctx, t.deletedAt).toLowerCase()}${t.detail ? ` · ${priv(ctx, t.detail)}` : ''}</span></span>
       ${t.left <= 7 ? html`<span class="tk-xc-tr__left"><${Badge} tone="warning" icon="hourglass">noch ${plural(t.left, 'Tag', 'Tage')}<//></span>` : html`<span class="tk-xc-end">noch ${t.left} Tage</span>`}
       <span class="tk-xc-tr__acts"><${Button} size="sm" icon="archive-restore" onClick=${() => restore(t)} aria-label=${`${t.title} wiederherstellen`}>Wiederherstellen<//>
         <button type="button" class="tk-xc-iconbtn" aria-label=${`${t.title} endgültig löschen`} onClick=${() => forever(t)}><${Icon} name="trash-2" size=${17} /></button></span></div>`;

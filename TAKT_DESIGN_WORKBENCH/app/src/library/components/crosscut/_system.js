@@ -27,7 +27,7 @@ export const MODULE_AREAS = ['Tag & Organisation', 'Wissen & Inhalte', 'Finanzen
 // ------------------------------------------------------------------ Einstellungen (prefs) ---
 export const DEFAULT_PREFS = {
   favorites: ['home', 'calendar', 'tasks', 'finance'], enabled: {}, theme: 'graphite', density: 'komfortabel', textScale: 1, reduceMotion: false,
-  privacy: { hideAmounts: false, lock: true, method: 'pin', autoLockMin: 1, hidePreview: true, blockScreenshots: false, sensitive: ['finance', 'savings', 'trading'] },
+  privacy: { hideAmounts: false, lock: true, method: 'pin', autoLock: 'Nach 1 Minute', hidePreview: true, blockScreenshots: false, sensitive: ['finance', 'savings', 'trading'] },
   quietHours: { on: true, from: '22:00', to: '07:00', allowImportant: true },
   notify: { on: true, digest: true, digestTime: '07:30', groupBy: 'time', rules: { tasks: true, calendar: '15 Min.', finance: true, savings: true, trading: true, fitness: true, nutrition: false, weather: 'ab Stufe 2', sales: true, habits: true } },
   region: { weekStart: 'Montag', temp: '°C', distance: 'km', weight: 'kg', state: 'Nordrhein-Westfalen' },
@@ -86,3 +86,14 @@ export const priv = (ctx, text) => (ctx?.privacy ? String(text ?? '').replace(/[
 
 /** Speichernutzung je Modul in MB (Demo, für Export-Größe und Speicheranzeige). */
 export const MODULE_SIZES = { home: 0.1, calendar: 0.4, tasks: 0.3, habits: 0.1, notes: 0.9, knowledge: 0.5, 'picture-to-text': 1.4, finance: 0.8, savings: 0.2, trading: 0.3, fitness: 0.6, nutrition: 0.7, weather: 0.1, sales: 0.6 };
+
+/** Berechnete Anzeigewerte für Einstellungszeilen/-gruppen (`computed: 'theme'` …), damit Übersichten immer den aktuellen Stand zeigen. */
+export const COMPUTED = {
+  theme: (p) => ({ graphite: 'Graphite', horizon: 'Horizon', intensiv: 'Intensiv' }[p.theme] || p.theme),
+  modules: (p) => `${MODULES.filter((m) => isEnabled(p, m.id)).length} aktiv`,
+  favorites: (p) => p.favorites.filter((id) => isEnabled(p, id)).map((id) => moduleMeta(id).name).join(', '),
+  quiet: (p) => (p.quietHours.on ? `${p.quietHours.from}–${p.quietHours.to}` : 'Aus'),
+  lock: (p) => (p.privacy.lock ? 'An' : 'Aus'),
+  notify: (p) => (p.notify.on ? 'An' : 'Aus'),
+  sensitive: (p) => `${p.privacy.sensitive.length} Module`,
+};

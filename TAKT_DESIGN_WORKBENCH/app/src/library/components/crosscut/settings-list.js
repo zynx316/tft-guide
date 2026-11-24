@@ -2,7 +2,7 @@
 import { html } from '../../../lib/html.js';
 import { useState } from 'preact/hooks';
 import { Icon, Badge, Switch, Select, Segmented, NumberStepper, Card, EmptyState, Button } from '../../ui.js';
-import { getPrefs, prefAt, setPrefAt, fold, Hl } from './_system.js';
+import { getPrefs, prefAt, setPrefAt, fold, Hl, COMPUTED } from './_system.js';
 import { XC_CSS, toneIc } from './_xc-css.js';
 
 const CSS = `
@@ -60,9 +60,10 @@ export const settingsList = {
     const ids = Array.isArray(props.groupIds) ? props.groupIds.filter(Boolean) : [];
     if (ids.length) groups = groups.filter((g) => ids.includes(g.id));
     if (!groups.length) return html`<${EmptyState} icon="settings" title="Keine Einstellungen" text="Hier erscheinen die Einstellungen dieses Bereichs." />`;
-    const val = (r) => (r.pref ? prefAt(prefs, r.pref) : r.value);
+    const val = (r) => (r.computed ? COMPUTED[r.computed]?.(prefs) : r.member ? (prefAt(prefs, r.pref) || []).includes(r.member) : r.pref ? prefAt(prefs, r.pref) : r.value);
     const set = (g, r, v) => {
-      if (r.pref) setData('prefs', setPrefAt(prefs, r.pref, v));
+      if (r.member) { const cur = prefAt(prefs, r.pref) || []; setData('prefs', setPrefAt(prefs, r.pref, v ? [...cur.filter((x) => x !== r.member), r.member] : cur.filter((x) => x !== r.member))); }
+      else if (r.pref) setData('prefs', setPrefAt(prefs, r.pref, v));
       else setData('groups', (all) => (Array.isArray(all) ? all : []).map((x) => (x.id !== g.id ? x : { ...x, rows: x.rows.map((y) => (y.id === r.id ? { ...y, value: v } : y)) })));
       ctx.emit('settings.change', { id: r.id, value: v });
     };
@@ -73,7 +74,7 @@ export const settingsList = {
 
     if (props.style === 'tiles') {
       return html`<div class="tk-xc-set" data-qa="settings-list">${search}<div class="tk-xc-set__tiles">${visible.map((g) => html`<button type="button" class="tk-xc-set__tile" key=${g.id} onClick=${() => { ctx.emit('settings.open', { id: g.id }); if (g.to) ctx.emit(`open:${g.to}`); }}>
-        <span class=${`tk-xc-ic${toneIc(g.tone)}`}><${Icon} name=${g.icon || 'settings'} size=${22} /></span><span class="tk-xc-main"><span class="tk-xc-t" style="font-size:var(--tk-fs-lg)">${g.title}</span><span class="tk-xc-s">${g.summary || `${g.rows.length} Einstellungen`}</span></span></button>`)}</div>
+        <span class=${`tk-xc-ic${toneIc(g.tone)}`}><${Icon} name=${g.icon || 'settings'} size=${22} /></span><span class="tk-xc-main"><span class="tk-xc-t" style="font-size:var(--tk-fs-lg)">${g.title}</span><span class="tk-xc-s">${(g.computed && COMPUTED[g.computed]?.(prefs)) || g.summary || `${g.rows.length} Einstellungen`}</span></span></button>`)}</div>
         ${visible.length === 0 && html`<${EmptyState} icon="search" title=${`Keine Einstellung für „${q}“`} text="Prüfe die Schreibweise." />`}</div>`;
     }
     const row = (g, r) => {
