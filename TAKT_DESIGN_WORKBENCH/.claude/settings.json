@@ -53,7 +53,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node tools/session-brief.mjs",
+            "command": "node \"${CLAUDE_PROJECT_DIR}/tools/session-brief.mjs\"",
             "timeout": 10
           }
         ]
