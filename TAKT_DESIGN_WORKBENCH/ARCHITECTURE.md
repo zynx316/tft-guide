@@ -1,151 +1,141 @@
-# Architektur – TAKT Design Workbench
+# Architektur – TAKT Design Workbench (Stand V2, 24.11.2026)
+
+> Zahlen zu Modulen, Features und Komponenten stehen in `docs/FEATURE_IDS.md` (automatisch erzeugt) und in der Ausgabe von
+> `npm run check`. Der Bauplan mit allen Verträgen steht in `docs/BAUPLAN.md`.
 
 ## 1. Leitentscheidungen
 
 | Entscheidung | Begründung | Verworfen |
 |---|---|---|
-| **Browser-App ohne Build** (ES-Module, Preact 10 + htm, lokal in `app/vendor/`) | Läuft überall, keine Toolchain, kein `node_modules` zur Laufzeit, Komponenten-Modell wie React (wartbar, Claude-freundlich) | React+Vite+TS (Build-Schritt, mehr Abhängigkeiten), Vanilla-DOM (wird bei dieser UI-Größe unwartbar), Electron (schwer, für V1 unnötig) |
-| **Lokaler Node-Server ohne Abhängigkeiten** (`server.mjs`) | Datei-Persistenz (`data/workbench.json`), Backups, CLI-QA-Ergebnisse; Workbench funktioniert auch ohne (Browser-Speicher) | Datenbank (unnötig bei < 10 MB JSON), Cloud-Backend |
-| **Deklarative Varianten** (`layout` + `blocks[]`) aus einer **Komponenten-Registry** | Designs ändern ohne Neuentwicklung; Komponenten-Verbesserung wirkt überall; Abhängigkeitsanalyse für selektive Tests | Freies HTML je Variante (Wegwerf-Prototypen, keine Wiederverwendung) |
-| **Echte Iframes in Gerätebreite** für jede Vorschau | Media-Queries/Breakpoints greifen real; voll bedienbar; isoliert vom Workbench-CSS | Skalierte Divs (falsche Breakpoints), Screenshots (nicht bedienbar) |
-| **Eine QA-Sonde für alles** (`preview/qa-probe.js`) | Gleiche Prüfungen in Workbench (sofort) und CLI (Playwright, Screenshots, Pixelvergleich) | Getrennte Prüflogik |
-| **Playwright nur für die CLI-QA** | Automatisierte E2E-/Screenshot-/Regressionstests; Workbench selbst braucht es nicht | — |
+| **Browser-App ohne Build** (ES-Module, Preact 10 + htm, vendored in `app/vendor/`) | Läuft überall, keine Toolchain, Komponenten-Modell wie React, Claude-freundlich | React+Vite+TS (Build), Vanilla-DOM (unwartbar), Electron (schwer) |
+| **Lokaler Node-Server ohne Abhängigkeiten** (`server.mjs`) | Datei-Persistenz, Backups, Feedback vom Handy, Netzwerkinfo | Datenbank, Cloud-Backend |
+| **Deklarative Varianten** (`layout` + `blocks[]`) aus einer **Komponenten-Registry** | Designs ändern ohne Neuentwicklung; Verbesserungen wirken überall; selektive Tests | Freies HTML je Variante |
+| **Eine Vorschau-Runtime für alles** (Feature, Komponente, ganze App) in echten Iframes | Echte Breakpoints, voll bedienbar, identisch in Workbench, Launcher, QA | Skalierte Divs, Screenshots |
+| **Demo-Launcher als PWA auf derselben Runtime** (ADR-001) | Kein Flutter-SDK nötig, alle Komponenten wiederverwendbar, Laptop und Handy identisch | Flutter Web, Electron/Tauri, Capacitor |
+| **Eine Datenwelt aus dem Code** (`seed/world/`, `core/world.js`) | Alle Module zeigen dieselben Zahlen; Szenarien ohne Handarbeit; nie veraltet | Kopierte Demo-Daten je Feature |
+| **Entscheiden statt endlos vergleichen** (`core/process.js`) | Inbox nach Blockierwirkung, Zeitbox, Rundenlimit 2, Gates je Ebene | Freie Diskussion ohne Abschluss |
+| **Eine QA-Sonde** (`preview/qa-probe.js`) für Workbench und CLI | Gleiche Prüfungen sofort und automatisiert | Getrennte Prüflogik |
 
 ## 2. Struktur
 
 ```
 TAKT_DESIGN_WORKBENCH/
-├─ server.mjs                 Statischer Server + REST (/api/state, /api/backups, /api/qa/latest), Härtung, Revisionen
-├─ package.json               Skripte (start, lan, check, qa, qa:changed, qa:e2e, qa:visual, qa:baseline)
+├─ server.mjs              Statischer Server + /api/state (Revisionen, 409) · /api/backups · /api/feedback (v2, append-only,
+│                          LAN-fähig, Ratenbegrenzung, Dubletten-Schutz) · /api/network · /api/ping · /api/qa/latest
 ├─ app/
-│  ├─ index.html              Workbench (Shell)          ├─ preview.html   TAKT-Vorschau (Iframe-Ziel)
-│  ├─ vendor/                 preact, hooks, htm (+ Lizenzen)
+│  ├─ index.html           Workbench            ├─ preview.html  Vorschau (Iframe-Ziel, auch Direktlinks)
+│  ├─ launcher.html        Demo-Launcher (PWA: manifest.webmanifest, sw.js, icon.svg)
 │  └─ src/
-│     ├─ lib/                 html.js (htm-Binding) · icons.js + icon-data.js (Lucide, 216 Icons) · util.js
-│     ├─ design-system/       tokens.js (EINZIGE Token-Quelle) · takt-base.css (Primitive, App-Shell, Layouts)
-│     ├─ library/             registry.js · CONTRACT.md · ui.js (Primitive) · helpers.js
-│     │  └─ components/       core/ (15 generische) · calendar/ (6) · tasks/ (5) · content/ (10) · insights/ (9)
-│     ├─ preview/             runtime.js (Renderer) · layouts.js · qa-probe.js
-│     ├─ core/                schema.js · versioning.js · impact.js · devices.js · preview-payload.js   (rein, auch Node)
-│     ├─ seed/                index.js · SEED_FORMAT.md · modules/*.js (12 Module)
-│     └─ workbench/           store.js · app.js · router.js · qa-runner.js · workbench.css · ui/{kit,preview-frame}.js · views/*
-├─ qa/                        run-qa.mjs · baselines/ (maschinenspezifisch, nicht versioniert) · results/ (Läufe)
-├─ tools/check.mjs            statische Schnellprüfung
-├─ data/                      workbench.json (Live-Stand) · backups/
-└─ docs/                      MISSION.md · PHASE1_BESTANDSAUFNAHME.md · examples/
+│     ├─ lib/              html.js · icons.js + icon-data.js (Lucide) · util.js · format.js (de-DE) · date.js
+│     ├─ design-system/    tokens.js (EINZIGE Token-Quelle, 3 Themes, Kontrast-Audit) · takt-base.css
+│     ├─ library/          registry.js · CONTRACT.md · ui.js (Primitive) · helpers.js · components/<bereich>/
+│     ├─ preview/          runtime.js (Renderer, App-Player) · launchpad.js (App-Rahmen) · layouts.js · qa-probe.js
+│     ├─ core/             rein, auch in Node: schema · versioning · impact · devices · directions · process · world ·
+│     │                    preview-payload · seedpatch · workorder · spec · flutter · finmath · recurrence · health
+│     ├─ seed/             index.js · catalog.js (App-Fragen, Muster) · modules/*.js · world/*.js (Datenwelt)
+│     ├─ launcher/         launcher.js · launcher.css · devices.js
+│     └─ workbench/        store.js · app.js · router.js · qa-runner.js · workbench.css · ui/* · views/*
+├─ qa/run-qa.mjs           Vertrag · E2E (32) · Screenshot-Matrix (auch Szenario/Umgebung) · Pixel-Regression
+├─ tests/*.test.mjs        Node-Tests (node:test, ~190): Kern, Format, Wiederholung, Gesundheit, Finanzmathe, Welt, Seed-Patch
+├─ tools/                  check.mjs (statisch, Cache) · register.mjs (preact-Loader für Node) · verify.mjs ·
+│                          work-order.mjs (Arbeitsauftrag) · feature-ids.mjs (Katalog) · test-finmath.mjs
+├─ data/                   workbench.json (Live-Stand) · backups/ · feedback.jsonl
+├─ docs/                   BAUPLAN · FEATURE_IDS · DATENWELT · Leitlinien (Gesundheit, Finanzen, Text) · ADRs · Gerätetest ·
+│                          PERSONA · WORKER_BRIEF · brainstorm/ · work-orders/
+└─ .claude/                commands/ (takt-start, -phase1, -feature, -qa, -review, -work-order, -round-prep) · agents/
 ```
+**Schichten (nur nach unten):** `workbench/`, `launcher/` → `core/`, `preview/` (über Iframe) → `library/` → `design-system/`, `lib/`.
+`core/` und `seed/` sind browserfrei; mit `tools/register.mjs` ist auch `library/` in Node ladbar (Tests).
 
-**Schichten (Abhängigkeit nur nach unten):** `workbench/` → `core/`, `preview/` (über Iframe), `library/` → `design-system/`, `lib/`.
-`core/` und `seed/` sind browserfrei (von CLI und `tools/check.mjs` direkt importierbar).
+## 3. Datenmodell (`core/schema.js`, Schema v2)
+Zusätzlich zu Modulen, Features, Varianten, Versionen, Historie und QA (siehe Kommentare in `schema.js`):
 
-## 3. Datenmodell (`core/schema.js`, Schema v1)
+| Bereich | Felder |
+|---|---|
+| **App (Ebene 0)** | `app: { directionId, shell, favorites[4], startFeatureId, vision, contexts[], principles[], nonGoals[], weights{}, phase1Done }` |
+| **Richtungen** | `directions[]: { id (kompakt/visuell/fokus), name, claim, description, principles[], shell, theme }` |
+| **Modul** | `+ area, homeFeatureId, directionId, assumptionStatus, assumptionNote` |
+| **Feature** | `+ tier (1–3), acceptance[], flows[], interactions[].to (Navigation), seedHash` |
+| **Variante** | `+ direction` (Zuordnung zu einer Richtung = Version im Launcher), `layout.stretch`, `layout.asideSticky` |
+| **Entscheidung v2** | `level (app/pattern/module/feature/component), kind, question, options[{id,label,description,ref}], chosen, recommendation{optionId,reasons,by}, reversibility, status (open/decided/parked/superseded), revisitAt/If, rounds, supersedes` |
+| **Prozess** | `rounds[]` (Agenda, Zeitbox, Ergebnisse), `pins[]` (Anmerkungen), `scores{feature:{variant:{kriterium:1–5}}}`, `feedback[]` |
+| **Welt** | nur `worldOverrides` (bewusste Abweichungen); die Welt selbst kommt immer aus `seed/world` |
 
-```js
-state = {
-  schemaVersion: 1,
-  meta: { project, createdAt, updatedAt, rev, seedVersion },
-  settings: { wbTheme, previewTheme, viewport, previewState, chrome, multiViewports, qaViewports, qaThemes, qaStates, lastFeatureId },
-  modules: [{ id, name, icon, description, status /*concept|active|released|reference*/, theme, designVersion, order,
-              archived, isReference, links:[moduleId], docs, infoArchitecture, source, createdAt, updatedAt }],
-  features: [{ id /*modul.feature*/, moduleId, name, group, order, purpose,
-               status /*not_analyzed|analyzed|design|review|released|implemented|regression_ok*/, archived,
-               requirements:[{id,text,type:info|action|state|rule,priority:must|should|could}],
-               interactions:[{id,trigger,result,event}], states:[default|empty|loading|error], viewports:[desktop|notebook|tablet|mobile],
-               variants:[{ id /*A,B,C…*/, name, concept, description, layout:{type, narrow?, even?, asideFirstOnMobile?, panelLabel?},
-                           blocks:[{ id, component, region, props, bind:{slot:dataKey}, hideOn:[bp], span?, spanTablet?, tab? }],
-                           createdAt, updatedAt, origin }],
-               selectedVariantId, demoData:{ key: any }, links:[featureId], references:[{label,href}], notes,
-               version /*Arbeitsstand*/, releasedVersionId, locked, realDevice:{ok,note,at}, createdAt, updatedAt }],
-  versions: [{ id, featureId, moduleId, version, kind:draft|review|release, note, createdAt, status,
-               snapshot:{purpose,requirements,interactions,states,viewports,variants,selectedVariantId,demoData,references},
-               qa /*bei Freigabe*/, decisionIds, componentVersions /*bei Freigabe*/ }],
-  decisions: [{ id, featureId, moduleId, title, decision, rationale, tradeoffs, alternatives, status:open|decided|superseded, createdAt, decidedAt }],
-  history: [{ id, ts, type, entity, entityId, featureId, moduleId, summary }],          // max. 3000
-  qa: { runs:[…max 60], latest:{ [featureId]: { runId, ts, status, variantId, version, results:[…] } }, cli, seen:{ [featureId]: { [event]: ts } } },
-  components: { [componentId]: { status, notes, changedAt } }                          // Metadaten zur Library
-}
-```
-`migrate()` ergänzt fehlende Felder (Vorwärtskompatibilität). Zukünftige Schemaänderungen: Migrationsschritt in `migrate()`
-ergänzen und `SCHEMA_VERSION` erhöhen (siehe TASKS.md – Migrationskette inkl. Snapshots ist offen).
+`migrate()` ergänzt fehlende Felder und ist idempotent (Test). Die Datenwelt wird seit Seed 2026-11-24.3 nicht mehr gespeichert.
 
 ## 4. Zustand & Persistenz (`workbench/store.js`, `server.mjs`)
-- **Einziger Schreibweg:** `mutate(summary, recipe, meta)` – arbeitet auf einer Kopie (atomar: Fehler ⇒ keine Änderung),
-  erhöht `meta.rev`, schreibt Historie (mit Zusammenfassen schneller Folgeänderungen), Undo/Redo (60 Schritte; **Einstellungen und
-  QA sind vom Undo ausgenommen**), speichert entprellt (400 ms).
-- **Domänen-Aktionen:** `actions.*` (Module, Features, Varianten, Blöcke, Anforderungen, Demo-Daten, Versionen, Freigabe,
-  Entscheidungen, QA, Import/Export, Seed). UI ruft nur diese auf; Fehler (z. B. Sperre) → Toast mit Aktion „Neue Arbeitsversion“.
-- **Speicherorte:** Server-Datei `data/workbench.json` (maßgeblich, atomar per tmp+rename) + Browser-Speicher (Cache/Fallback).
-  Ohne Server läuft alles im Browser-Speicher.
-- **Konflikte (Mehrere Tabs/Prozesse):** Client sendet `X-Base-Rev`; weicht die Datei-Revision ab → `409`, Status „Konflikt“,
-  eigener Stand bleibt als Konflikt-Kopie im Browser. Neuerer Browser-Stand beim Start wird nicht still übernommen.
-- **Backups:** automatisch höchstens alle 10 Min. beim Speichern, 40 behalten (`data/backups/`), manuell per UI; Wiederherstellen per UI.
-- **Server-Härtung:** Pfad-Traversal-Schutz, Schreiben nur von localhost mit lokalem Host/Origin und `application/json`;
-  `npm run lan` ist für andere Geräte schreibgeschützt.
+- **Einziger Schreibweg:** `mutate(summary, recipe, meta)` auf einer Kopie (atomar), Historie, Undo/Redo (ohne Einstellungen/QA),
+  entprelltes Speichern. UI ruft nur `actions.*` auf.
+- **Mehrere Tabs/Geräte:** Tabs übernehmen den Stand des anderen Tabs inkl. Server-Revision; beim Zurückkehren in den Tab wird
+  der Datei-Stand abgeglichen. Meldet der Server trotzdem einen Konflikt (409), werden die noch nicht gespeicherten eigenen
+  Änderungen als Rezepte **auf den Server-Stand neu angewendet** (Rebase) – nur wenn das scheitert (z. B. nach Undo), bleibt der
+  Stand als Konflikt-Kopie im Browser.
+- **Backups** automatisch (höchstens alle 10 Min., 40 behalten), **Feedback** append-only in `data/feedback.jsonl` (Schema v2).
+- **Seed-Patch** (`core/seedpatch.js`): Neues ergänzen, vom Nutzer unveränderte Features aktualisieren (vorher Arbeitsversion
+  sichern), Freigegebenes nie ändern (offene Entscheidung „Seed-Vorschlag“). Erkennung über `seedHash` bzw. Verlauf.
 
-## 5. Preview Engine
-- `ui/preview-frame.js`: Iframe in exakter Gerätebreite (`core/devices.js`: 1440, 1280, 1024, 768, 390 + 360 optional),
-  skaliert auf den verfügbaren Platz; Payload-Updates live (`window.__taktPreview.render`), Interaktionen per `postMessage`.
-- `preview/runtime.js`: setzt Tokens als CSS-Variablen + Komponenten-CSS, Breakpoint-Klassen (`bp-mobile|tablet|desktop`),
-  TAKT-App-Rahmen (Sidebar ≥ 1024, Navigationsleiste 600–1023, Bottom-Navigation < 600), Dialog-/Toast-Host,
-  Error-Boundary je Block, generische Zustände (Lädt/Fehler), Leerzustand über leere Daten, Alt+Klick-Blockauswahl, Hervorhebung.
-- **Geteilte Vorschau-Daten:** Blöcke, die denselben Demo-Daten-Schlüssel binden, sehen dieselben Änderungen (Quick-Add → Liste).
-  **Geteilter UI-Zustand** (`ctx.ui`: `query`, `filter`, `view`, `selectedId`, `selectedDate`) verbindet Blöcke (Suche → Liste, Liste → Detail).
-- **Deterministisch:** `ctx.today` = 24.11.2026 09:30 → Screenshots sind reproduzierbar.
-- Direktlinks: `preview.html?feature=<id>&variant=<id>&theme=<t>&state=<s>&chrome=0|1` bzw. `?component=<id>`.
+## 5. Vorschau-Runtime (`preview/`)
+- **Modi:** Feature (eine Variante), Komponente (Galerie), **App** (Demo-Launcher: ganze App mit Navigation).
+- **App-Player:** Routen-Stapel, Zurück (Taste, Geste, Android-Zurück über den Launcher), Modul-Startseiten, Bereichsblatt,
+  „Mehr“/„Alle Module“ nach Lebensbereich, Skizzen für Features ohne Design, Navigationsregeln aus `interaction.to`,
+  geteilter Weltzustand (Aktionen wirken modulübergreifend).
+- **App-Rahmen** (`launchpad.js`): `tabs` (4 Favoriten + Mehr), `launchpad` (Start = Modulraster mit Live-Kennzahlen aus der
+  Welt), `fokus` (Heute, Module-Blatt, zentraler Erfassen-Knopf, der in die Welt schreibt). Rahmen je Richtung, abweichend über
+  `app.shell` oder Launcher-Schalter.
+- **Versionen** (`core/directions.js`): Arbeitsstand · Richtung (`dir:<id>`) · **Meine Auswahl** (`mix`: Feature-Entscheidung ›
+  Modul-Richtung › App-Richtung › Arbeitsstand) · Freigegeben · `pin:<feature>:<variante>` („In App ansehen“ aus dem Studio).
+- **Szenarien** (`core/world.js`): Alltag, Erster Start (Nutzerdaten leer, Kataloge/Wetter bleiben), Stress-Tag (dreifache Listen,
+  lange Texte); gezielte Werte je Welt-Datei über `export const scenarios`.
+- **Umgebung:** `env.offline` (Hinweisleiste), `env.stale`, `privacy` (Beträge maskiert), `env.scale` (Schrift 100–200 % über
+  `--tk-text-scale` in allen Schriftgrößen-Tokens).
+- **Kontext für Komponenten:** `ctx.today`, `ctx.now()`, `ctx.live` (Uhr läuft nur im echten Launcher), `ctx.fmt`, `ctx.env`,
+  `ctx.privacy`, `ctx.ui`/`setUi`, `ctx.openDialog`, `ctx.toast`, `ctx.emit`.
+- **Nachrichten:** Runtime → Host `ready`, `route {featureId, moduleId, depth, initial, external, shellPage}`, `interaction`,
+  `select-block`; Host → Runtime `render`. API im Iframe: `window.__taktPreview.{render, navigate, back}`, `window.__taktQA.run()`.
+- Direktlinks: `preview.html?feature=…&variant=…&theme=…&state=…&scenario=…&env=offline,privacy&scale=2` bzw.
+  `?app=1&version=dir:fokus&route=<feature>&shell=launchpad`.
 
-## 6. Theme Engine & Designsystem (Details: `DESIGN_SYSTEM.md`)
-`tokens.js` → `tokensStylesheet()` (Basis-Variablen + je Theme `[data-tk-theme]`), `auditTheme()` (16 Kontrastpaare je Theme,
-alle bestanden), `tokensJson()` (Export für Flutter-Mapping). Die Workbench-Oberfläche hat ein **eigenes** neutrales Design
-(`workbench.css`, Hell/Dunkel), damit die TAKT-Vorschau nicht eingefärbt wirkt.
+## 6. Demo-Launcher (`launcher/`, `launcher.html`)
+Laptop: 1–4 Versionen nebeneinander in Geräterahmen, gekoppelte Navigation (nur Nutzer-Wechsel), Werkzeugleiste (Gerät, Theme,
+Rahmen, Szenario, Offline, Schrift, Beträge, Ebene, Demo zurücksetzen, Präsentation). Handy: Vollbild, schwebender
+Versionsschalter, Zurück-Taste geht in der App zurück. Bewertung je Ebene (App/Modul/Feature): Sterne, Favorit, fünf Kriterien,
+Kommentar, „Übernehmen“ (lokal direkt als Entscheidung, im WLAN als Feedback). QR-Dialog mit Netzwerkdiagnose (`/api/network`).
 
-## 7. Komponenten-Library (`library/`)
-Vertrag in `CONTRACT.md`: `{ id, name, category, description, version, props[], data[], events[], states[], css, example, render }`.
-Der Inspector im Design Studio wird aus `props[]` generiert; Datenbindungen aus `data[]`; Interaktions-Abdeckung aus `events[]`.
-45 Komponenten (15 generisch, 30 fachlich). Primitive (`ui.js`) verhindern Mehrfachimplementierungen.
+## 7. Entscheidungsprozess (`core/process.js`, Views `app-level`, `rounds`, `decide`, `ws-process`)
+- **Ebenen:** 0 App (Leitbild, Richtung, Rahmen, Grundsatzfragen, Muster) · 1 Modul (Startseite, Richtung) · 2 Feature (Variante)
+  · 3 Komponente.
+- **Inbox:** offene + fällig geparkte Entscheidungen nach Blockierwirkung × Reversibilität × Alter.
+- **Entscheidungsrunden:** Agenda (5–7), Zeitbox, Optionen mit Live-Vorschau, Empfehlung per Klick, Parken mit Wiedervorlage,
+  „Änderung nötig“ nur bis zur 2. Runde (Rundenlimit). Abschluss → **Arbeitsauftrag** (Markdown, `core/workorder.js`).
+- **Gates:** Definition of Ready/Done je Feature, Modul-Gate, App-Gate. **Design-Tiefe** (Tier 1–3) bestimmt den Aufwand.
+- **Scorecard** im Variantenvergleich (Gewichte aus dem Leitbild), **Anmerkungen** (Muss-Anmerkungen blockieren die Freigabe),
+  **Annahmen-Register** für Phase 1.
 
-## 8. Versionierung, Freigabe, Sperre (`core/versioning.js`, `store.js`)
-- Arbeitsversion `0.x`; **„Version sichern“** = Snapshot + `0.x → 0.x+1`; **„Zur Prüfung“** = Snapshot (review) + Status.
-- **Freigabe** = Checkliste im Store erzwungen (bevorzugte Variante, Muss-Anforderungen, Interaktionen, QA ohne Fehler, QA aktueller
-  als letzte Designänderung, alle Ziel-Viewports geprüft) – Ausnahme nur mit dokumentierter Begründung. Ergebnis: Major-Version
-  (`→ 1.0`), Snapshot mit QA-Ergebnis, Entscheidungen und **Komponentenversionen**, Feature **gesperrt**.
-- **Sperre:** Inhalte (Zweck, Anforderungen, Interaktionen, Varianten, Blöcke, Demo-Daten, Viewports, Zustände) sind unveränderbar;
-  Status „Freigegeben/Implementiert/Regression bestanden“ nur über Freigabe; Löschen nur mit ausdrücklicher Bestätigung;
-  Zusammenführen einer gesperrten Quelle unmöglich. Organisatorisches (Gruppe, Reihenfolge, Notizen, Verknüpfungen, Gerätetest) bleibt änderbar.
-- **Neue Arbeitsversion** (`1.0 → 1.1`) entsperrt; der Freigabe-Snapshot bleibt unverändert. **Wiederherstellen** älterer
-  Versionen sichert vorher automatisch den aktuellen Stand.
-- **Drift-Erkennung:** Hat eine Komponente seit der Freigabe eine neue `version`, zeigen Feature-QA und Quality Center
-  „Regression nötig“. Die CLI prüft freigegebene Features zusätzlich **pixelgenau strikt**.
+## 8. Theme Engine & Designsystem (Details: `DESIGN_SYSTEM.md`)
+`tokens.js` → `tokensStylesheet()` (Basis + `[data-tk-theme]`), `auditTheme()` (Kontrastpaare), `tokensJson()`, Dart-Export
+(`core/flutter.js`). Schriftgrößen skalieren über `--tk-text-scale`. Die Workbench-Oberfläche hat ein eigenes neutrales Design.
 
-## 9. QA
+## 9. Komponenten-Library (`library/`)
+Vertrag in `CONTRACT.md` (`id, name, category, version, props[], data[], events[], states[], css, example, render`, neu: `flutter`).
+Primitive in `ui.js` (u. a. Button, Chip, Card, Switch mit 44-px-Trefferfläche, Segmented, NumberStepper, Ring, Progress,
+EmptyState). Querschnitt-Bausteine in `components/crosscut/` (Hinweise, Offline, Sync, Berechtigung, Wiederholung, Rückgängig,
+Verknüpfungen, Erststart). Fachbereiche je Modul (`components/<bereich>/`, CSS-Präfix je Bereich).
+
+## 10. Versionierung, Freigabe, Sperre (`core/versioning.js`, `store.js`)
+Unverändert gegenüber V1: Arbeitsversion `0.x`, Freigabe mit Checkliste (+ Gates) → Major-Version, Snapshot inkl. QA,
+Entscheidungen und Komponentenversionen, Sperre; „Neue Arbeitsversion“ entsperrt; Drift-Erkennung bei Komponentenänderungen.
+
+## 11. QA (Details: `QA_REPORT.md`)
 | Ebene | Was | Wo |
 |---|---|---|
-| Sonde | Render-Fehler, fehlende Blöcke, horizontaler Überlauf, abgeschnittene Inhalte, Touch-Ziele (Mobile), WCAG-Kontrast (≤ 500 Textstellen), Bilder | `preview/qa-probe.js` |
-| Workbench | QA-Lauf je Feature/Modul/alle/betroffene (sichtbarer Prüf-Frame), Matrix, Details, Drift, Gerätetests | `workbench/qa-runner.js`, Quality Center |
-| CLI | Vertrag (Komponenten, Bindungen, Events) · 24 E2E-Bedientests · Screenshot-Matrix · Pixel-Regression (Baselines) · `--changed` per Datei-Hash | `qa/run-qa.mjs` |
-| Statisch | Syntax, Seed-Integrität, Token-/Datums-/Umlaut-Regeln | `tools/check.mjs` |
-
-**Baseline-Strategie:** Für Features in Arbeit folgt die Baseline dem letzten Lauf (Änderungen = Hinweis), für **freigegebene**
-Features ist jede Abweichung > 0,2 % ein Fehler (Regression), bis bewusst `npm run qa:baseline` gesetzt wird.
-**Selektiv:** `impact.js` (Komponente → Features/Varianten) in UI und CLI; `--changed` vergleicht Datei-Hashes der Komponenten;
-Änderungen an Tokens/Primitiven/Runtime gelten als global (alle Features).
-
-## 10. Seed & Datenfluss
-Seed (`seed/modules/*.js`) = Startinhalt und Vorlage. Live-Arbeit passiert in `data/workbench.json`. `mergeSeed()` übernimmt
-neue Module/Features/Entscheidungen aus dem Seed, ohne Bestehendes zu ändern (für Phase-1-Ergebnisse).
-
-## 11. Architekturprüfung (Worker G, 24.11.2026) – Ergebnis & Umsetzung
-**Behoben (Muss):** Status-Freigabe ohne Sperre · Sperr-Umgehungen (Meta-Felder, Merge, Löschen, Interaktions-Zeitstempel im Feature,
-Feld-Whitelist) · Komponentenversionen im Freigabe-Snapshot + Drift-Erkennung + Checkliste im Store · Undo ohne Einstellungen/QA ·
-Revisionen/409 bei Mehrfach-Schreibern, kein stilles Überschreiben beim Start · `mergeSeed` mit Entscheidungen · fehlende Skripte
-(`qa/run-qa.mjs`, `tools/check.mjs`) · Server-Härtung (Pfad, Origin/Host, Content-Type, LAN read-only) · Zeitzonen-Bug (`isoDay`),
-doppelte `DEFAULT_TODAY` · Auto-Snapshot vor Wiederherstellung.
-**Offen (mittelfristig, in TASKS.md):** Skalierung (Versionen/QA in eigene Dateien, Undo als Patches), Migrationskette inkl. Snapshots,
-Vereinheitlichung der Library-Helfer (Datum/Filter/IDs, Exportmuster, Ordner = Kategorien), Erweiterung des deklarativen Modells
-(Container-Blöcke, Props je Breakpoint, Feldmapping, JSON-Schema für `shape`, einfache Aktionen), Flutter-Export (semantische Tokens,
-Komponenten→Widget-Mapping, Feature-Spezifikation), `module.theme` in der Vorschau nutzen.
-**Bewusst so gelassen:** reiner `core/`, atomares `mutate`, Snapshot-/Freigabe-Konzept, ein Vorschaupfad für alles, Komponentenvertrag,
-Token-Konsequenz, kleine Layout-Engine, Server ohne Abhängigkeiten, Seed als Code.
+| Statisch (< 1 s) | Syntax (Cache), Seed-Integrität, Navigationsgraph, Startseiten-Richtungen, Begriffslisten Gesundheit/Finanzen, Token-/Datums-/Umlaut-Regeln | `npm run check` |
+| Node-Tests (~5 s) | Kern, Migration, Seed, Prozess, Welt/Szenarien, Seed-Patch, Versionen, Format, Wiederholung, Gesundheit, Finanzmathematik, Querschnitt | `npm test` |
+| Sonde | Rendering, Blöcke, Überlauf, Abschneiden, Touch, Kontrast, Bilder, **Namen von Bedienelementen**, **Privatsphäre** | `preview/qa-probe.js` |
+| CLI | Vertrag · 32 E2E-Tests (inkl. Launcher, Rahmen, Runden, Gates, Seed) · Matrix (Viewports × Themes × Zustände, optional Szenario/Umgebung) · Pixel-Regression | `npm run qa` |
+| Gesamt | check → test → (qa:changed) | `npm run verify` |
 
 ## 12. Erweiterungspunkte
-Neues Gerät → `core/devices.js` · neues Theme → `tokens.js` (alle `COLOR_ROLES`) · neuer Layout-Typ → `preview/layouts.js` + CSS ·
-neue Komponente → `library/components/*` · neue QA-Prüfung → `qa-probe.js` (wirkt in UI und CLI) · neuer E2E-Test → `qa/run-qa.mjs`.
+Neues Modul → `seed/modules/<id>.js` + Manifest in `seed/index.js` + Welt-Datei (Eigentümer laut `docs/DATENWELT.md`) ·
+neue Komponente → `library/components/<bereich>/` (Vertrag, `flutter`, Präfix) · neue Richtung → `directions` (Workbench) ·
+neuer Rahmen → `preview/launchpad.js` · neue QA-Prüfung → `qa-probe.js` · neuer Test → `tests/<bereich>-*.test.mjs` ·
+neue Grundsatzfrage → `seed/catalog.js`.
