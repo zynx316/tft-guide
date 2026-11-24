@@ -19,6 +19,9 @@ import * as knowledge from './knowledge.js';
 import * as scans from './scans.js';
 import * as sales from './sales.js';
 import * as habits from './habits.js';
+import * as goals from './goals.js';
+import * as shopping from './shopping.js';
+import * as documents from './documents.js';
 import * as home from './home.js';
 import * as system from './system.js';
 import * as settings from './settings.js';
@@ -26,11 +29,11 @@ import * as settings from './settings.js';
 // `scenarios` (gezielte Werte für „Erster Start“/„Stress-Tag“) ist kein Welt-Schlüssel: je Datei sammeln, core/world.js führt zusammen.
 const SCEN = [];
 const pick = (mod) => { if (mod.scenarios && typeof mod.scenarios === 'object') SCEN.push(mod.scenarios); return Object.fromEntries(Object.entries(mod).filter(([k, v]) => typeof v !== 'function' && k !== 'scenarios')); };
-const PARTS = [persona, organisation, finance, savings, trading, fitness, nutrition, weather, knowledge, scans, sales, habits, home, system, settings];
+const PARTS = [persona, organisation, finance, savings, trading, fitness, nutrition, weather, knowledge, scans, sales, habits, goals, shopping, documents, home, system, settings];
 const BASE = Object.assign({}, ...PARTS.map(pick));
 
 /** Alle Module der App (Reihenfolge wie im Launchpad); Welt-Schlüssel der Aggregate heißen `<camelCase>Summary` usw. */
-export const WORLD_MODULES = ['home', 'calendar', 'tasks', 'habits', 'finance', 'savings', 'trading', 'fitness', 'nutrition', 'notes', 'knowledge', 'picture-to-text', 'weather', 'sales', 'system', 'settings'];
+export const WORLD_MODULES = ['home', 'calendar', 'tasks', 'habits', 'goals', 'shopping', 'finance', 'savings', 'trading', 'fitness', 'nutrition', 'notes', 'knowledge', 'picture-to-text', 'documents', 'weather', 'sales', 'system', 'settings'];
 export const camelOf = (id) => id.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
 const list = (key) => (Array.isArray(BASE[key]) ? BASE[key] : []);
 

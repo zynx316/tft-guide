@@ -33,7 +33,7 @@ Eine Datei = ein Eigentümer-Paket. Jeder **benannte Export, der keine Funktion 
 
 | Datei | Eigentümer-Paket | Modul(e) | Stand |
 |---|---|---|---|
-| `index.js` | INF-3 / welt | Aggregation (`allKpis`, `allHints`, `searchIndex`, `allNotifications`), `scenarios` je Datei sammeln | vorhanden, 190 Schlüssel |
+| `index.js` | INF-3 / welt | Aggregation (`allKpis`, `allHints`, `searchIndex`, `allNotifications`), `scenarios` je Datei sammeln | vorhanden, 216 Schlüssel |
 | `persona.js` | MOD-HOME | home (Persona) | vorhanden, 1 Schlüssel |
 | `home.js` | MOD-HOME | home (Kennzahlen, Mitteilung Wochenrückblick) | vorhanden; Briefing und Tagesablauf bleiben abgeleitet in den Start-Komponenten |
 | `organisation.js` | MOD-CAL | calendar, tasks | vorhanden (Termine inkl. Trainingsserien, Aufgaben, Eingang, Fokus, Aggregate) |
@@ -47,16 +47,20 @@ Eine Datei = ein Eigentümer-Paket. Jeder **benannte Export, der keine Funktion 
 | `habits.js` | MOD-HAB | habits (Gewohnheiten, Routinen; Start bindet dieselben) | vorhanden |
 | `system.js` | MOD-SYS | system (Papierkorb, Kennzahlen) | vorhanden |
 | `settings.js` | MOD-SET | settings (`prefs`, Sicherungen) | vorhanden |
-| `goals.js`, `documents.js`, `shopping.js` | MOD-HAB, MOD-REG | goals, documents, shopping | fehlen (Module noch nicht gebaut) |
+| `goals.js` | MOD-HAB | goals (Ziel-Definitionen, Lebensbereiche; Werte nur aus den Quellmodulen abgeleitet) | vorhanden (Abschnitt 4.14) |
+| `shopping.js` | MOD-REG | shopping (Listen, Läden, Vorräte, Haushaltswartung, Einkäufe; Lebensmittel-Liste noch in `nutShopping`, B5) | vorhanden (Abschnitt 4.15) |
+| `documents.js` | MOD-REG | documents (Dokumente, Ordner, Verträge abgeleitet aus Finanzen, Garantien, Steuerordner) | vorhanden (Abschnitt 4.16) |
 
-Die Welt enthält 190 Schlüssel (`Object.keys(WORLD)`); `searchIndex` hat 154 Einträge, `allNotifications` 16, `allHints` 27.
+Die Welt enthält 216 Schlüssel (`Object.keys(WORLD)`); `searchIndex` hat 223 Einträge, `allNotifications` 24, `allHints` 36 (19 Module).
 
 ### 3.2 Eigentümer je Datenobjekt (Bauplan 5.13)
 
 | Datenobjekt | Eigentümer | Andere Module |
 |---|---|---|
 | Einkaufsliste, Vorräte, Haushaltswartung | shopping | Ernährung liefert Zutaten per Verknüpfung (`carry`) |
-| Abos und Verträge | Fristen und Dokumente: documents; laufende Kosten und Summen: finance (`subscriptions`) | documents verlinkt |
+| Abos und Verträge | Fristen und Dokumente: documents; laufende Kosten und Summen: finance (`subscriptions`, `financeSubMeta`) | documents leitet `contracts` daraus ab (Beträge und Kündigungsfristen exakt wie Finanzen) und verlinkt zurück (`cost.open`) |
+| Ziele | goals (Definition, Meilensteine, Wochenfokus) | Werte kommen immer aus der Quelle (Sparziele, Gewicht, Training, Umsatz, Serien, Aufgaben); ein Ziel speichert nie einen Quellwert, zu einer Quelle höchstens ein Ziel |
+| Garantien, Steuerordner | documents | Steuerordner enthält nur Verweise auf Buchungen, Belege, Dokumente und Abos |
 | Schlaf und Check-in | fitness.recovery | kein Journal-Modul in Basis v1 |
 | Wasser | nutrition.water | Start zeigt Kachel, Gewohnheiten verknüpfen nur |
 | Fokuszeit | tasks.focus (`focusMinutes` aus der Aufgaben-Welt) | Start und Kalender lesen |
@@ -269,11 +273,52 @@ Start und Gewohnheiten binden **dieselben** Schlüssel (`@world:habits`, `@world
 | `backups` (5) | `{id, at, size, kind auto/manual}` | heute 03:00, 6,9 MB |
 | `settingsSummary` + Hints/Search/Notifications | Vertrag 5.2 | „16 von 16 Module aktiv“ |
 
+### 4.14 `goals.js` (MOD-HAB, Modul „Ziele“)
+
+Rechenlogik rein in `library/components/goals/_calc.js` (auch von Welt und Tests importiert).
+
+| Schlüssel | Struktur | Beispiel |
+|---|---|---|
+| `goals` (10) | `{id, title, why, area, since, due?, focus?, hideNumbers?, rolling?, status?('paused'), source{type savings/weight/training/sales/habit/checklist/manual, ref?, module, label, to, link?}, measure?{unit,start,target}, snapshots?[{date,value}] (nur eigene Zähler), milestones[{id,title, at \| taskId \| done}], nextTaskId?, nextHint?}` | `g-japan` verweist per `source.ref` auf `savingsGoals[g-japan]`; `g-blackfriday` als Checkliste mit Aufgaben t6, t3, t9 |
+| `goalAreas` (4) | `{id, name, icon, tone, hint}`: gesundheit, finanzen, business, persoenlich (bleibt im Ersten Start) | |
+| `goalsSummary` + Hints/Search/Notifications | Vertrag 5.2; erste Kennzahl ohne Betrag („6 von 10 Ziele im Plan“); Such-IDs `ziel:<id>` (`goal:` nutzt `savingsSearch` für Sparziele) | |
+
+Nur gelesen: `savingsGoals`, `bodySummary`, `bodyWeightLog`, `weeklyTraining`, `fitnessStreak`, `channels` (Umsatz 30 Tage, kein eigener Monatsumsatz), `habits`, `tasks` („Erledigt“ in Ziele schreibt in `tasks`). Wochenfokus = Flag `focus` (höchstens 3). Gesundheitsziele: Zahlen per `hideNumbers` ausblendbar (auch in `aria-label`), nie „hinter dem Plan“. Szenarien: Erststart leer (Bereiche bleiben, Einladung „Ziel anlegen“), Stress ×3 (Wochenfokus bleibt bei den drei Originalen). Tests: `goals-calc`, `goals-world`.
+
+### 4.15 `shopping.js` (MOD-REG, Modul „Einkauf & Haushalt“)
+
+| Schlüssel | Struktur | Beispiel |
+|---|---|---|
+| `shoppingLists` (3) | `{id, name, icon, tone, kind food/custom, storeId, shared, aisles?, items[{id, name, qty, aisle, done, price?, note?, for?}]}`; `sl-food` ist nur der Verweis auf `nutShopping` (ohne `items`) | Drogerie 5, Baumarkt 5 Artikel (`for` = Wartung, z. B. Filtermatte → `hh-dunstabzug`) |
+| `shoppingStores` (4) | `{id, name, short, kind, icon, tone, note, aisles[] in Laufweg-Reihenfolge}` | REWE Bielefeld-Mitte (Kühlware zuletzt), Wochenmarkt, dm, Baumarkt |
+| `shoppingPantry` (11) | `{id, name, foodId?, aisle, level ok/low/empty, listId?, note, refill?}`; bei Lebensmitteln gilt `ok` ⇔ `foodId` in `nutShopping.pantry` | 5 knapp |
+| `householdTasks` (6) | `{id, name, area, icon, tone, rule (core/recurrence.js), lastDone, since, minutes, note, taskId}` | Waschmaschine 7 Tage überfällig, Dunstabzug heute |
+| `householdTemplates` (6) | Vorschläge zum Übernehmen (Referenzdaten, bleiben im Erststart) | |
+| `shoppingTrips` (4) | `{id, status geplant/erledigt, date, time, storeId, listId, transactionId?, total?}`; erledigte verweisen auf `t1`, `t8`, `t11` (gleicher Betrag) | geplant Do 26.11. 17:30 |
+| `shoppingSummary` + Hints/Search/Notifications | aus den Daten berechnet (`shoppingSummaryOf` in `library/components/shopping/_logic.js`); Lebensmittel-Budget übrig = `nutSummary.foodBudgetLeft` = Finanz-Budget `b-food`; Such-IDs `slist:`, `sitem:`, `hhtask:`, `spantry:`, `sstore:` | 37 Artikel offen, 2 Wartungen fällig |
+
+Querbezüge: Budget nur gelesen; „Einkauf fertig“ öffnet `finance.quickadd` mit Vorbelegung (`ctx.ui.prefill`); „Als Aufgabe planen“ legt eine Aufgabe in `tasks` an. Szenarien: Erststart nur leere Lebensmittel-Liste, Läden und Vorschläge; Stress ×3. Tests: `shopping-logic`, `shopping-world` (S1–S8).
+
+### 4.16 `documents.js` (MOD-REG, Modul „Dokumente & Verträge“)
+
+Fristenlogik rein in `library/components/documents/_deadlines.js` (dringend bis 3 Tage, bald 14, im Blick 30, Horizont 90; Garantie-Enden mit Monatsende-Klemmung).
+
+| Schlüssel | Struktur | Beispiel |
+|---|---|---|
+| `documents` (20) | `{id 'doc-…', title, folderId, type, date, added, pages, format, size, source, tags[], excerpt?, validUntil?, contractId?, warrantyId?, sensitive?, links?}` | Reisepass gültig bis in 86 Tagen |
+| `documentFolders` (7) | `{id 'f-…', name, icon, tone, desc, retention}` (bleibt im Erststart) | |
+| `contracts` (9) | **abgeleitet** aus `subscriptions` + `financeSubMeta` (`ct-<subscriptionId>`; Betrag, Intervall, Kündigungsfrist exakt wie Finanzen) plus eigene Felder `kind, provider, termStart, customerNo, cancelTo, reminder{on, days[30,14,3]}` | Kfz-Versicherung 6 Tage, FitX 9 Tage |
+| `warranties` (5) | `{id 'w-…', title, purchaseDate, price, legalMonths 24, makerMonths, legalEnd/makerEnd abgeleitet, documentId (Kaufbeleg), store, category, business}` | Etikettendrucker: Gewährleistung endet in 3 Tagen |
+| `taxFolder` | `{year, due, advisor{eventId e17, cardId k2}, formats[], lastExport, categories[{id, refs[{kind tx/receipt/doc/sub/missing, id}]}]}` – nur Verweise | 3 offene Nachweise |
+| `documentsSummary` + Hints/Search/Notifications | erste Kennzahl „Fristen in 30 Tagen“ (nicht monetär); Suche liefert Dokumente und Garantien (Verträge kommen als Abo aus `financeSearch`); keine Kündigungs-Mitteilungen (die meldet Finanzen) | |
+
+Querbezüge: Kosten-Link zu `finance.subscriptions`, Scan über `picture-to-text.scanner`, Termin `e17` (Kanzlei Brandt), „Kündigung vorbereiten“ kann eine Aufgabe anlegen, Modulsperre schreibt `prefs.privacy.sensitive`. Szenarien: Erststart leer außer Ordnern und Steuer-Kategorien; Stress leitet Verträge aus den ×3-Abos ab. Tests: `documents-deadlines`, `documents-manifest`, `documents-world`.
+
 ### 4.13 Aggregate (`index.js`)
 
 | Schlüssel | Struktur |
 |---|---|
-| `allKpis` | `{ <modul-id>: kpis[] }` für alle 16 Module |
+| `allKpis` | `{ <modul-id>: kpis[] }` für alle 19 Module |
 | `allHints` | alle `<m>Hints`, in Modulreihenfolge |
 | `searchIndex` | alle `<m>Search`, IDs `<sammlung>:<id>`, eindeutig |
 | `allNotifications` | alle `<m>Notifications`, neueste zuerst |
@@ -388,7 +433,7 @@ Behobene Befunde bleiben als Verlauf stehen; ein Test sichert sie ab (`world-inv
 | B2 | Training: Kalender Donnerstag im Studio Kraftwerk, Wetter Mi/Fr Studio Kraftwerk, Fitness Mo/Mi/Fr im FitX Bielefeld | **behoben** | Wochenplan (Fitness) führt. Kalender: drei Serien `e-fit-lower`, `e-fit-upperA`, `e-fit-full` (Mo/Mi/Fr 18:30, FitX Bielefeld, `legacyEvents()` bleibt für das freigegebene Feature unverändert); `wxTraining` mit `eventId`; `nutGoals.trainingDays` aus dem Programm; Wissensartikel „Trainingsplan Grundlagen“ und Habit-Verlauf folgen. Abweichung vom ersten Vorschlag: Serien statt Einzeltermine `tr-<datum>`, weil die Wetter-Komponenten Termine und Training zusammenführen und Serien dort nicht doppelt erscheinen | MOD-CAL, MOD-WET, MOD-FIT |
 | B3 | Privatentnahme: `t16` `income`, `t17` `transfer` | **behoben** | beide Seiten `transfer`, Kategorie „Umbuchung“; Einnahmen 2.952,40 €, Sparquote 33 % | MOD-FIN |
 | B4 | ID-Überschneidung Aufgaben und Buchungen (`t1`…) | offen (bewusst) | bestehende IDs bleiben; Suche, Hints und Mitteilungen verwenden `<sammlung>:<id>` | alle |
-| B5 | `nutShopping` in `nutrition.js`, Eigentümer der Liste ist `shopping` | offen | Modul `shopping` fehlt noch | MOD-REG, MOD-NUT |
+| B5 | `nutShopping` in `nutrition.js`, Eigentümer der Liste ist `shopping` | offen (Entscheidung) | Modul `shopping` ist gebaut und liest/schreibt dieselben Felder (`checked`, `manual`, `pantry`, `recipeAdds`); offene Entscheidung `shopping.list` „Wem gehört die Lebensmittel-Liste?“ (Empfehlung: Einkauf, Ernährung liefert Zutaten per `carry`). Danach Umzug nach `shoppingLists`, Schlüssel bleiben | MOD-REG, MOD-NUT |
 | B6 | Szenarien leeren Referenzdaten und lassen abgeleitete Werte stehen | **behoben** | `scenarios` in allen Dateien mit abgeleiteten Werten; Test W17 | alle |
 | B7 | `scenarios` mehrerer Dateien überschreiben sich | **behoben** | `index.js` sammelt je Datei (`WORLD_SCENARIOS`), `applyScenario` wendet sie an; Aggregate in `index.js` | INF-3 |
 | B8 | Atwater: Brokkoli, Spinat, Bier | **behoben** | Nährwerte nachgezogen, Feld `alcohol` (g je 100 ml) bei Bier und in den Tagebucheinträgen | MOD-NUT |

@@ -15,12 +15,15 @@ import fitness from './components/fitness/index.js';      // Fitness (Ausbau)
 import nutrition from './components/nutrition/index.js';  // Ernährung
 import weather2 from './components/weather2/index.js';    // Wetter (Ausbau)
 import habits from './components/habits/index.js';        // Gewohnheiten & Ziele
+import goals from './components/goals/index.js';          // Ziele
+import shopping from './components/shopping/index.js';    // Einkauf & Haushalt
+import documents from './components/documents/index.js';  // Dokumente & Verträge
 import crosscut from './components/crosscut/index.js';    // Querschnitt (Suche, Benachrichtigungen, Onboarding …)
 
-export const COMPONENTS = [...core, ...calendar, ...tasks, ...content, ...insights, ...finance, ...savings, ...trading, ...fitness, ...nutrition, ...weather2, ...habits, ...crosscut];
+export const COMPONENTS = [...core, ...calendar, ...tasks, ...content, ...insights, ...finance, ...savings, ...trading, ...fitness, ...nutrition, ...weather2, ...habits, ...goals, ...shopping, ...documents, ...crosscut];
 
 export const CATEGORY_ORDER = ['Struktur', 'Navigation', 'Daten', 'Diagramme', 'Formulare', 'Feedback', 'Querschnitt',
-  'Kalender', 'Aufgaben', 'Inhalte', 'Wetter', 'Vertrieb', 'Finanzen', 'Sparpläne', 'Trading', 'Fitness', 'Ernährung', 'Gewohnheiten', 'Start'];
+  'Kalender', 'Aufgaben', 'Inhalte', 'Wetter', 'Vertrieb', 'Finanzen', 'Sparpläne', 'Trading', 'Fitness', 'Ernährung', 'Einkauf', 'Gewohnheiten', 'Ziele', 'Dokumente', 'Start'];
 
 const map = new Map();
 for (const c of COMPONENTS) {

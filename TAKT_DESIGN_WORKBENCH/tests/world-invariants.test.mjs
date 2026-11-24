@@ -220,7 +220,7 @@ test('Jede @world:-Bindung in allen Manifesten zeigt auf einen vorhandenen Welt-
 // ------------------------------------------------------------------ Aggregate: Summary, Hints, Search, Notifications ---
 const kpiOk = (k) => k && typeof k.label === 'string' && k.label && k.value !== undefined && k.value !== null && k.value !== '';
 test('Jedes Modul liefert <modul>Summary.kpis (erste Kennzahl = Launchpad-Kachel) in allen Szenarien', () => {
-  assert.equal(WORLD_MODULES.length, 16);
+  assert.equal(WORLD_MODULES.length, 19);
   assert.deepEqual([...WORLD_MODULES].sort(), [...MODULE_IDS].sort(), 'Modulliste der Welt = Module der Manifeste');
   for (const id of SCENARIO_IDS) for (const m of WORLD_MODULES) {
     const s = worlds[id][`${camelOf(m)}Summary`];

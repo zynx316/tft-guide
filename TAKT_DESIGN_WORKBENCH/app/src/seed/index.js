@@ -27,10 +27,13 @@ import settings from './modules/settings.js';
 import savings from './modules/savings.js';
 import nutrition from './modules/nutrition.js';
 import habits from './modules/habits.js';
+import goals from './modules/goals.js';
+import shopping from './modules/shopping.js';
+import documents from './modules/documents.js';
 import system from './modules/system.js';
 
-export const SEED_VERSION = '2026-11-24.4';
-export const MANIFESTS = [home, calendar, tasks, habits, finance, savings, trading, fitness, nutrition, notes, knowledge, pictureToText, weather, sales, system, settings];
+export const SEED_VERSION = '2026-11-24.5';
+export const MANIFESTS = [home, calendar, tasks, habits, goals, shopping, finance, savings, trading, fitness, nutrition, notes, knowledge, pictureToText, documents, weather, sales, system, settings];
 
 function buildModule(manifest, order) {
   const m = createModule({ ...manifest.module, order });
