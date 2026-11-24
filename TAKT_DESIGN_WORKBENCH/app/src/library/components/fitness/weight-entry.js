@@ -11,7 +11,7 @@ export const weightEntry = {
   name: 'Gewicht erfassen',
   category: 'Fitness',
   description: 'Gewicht in 0,1-kg-Schritten erfassen (Vorbelegung: letzter Wert), speichern mit einem Tap. Bei einem Sprung über 3 kg folgt eine freundliche Rückfrage. Ein vorhandener Wert des Tages wird ersetzt.',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Heute wiegen' },
     { name: 'openEvent', label: 'Event für „Verlauf“ (leer = kein Knopf)', type: 'text', default: '' },

@@ -79,6 +79,8 @@ export const FIT_CSS = `
 .tk-fit-step--lg button { width:60px; height:60px; } .tk-fit-step--lg input { width:110px; height:60px; font-size:var(--tk-fs-3xl); }
 .bp-mobile .tk-fit-step input { font-size:16px; width:46px; height:44px; } .bp-mobile .tk-fit-step button { width:36px; height:44px; }
 .bp-mobile .tk-fit-step--lg button { width:64px; height:64px; } .bp-mobile .tk-fit-step--lg input { width:100px; height:64px; font-size:var(--tk-fs-3xl); }
+/* Große Schrift: Eingabefeld wächst mit der Schrift (ch statt px), Knöpfe schrumpfen auf die Mindestgröße – „78,4“ bleibt lesbar */
+[data-tk-large-text] .tk-fit-step input { width:4.6ch; } [data-tk-large-text] .bp-mobile .tk-fit-step--lg button, [data-tk-large-text] .tk-fit-step--lg button { width:48px; }
 .tk-fit-ring { position:relative; flex:none; } .tk-fit-ring svg { display:block; } .tk-fit-ring__in { position:absolute; inset:0; display:grid; place-items:center; text-align:center; }
 .tk-fit-mus { display:inline-flex; align-items:center; gap:6px; font-size:var(--tk-fs-sm); color:var(--tk-c-text-muted); } .tk-fit-mus i { width:8px; height:8px; border-radius:50%; display:block; flex:none; }
 .tk-fit-stat { display:flex; flex-direction:column; gap:2px; min-width:0; } .tk-fit-stat span { font-size:var(--tk-fs-xs); color:var(--tk-c-text-subtle); text-transform:uppercase; letter-spacing:var(--tk-ls-wide); font-weight:var(--tk-fw-semibold); }
