@@ -54,7 +54,7 @@ export const savingsPlanDetail = {
     positions: [{ id: 'p1', short: 'All-World', name: 'Vanguard FTSE All-World', type: 'ETF', isin: 'IE00BK5BQT80', value: 18036.55, cost: 14636.99, gain: 3399.56 }], accounts: [], goals: [{ id: 'g1', name: 'Altersvorsorge', monthly: 375 }], transactions: [] } },
   render: function SavingsPlanDetail({ props, data, setData, ctx }) {
     const today = todayOf(ctx), plans = arr(data.plans);
-    const plan = plans.find((p) => p.id === ctx.ui.selectedId) || plans.find((p) => p.active) || plans[0];
+    const plan = plans.find((p) => p.id === ctx.ui.selectedId) || plans[0];
     if (!plan) return html`<${Card}><${EmptyState} icon="piggy-bank" title="Kein Sparplan gewählt" text="Lege einen Sparplan an oder wähle einen aus der Liste." action=${html`<${Button} variant="primary" icon="plus" onClick=${() => ctx.emit('plan.create')}>Sparplan anlegen<//>`} /><//>`;
     const tgt = planTarget(plan, data.positions, data.accounts), st = planStatus(plan), stats = planStats(plan, { positions: data.positions, accounts: data.accounts, today });
     const hist = planHistory(plan, { positions: data.positions, today }), next = planExecutions(plan, today, 1, confirmedSet(data.transactions))[0], raise = nextRaise(plan, today);

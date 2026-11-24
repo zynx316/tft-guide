@@ -83,3 +83,6 @@ export const sameIsoDay = (a, b) => String(a).slice(0, 10) === String(b).slice(0
 
 /** Privatmodus: Geldbeträge in Fließtexten maskieren („812,40 €“ → „•••• €“). */
 export const priv = (ctx, text) => (ctx?.privacy ? String(text ?? '').replace(/[−-]?\d{1,3}(?:\.\d{3})*(?:,\d{1,2})?[\s ]?€/g, '•••• €') : text);
+
+/** Speichernutzung je Modul in MB (Demo, für Export-Größe und Speicheranzeige). */
+export const MODULE_SIZES = { home: 0.1, calendar: 0.4, tasks: 0.3, habits: 0.1, notes: 0.9, knowledge: 0.5, 'picture-to-text': 1.4, finance: 0.8, savings: 0.2, trading: 0.3, fitness: 0.6, nutrition: 0.7, weather: 0.1, sales: 0.6 };

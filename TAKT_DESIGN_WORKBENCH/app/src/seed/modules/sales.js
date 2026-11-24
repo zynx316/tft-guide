@@ -128,7 +128,7 @@ export default {
       ],
       acceptance: [
         'Jeder Kanal zeigt Status als Text, letzten Sync und 30-Tage-Umsatz; der Etsy-Fehler nennt die Ursache und bietet „Neu verbinden“.',
-        '„Umsatz heute“ entspricht der Summe der drei heutigen Bestellungen (284,39 €, Stand 09:30 Uhr).',
+        '„Umsatz heute“ entspricht der Summe der drei heutigen Bestellungen (281,89 €, Stand 09:30 Uhr).',
         'Ein Tipp auf einen Kanal öffnet das Kanal-Detail, ein Tipp auf eine Bestellung das Bestelldetail.',
         '„Neu verbinden“ stellt Etsy wieder her; die Fehlerzeile verschwindet aus „Jetzt zu tun“.',
         '„Erledigt“ bei „Etsy-Gebühren buchen“ setzt die Aufgabe in der gemeinsamen Datenwelt auf erledigt.',

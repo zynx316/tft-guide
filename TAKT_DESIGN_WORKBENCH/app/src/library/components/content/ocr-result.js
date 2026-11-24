@@ -63,7 +63,7 @@ export const ocrResult = {
     const [saved, setSaved] = useState(null);
     const [own, setOwn] = useState('');
     const caps = data.captures || [];
-    const cap = caps.find((c) => c.id === ctx.ui.selectedId) || caps[0];
+    const cap = caps.find((c) => c.id === ctx.ui.selectedId) || (props.layout === 'review' && caps.find((c) => (c.uncertain || []).length)) || caps[0];
     if (!cap) return html`<${Card}><${EmptyState} icon="scan-text" title="Noch kein Text erkannt" text="Erfasse ein Bild – der erkannte Text erscheint hier." /><//>`;
     const unsure = cap.uncertain || [];
     const conf = Math.round(cap.confidence * 100);

@@ -30,7 +30,7 @@ export const executionList = {
   example: { data: { plans: [{ id: 'sp1', name: 'All-World Sparplan', positionId: 'p1', monthly: 300, day: 1, intervalMonths: 1, active: true, startDate: '2024-01-01' }], positions: [{ id: 'p1', price: 118.42, short: 'All-World' }], transactions: [{ id: 't1', title: 'Sparplan All-World', date: '2026-11-02T07:00:00', amount: -300, type: 'transfer', category: 'Sparen' }] } },
   render: function ExecutionList({ props, data, ctx }) {
     const today = todayOf(ctx), plans = arr(data.plans);
-    const plan = plans.find((p) => p.id === ctx.ui.selectedId) || plans.find((p) => p.active) || plans[0];
+    const plan = plans.find((p) => p.id === ctx.ui.selectedId) || plans[0];
     if (!plan) return html`<${Card} title=${props.title} icon="list-checks"><${EmptyState} icon="list-checks" title="Keine Ausführungen" text="Wähle einen Sparplan, um seine Ausführungen zu sehen." /><//>`;
     const pos = planPosition(plan, data.positions);
     const up = planExecutions(plan, today, props.upcoming, confirmedSet(data.transactions)), past = pastExecutions(plan, data.transactions, data.positions).slice(0, props.past);

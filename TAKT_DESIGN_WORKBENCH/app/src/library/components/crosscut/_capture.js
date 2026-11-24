@@ -127,3 +127,15 @@ export function commitCapture(p, { setData, ctx, kind = p.kind }) {
   } else restore = add('inbox', { id, title: p.title, source: kind === 'note' ? 'Notiz' : 'Erfassen', at: iso(today), suggest: kind === 'note' ? { kind: 'note' } : {} });
   return { id, restore, label: `${KINDS[kind].label}: ${p.title}` };
 }
+
+/** Zielart von Hand wechseln: bisherige Erkennung übernehmen, Felder der neuen Art setzen; `missing` nennt, was noch fehlt. */
+export function asKind(p, kind, today) {
+  if (!p || p.kind === kind) return p;
+  const base = { ...p, kind, sure: true, why: 'Von dir gewählt', missing: null };
+  if (kind === 'task') return { ...base, fields: [{ k: 'Fällig', v: 'ohne Datum' }, { k: 'Priorität', v: 'mittel' }, { k: 'Projekt', v: 'Eingang' }], data: { due: null, priority: 'mittel' } };
+  if (kind === 'event') { const s = at(today, Math.min(22, today.getHours() + 1), 0), e = new Date(+s + 3600000); return { ...base, fields: [{ k: 'Wann', v: `${fmtDate(s, { style: 'weekday' })}, ${fmtTime(s)}–${fmtTime(e)}` }, { k: 'Kalender', v: 'Privat' }], data: { start: iso(s), end: iso(e) } }; }
+  if (kind === 'expense') { const a = readAmount(p.title); return a ? { ...base, title: clean(p.title.replace(a.raw, ' ')) || p.title, fields: [{ k: 'Ausgabe', v: fmtMoney(a.value) }, { k: 'Konto', v: 'Girokonto' }], data: { amount: -a.value, category: 'Sonstiges' } } : { ...base, fields: [{ k: 'Betrag', v: 'fehlt' }], data: {}, missing: 'Betrag fehlt, z. B. −12,50' }; }
+  if (kind === 'meal') return { ...base, fields: [{ k: 'Mahlzeit', v: 'Snack' }, { k: 'Energie', v: 'fehlt' }], data: { meal: 'snack' }, missing: 'kcal fehlen, z. B. 450 kcal' };
+  if (kind === 'shopping') return { ...base, fields: [{ k: 'Liste', v: 'Einkauf' }], data: {} };
+  return { ...base, fields: [{ k: 'Ablage', v: 'Eingang' }], data: {} };
+}

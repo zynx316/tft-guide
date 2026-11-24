@@ -79,7 +79,7 @@ for (const f of state.features) {
 const { moduleHome } = await import(pathToFileURL(path.join(SRC, 'core/directions.js')).href);
 const featById = new Map(state.features.map((f) => [f.id, f]));
 const navTargets = new Set();
-for (const f of state.features) for (const i of f.interactions || []) {
+for (const f of state.features) for (const i of [...(f.interactions || []), ...f.variants.flatMap((v) => (v.nav || []).map((n) => ({ ...n, trigger: `Variante ${v.id}` })))]) {
   if (!i.to) continue;
   const ok = i.to.startsWith('module:') ? state.modules.some((m) => m.id === i.to.slice(7)) : featById.has(i.to);
   if (!ok) warnings.push(`${f.id}: Interaktion „${i.event || i.trigger}“ führt zu unbekanntem Ziel ${i.to}`);

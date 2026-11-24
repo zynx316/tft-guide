@@ -235,7 +235,7 @@ export const docScanner = {
   .tk-scan__paper { width:100%; max-width:210px; min-height:150px; padding:16px 14px; border-radius:var(--tk-radius-sm); background:var(--tk-c-surface); box-shadow:var(--tk-shadow-md); display:flex; flex-direction:column; gap:9px; transition:transform .25s; }
   .tk-scan__paper i { display:block; height:6px; border-radius:3px; background:var(--tk-c-border-strong); }
   .tk-scan__paper--mini { min-height:0; padding:6px 5px; gap:4px; box-shadow:none; max-width:none; } .tk-scan__paper--mini i { height:3px; }
-  .tk-scan__crop { position:relative; display:grid; place-items:center; padding:14px; }
+  .tk-scan__crop { position:relative; display:grid; place-items:center; padding:14px; width:min(100%, 260px); box-sizing:border-box; }
   .tk-scan__crop[data-on="true"] { outline:2px dashed var(--tk-c-accent); outline-offset:-2px; }
   .tk-scan__tools { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
   .bp-mobile .tk-scan__tools .tk-btn { min-height:44px; }

@@ -98,7 +98,7 @@ export const kbTree = {
     { id: 'a3', title: 'Wochenplanung (GTD)', area: 'Persönlich', category: 'Produktivität', body: '', updated: '2026-11-05T10:00:00' },
   ] } },
   render: ({ props, data, ctx }) => {
-    const arts = data.articles || [];
+    const arts = (data.articles || []).filter((a) => a.status !== 'draft');
     const areaMeta = Object.fromEntries((data.areas || []).map((a) => [a.id, a]));
     const q = (ctx.ui.query || '').trim();
     const byArea = arts.some((a) => a.area === ctx.ui.filter);

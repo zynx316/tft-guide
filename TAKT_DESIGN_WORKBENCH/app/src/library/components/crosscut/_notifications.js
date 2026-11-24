@@ -33,7 +33,8 @@ export function deriveNotifications({ tasks, events }, ctx) {
 /** Alle Mitteilungen eines Moduls als Liste: abgeleitet + Modul-Mitteilungen (`items`, `extra`), ohne Dubletten, neueste zuerst. */
 export function collectNotifications(data, ctx) {
   const seen = new Set(), list = [];
-  for (const n of [...deriveNotifications(data, ctx), ...arr(data.extra), ...arr(data.items)]) { if (seen.has(n.id)) continue; seen.add(n.id); list.push({ ...n, meta: moduleMeta(n.module) }); }
+  const firstRun = [data.tasks, data.events].every((a) => Array.isArray(a) && a.length === 0);   // Erststart: noch keine eigenen Daten, keine Modul-Mitteilungen
+  for (const n of firstRun ? [] : [...deriveNotifications(data, ctx), ...arr(data.extra), ...arr(data.items)]) { if (seen.has(n.id)) continue; seen.add(n.id); list.push({ ...n, meta: moduleMeta(n.module) }); }
   return list.sort((a, b) => String(b.time).localeCompare(String(a.time)));
 }
 

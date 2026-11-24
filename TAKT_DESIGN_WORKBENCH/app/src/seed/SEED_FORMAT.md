@@ -54,3 +54,9 @@ Datumswerte rund um den Referenztag **Di, 24.11.2026 09:30** (`ctx.today`).
 - **Navigation** (`interaction.to`): Interaktionen mit Ziel-Feature werden im Launcher zu echten Links (z. B. Liste → Detail).
   Das Event muss von einer Komponente der Variante ausgelöst werden.
 - **Akzeptanzkriterien** (`acceptance`) und **Abläufe** (`flows`) ergänzen die Anforderungen.
+
+### Navigation je Variante (optional)
+`variant.nav = [{ event: 'item.open', to: 'notes.editor' }]` gilt nur für diese Variante und hat Vorrang vor den
+Feature-Regeln (`interactions[].to`). Sinnvoll, wenn z. B. eine Master-Detail-Variante das Detail selbst anzeigt
+(kein Sprung), eine Listen-Variante dagegen navigiert. Alternativ kann eine Komponente das Ziel im Event mitgeben:
+`ctx.emit('tile.open', { to: 'finance.budgets' })` bzw. `{ to: 'module:finance' }`.

@@ -65,7 +65,7 @@ export const growthChart = {
     }
     if (props.source === 'plan') {
       const plans = arr(data.plans);
-      const plan = plans.find((p) => p.id === ctx.ui.selectedId) || plans.find((p) => p.active) || plans[0];
+      const plan = plans.find((p) => p.id === ctx.ui.selectedId) || plans[0];
       if (!plan) return empty('Kein Sparplan', 'Lege einen Plan an, dann zeigt TAKT Einzahlungen und Wert seit dem Start.');
       const r = planPoints(plan, ctx, data, fwd);
       if (!r) return empty('Noch keine Ausführung', `Der Plan beginnt am ${fmtDate(plan.startDate)}. Danach erscheint hier der Verlauf.`);

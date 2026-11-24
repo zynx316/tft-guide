@@ -76,7 +76,7 @@ export const savingsPlanList = {
     if (props.respectFilter && ctx.ui.filter && !/^alle?$/i.test(ctx.ui.filter)) plans = plans.filter((p) => planStatus(p).id === String(ctx.ui.filter).toLowerCase());
     if (props.respectFilter && ctx.ui.query) plans = plans.filter((p) => `${p.name} ${planTarget(p, data.positions, data.accounts).label}`.toLowerCase().includes(String(ctx.ui.query).toLowerCase()));
     const shown = props.limit > 0 ? plans.slice(0, props.limit) : plans;
-    const selId = ctx.ui.selectedId ?? (arr(data.plans).find((p) => p.active) || arr(data.plans)[0])?.id;
+    const selId = ctx.ui.selectedId ?? arr(data.plans)[0]?.id;
     const open = (p) => { ctx.setUi('selectedId', p.id); ctx.emit('plan.open', { id: p.id }); };
     const rows = shown.map((p) => ({ p, tgt: planTarget(p, data.positions, data.accounts), st: planStatus(p), next: planExecutions(p, today, 1, conf)[0], stats: planStats(p, { positions: data.positions, accounts: data.accounts, today }) }));
     const toggle = (p) => {

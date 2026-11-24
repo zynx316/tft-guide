@@ -74,7 +74,8 @@ export function buildAppPayload(state, versionId = 'arbeitsstand', opts = {}) {
     features[f.id] = {
       id: f.id, moduleId: f.moduleId, name: f.name, group: f.group, order: f.order,
       variant: r.variant ? { id: r.variant.id, name: r.variant.name, layout: r.variant.layout, blocks: r.variant.blocks, direction: r.variant.direction } : null,
-      source: r.source, demoData: r.demoData || {}, nav: navigationRules(f),
+      // Navigationsregeln: variantenspezifische (variant.nav) vor den Regeln des Features (interaction.to)
+      source: r.source, demoData: r.demoData || {}, nav: [...(r.variant?.nav || []).filter((x) => x.event && x.to), ...navigationRules(f)],
       purpose: r.variant ? undefined : f.purpose, requirements: r.variant ? undefined : f.requirements.slice(0, 8).map((x) => ({ text: x.text, type: x.type, priority: x.priority })),
     };
   }
