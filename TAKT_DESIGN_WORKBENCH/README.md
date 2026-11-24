@@ -1,99 +1,78 @@
 # TAKT Design Workbench
 
-Der dauerhafte Designarbeitsplatz für **TAKT V2.0**: Module und Features verwalten, Anforderungen festhalten, Designvarianten
-aus einer gemeinsamen Komponentenbibliothek zusammensetzen, **interaktiv** in echten Gerätebreiten vergleichen, Entscheidungen
-dokumentieren, **freigeben und einfrieren** – und alles automatisiert prüfen, statt jede Kleinigkeit am Smartphone zu testen.
+Der dauerhafte Designarbeitsplatz für **TAKT V2.0** – und die Basis, um die App **Ebene für Ebene, Modul für Modul** zu
+entscheiden: Die ganze App läuft als bedienbare Demo in **mehreren Versionen** (Kompakt, Visuell, Fokus), auf dem Laptop
+nebeneinander oder auf dem Handy. Bewerten, vergleichen, in einer **Entscheidungsrunde** festlegen, danach Feature für Feature
+verfeinern, prüfen, **freigeben und einfrieren** – mit automatischer QA statt Dauertests am Smartphone.
 
 ## Starten
 Voraussetzung: **Node.js ≥ 18** (Windows, macOS, Linux).
 ```powershell
 cd G:\Projekte\97_Uebernahme\TAKT_DESIGN_WORKBENCH
-npm start                  # = node server.mjs --open  → http://127.0.0.1:4317
+npm start                  # Workbench → http://127.0.0.1:4317
+#   Demo-Launcher:           http://127.0.0.1:4317/launcher.html
+npm run lan                # zusätzlich im WLAN erreichbar (Handy per QR-Code im Launcher, „Aufs Handy“)
 ```
-- Ohne npm: `node server.mjs --open`. Anderer Port: `node server.mjs --port 5000`.
-- Der Stand wird in `data/workbench.json` gespeichert (plus Browser-Speicher als Rückfall). Beim ersten Start wird der Seed geladen
-  (12 Module, 60 Features, 57 Varianten).
-- Nur für die automatisierten Tests einmalig: `npm install` und `npx playwright install chromium`.
+- Stand in `data/workbench.json` (+ Backups). Beim ersten Start lädt der Seed (Module, Features, Varianten: `docs/FEATURE_IDS.md`).
+- Für Tests einmalig: `npm install` und `npx playwright install chromium`.
+
+## Der Weg zur Entscheidung (empfohlen)
+1. **Demo-Launcher öffnen** (`launcher.html`): Kompakt, Visuell und Fokus nebeneinander. Jede Version hat eigene Screens **und**
+   einen eigenen App-Rahmen (Tab-Leiste · Launchpad mit Live-Kennzahlen · „Heute“ mit Erfassen-Knopf). Klicken ist gekoppelt.
+   Werkzeugleiste: Gerät, Theme, Rahmen, **Szenario** (Alltag · Erster Start · Stress-Tag), Offline, Schrift 100–200 %,
+   Beträge ausblenden, **Demo zurücksetzen**, Präsentation (P).
+2. **Bewerten** je Version und Ebene (App · Modul · Feature): Sterne, Favorit, **fünf Kriterien** (Zeit bis zur Aktion, Einhand,
+   Übersicht, Ruhe, trägt 20+ Module), Kommentar, „Übernehmen“. Vom Handy landen Bewertungen in der Workbench (Feedback).
+3. **Workbench › App-Ebene:** Leitbild (Vision, Prinzipien, Gewichte, Favoriten, Rahmen), **Grundsatzfragen** (Persona,
+   Datenhaltung, Modulumfang, Quellen …) und **Muster** (Navigation, Löschen, Formate …) – jede Frage mit begründeter Empfehlung.
+4. **Entscheidungsrunde** (Workbench › Entscheidungsrunden): 5–7 Fragen nach Blockierwirkung, Zeitbox, Optionen mit
+   Live-Vorschau, „Empfehlung übernehmen“, Parken mit Wiedervorlage. **Höchstens 2 Runden je Frage** – danach nur noch
+   entscheiden oder parken. Ergebnis: **Arbeitsauftrag** für Claude Code (`/takt-work-order`).
+5. **Modul für Modul:** Modul-Richtung (erbt die App-Richtung), Startseite, dann Features: Vergleich mit **Scorecard**,
+   Anmerkungen, Akzeptanzkriterien, **Gates** (bereit/fertig), QA, Freigabe. Die Version **„Meine Auswahl“** zeigt jederzeit die
+   App nach allen bisherigen Entscheidungen. Fahrplan in der Übersicht: **Ausbaustufen 1–4**.
 
 ## Aufbau der Oberfläche
 | Bereich | Wofür |
 |---|---|
-| **Übersicht** | Gesamtstatus, Statusverteilung, Fortschritt je Modul, **nächste sinnvolle Schritte**, offene Entscheidungen, Qualität, letzte Änderungen |
-| **Module** | Alle Module (Kacheln/Liste, Drag & Drop-Sortierung, Archiv, Referenzmodule) → **Modul-Cockpit**: Features nach Gruppen, Informationsarchitektur, Dokumentation, Verknüpfungen, Entscheidungen, „Modul prüfen“ |
-| **Features** | Feature-Browser über alle Module: Suche, Status-/Modulfilter, Sortierung, Status ändern, Aktionsmenü (umbenennen, duplizieren, verschieben, zusammenführen, archivieren, löschen) |
-| **Feature-Workspace** | Pro Feature: Übersicht · Anforderungen · Design · Vergleich · Interaktionen · Demo-Daten · Qualität · Entscheidungen · Historie |
-| **Design Studio** | Varianten gestalten: Layout, Blöcke (Komponenten) hinzufügen/sortieren/Regionen, Props & Datenbindung, Live-Vorschau (1 oder mehrere Viewports), Theme, Zustand |
-| **Komponenten** | Designsystem: Tokens & Themes mit Kontrast-Audit; jede Komponente mit Live-Galerie, Zuständen, Schnittstelle, Verwendung, „Betroffene prüfen“ |
-| **Versionen & Entscheidungen** | Freigaben, alle Versionen, Entscheidungslog (Export als Markdown), offene Punkte, Änderungsprotokoll |
-| **Quality Center** | Matrix Features × Viewports, selektive Tests (Komponente → betroffene Features), Läufe, CLI-Screenshots & Regression, Gerätetest-Meilensteine, Prüfumfang |
-| **Daten & Backup** | Speicherstatus, Export/Import, Server-Backups, Seed-Abgleich, Zurücksetzen |
+| **Übersicht** | Fahrplan nach Ausbaustufen, nächste Schritte, **Entscheidungs-Inbox**, Qualität, Änderungen |
+| **Demo & Entscheidung** | Versionen mit Abdeckung, Ebenen-Leiter (App-Richtung, Modul-Richtungen, Startseiten), Feedback-Eingang, Richtungen pflegen |
+| **Entscheidungsrunden** | Runden starten, durchführen, abschließen, Arbeitsauftrag exportieren |
+| **App-Ebene** | Leitbild · Inbox · Grundsätze & Muster · Gates & Fortschritt · Annahmen (Phase 1) |
+| **Module / Features** | Cockpit je Modul; Feature-Browser mit Filtern nach Status, Tier und Richtung (Lücken) |
+| **Feature-Workspace** | Übersicht (mit Gates, Tier, Anmerkungen) · Anforderungen (+ Akzeptanzkriterien) · Design · Vergleich (+ Scorecard) · Interaktionen (Navigation „führt zu“) · Demo-Daten · Qualität · Entscheidungen · Historie |
+| **Design Studio** | Varianten gestalten (Layout, Blöcke, Props, Datenbindung), Vorschau mit Theme, Zustand, **Datenszenario**, „**In App** ansehen“ |
+| **Komponenten** | Designsystem (Tokens, Themes, Kontrast-Audit), Galerie jeder Komponente, Verwendung, „Betroffene prüfen“ |
+| **Versionen & Entscheidungen** | Freigaben, Versionen, Entscheidungslog, Änderungsprotokoll |
+| **Quality Center** | Matrix, selektive Tests, CLI-Screenshots & Regression, Gerätetests |
+| **Daten & Backup** | Speicherstatus, Export/Import, Backups, **Seed abgleichen** (sicher, mit Vorschau), Design-Tokens (JSON, Dart) |
 
-Tastatur: **Strg+K** Suche/Sprung überallhin · **Strg+Z / Strg+Umschalt+Z** Rückgängig/Wiederholen · **Esc** schließt Dialoge ·
-im Studio **Alt+Klick** in der Vorschau wählt einen Block.
-
-## Typischer Ablauf je Feature
-1. **Modul öffnen** (Cockpit) → Feature wählen oder **„+ Feature“**.
-2. **Anforderungen** erfassen (Information / Aktion / Zustand / Regel, Muss/Soll/Kann). Zu groß? Anforderungen markieren → **„In neues Feature auslagern“**.
-3. **Design Studio**: **Variante anlegen** (leer, mit Layout-Vorlage oder aus bestehender ableiten). **„+ Block“** wählt Komponenten aus
-   der Bibliothek; rechts im Inspector Region, Breite, Sichtbarkeit je Gerät, **Datenbindung** und **Eigenschaften** einstellen.
-   Die Vorschau ist sofort bedienbar.
-4. Weitere Varianten mit **strukturell anderem Ansatz** (z. B. Kompakt / Visuell / Produktiv). **Vergleich**-Tab: bis zu 3 Varianten
-   nebeneinander, gemeinsamer Viewport/Theme/Zustand, Strukturunterschiede, **„Bevorzugen“** mit Begründung → Entscheidung wird dokumentiert.
-5. **Interaktionen** beschreiben (Auslöser → Ergebnis, Event-Name). Beim Bedienen der Live-Vorschau werden sie automatisch als abgedeckt markiert.
-6. **QA ausführen** (prüft alle Ziel-Viewports automatisch), Befunde beheben.
-7. **Version sichern** / **Zur Prüfung** → **Freigeben**: Checkliste, Freigabenotiz → Feature ist **v1.0 und gesperrt**.
-8. Spätere Änderung: **„Neue Arbeitsversion“** (v1.1). Die Freigabe v1.0 bleibt unverändert in der Historie (ansehen, Diff, zurückholen).
-
-## Module & Features hinzufügen
-- **In der Oberfläche:** Übersicht/Module → **„Modul hinzufügen“** (Name, Icon, Status, Theme, Referenzmodul); im Cockpit **„+ Feature“**.
-  Umbenennen direkt im Titel, Sortieren per Drag & Drop, Archivieren über das ⋯-Menü.
-- **Im Code (z. B. nach der Phase-1-Analyse):** neue Datei `app/src/seed/modules/<id>.js` (Format: `app/src/seed/SEED_FORMAT.md`),
-  in `app/src/seed/index.js` eintragen, `SEED_VERSION` erhöhen → in der Workbench **Daten & Backup › Neue Seed-Inhalte übernehmen**.
-
-## Varianten erstellen – gutes Vorgehen
-- Varianten unterscheiden sich in **Informationshierarchie, Layout, Komponentenwahl und Bedienkonzept** – nicht nur in Farben.
-- Nicht jedes Feature braucht mehrere Varianten; bei komplexen Features 2–3 grundsätzlich verschiedene Ansätze.
-- Fehlt ein Baustein, gehört er als **Komponente** in die Bibliothek (`app/src/library/CONTRACT.md`) – dann steht er allen Modulen zur Verfügung.
-
-## Freigabe & Versionen
-| Aktion | Wirkung |
-|---|---|
-| Version sichern | Snapshot des Arbeitsstands, Arbeitsversion 0.x → 0.x+1 |
-| Zur Prüfung | Snapshot „Prüfversion“, Status *In Prüfung* |
-| Freigeben | Checkliste (Variante, Muss-Anforderungen, Interaktionen, QA ohne Fehler & aktuell, alle Ziel-Viewports); Ausnahme nur mit Begründung. Snapshot inkl. QA-Ergebnis, Entscheidungen, Komponentenversionen → **v1.0, gesperrt** |
-| Neue Arbeitsversion | Entsperrt als v1.1; Freigabe bleibt erhalten |
-| Wiederherstellen | Snapshot zurückholen (aktueller Stand wird vorher automatisch gesichert) |
-
-Status: Nicht untersucht → Analysiert → Design in Arbeit → In Prüfung → **Freigegeben** → Implementiert → Regression bestanden.
+Tastatur: **Strg+K** Suche · **Strg+Z / Strg+Umschalt+Z** · **Esc** · im Studio **Alt+Klick** wählt einen Block · im Launcher **P**.
 
 ## Qualitätssicherung
-**In der Workbench:** „QA ausführen“ (Feature), „Modul prüfen“, Quality Center „Alle prüfen“ / „Veraltete erneuern“ / **Selektive
-Tests** (geänderte Komponenten wählen → nur betroffene Features). Geprüft werden: Render-Fehler, fehlende Blöcke, horizontaler
-Überlauf, abgeschnittene Inhalte, Touch-Ziele (Mobile), Textkontrast (WCAG), Bilder – je Viewport (1440, 1280, 1024, 768, 390,
-optional 360), Theme und Zustand.
-
-**Automatisiert per CLI (Playwright):**
 ```powershell
-npm run check          # statische Schnellprüfung (< 1 s)
-npm run qa             # Vertrag + 24 E2E-Bedientests + Screenshot-Matrix + Pixel-Regression → qa/results/latest.md
-npm run qa:changed     # nur Features mit seit dem letzten Lauf geänderten Komponenten
-npm run qa -- --feature calendar.week --all-variants --themes graphite,horizon,intensiv --viewports desktop,mobile,mobile-s
-npm run qa:baseline    # Referenzbilder bewusst neu setzen
+npm run check          # statisch: Syntax, Seed, Navigationsgraph, Leitlinien-Begriffe, Umlaute (< 1 s)
+npm test               # ~190 Node-Tests: Kern, Welt/Szenarien, Seed-Patch, Format, Wiederholung, Gesundheit, Finanzmathe
+npm run qa             # Vertrag + 32 E2E-Bedientests + Screenshot-Matrix + Pixel-Regression → qa/results/latest.md
+npm run qa:changed     # nur betroffene Features
+npm run qa -- --only visual --scenario erststart --env privacy,offline --scale 2   # Datenwelt/Umgebung in der Matrix
+npm run verify         # check → test (→ qa:changed mit --full)
 ```
-Ergebnisse (Screenshots, Differenzbilder) erscheinen im **Quality Center › Screenshots & Regression** („CLI-Ergebnis laden“).
-Freigegebene Features werden **strikt** gegen ihre Referenzbilder geprüft (Abweichung = Regression).
+Die QA-Sonde prüft je Viewport/Theme/Zustand: Render-Fehler, fehlende Blöcke, Überlauf, Abschneiden, Touch-Ziele, Kontrast,
+Bilder, **Namen von Bedienelementen** und **Beträge im Privatsphäre-Modus**. Echte Smartphones nur an Meilensteinen
+(`docs/GERAETETEST.md`, Pflicht für Tier-1-Freigaben).
 
-**Echtes Smartphone** nur an Meilensteinen (erste Modulfreigabe, große Responsive-Änderungen, Modulfreigabe, Gesamtcheck):
-`npm run lan`, dann auf dem Handy `http://<PC-IP>:4317/preview.html?feature=<id>` öffnen; Ergebnis im Feature unter
-„Gerätetest dokumentieren“ festhalten. (Im LAN-Modus kann das Handy nichts speichern.)
+## Mit Claude Code arbeiten
+`CLAUDE.md` lädt automatisch. Befehle: `/takt-start` (Lage), `/takt-phase1` (echtes TAKT-Projekt nur lesend abgleichen),
+`/takt-round-prep` (Runde mit Belegen vorbereiten), `/takt-work-order` (Arbeitsauftrag umsetzen), `/takt-feature <id>`,
+`/takt-qa`, `/takt-review`. Leitlinien für Inhalte: `docs/HEALTH_GUIDELINES.md`, `docs/FINANCE_GUIDELINES.md`,
+`docs/TEXT_STIL.md`, `docs/DATENWELT.md`. Neue Module: `docs/WORKER_BRIEF.md`, `app/src/seed/SEED_FORMAT.md`.
 
 ## Export, Backup, Übertragung
-- **Export:** Daten & Backup › „Workbench exportieren“ → vollständige JSON-Datei (Beispiel: `docs/examples/export-beispiel.json`).
-- **Import:** Datei wählen → Prüfung (Anzahl Module/Features/Versionen) → vor dem Ersetzen wird automatisch eine Sicherung heruntergeladen.
-- **Backups:** automatisch in `data/backups/` (höchstens alle 10 Min., 40 behalten), manuell „Jetzt sichern“, Wiederherstellen per Klick.
-- **Übertragung auf anderen Rechner:** Ordner kopieren (inkl. `data/`) oder Export/Import.
-- **Design-Tokens** als JSON exportieren (Grundlage für das Flutter-Theme).
+Export/Import (JSON, mit Prüfung und Sicherung), automatische Backups (`data/backups/`), **Seed abgleichen** übernimmt neue
+Seed-Stände ohne eigene Arbeit zu überschreiben, Design-Tokens als JSON und als Dart (`ThemeExtension`) für Flutter,
+Feature-Spezifikation als Markdown (je Feature/Modul).
 
 ## Weiterführend
-`ARCHITECTURE.md` (Technik & Datenmodell) · `DESIGN_SYSTEM.md` · `QA_REPORT.md` · `HANDOFF.md` (Stand & Übergabe) ·
-`TASKS.md` (nächste Schritte) · `WORK_LOG.md` · `docs/MISSION.md` (Auftrag) · `docs/PHASE1_BESTANDSAUFNAHME.md`.
+`HANDOFF.md` (Stand & Übergabe) · `TASKS.md` · `ARCHITECTURE.md` · `DESIGN_SYSTEM.md` · `QA_REPORT.md` · `WORK_LOG.md` ·
+`docs/BAUPLAN.md` (Bauplan Basis v1) · `docs/FEATURE_IDS.md` · `docs/MISSION.md`.
