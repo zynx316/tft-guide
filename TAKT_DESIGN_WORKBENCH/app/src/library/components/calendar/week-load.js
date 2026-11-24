@@ -2,14 +2,14 @@
 import { html } from '../../../lib/html.js';
 import { Card, Icon, Badge, EmptyState } from '../../ui.js';
 import { dayKey } from './_cal.js';
-import { weekLoad, hoursLabel } from './_cal-info.js';
+import { weekLoad, hoursLabel, hoursNum } from './_cal-info.js';
 
 export const weekLoadComp = {
   id: 'week-load',
   name: 'Wochenlast',
   category: 'Kalender',
   description: 'Zeigt, wie voll jeder Tag der Woche ist: gebuchte Stunden, Anzahl Termine, Überschneidungen und Ganztagstermine (Feiertage, Geburtstage). Antippen springt zum Tag.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Wochenlast' },
     { name: 'style', label: 'Darstellung', type: 'select', options: ['rows', 'bars'], default: 'rows' },
@@ -52,7 +52,7 @@ export const weekLoadComp = {
     const busiest = days.reduce((a, b) => (b.booked > a.booked ? b : a), days[0]);
     const act = html`<${Badge} tone=${busiest.over ? 'warning' : 'neutral'}>${busiest.booked ? `Dichtester Tag: ${busiest.label} ${hoursLabel(busiest.booked)}` : 'Woche frei'}<//>`;
     if (props.style === 'bars') return html`<${Card} title=${props.title} icon="bar-chart-3" actions=${act}><div class="tk-cal-load__bars" role="list">${days.map((d) => html`<button type="button" role="listitem" class="tk-cal-load__bar" data-today=${d.key === todayKey} data-over=${d.over} onClick=${() => open(d)} aria-label=${`${d.label} ${d.day.getDate()}.: ${d.n} Termine, ${hoursLabel(d.booked)} gebucht`}>
-      <span class="tk-cal-load__val">${d.booked ? hoursLabel(d.booked).replace(' h', '') : '–'}</span><span class="tk-cal-load__col"><i style=${`height:${Math.min(100, d.booked / work * 100)}%`}></i></span>
+      <span class="tk-cal-load__val">${d.booked ? hoursNum(d.booked) : '–'}</span><span class="tk-cal-load__col"><i style=${`height:${Math.min(100, d.booked / work * 100)}%`}></i></span>
       <span><span class="tk-cal-load__dow">${d.label}</span><span class="tk-cal-load__dnum">${d.day.getDate()}</span></span></button>`)}</div><//>`;
     return html`<${Card} flush=${true} title=${props.title} icon="bar-chart-3" actions=${act}><div role="list">${days.map((d) => html`<button type="button" role="listitem" class="tk-cal-load__row" data-today=${d.key === todayKey} onClick=${() => open(d)} aria-label=${`${d.label} ${d.day.getDate()}.: ${d.n} Termine, ${hoursLabel(d.booked)} gebucht`}>
       <span><span class="tk-cal-load__dow">${d.label}</span><span class="tk-cal-load__dnum">${d.day.getDate()}</span></span>

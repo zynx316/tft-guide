@@ -6,7 +6,10 @@ import { Icon, toneColor } from '../../ui.js';
 import { numAuto, num, MUSCLES } from './_calc.js';
 
 export const muscleColor = (m) => toneColor({ Brust: 1, Rücken: 2, Schulter: 3, Bizeps: 4, Trizeps: 5, Beine: 6, Gesäß: 'accent2', Core: 'info' }[m] || 'neutral');
-export const hideVal = (ctx, text) => (ctx.ui?.hideWeight ? '•••' : text);
+/** „Werte ausblenden“ gilt für die ganze App (Welt-Schlüssel prefs.health.hideWeight), lokal nur als Rückfall ohne Welt. */
+export const weightHidden = (ctx) => !!(ctx.world?.get?.('prefs')?.health?.hideWeight ?? ctx.ui?.hideWeight);
+export const setWeightHidden = (ctx, on) => { ctx.setPrefs?.({ health: { hideWeight: !!on } }); ctx.setUi?.('hideWeight', !!on); };
+export const hideVal = (ctx, text) => (weightHidden(ctx) ? '•••' : text);
 export const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 export const parseNum = (t) => { const n = parseFloat(String(t).replace(/\s/g, '').replace(',', '.')); return Number.isFinite(n) ? n : null; };
 

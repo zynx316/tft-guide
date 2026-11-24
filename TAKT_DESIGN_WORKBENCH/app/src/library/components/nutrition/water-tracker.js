@@ -12,7 +12,7 @@ export const waterTracker = {
   name: 'Wasser-Tracker',
   category: 'Ernährung',
   description: 'Trinken mit einem Tap erfassen: Schnelltasten (+150/+250/+500 ml), eigene Gefäße, Glas-Raster oder Fortschrittsbalken, Rückgängig und Wochenbalken. Ziel erreicht wird dezent gezeigt, ohne Animation.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Wasser' },
     { name: 'style', label: 'Darstellung', type: 'select', options: ['glasses', 'bar', 'compact', 'timeline'], default: 'bar' },
@@ -38,8 +38,9 @@ export const waterTracker = {
   .tk-nwat__ves { display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
   .tk-nwat__undo { display:flex; align-items:center; gap:8px; padding:6px 6px 6px 12px; border-radius:var(--tk-radius-md); background:var(--tk-c-surface2); border:1px solid var(--tk-c-border); font-size:var(--tk-nfs-sm); }
   .tk-nwat__note { margin:0; font-size:var(--tk-nfs-sm); color:var(--tk-c-text-muted); display:flex; gap:6px; align-items:center; }
-  .tk-nwat__week { display:flex; align-items:flex-end; gap:6px; height:64px; } .tk-nwat__wcol { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; height:100%; justify-content:flex-end; min-width:0; }
-  .tk-nwat__wbar { width:100%; max-width:28px; border-radius:5px 5px 2px 2px; background:${WATER}; opacity:.55; min-height:3px; } .tk-nwat__wcol[data-today="true"] .tk-nwat__wbar { opacity:1; } .tk-nwat__wcol span { font-size:var(--tk-nfs-xs); color:var(--tk-c-text-subtle); }
+  .tk-nwat__week { display:flex; align-items:flex-start; gap:6px; } .tk-nwat__wcol { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; min-width:0; }
+  .tk-nwat__wtrack { height:56px; width:100%; display:flex; align-items:flex-end; justify-content:center; }
+  .tk-nwat__wbar { flex:none; width:100%; max-width:28px; border-radius:5px 5px 2px 2px; background:${WATER}; opacity:.55; min-height:3px; } .tk-nwat__wcol[data-today="true"] .tk-nwat__wbar { opacity:1; } .tk-nwat__wcol span { font-size:var(--tk-nfs-xs); color:var(--tk-c-text-subtle); }
   .tk-nwat__line { display:flex; align-items:center; gap:10px; min-height:44px; border-bottom:1px solid var(--tk-c-border); } .tk-nwat__line:last-child { border-bottom:0; }
   .tk-nwat__compact { display:flex; align-items:center; gap:12px; min-width:0; } .tk-nwat__compact .tk-progress > span { background:${WATER}; }
   .tk-nwat .tk-progress { height:10px; } .tk-nwat .tk-progress > span { background:${WATER}; }`,
@@ -69,7 +70,7 @@ export const waterTracker = {
     const vessels = props.showVessels && html`<div class="tk-nwat__ves"><span class="tk-nu-meta">Gefäße</span>${arr(w.vessels).map((v) => html`<${Chip} icon=${v.icon || 'glass-water'} onClick=${() => add(v.ml, v.label)}>${v.label} · ${v.ml} ml<//>`)}<${Chip} icon="plus" onClick=${newVessel}>Eigenes<//></div>`;
     const undoBar = last && html`<div class="tk-nwat__undo" role="status"><span class="tk-grow">+${last.ml} ml erfasst</span><${Button} size="sm" variant="ghost" icon="undo-2" onClick=${undo}>Rückgängig<//></div>`;
     const week = props.showWeek && (() => { const days = [-6, -5, -4, -3, -2, -1, 0].map((n) => shiftDay(todayIso(ctx), n)); const ml = (d) => (d === todayIso(ctx) ? arr(w.entries).filter((e) => e.date === d).reduce((a, e) => a + e.ml, 0) : arr(w.week).find((x) => x.date === d)?.ml || 0);
-      return html`<div class="tk-nwat__week" role="img" aria-label="Wasser der letzten sieben Tage">${days.map((d) => html`<div class="tk-nwat__wcol" data-today=${String(d === todayIso(ctx))}><div class="tk-nwat__wbar" style=${`height:${Math.min(100, (ml(d) / goal) * 100)}%`} title=${`${num(ml(d))} ml`}></div><span>${wdOf(d)}</span></div>`)}</div>`; })();
+      return html`<div class="tk-nwat__week" role="img" aria-label="Wasser der letzten sieben Tage">${days.map((d) => html`<div class="tk-nwat__wcol" data-today=${String(d === todayIso(ctx))}><div class="tk-nwat__wtrack"><div class="tk-nwat__wbar" style=${`height:${Math.min(100, (ml(d) / goal) * 100)}%`} title=${`${num(ml(d))} ml`}></div></div><span>${wdOf(d)}</span></div>`)}</div>`; })();
 
     if (props.style === 'compact') {
       return wrap(html`<div class="tk-nwat__compact"><span class="tk-nu-icon" style=${`background:color-mix(in srgb, ${WATER} 18%, transparent);color:${WATER}`}><${Icon} name="droplets" size=${18} /></span>

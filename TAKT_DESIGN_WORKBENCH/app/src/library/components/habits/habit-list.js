@@ -21,7 +21,7 @@ export const habitList = {
   name: 'Gewohnheitsliste',
   category: 'Gewohnheiten',
   description: 'Gewohnheiten des Tages zum Abhaken oder Hochzählen, mit Serie, Wochenpunkten und ruhigem Fortschritt. Stile: Zeilen (dicht), Karten (Ringe) und „Als Nächstes“ (eine klare Aktion).',
-  version: '1.0',
+  version: '1.2',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Gewohnheiten heute' },
     { name: 'style', label: 'Stil', type: 'select', options: ['rows', 'cards', 'next'], default: 'rows' },
@@ -44,6 +44,7 @@ export const habitList = {
   .tk-hl__name { font-weight:var(--tk-fw-medium); } .tk-hl__row[data-done="true"] .tk-hl__name { color:var(--tk-c-text-muted); text-decoration:line-through; text-decoration-color:var(--tk-c-text-subtle); }
   .tk-hl__sub { font-size:var(--tk-fs-sm); color:var(--tk-c-text-subtle); display:flex; gap:2px 10px; align-items:center; flex-wrap:wrap; min-width:0; } .tk-hl__sub > span { display:inline-flex; align-items:center; gap:4px; min-width:0; }
   .tk-hl__qty { display:flex; align-items:center; gap:6px; } .tk-hl__qty .tk-btn--icon { width:36px; height:36px; } .bp-mobile .tk-hl__qty .tk-btn--icon { width:40px; height:40px; }
+ ${['1.5','1.75','2'].map((v) => `:root[style*="--tk-text-scale: ${v}"] .tk-hl__row`).join(', ')} { flex-wrap:wrap; } ${['1.5','1.75','2'].map((v) => `:root[style*="--tk-text-scale: ${v}"] .tk-hl__row .tk-hl__main`).join(', ')} { flex:1 1 150px; } ${['1.5','1.75','2'].map((v) => `:root[style*="--tk-text-scale: ${v}"] .tk-hl__row .tk-hl__qty`).join(', ')} { margin-left:auto; }
   .tk-hl__cnt { min-width:44px; text-align:center; font-weight:var(--tk-fw-semibold); font-variant-numeric:tabular-nums; font-size:var(--tk-fs-sm); }
   .tk-hl__foot { display:flex; justify-content:space-between; align-items:center; gap:8px; padding:8px 12px 8px 16px; border-top:1px solid var(--tk-c-border); color:var(--tk-c-text-subtle); font-size:var(--tk-fs-sm); }
   .tk-hl__cards { display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:var(--tk-space-3); padding:var(--tk-space-3); }
@@ -101,7 +102,7 @@ export const habitList = {
             <${Button} variant=${nxt.goal ? 'default' : 'primary'} icon="check" onClick=${() => toggle(nxt)}>${nxt.goal ? 'Ziel erreicht' : 'Erledigt'}<//>
             <${Button} variant="ghost" icon="clock" onClick=${() => { setSnoozed((s) => [...s, nxt.id]); ctx.emit('habit.snooze', { id: nxt.id }); ctx.toast('Später erinnern – ohne Druck'); }}>Später<//>
             <${Button} variant="ghost" iconRight="chevron-right" onClick=${() => open(nxt)}>Details<//></div></div>`
-          : html`<${EmptyState} icon="sparkles" title="Alles erledigt" text="Für heute ist nichts mehr offen. Schön gemacht." />`}
+          : html`<${EmptyState} icon="sparkles" title="Heute alles erledigt" text="Für heute ist nichts mehr offen." />`}
         ${others.length > 0 && html`<div class="tk-hl__chips" role="group" aria-label="Weitere Gewohnheiten">${others.map((h) => html`<button type="button" class="tk-hl__chip" data-done=${isDone(h, today)} onClick=${() => (h.goal ? open(h) : toggle(h))} aria-pressed=${isDone(h, today)}>
           <${Icon} name=${isDone(h, today) ? 'check' : h.icon || 'repeat'} size=${14} />${h.name}${h.goal && html`<span class="tk-subtle tk-num">${countOn(h, today)}/${target(h)}</span>`}</button>`)}</div>`}${foot}<//>`;
     }

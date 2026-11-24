@@ -14,7 +14,7 @@ export const savingsPlanList = {
   name: 'Sparplan-Liste',
   category: 'Sparpläne',
   description: 'Alle Sparpläne mit Rate, Rhythmus, nächster Ausführung, Wert und Status. Tabelle (dicht), Karten (mit Anteilsbalken) oder kompakte Zeilen; Pausieren und Fortsetzen direkt in der Zeile, mit Rückgängig.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Sparpläne' },
     QUIET_PROP,
@@ -49,11 +49,16 @@ export const savingsPlanList = {
   .tk-svpl__sum { display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; padding:10px var(--tk-space-4); border-top:1px solid var(--tk-c-border); font-size:var(--tk-fs-sm); color:var(--tk-c-text-muted); background:var(--tk-c-surface2); }
   .tk-svpl__sum strong { color:var(--tk-c-text); font-variant-numeric:tabular-nums; }
   .bp-mobile .tk-svpl__head { display:none; }
-  .bp-mobile .tk-svpl__row { grid-template-columns:minmax(0,1fr) 44px; padding:10px var(--tk-space-3); gap:6px 6px; }
-  .bp-mobile .tk-svpl__main { grid-column:1; grid-template-columns:minmax(0,1fr) auto; grid-template-areas:"n r" "x y"; row-gap:6px; }
-  .bp-mobile .tk-svpl__main > :nth-child(1) { grid-area:n; } .bp-mobile .tk-svpl__main > :nth-child(2) { grid-area:r; text-align:right; }
-  .bp-mobile .tk-svpl__main > :nth-child(3) { grid-area:x; } .bp-mobile .tk-svpl__main > :nth-child(3) span { display:none; }
-  .bp-mobile .tk-svpl__main > :nth-child(4) { grid-area:y; text-align:right; } .bp-mobile .tk-svpl__main > :nth-child(4) strong { display:inline; margin-right:8px; } .bp-mobile .tk-svpl__main > :nth-child(4) span { display:inline; }
+  .bp-mobile .tk-svpl__row { grid-template-columns:minmax(0,1fr) 44px; padding:10px var(--tk-space-3); gap:6px 6px; align-items:start; }
+  .bp-mobile .tk-svpl__main { grid-column:1; grid-template-columns:minmax(0,1fr) auto; grid-template-areas:"n r" "x y"; gap:6px 12px; align-items:start; }
+  .bp-mobile .tk-svpl__main > :nth-child(1) { grid-area:n; } .bp-mobile .tk-svpl__main > :nth-child(2) { grid-area:r; text-align:right; white-space:nowrap; }
+  .bp-mobile .tk-svpl__name strong, .bp-mobile .tk-svpl__name > div > span { white-space:normal; overflow:visible; text-overflow:clip; overflow-wrap:break-word; }
+  .bp-mobile .tk-svpl__main > :nth-child(2) > span { display:none; }
+  .bp-mobile .tk-svpl__main > :nth-child(3) { grid-area:x; padding-left:2px; } .bp-mobile .tk-svpl__main > :nth-child(3) > span { display:none; }
+  .bp-mobile .tk-svpl__main > :nth-child(3) strong { display:inline; font-weight:var(--tk-fw-regular, 400); color:var(--tk-c-text-muted); font-size:var(--tk-fs-sm); }
+  .bp-mobile .tk-svpl__main > :nth-child(3) strong[data-next="1"]::before { content:"Nächste: "; }
+  .bp-mobile .tk-svpl__main > :nth-child(4) { grid-area:y; display:flex; align-items:baseline; justify-content:flex-end; gap:4px 8px; flex-wrap:wrap; white-space:nowrap; }
+  .bp-mobile .tk-svpl__main > :nth-child(4) strong { display:inline; } .bp-mobile .tk-svpl__main > :nth-child(4) > span { display:inline-flex; }
   .bp-mobile .tk-svpl__acts { align-self:start; }
   .tk-svpl__cards { display:grid; grid-template-columns:repeat(auto-fill, minmax(min(100%,250px),1fr)); gap:var(--tk-space-4); }
   .tk-svpl__card { all:unset; box-sizing:border-box; display:flex; flex-direction:column; gap:10px; padding:var(--tk-space-4); border-radius:var(--tk-radius-lg); border:1px solid var(--tk-c-border); background:var(--tk-c-surface); cursor:pointer; min-width:0; }
@@ -122,7 +127,7 @@ export const savingsPlanList = {
         <button type="button" class="tk-svpl__main" onClick=${() => open(r.p)} aria-label=${`${r.p.name} öffnen`}>
           <div class="tk-svpl__name"><${Tile} tone=${r.p.tone || 1} icon=${r.tgt.icon} size=${17} /><div><strong>${r.p.name}</strong><span>${r.tgt.label}${r.st.id !== 'aktiv' ? ` · ${r.st.label}` : ''}</span></div></div>
           <div class="tk-svpl__cell"><strong>${eur(ctx, r.p.monthly)}</strong><span>${rhythmLabel(r.p)}</span></div>
-          <div class="tk-svpl__cell"><strong>${r.next ? fmtDate(r.next.date, { style: 'weekday' }) : nextText(r)}</strong><span>${r.next ? `${eur2(ctx, perExecution(r.p))}${r.next.shifted ? ' · verschoben' : ''}` : r.st.label}</span></div>
+          <div class="tk-svpl__cell"><strong data-next=${r.next ? '1' : '0'}>${r.next ? fmtDate(r.next.date, { style: 'weekday' }) : nextText(r)}</strong><span>${r.next ? `${eur2(ctx, perExecution(r.p))}${r.next.shifted ? ' · verschoben' : ''}` : r.st.label}</span></div>
           <div class="tk-svpl__cell tk-svpl__cell--r"><strong>${eur(ctx, r.stats.value)}</strong><span><${Gain} ctx=${ctx} value=${r.stats.gain} ratio=${r.stats.ratio} showAmount=${false} /></span></div></button>
         <div class="tk-svpl__acts">${act(r)}</div></div>`)}
       <div class="tk-svpl__sum"><span>${shown.length} ${shown.length === 1 ? 'Plan' : 'Pläne'}</span><span>Sparrate <strong>${eur(ctx, totals.monthly)}</strong> pro Monat</span><span>Wert <strong>${eur(ctx, totals.value)}</strong></span></div>

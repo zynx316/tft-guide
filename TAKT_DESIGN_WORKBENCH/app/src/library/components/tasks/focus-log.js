@@ -2,7 +2,7 @@
 import { html } from '../../../lib/html.js';
 import { Card, Badge, Icon, Progress, EmptyState } from '../../ui.js';
 import { isoDay } from '../../../lib/util.js';
-import { timeStr } from '../calendar/_cal.js';
+import { timeStr, shortDay } from '../calendar/_cal.js';
 import { sessionsOn, focusByDay, hoursOf } from './_tasks-x.js';
 
 export const focusLog = {
@@ -10,7 +10,7 @@ export const focusLog = {
   name: 'Fokus-Protokoll',
   category: 'Aufgaben',
   description: 'Protokoll der Fokusblöcke: heute mit Aufgabe und Uhrzeit oder die Woche als Zusammenfassung, dazu Fortschritt zum Tagesziel. Antippen eines Eintrags öffnet die Aufgabe.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Fokus heute' },
     { name: 'scope', label: 'Zeitraum', type: 'select', options: ['today', 'week'], default: 'today' },
@@ -35,7 +35,7 @@ export const focusLog = {
     if (!log.length) return html`<${Card} title=${props.title} icon="timer"><${EmptyState} icon="timer" title="Noch kein Fokusblock" text="Starte den Timer – abgeschlossene Blöcke erscheinen hier." /><//>`;
     if (props.scope === 'week') {
       const total = week.reduce((n, d) => n + d.minutes, 0);
-      return html`<${Card} flush=${true} title=${props.title} icon="timer" actions=${html`<${Badge}>${hoursOf(total)} in 7 Tagen<//>`}><div data-qa="focus-log">${[...week].reverse().filter((d) => d.sessions || d.key === key).map((d) => html`<div class="tk-focuslog__row" style="cursor:default"><span class="tk-focuslog__time" style="width:88px;white-space:nowrap">${new Intl.DateTimeFormat('de-DE', { weekday: 'short', day: 'numeric', month: 'numeric' }).format(d.day).replace(',', '')}</span><span class="tk-grow"><${Progress} value=${d.sessions / goal} tone=${d.key === key ? 'success' : undefined} /></span><b class="tk-num" style="width:52px;text-align:right">${d.sessions} ×</b></div>`)}</div><//>`;
+      return html`<${Card} flush=${true} title=${props.title} icon="timer" actions=${html`<${Badge}>${hoursOf(total)} in 7 Tagen<//>`}><div data-qa="focus-log">${[...week].reverse().filter((d) => d.sessions || d.key === key).map((d) => html`<div class="tk-focuslog__row" style="cursor:default"><span class="tk-focuslog__time" style="width:88px;white-space:nowrap">${shortDay(d.day)}</span><span class="tk-grow"><${Progress} value=${d.sessions / goal} tone=${d.key === key ? 'success' : undefined} /></span><b class="tk-num" style="width:52px;text-align:right">${d.sessions} ×</b></div>`)}</div><//>`;
     }
     return html`<${Card} flush=${true} title=${props.title} icon="timer" actions=${html`<${Badge} tone=${today.length >= goal ? 'success' : 'neutral'}>${today.length}/${goal}<//>`}><div data-qa="focus-log">
       ${!today.length && html`<div class="tk-subtle" style="padding:16px;font-size:var(--tk-fs-sm)">Heute noch kein Fokusblock – 25 Minuten, dann Pause.</div>`}

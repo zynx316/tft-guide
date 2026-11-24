@@ -41,7 +41,7 @@ export const taskDetail = {
     const subs = t.subtasks || []; const p = subProgress(t); const di = dueInfo(t, ctx.today);
     const dueVal = t.due ? t.due.slice(0, 10) : '';
     const toggleSub = (s) => { upd({ subtasks: subs.map((x) => (x.id === s.id ? { ...x, done: !x.done } : x)) }, 'subtasks'); ctx.emit('subtask.toggle', { id: s.id }); };
-    const addSub = () => { const v = sub.trim(); if (!v) return; upd({ subtasks: [...subs, { id: `s${Date.now().toString(36)}`, title: v, done: false }] }, 'subtasks'); ctx.emit('subtask.add', { title: v }); setSub(''); };
+    const addSub = () => { const v = sub.trim(); if (!v) return; upd({ subtasks: [...subs, { id: ctx.newId('s'), title: v, done: false }] }, 'subtasks'); ctx.emit('subtask.add', { title: v }); setSub(''); };
     const del = () => { setData('tasks', (a) => a.filter((x) => x.id !== t.id)); ctx.setUi('selectedId', null); ctx.emit('task.delete', { id: t.id }); ctx.toast('Aufgabe gelöscht'); };
     return html`<${Card} key=${t.id}><div class="tk-td" data-qa="task-detail">
       <div class="tk-row" style="align-items:flex-start;gap:12px"><${Check} checked=${t.done} onChange=${() => toggleTask(ctx, setData, t)} label="Erledigt" />

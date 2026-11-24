@@ -5,6 +5,7 @@ import { Card, Button, Badge, EmptyState, Icon, Segmented, Textarea, Delta, tone
 import { money, percent } from '../../helpers.js';
 import { list, todayKey, shift, weekStart, isScheduled, isDone, isPaused, isPerWeek, perWeek, weekCount, streakOf, dayLabel } from './_habits.js';
 import { linked } from './_today.js';
+import { fmtNumber } from '../../../lib/format.js';
 
 const Q = { all: ['Was lief gut?', 'Was hat Zeit gefressen?', 'Worauf liegt der Fokus nächste Woche?'], habits: ['Was hat geholfen?', 'Was war schwer?', 'Eine kleine Änderung für nächste Woche?'] };
 const SAMPLE = { stats: [{ key: 'tasks', label: 'Aufgaben erledigt', value: 31, prev: 26, icon: 'list-checks', tone: 'warning' }, { key: 'focus', label: 'Fokuszeit', value: 11.5, unit: 'h', prev: 9.8, icon: 'target', tone: 'success', module: 'calendar' }],
@@ -19,12 +20,28 @@ function weekRate(h, ws, today) {
   return { done, due };
 }
 
+/** Wochenwerte aus der gemeinsamen Welt für die gewählte Woche [ws, we] (Tagesschlüssel); statische `stats` dienen nur als Ergänzung/Beispiel. */
+function weekStats(data, ctx, ws, we) {
+  const base = Array.isArray(data.stats) ? data.stats : [], tasks = Array.isArray(data.tasks) ? data.tasks : [], act = Array.isArray(data.activity) ? data.activity : [];
+  const log = Array.isArray(data.log) ? data.log : [], tx = Array.isArray(data.transactions) ? data.transactions : [], out = [];
+  const inWeek = (k) => { const d = String(k || '').slice(0, 10); return d >= ws && d <= we; };
+  if (tasks.length || act.length) {
+    const done = act.filter((a) => inWeek(a.day)).reduce((n, a) => n + (a.archived || 0), 0) + tasks.filter((t) => t.done && inWeek(t.doneAt)).length;
+    out.push({ key: 'tasks', label: 'Aufgaben erledigt', value: done, icon: 'list-checks', tone: 'warning', module: 'tasks' });
+    const min = log.filter((x) => inWeek(x.start) && (x.kind || 'Fokus') === 'Fokus').reduce((n, x) => n + (x.minutes || 0), 0);
+    out.push({ key: 'focus', label: 'Fokuszeit', value: Math.round(min / 6) / 10, unit: 'h', icon: 'target', tone: 'success', module: 'calendar' });
+  }
+  const pay = tx.filter((t) => t.category === 'Einnahmen Shop' && t.type === 'income' && inWeek(t.date)).reduce((n, t) => n + Number(t.amount || 0), 0);
+  if (pay > 0) out.push({ key: 'payout', label: 'Shop-Auszahlungen', value: pay, money: true, icon: 'store', tone: 'accent2', module: 'finance' });
+  return [...out, ...base.filter((b) => !out.some((o) => o.key === b.key))];
+}
+
 export const weekReview = {
   id: 'week-review',
   name: 'Wochenrückblick',
   category: 'Start',
   description: 'Rückblick auf die Woche, automatisch aus den Modulen zusammengestellt: Kennzahlen mit Vergleich zur Vorwoche, Highlights und drei Fragen, die sich als Notiz sichern lassen. Umfang „Alles“ (Aufgaben, Fokuszeit, Training, Gewohnheiten, Budget, Sparquote, Shop) oder „Gewohnheiten“.',
-  version: '1.1',
+  version: '1.3',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Wochenrückblick' },
     { name: 'scope', label: 'Umfang', type: 'select', options: ['all', 'habits'], default: 'all' },
@@ -36,6 +53,10 @@ export const weekReview = {
     { slot: 'habits', label: 'Gewohnheiten', default: 'habits', shape: 'siehe habit-list', required: false },
     { slot: 'finance', label: 'Finanzkennzahlen', default: 'finance', shape: '{savingsRate}', required: false },
     { slot: 'budgets', label: 'Budgets', default: 'budgets', shape: '{id,label,value,target}[]', required: false },
+    { slot: 'tasks', label: 'Aufgaben (für „Aufgaben erledigt“)', default: 'tasks', shape: '{id,done?,doneAt?}[]', required: false },
+    { slot: 'activity', label: 'Archivierte Erledigungen', default: 'activity', shape: '{day,archived}[]', required: false },
+    { slot: 'log', label: 'Fokus-Sitzungen (für „Fokuszeit“)', default: 'log', shape: '{id,start,minutes}[]', required: false },
+    { slot: 'transactions', label: 'Buchungen (für „Shop-Auszahlungen“)', default: 'transactions', shape: '{date,amount,type,category}[]', required: false },
   ],
   events: ['review.open.tasks', 'review.open.calendar', 'review.open.habits', 'review.open.finance', 'review.open.savings', 'review.open.training', 'review.week', 'review.save'],
   states: ['empty'],
@@ -50,9 +71,9 @@ export const weekReview = {
   example: { data: SAMPLE },
   render: function WeekReview({ props, data, ctx }) {
     const [last, setLast] = useState(true), [ans, setAns] = useState(['', '', '']), [saved, setSaved] = useState(false);
-    const habits = list(data.habits), stats = Array.isArray(data.stats) ? data.stats : [], bud = Array.isArray(data.budgets) ? data.budgets : [], today = todayKey(ctx);
+    const habits = list(data.habits), bud = Array.isArray(data.budgets) ? data.budgets : [], today = todayKey(ctx);
     const ws = last ? shift(weekStart(today), -7) : weekStart(today), we = last ? shift(ws, 6) : today;
-    const range = `${dayLabel(ws)} – ${dayLabel(we)}`;
+    const range = `${dayLabel(ws)} – ${dayLabel(we)}`, stats = weekStats(data, ctx, ws, we);
     const head = html`<div class="tk-wr__top"><h3 class="tk-card__title">${props.title}</h3><${Segmented} label="Woche" value=${last ? 'last' : 'now'} onChange=${(v) => { setLast(v === 'last'); ctx.emit('review.week', { week: v }); }} options=${[{ value: 'last', label: 'Letzte Woche' }, { value: 'now', label: 'Diese Woche' }]} /></div><div class="tk-subtle" style="padding:0 16px 4px;font-size:var(--tk-fs-sm)">${range}</div>`;
     const per = habits.map((h) => ({ h, ...weekRate(h, ws, today), st: streakOf(h, today) }));
     const tot = per.reduce((a, p) => ({ done: a.done + p.done, due: a.due + p.due }), { done: 0, due: 0 });
@@ -60,7 +81,7 @@ export const weekReview = {
     const rate = tot.due ? tot.done / tot.due : 0;
     const cards = [];
     if (props.scope === 'all') {
-      stats.forEach((s) => cards.push({ ...s, text: s.money ? money(ctx, s.value, { digits: 0 }) : String(s.value).replace('.', ','), unit: s.money ? '' : s.unit, delta: s.prev ? Math.round(((s.value - s.prev) / s.prev) * 100) : null, open: s.module || s.key }));
+      stats.forEach((s) => cards.push({ ...s, text: s.money ? money(ctx, s.value, { digits: 0 }) : fmtNumber(s.value, { digits: Number.isInteger(s.value) ? 0 : 1 }), unit: s.money ? '' : s.unit, delta: s.prev ? Math.round(((s.value - s.prev) / s.prev) * 100) : null, open: s.module || s.key }));
       const tk = linked(habits, 'fitness'); if (tk) cards.push({ key: 'training', label: 'Training', text: `${Math.min(weekCount(tk, ws), perWeek(tk))} von ${perWeek(tk)}`, icon: 'dumbbell', tone: 6, sub: 'Wochenziel', open: 'training' });
       cards.push({ key: 'habits', label: 'Gewohnheiten', text: `${Math.round(rate * 100)} %`, icon: 'repeat', tone: 'success', sub: `${tot.done} von ${tot.due} Tagen`, open: 'habits' });
       if (bud.length) { const v = bud.reduce((a, b) => a + b.value, 0), t = bud.reduce((a, b) => a + b.target, 0), worst = [...bud].sort((a, b) => b.value / b.target - a.value / a.target)[0]; cards.push({ key: 'budget', label: 'Budgets (Nov.)', text: percent(ctx, v / t, { sign: false, digits: 0 }), icon: 'wallet', tone: 'accent2', sub: `Enger: ${worst.label}`, open: 'finance' }); }

@@ -3,6 +3,8 @@ import { html } from '../../../lib/html.js';
 import { useState } from 'preact/hooks';
 import { Button, Badge, Chip, Field, Input, Select, Textarea, Icon, toneColor } from '../../ui.js';
 import { startOfWeek, addDays } from '../../../lib/util.js';
+import { WEEKDAYS_LONG, MONTHS_LONG } from '../../../lib/date.js';
+import { fmtDate } from '../../../lib/format.js';
 
 export { startOfWeek, addDays };
 export const CATEGORY_TONES = { Arbeit: 'accent', Privat: 'accent2', Fokus: 'success', Sales: 'warning', Fitness: 'info', Gesundheit: 'danger' };
@@ -21,8 +23,27 @@ export const minutesOf = (d) => new Date(d).getHours() * 60 + new Date(d).getMin
 export const hm = (min) => `${pad(Math.floor(min / 60))}:${pad(min % 60)}`;
 export const durLabel = (min) => (min < 60 ? `${min} Min.` : `${Math.floor(min / 60)} Std.${min % 60 ? ` ${min % 60} Min.` : ''}`);
 export const sameKey = (a, b) => dayKey(a) === dayKey(b);
-export const longDay = (d) => new Intl.DateTimeFormat('de-DE', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date(d));
-export const shortDay = (d) => new Intl.DateTimeFormat('de-DE', { weekday: 'short', day: 'numeric', month: 'short' }).format(new Date(d));
+const wdIdx = (d) => (new Date(d).getDay() + 6) % 7;
+/** „Dienstag“ */
+export const weekdayName = (d) => WEEKDAYS_LONG[wdIdx(d)];
+/** „24. November“ */
+export const dayMonth = (d) => `${new Date(d).getDate()}. ${MONTHS_LONG[new Date(d).getMonth()]}`;
+/** „Dienstag, 24. November“ */
+export const longDay = (d) => `${weekdayName(d)}, ${dayMonth(d)}`;
+/** „Di, 24.11.“ */
+export const shortDay = (d) => fmtDate(d, { style: 'weekday' });
+/** „Dienstag, 24. November 2026“ (auch für Screenreader-Beschriftungen) */
+export const fullDay = (d) => `${longDay(d)} ${new Date(d).getFullYear()}`;
+/**
+ * Große Schrift (Einstellung „Schriftgröße“ ab 150 %): Texte, die sonst mit „…“ abgeschnitten werden, umbrechen stattdessen.
+ * Wird über die Bereichs-Indexdateien (calendar, tasks, habits) an jede Komponente angehängt und gilt nur in deren Blöcken.
+ */
+export const withBigText = (list) => list.map((c) => {
+  const scoped = ['1.5', '1.75', '2'].map((v) => `:root[style*="--tk-text-scale: ${v}"] .tk-block[data-component="${c.id}"] .tk-truncate`).join(',\n');
+  return { ...c, css: `${c.css || ''}\n${scoped} { white-space:normal; text-overflow:clip; overflow-wrap:anywhere; }` };
+});
+/** Neue Termin-ID: deterministisch über ctx.newId (kein Zufall, keine Uhrzeit). */
+export const newEventId = (ctx) => (ctx && ctx.newId ? ctx.newId('ev') : 'ev-neu');
 export const monthStart = (d) => { const x = dayStart(d); x.setDate(1); return x; };
 export function isoWeek(d) {
   const x = dayStart(d); x.setDate(x.getDate() + 3 - ((x.getDay() + 6) % 7));
@@ -165,7 +186,7 @@ export function openCreateDialog(ctx, setData, pre = {}) {
     title: 'Neuer Termin',
     body: (close) => html`<${EventForm} initial=${{ date: dayKey(ctx.ui.selectedDate ? parseDay(ctx.ui.selectedDate) : ctx.today), ...pre }} submitLabel="Termin anlegen" onCancel=${close}
       onInvalid=${(er) => ctx.emit('form.invalid', er)}
-      onSubmit=${(v) => { const ev = formToEvent(v, `ev${Date.now().toString(36)}`); setData('events', (all) => [ev, ...(Array.isArray(all) ? all : [])]); ctx.emit('event.create', { id: ev.id, title: ev.title }); ctx.toast(`„${ev.title}“ angelegt`); close(); }} />`,
+      onSubmit=${(v) => { const ev = formToEvent(v, newEventId(ctx)); setData('events', (all) => [ev, ...(Array.isArray(all) ? all : [])]); ctx.emit('event.create', { id: ev.id, title: ev.title }); ctx.toast(`„${ev.title}“ angelegt`); close(); }} />`,
   });
 }
 

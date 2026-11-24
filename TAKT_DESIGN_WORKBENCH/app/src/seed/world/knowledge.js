@@ -139,7 +139,8 @@ function deriveKnowledge(list, areas = knowledgeAreas) {
     bookmarkCards: published.filter((a) => a.bookmarked).map((a) => ({ ...cards.find((c) => c.id === a.id), meta: relLabel(a.updated) })),
     bookmarkItems: published.filter((a) => a.bookmarked).map((a) => item(a, { meta: relLabel(a.updated) })),
     draftItems: drafts,
-    areaChart: { segments: areas.map((a) => ({ label: a.name, value: published.filter((x) => x.area === a.id).length })) },
+    // Ohne Artikel keine Segmente: das Diagramm zeigt dann seinen Leerzustand statt „Gesamt 1“ bei 0 %
+    areaChart: { segments: published.length ? areas.map((a) => ({ label: a.name, value: published.filter((x) => x.area === a.id).length })) : [] },
     metrics: [
       { label: 'Artikel', value: published.length, icon: 'library', tone: 'accent' },
       { label: 'Lesezeichen', value: published.filter((a) => a.bookmarked).length, icon: 'bookmark', tone: 'warning' },

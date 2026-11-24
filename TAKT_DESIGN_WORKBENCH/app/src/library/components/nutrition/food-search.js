@@ -3,7 +3,7 @@ import { html } from '../../../lib/html.js';
 import { Card, Button, Icon, Tabs, Search, EmptyState, Badge } from '../../ui.js';
 import { per, num, viewDay, hhmm, entryFromFood, eid, mealInfo } from './_calc.js';
 import { PortionForm, openPortion, logFood, logEntry, MealChips, useLogMeal, PF_CSS } from './_portion.js';
-import { NU_CSS, arr, tintBox, catIcon, catTone } from './_ui.js';
+import { NU_CSS, LBL_CSS, arr, tintBox, catIcon, catTone, labelNote } from './_ui.js';
 
 /** Zuletzt gegessene Lebensmittel (eindeutig, neueste zuerst) mit der zuletzt genutzten Menge. */
 export function recentFoods(diary, foods, limit = 12) {
@@ -20,7 +20,7 @@ export const foodSearch = {
   name: 'Lebensmittelsuche',
   category: 'Ernährung',
   description: 'Erfassen in höchstens drei Taps: Suchfeld mit Sofortergebnissen, Reiter Zuletzt, Favoriten, Vorlagen und Alle. Das „+“ trägt die zuletzt genutzte Portion ein, ein Tap auf die Zeile öffnet den Portions-Picker. Auch als Kachelraster.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Lebensmittel' },
     { name: 'style', label: 'Darstellung', type: 'select', options: ['list', 'tiles'], default: 'list' },
@@ -36,7 +36,7 @@ export const foodSearch = {
   ],
   events: ['food.search', 'food.pick', 'food.favorite', 'portion.confirm', 'template.log', 'food.create', 'quick.open'],
   states: ['empty'],
-  css: `${NU_CSS}${PF_CSS}
+  css: `${NU_CSS}${PF_CSS}${LBL_CSS}
   .tk-nfs { display:flex; flex-direction:column; gap:var(--tk-space-3); min-width:0; }
   .tk-nfs__row { display:flex; align-items:center; gap:10px; min-height:56px; padding:6px 0; border-bottom:1px solid var(--tk-c-border); min-width:0; } .tk-nfs__row:last-child { border-bottom:0; }
   .tk-nfs__main { flex:1; min-width:0; display:flex; align-items:center; gap:12px; border:0; background:transparent; color:inherit; font:inherit; text-align:left; cursor:pointer; padding:0; min-height:44px; }
@@ -91,7 +91,7 @@ export const foodSearch = {
         <span class="tk-grow" style="min-width:0"><span class="tk-nfs__name tk-truncate" style="display:block">${food.name}</span><span class="tk-nfs__sub tk-truncate" style="display:block">${food.brand ? `${food.brand} · ` : ''}${num(grams)} ${food.unit === 'ml' ? 'ml' : 'g'} · ${num(n.kcal)} kcal · E ${num(n.protein)} g</span></span></button>
       <${Button} variant="ghost" size="sm" icon="star" class="tk-nfs__fav" aria-pressed=${String(!!food.fav)} aria-label=${`${food.name} ${food.fav ? 'aus Favoriten entfernen' : 'als Favorit markieren'}`} onClick=${() => toggleFav(food)} />
       <${Button} variant="primary" size="sm" icon="plus" aria-label=${`${food.name} ${num(grams)} ${food.unit === 'ml' ? 'ml' : 'g'} hinzufügen`} onClick=${() => quickAdd(food, grams)} /></div>`; })}</div>`;
-    return wrap(html`<div class="tk-nfs">${head}${list}</div>`);
+    return wrap(html`<div class="tk-nfs">${head}${list}${labelNote()}</div>`);
   },
 };
 export default [foodSearch];

@@ -14,6 +14,12 @@ export const GROUPS = [
   { id: 'position', label: 'Depot', icon: 'candlestick-chart', module: 'trading', to: 'trading.detail' },
   { id: 'recipe', label: 'Rezepte', icon: 'chef-hat', module: 'nutrition', to: 'nutrition.recipe' },
   { id: 'food', label: 'Lebensmittel', icon: 'apple', module: 'nutrition', to: 'nutrition.foods' },
+  { id: 'note', label: 'Notizen', icon: 'sticky-note', module: 'notes', to: 'notes.editor' },
+  { id: 'article', label: 'Wissen', icon: 'library', module: 'knowledge', to: 'knowledge.article' },
+  { id: 'habit', label: 'Gewohnheiten', icon: 'repeat', module: 'habits', to: 'habits.detail' },
+  { id: 'order', label: 'Bestellungen', icon: 'package', module: 'sales', to: 'sales.order' },
+  { id: 'channel', label: 'Kanäle', icon: 'store', module: 'sales', to: 'sales.channel' },
+  { id: 'scan', label: 'Erfassungen', icon: 'scan-text', module: 'picture-to-text', to: 'picture-to-text.result' },
   { id: 'setting', label: 'Einstellungen', icon: 'settings', module: 'settings', to: null },
   { id: 'module', label: 'Module', icon: 'layout-grid', module: 'home', to: null },
 ];
@@ -21,7 +27,8 @@ export const GROUPS = [
 export const SCOPES = [
   { id: 'all', label: 'Alle', groups: null }, { id: 'tasks', label: 'Aufgaben', groups: ['task'] }, { id: 'calendar', label: 'Termine', groups: ['event'] },
   { id: 'finance', label: 'Finanzen', groups: ['transaction', 'account'] }, { id: 'savings', label: 'Sparpläne', groups: ['plan'] }, { id: 'trading', label: 'Depot', groups: ['position'] },
-  { id: 'nutrition', label: 'Ernährung', groups: ['recipe', 'food'] }, { id: 'setting', label: 'Einstellungen', groups: ['setting'] }, { id: 'module', label: 'Module', groups: ['module'] },
+  { id: 'nutrition', label: 'Ernährung', groups: ['recipe', 'food'] }, { id: 'notes', label: 'Notizen', groups: ['note'] }, { id: 'knowledge', label: 'Wissen', groups: ['article'] },
+  { id: 'habits', label: 'Gewohnheiten', groups: ['habit'] }, { id: 'sales', label: 'Sales', groups: ['order', 'channel'] }, { id: 'scans', label: 'Scans', groups: ['scan'] }, { id: 'setting', label: 'Einstellungen', groups: ['setting'] }, { id: 'module', label: 'Module', groups: ['module'] },
 ];
 export const groupMeta = (id) => GROUPS.find((g) => g.id === id) || GROUPS[GROUPS.length - 1];
 
@@ -73,10 +80,19 @@ export function buildIndex(data, ctx) {
   for (const p of arr(data.positions)) push('position', p.id, p.name, `${p.type} · ${fmtNumber(p.quantity, { digits: 2 })} Stück · ${p.isin}`, { extra: `${p.short} ${p.isin}` });
   for (const r of arr(data.nutRecipes)) push('recipe', r.id, r.title, `${(r.prepMin || 0) + (r.cookMin || 0)} Min. · ${r.subtitle || ''}`, { icon: r.icon || 'chef-hat', extra: (r.tags || []).join(' ') });
   for (const f of arr(data.nutFoods)) push('food', f.id, f.name, `${fmtNumber(f.kcal, { unit: 'kcal' })} je 100 g · ${f.category}`, { extra: `${f.brand || ''} ${(f.tags || []).join(' ')}` });
+  // Live-Quellen: entstehen zur Laufzeit (Schnellnotiz, neue Erfassung, neue Bestellung) und sind deshalb sofort auffindbar
+  const plain = (t) => String(t || '').replace(/[#>*`\[\]_|-]+/g, ' ').replace(/\s+/g, ' ').trim();
+  const live = new Set();
+  if (Array.isArray(data.notes)) { live.add('note:'); for (const n of data.notes) if (!n.archived) push('note', n.id, n.title || 'Unbenannte Notiz', [n.inbox ? 'Eingang' : (n.tags || []).join(', ') || 'Notiz', plain(n.body).slice(0, 70)].filter(Boolean).join(' · '), { ts: n.updated, extra: `${plain(n.body)} ${(n.tags || []).join(' ')}` }); }
+  if (Array.isArray(data.articles)) { live.add('article:'); for (const a of data.articles) push('article', a.id, a.title, `${a.area} › ${a.category}`, { ts: a.updated, extra: `${plain(a.body)} ${(a.tags || []).join(' ')} ${a.author || ''}` }); }
+  if (Array.isArray(data.habits)) { live.add('habit:'); for (const h of data.habits) push('habit', h.id, h.name, `${h.daypart || 'Gewohnheit'}${h.time ? ` · ${h.time} Uhr` : ''}`, { icon: h.icon || 'repeat', extra: h.note || '' }); }
+  if (Array.isArray(data.orders)) { live.add('order:'); const ST = { new: 'neu', paid: 'bezahlt', shipped: 'versendet', delivered: 'zugestellt' }; for (const o of data.orders) push('order', o.id, `${o.number} ${o.customer}`, `${o.channel} · ${ST[o.status] || o.status}`, { amount: o.total, ts: o.date, extra: `${o.email || ''} ${(o.lines || []).map((l) => l.name).join(' ')}` }); }
+  if (Array.isArray(data.channels)) { live.add('channel:'); for (const c of data.channels) push('channel', c.id, c.name, c.error || `${c.orders} Bestellungen in 30 Tagen`, { icon: c.icon || 'store', extra: c.url || '' }); }
+  if (Array.isArray(data.captures)) { live.add('scan:'); for (const c of data.captures) push('scan', c.id, c.title, [c.group || 'Erfassung', c.meta].filter(Boolean).join(' · '), { ts: c.created, extra: c.text || '' }); }
   for (const e of SETTING_ENTRIES) out.push({ key: `setting:${e.id}`, group: 'setting', id: e.id, module: 'settings', title: e.title, subtitle: e.sub, extra: e.keys, icon: e.icon, to: e.to });
   for (const m of MODULES) out.push({ key: `module:${m.id}`, group: 'module', id: m.id, module: m.id, title: m.name, subtitle: m.desc, icon: m.icon, to: m.home });
   // Aggregat der Module (Welt-Schlüssel `searchIndex`, sobald vorhanden): { id, type, title, subtitle, module, to }
-  for (const s of arr(data.index)) if (s?.to && !out.some((o) => o.key === `ext:${s.id}` || (o.id === s.id && o.module === s.module))) out.push({ key: `ext:${s.id}`, group: 'ext', id: s.params?.id ?? s.id, module: s.module, title: s.title, subtitle: s.subtitle || s.type, icon: moduleMeta(s.module).icon, to: s.to, ext: true });
+  for (const s of arr(data.index)) if (s?.to && ![...live].some((p) => String(s.id).startsWith(p)) && !out.some((o) => o.key === `ext:${s.id}` || (o.id === s.id && o.module === s.module))) out.push({ key: `ext:${s.id}`, group: 'ext', id: s.params?.id ?? s.id, module: s.module, title: s.title, subtitle: s.subtitle || s.type, icon: moduleMeta(s.module).icon, to: s.to, ext: true });
   return out;
 }
 

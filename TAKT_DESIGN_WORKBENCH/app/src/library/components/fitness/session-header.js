@@ -14,7 +14,7 @@ export const sessionHeader = {
   name: 'Session-Kopf',
   category: 'Fitness',
   description: 'Kopf der Live-Einheit: Titel, Dauer, Satzfortschritt und Volumen mit Start, Pause und Beenden. Wählt bei Bedarf den Trainingstag und zählt die Zeit (nur im Launcher, nicht in QA-Screenshots).',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'layout', label: 'Darstellung', type: 'select', options: ['compact', 'hero', 'minimal'], default: 'compact' },
     { name: 'showDayPicker', label: 'Trainingstag wählbar (vor dem Start)', type: 'boolean', default: true },
@@ -35,6 +35,7 @@ export const sessionHeader = {
   .tk-sess__actions { display:flex; gap:var(--tk-space-2); align-items:center; flex-wrap:wrap; }
   .tk-sess--hero { align-items:center; text-align:center; } .tk-sess--hero .tk-sess__actions { justify-content:center; }
   .tk-sess--minimal { gap:var(--tk-space-2); }
+  .tk-sess__pain { margin:0; display:flex; gap:6px; align-items:flex-start; font-size:var(--tk-fs-xs); line-height:var(--tk-lh-snug); color:var(--tk-c-text-subtle); } .tk-sess__pain svg { flex:none; margin-top:2px; } .tk-sess--hero .tk-sess__pain { text-align:left; }
   .bp-mobile .tk-sess__actions .tk-btn--primary { flex:1 1 140px; min-height:44px; }`,
   example: { data: { session: { id: 's', dayId: 'upperA', title: 'Oberkörper A', subtitle: 'Mi, 25.11. · 18:30 · ca. 55 Min.', status: 'running', elapsed: 1260, rest: null, exercises: [
     { id: 'x1', name: 'Bankdrücken', sets: [{ id: 'a', type: 'work', kg: 62.5, reps: 8, done: true }, { id: 'b', type: 'work', kg: 62.5, reps: 8, done: false }] }] } } },
@@ -67,18 +68,19 @@ export const sessionHeader = {
       ${s.status === 'done' && html`<${Badge} tone="success" icon="check-circle-2">${s.saved ? 'Gespeichert' : 'Beendet'}<//>`}
       <${Button} variant="ghost" icon="info" aria-label="Sicherheitshinweis" onClick=${safety} /></div>`;
     const picker = props.showDayPicker && s.status === 'ready' && days.length > 1 && html`<${Segmented} label="Trainingstag" value=${s.dayId} onChange=${load} options=${days.map((d) => ({ value: d.id, label: d.name }))} />`;
+    const pain = html`<p class="tk-sess__pain" role="note"><${Icon} name="heart-pulse" size=${13} /><span>Bei Schmerz oder Schwindel abbrechen. Stechender Schmerz ist kein Trainingsreiz.</span></p>`;
     if (props.layout === 'minimal') return html`<div class="tk-sess tk-sess--minimal"><div class="tk-sess__top"><div class="tk-grow"><div class="tk-label">${s.title}</div></div>
-      <${Badge} tone=${s.status === 'paused' ? 'warning' : 'neutral'} icon="timer">${clockEl}<//>${actions}</div><${Progress} value=${ratio} /></div>`;
+      <${Badge} tone=${s.status === 'paused' ? 'warning' : 'neutral'} icon="timer">${clockEl}<//>${actions}</div><${Progress} value=${ratio} />${pain}</div>`;
     if (props.layout === 'hero') return html`<${Card}><div class="tk-sess tk-sess--hero">
       <${Ring} value=${ratio} size=${132} stroke=${12} tone=${done === total ? 'success' : 'accent'} label=${`${done} von ${total} Sätzen`}><div><div class="tk-fit-big">${done}<small class="tk-muted" style="font-size:var(--tk-fs-lg)">/${total}</small></div><div class="tk-subtle" style="font-size:var(--tk-fs-xs)">Sätze</div></div><//>
       <div><div class="tk-sess__title">${s.title}</div><div class="tk-muted" style="margin-top:4px">${s.subtitle}</div></div>
       <div class="tk-sess__stats" style="width:100%"><div class="tk-fit-stat"><span>Dauer</span><strong>${clockEl}</strong></div><div class="tk-fit-stat"><span>Volumen</span><strong>${num(vol)}<small> kg</small></strong></div>
         <div class="tk-fit-stat"><span>Übungen</span><strong>${(s.exercises || []).filter((e) => !e.skipped).length}</strong></div></div>
-      ${picker}${actions}</div><//>`;
+      ${picker}${actions}${pain}</div><//>`;
     return html`<${Card}><div class="tk-sess"><div class="tk-sess__top"><div class="tk-grow"><div class="tk-sess__title tk-truncate">${s.title}</div><div class="tk-muted tk-truncate" style="font-size:var(--tk-fs-sm)">${s.subtitle}</div></div>
       <div class="tk-row" style="gap:16px"><div class="tk-fit-stat"><span>Dauer</span><strong>${clockEl}</strong></div><div class="tk-fit-stat"><span>Sätze</span><strong>${done}<small>/${total}</small></strong></div>
         <div class="tk-fit-stat"><span>Volumen</span><strong>${num(vol)}<small> kg</small></strong></div></div></div>
-      <${Progress} value=${ratio} tone=${done === total && total ? 'success' : undefined} />${picker}${actions}</div><//>`;
+      <${Progress} value=${ratio} tone=${done === total && total ? 'success' : undefined} />${picker}${actions}${pain}</div><//>`;
   },
 };
 export default [sessionHeader];

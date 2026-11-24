@@ -2,6 +2,7 @@
 import { html } from '../../../lib/html.js';
 import { useState } from 'preact/hooks';
 import { Card, Icon, EmptyState } from '../../ui.js';
+import { MASK_PERCENT } from '../../helpers.js';
 import { monthsSeries, subStats, arr, r2 } from './_calc.js';
 import { SlimEmpty, FIN_CSS, slots, pctx, eur, eur0, Tile } from './_fin.js';
 import { fmtPercent, fmtNumber } from '../../../lib/format.js';
@@ -12,7 +13,7 @@ export const finFinanceCheck = {
   name: 'Finanz-Check',
   category: 'Finanzen',
   description: 'Vier Kennzahlen zur Orientierung: Rücklage in Monatsausgaben, Sparquote, Fixkostenquote und Kreditkarten-Auslastung. Jede Zahl zeigt ihre Herleitung, Richtwerte sind markiert, nicht bewertet.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Finanz-Check' },
     { name: 'style', label: 'Darstellung', type: 'select', options: ['list', 'cards'], default: 'list' },
@@ -40,9 +41,9 @@ export const finFinanceCheck = {
     const p = c.privacy;
     const items = [
       { id: 'reserve', icon: 'shield', tone: 3, label: 'Rücklage', value: p ? '•• Monate' : `${fmtNumber(avgExp ? reserve / avgExp : 0, { digits: 1 })} Monate`, sub: 'Tagesgeld in Monatsausgaben', fill: avgExp ? Math.min(1, reserve / avgExp / 12) : 0, band: [3 / 12, 6 / 12], ref: 'Richtwert der Verbraucherberatung: 3 bis 6 Monatsausgaben', how: `${eur0(c, reserve)} Tagesgeld ÷ Ø Ausgaben ${eur0(c, avgExp)} (${ser[0].label} bis ${ser[ser.length - 1].label})` },
-      { id: 'rate', icon: 'piggy-bank', tone: 'accent', label: 'Sparquote', value: p ? '•• %' : fmtPercent(avgRate, { digits: 0 }), sub: `Ø der letzten ${ser.length} Monate`, fill: Math.max(0, Math.min(1, avgRate)), how: '(Einnahmen − Ausgaben) ÷ Einnahmen je Monat, dann Mittelwert. Umbuchungen zählen nicht.' },
-      { id: 'fixed', icon: 'repeat', tone: 1, label: 'Fixkostenquote', value: p ? '•• %' : fmtPercent(avgInc ? st.monthly / avgInc : 0, { digits: 0 }), sub: 'Abos und Fixkosten an den Einnahmen', fill: avgInc ? Math.min(1, st.monthly / avgInc) : 0, how: `${eur0(c, st.monthly)} Abos und Fixkosten ÷ Ø Einnahmen ${eur0(c, avgInc)}` },
-      ...(card ? [{ id: 'card', icon: 'credit-card', tone: 6, label: 'Kreditkarte', value: p ? '•• %' : fmtPercent(card.limit ? used / card.limit : 0, { digits: 0 }), sub: 'des Rahmens in Anspruch', fill: card.limit ? Math.min(1, used / card.limit) : 0, how: `${eur(c, used)} offen von ${eur0(c, card.limit || 0)} Rahmen` }] : []),
+      { id: 'rate', icon: 'piggy-bank', tone: 'accent', label: 'Sparquote', value: p ? MASK_PERCENT : fmtPercent(avgRate, { digits: 0 }), sub: `Ø der letzten ${ser.length} Monate`, fill: Math.max(0, Math.min(1, avgRate)), how: '(Einnahmen − Ausgaben) ÷ Einnahmen je Monat, dann Mittelwert. Umbuchungen zählen nicht.' },
+      { id: 'fixed', icon: 'repeat', tone: 1, label: 'Fixkostenquote', value: p ? MASK_PERCENT : fmtPercent(avgInc ? st.monthly / avgInc : 0, { digits: 0 }), sub: 'Abos und Fixkosten an den Einnahmen', fill: avgInc ? Math.min(1, st.monthly / avgInc) : 0, how: `${eur0(c, st.monthly)} Abos und Fixkosten ÷ Ø Einnahmen ${eur0(c, avgInc)}` },
+      ...(card ? [{ id: 'card', icon: 'credit-card', tone: 6, label: 'Kreditkarte', value: p ? MASK_PERCENT : fmtPercent(card.limit ? used / card.limit : 0, { digits: 0 }), sub: 'des Rahmens in Anspruch', fill: card.limit ? Math.min(1, used / card.limit) : 0, how: `${eur(c, used)} offen von ${eur0(c, card.limit || 0)} Rahmen` }] : []),
     ];
     const pick = (i) => { setOpen(open === i.id ? null : i.id); ctx.emit('check.open', { id: i.id }); };
     const one = (i) => html`<button type="button" class=${`tk-fnc__item ${props.style === 'list' ? 'tk-fnc__item--list' : ''}`} aria-expanded=${String(open === i.id)} onClick=${() => pick(i)}>

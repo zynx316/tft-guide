@@ -22,7 +22,7 @@ export const trdUpcoming = {
   name: 'Als Nächstes',
   category: 'Trading',
   description: 'Die nächsten Termine mit Geldwirkung im Depot: Sparplan-Ausführungen (mit Verschiebung auf den nächsten Handelstag und Deckungs-Hinweis für das Girokonto) und erwartete Dividenden. Als Liste nach Tag oder als hervorgehobener nächster Termin.',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Als Nächstes' },
     { name: 'style', label: 'Darstellung', type: 'select', options: ['list', 'next'], default: 'list' },

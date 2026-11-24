@@ -3,10 +3,10 @@ import { html } from '../../../lib/html.js';
 import { useState } from 'preact/hooks';
 import { Card, Button, IconButton, EmptyState, Segmented, Badge } from '../../ui.js';
 import { money } from '../../helpers.js';
-import { fmtNumber, fmtDate, fmtTime } from '../../../lib/format.js';
+import { fmtDate, fmtTime } from '../../../lib/format.js';
 import { arr, byId, known } from './_calc.js';
 import { TYPE_LABEL } from './_order.js';
-import { slots, Px, Tile, Note, TRD_CSS, openSecurity } from './_trd.js';
+import { slots, qtyText, Px, Tile, Note, TRD_CSS, openSecurity } from './_trd.js';
 import { ex } from './_example.js';
 
 const STATUS = { offen: ['Offen', 'warning'], simuliert: ['Simuliert', 'info'], storniert: ['Storniert', ''] };
@@ -16,7 +16,7 @@ export const trdOrderList = {
   name: 'Simulierte Orders',
   category: 'Trading',
   description: 'Die simulierten Orders: offene (Limit, Stop) und bisherige mit Richtung, Ordertyp, Kurs, Gesamtbetrag und Status. Offene Orders lassen sich stornieren und wiederherstellen. Immer als Simulation gekennzeichnet.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Simulierte Orders' },
     { name: 'limit', label: 'Max. Einträge (0 = alle)', type: 'number', default: 0 },
@@ -34,7 +34,7 @@ export const trdOrderList = {
     const set = (id, status) => setData('orders', (l) => arr(l).map((o) => (o.id === id ? { ...o, status } : o)));
     const name = (o) => { const i = byId(data.instruments, o.securityId); return i ? i.short || i.name : '–'; };
     const row = (o) => { const [l, t] = STATUS[o.status] || ['', '']; return html`<div class="tk-trd-ol__row" data-off=${String(o.status === 'storniert')}><button type="button" class="tk-trd-ol__main" onClick=${() => openSecurity(ctx, o.securityId, 'order.open')} aria-label=${`${name(o)} öffnen`}>
-      <${Tile} icon=${o.side === 'buy' ? 'trending-up' : 'trending-down'} tone=${o.side === 'buy' ? 'success' : 'danger'} size=${34} /><span class="tk-trd-grow"><span class="tk-trd-title" style="display:block">${o.side === 'buy' ? 'Kauf' : 'Verkauf'} ${fmtNumber(o.qty, { digits: o.qty % 1 ? 3 : 0 })} × ${name(o)}</span>
+      <${Tile} icon=${o.side === 'buy' ? 'trending-up' : 'trending-down'} tone=${o.side === 'buy' ? 'success' : 'danger'} size=${34} /><span class="tk-trd-grow"><span class="tk-trd-title" style="display:block">${o.side === 'buy' ? 'Kauf' : 'Verkauf'} ${qtyText(ctx, o.qty)} × ${name(o)}</span>
       <span class="tk-trd-sub">${TYPE_LABEL[o.type]}${o.type === 'limit' ? html` ${o.side === 'buy' ? 'bis' : 'ab'} <${Px} v=${o.limit} />` : o.type === 'stop' ? html` bei <${Px} v=${o.stop} />` : html` zu <${Px} v=${o.price} />`} · ${fmtDate(o.created, { style: 'short' })}, ${fmtTime(o.created)} Uhr</span></span></button>
       <span style="text-align:right"><strong class="tk-trd-num" style="display:block">${money(ctx, o.total)}</strong><span class=${`tk-trd-pill ${t ? `tk-trd-pill--${t}` : ''}`}>${l}</span></span>
       ${o.status === 'offen' && html`<${IconButton} icon="x" label=${`Order ${name(o)} stornieren`} onClick=${() => { set(o.id, 'storniert'); ctx.emit('order.storno', { id: o.id }); }} />`}

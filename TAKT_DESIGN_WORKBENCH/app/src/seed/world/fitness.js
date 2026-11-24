@@ -243,11 +243,13 @@ export const fitnessRings = [
   { id: 'active', label: 'Aktive Minuten', value: 22, goal: fitnessProfile.activeMinGoal, unit: 'Min.', tone: 2, icon: 'timer' },
   { id: 'week', label: 'Wochenziel', value: wkNow.sessions, goal: fitnessProfile.weeklyGoal, unit: 'Einheiten', unit1: 'Einheit', tone: 1, icon: 'dumbbell' },
 ];
+/** Veränderung als ruhiger Text mit echtem Minus (kein Bewertungsfarbe, HEALTH T1/T8). */
+const signedKg = (v) => `${v > 0 ? '+' : v < 0 ? '−' : '±'}${num(Math.abs(v), 1)} kg`;
 export const fitnessMetrics = [
   { label: 'Training (Woche)', value: `${wkNow.sessions}`, unit: `/ ${fitnessProfile.weeklyGoal}`, icon: 'dumbbell', tone: 'accent', delta: null },
   { label: 'Serie', value: 12, unit: 'Wochen', icon: 'flame', tone: 'warning', delta: null },
-  { label: 'Gewicht', value: num(78.4, 1), unit: 'kg', icon: 'scale', tone: 'info', delta: bodySummary.weekDeltaKg, suffix: ' kg', invert: true, spark: trendLog.slice(-8).map((x) => x.trend) },
-  { label: 'Ruhepuls', value: 58, unit: 'bpm', icon: 'heart-pulse', tone: 'success', delta: -1, suffix: '', invert: true, spark: sleepLog.slice(-7).map((s) => s.restingHr) },
+  { label: 'Gewichtstrend', value: num(bodySummary.trendKg, 1), unit: 'kg', icon: 'scale', tone: 'info', note: `${signedKg(bodySummary.weekDeltaKg)} in 7 Tagen`, sensitive: true, spark: trendLog.slice(-8).map((x) => x.trend) },
+  { label: 'Ruhepuls', value: 58, unit: 'bpm', icon: 'heart-pulse', tone: 'info', spark: sleepLog.slice(-7).map((s) => s.restingHr) },
 ];
 export const fitnessSummary = { sessionsTotal: fitnessProfile.lifetimeBefore + workoutHistory.length, sessions8w: workoutHistory.length, volume8w: sum(workoutHistory.map((h) => h.volume)), plannedSets: plannedSets(trainingProgram, library), avgSleep7: r1(avg(sleepLog.slice(-7).map((s) => s.hours))), avgSteps7: 8400, workoutDays: ['Mo', 'Mi', 'Fr'], runDays: ['Sa', 'So'], nextWorkoutDay: 'Mi', todayKind: 'rest', stand: '24.11.2026 09:30' };
 
@@ -279,6 +281,7 @@ export const scenarios = {
     weeklyRecap: { week: '', range: '', done: [], learned: '', next: '' },
     fitnessToday: { ...fitnessToday, kind: 'rest', headline: 'Noch kein Plan', text: 'Wähle ein Programm – dann erscheint hier deine nächste Einheit.', nextDayId: null, nextExercises: [], weekSessions: 0 },
     fitnessSummary: { ...fitnessSummary, sessionsTotal: 0, sessions8w: 0, volume8w: 0, avgSleep7: 0, avgSteps7: 0, kpis: fitnessKpis('Plan wählen', 0, fitnessProfile.weeklyGoal, 0) },
+    fitnessMetrics: [{ ...fitnessMetrics[0], value: '0' }, { ...fitnessMetrics[1], value: 0 }],
     fitnessHints: [], fitnessNotifications: [],
   },
   stress: {
@@ -295,8 +298,8 @@ export const fitnessProgressMetrics = [
   { label: 'Ø Dauer', value: Math.round(sum(workoutHistory.map((h) => h.durationMin)) / workoutHistory.length), unit: 'Min.', icon: 'timer', tone: 'warning' },
 ];
 export const fitnessBodyMetrics = [
-  { label: 'Gewicht heute', value: num(bodySummary.weightKg, 1), unit: 'kg', icon: 'scale', tone: 'info' },
-  { label: 'Trend', value: num(bodySummary.trendKg, 1), unit: 'kg', icon: 'trending-down', tone: 'accent', delta: bodySummary.weekDeltaKg, suffix: ' kg', invert: true },
-  { label: 'Zum Ziel', value: num(bodySummary.toGoalKg, 1), unit: `kg bis ${fitnessProfile.goalKg}`, icon: 'goal', tone: 'success' },
-  { label: 'Körperfett (Waage)', value: num(lastOf('bodyfat'), 1), unit: '%', icon: 'activity', tone: 'warning' },
+  { label: 'Gewichtstrend', value: num(bodySummary.trendKg, 1), unit: 'kg', icon: 'trending-down', tone: 'accent', note: `${signedKg(bodySummary.weekDeltaKg)} in 7 Tagen`, sensitive: true },
+  { label: 'Gewicht heute', value: num(bodySummary.weightKg, 1), unit: 'kg', icon: 'scale', tone: 'info', note: 'Tagesschwankung ist normal', sensitive: true, faint: true },
+  { label: 'Zum Ziel', value: num(bodySummary.toGoalKg, 1), unit: `kg bis ${fitnessProfile.goalKg}`, icon: 'goal', tone: 'success', sensitive: true },
+  { label: 'Körperfett (Waage)', value: num(lastOf('bodyfat'), 1), unit: '%', icon: 'activity', tone: 'info', sensitive: true },
 ];

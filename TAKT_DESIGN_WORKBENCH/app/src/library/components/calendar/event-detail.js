@@ -1,7 +1,7 @@
 // Kalender: Termin-Detail als Screen – Zeit, Ort mit Fahrzeit und Kartenvorschau, Video-Link, Notiz, Quelle, Aktionen.
 import { html } from '../../../lib/html.js';
 import { Card, Button, Badge, Icon, EmptyState } from '../../ui.js';
-import { dayKey, dayStart, minutesOf, timeStr, hm, durLabel, longDay, catColor, catTone, openEditDialog } from './_cal.js';
+import { dayKey, dayStart, minutesOf, timeStr, hm, durLabel, longDay, catColor, catTone, openEditDialog, newEventId } from './_cal.js';
 import { pickEvent, baseOf, baseIdOf, inLabel, sourceOf, PREVIEW_ID_PROP } from './_cal-info.js';
 
 const SOURCE_NAMES = { personal: 'Jonas · Persönlich', work: 'Nordlicht Studio', family: 'Jana & Jonas', etsy: 'Etsy-Versandfristen', holidays: 'Feiertage NRW', birthdays: 'Geburtstage', school: 'Schulferien NRW' };
@@ -50,7 +50,7 @@ export const eventDetail = {
     const state = ev.allDay ? null : until > 0 ? { tone: 'accent', text: inLabel(until) } : ev._e > ctx.today ? { tone: 'success', text: 'läuft jetzt' } : { tone: 'neutral', text: 'vorbei' };
     const leave = base.travel && !ev.allDay ? minutesOf(ev._s) - base.travel - 5 : null;
     const row = (icon, k, v, s, extra) => html`<div class="tk-evd__row"><span class="tk-evd__ico"><${Icon} name=${icon} size=${17} /></span><div class="tk-grow"><div class="tk-evd__k">${k}</div><div class="tk-evd__v">${v}</div>${s && html`<div class="tk-evd__s">${s}</div>`}${extra}</div></div>`;
-    const dup = () => { const day = new Date(+dayStart(ev._s) + 864e5), s = new Date(+ev._s + 864e5), e = new Date(+ev._e + 864e5); const c = { ...base, id: `ev${Date.now().toString(36)}`, title: `${base.title} (Kopie)`, repeat: undefined, start: base.allDay ? dayKey(day) : `${dayKey(s)}T${timeStr(s)}:00`, end: base.allDay ? dayKey(day) : `${dayKey(e)}T${timeStr(e)}:00` }; setData('events', (a) => [c, ...a]); ctx.emit('event.duplicate', { id: c.id }); ctx.toast('Termin für morgen dupliziert'); };
+    const dup = () => { const day = new Date(+dayStart(ev._s) + 864e5), s = new Date(+ev._s + 864e5), e = new Date(+ev._e + 864e5); const c = { ...base, id: newEventId(ctx), title: `${base.title} (Kopie)`, repeat: undefined, start: base.allDay ? dayKey(day) : `${dayKey(s)}T${timeStr(s)}:00`, end: base.allDay ? dayKey(day) : `${dayKey(e)}T${timeStr(e)}:00` }; setData('events', (a) => [c, ...a]); ctx.emit('event.duplicate', { id: c.id }); ctx.toast('Termin für morgen dupliziert'); };
     const del = () => { setData('events', (a) => a.filter((x) => x.id !== baseIdOf(ev))); ctx.setUi('selectedId', null); ctx.emit('event.delete', { id: baseIdOf(ev) }); ctx.toast(ev.seriesId ? 'Terminserie gelöscht' : 'Termin gelöscht'); };
     return html`<${Card} key=${ev.id}><div class=${`tk-evd ${props.compact ? 'tk-evd--compact' : ''}`} data-qa="event-detail" style=${`--ec:${catColor(ev)}`}>
       <div class="tk-evd__head"><span class="tk-evd__bar"></span><div class="tk-grow">

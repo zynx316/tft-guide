@@ -15,7 +15,7 @@ export const executionCalendar = {
   name: 'Ausführungskalender',
   category: 'Sparpläne',
   description: 'Wann wird welcher Sparplan ausgeführt? Liste nach Tagen, Monatsraster mit Markern oder „Als Nächstes“. Wochenenden und Feiertage verschieben auf den nächsten Handelstag (mit Hinweis), Deckung des Girokontos je Tag, Ausführung manuell bestätigen (erzeugt eine Umbuchung), mit Rückgängig.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Ausführungen' },
     QUIET_PROP,

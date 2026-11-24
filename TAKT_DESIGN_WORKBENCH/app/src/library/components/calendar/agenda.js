@@ -3,7 +3,7 @@ import { html } from '../../../lib/html.js';
 import { Button, Badge, Icon, EmptyState } from '../../ui.js';
 import {
   addDays, dayKey, selDate, occurrences, onDay, eventsFiltered, timeStr, minutesOf, hm, durLabel, freeSlots, catColor, catTone,
-  openEventDialog, openCreateDialog, longDay, EVENT_CSS,
+  openEventDialog, openCreateDialog, longDay, weekdayName, dayMonth, EVENT_CSS,
 } from './_cal.js';
 import { openEvent, OPEN_MODE_PROP } from './_cal-info.js';
 
@@ -12,7 +12,7 @@ export const agenda = {
   name: 'Agenda',
   category: 'Kalender',
   description: 'Chronologische Termin-Liste für einen oder mehrere Tage, gruppiert nach Tag, mit Hinweis auf freie Zeitfenster und Tagesleerzustand.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Agenda' },
     { name: 'days', label: 'Anzahl Tage', type: 'number', default: 3 },
@@ -28,11 +28,11 @@ export const agenda = {
   events: ['event.open', 'event.create', 'event.create.open', 'event.update', 'event.delete', 'agenda.free.use'],
   states: ['empty'],
   css: `${EVENT_CSS}
-  .tk-agenda__day { padding:10px 16px 8px; display:flex; align-items:baseline; gap:8px; background:var(--tk-c-surface2); border-bottom:1px solid var(--tk-c-border); position:relative; }
+  .tk-agenda__day { padding:10px 16px 8px; display:flex; flex-wrap:wrap; align-items:baseline; gap:4px 8px; background:var(--tk-c-surface2); border-bottom:1px solid var(--tk-c-border); position:relative; }
   .tk-agenda__day b { font-size:var(--tk-fs-md); } .tk-agenda__day[data-today="true"] b { color:var(--tk-c-accent); }
   .tk-agenda__row { display:flex; align-items:center; gap:12px; width:100%; border:0; background:transparent; font:inherit; color:var(--tk-c-text); text-align:left; padding:10px 16px; min-height:56px; border-bottom:1px solid var(--tk-c-border); cursor:pointer; }
   .tk-agenda__row:hover { background:var(--tk-c-surface2); }
-  .tk-agenda__time { width:52px; flex:none; font-variant-numeric:tabular-nums; font-size:var(--tk-fs-sm); color:var(--tk-c-text-muted); line-height:1.3; }
+  .tk-agenda__time { min-width:52px; flex:none; white-space:nowrap; font-variant-numeric:tabular-nums; font-size:var(--tk-fs-sm); color:var(--tk-c-text-muted); line-height:1.3; }
   .tk-agenda__time b { display:block; color:var(--tk-c-text); font-size:var(--tk-fs-md); }
   .tk-agenda__bar { width:4px; align-self:stretch; min-height:32px; border-radius:2px; background:var(--ec); flex:none; }
   .tk-agenda__row[data-past="true"] .tk-agenda__main { opacity:.7; }
@@ -58,7 +58,7 @@ export const agenda = {
         const slots = props.showFree ? freeSlots(evs, Number(props.freeFrom) * 60, Number(props.freeTo) * 60) : [];
         const isToday = k === todayKey;
         const rows = [...evs.map((e) => ({ t: 'ev', at: e.allDay ? -1 : minutesOf(e._s), e })), ...slots.filter(([a, b]) => !isToday || b > nowMin).map(([a, b]) => ({ t: 'free', at: isToday ? Math.max(a, Math.ceil(nowMin / 15) * 15) : a, a: isToday ? Math.max(a, Math.ceil(nowMin / 15) * 15) : a, b }))].sort((x, y) => x.at - y.at);
-        return html`<div><div class="tk-agenda__day" data-today=${isToday}><b>${isToday ? 'Heute' : k === dayKey(addDays(ctx.today, 1)) ? 'Morgen' : new Intl.DateTimeFormat('de-DE', { weekday: 'long' }).format(d)}</b><span class="tk-subtle" style="font-size:var(--tk-fs-sm)">${new Intl.DateTimeFormat('de-DE', { day: 'numeric', month: 'long' }).format(d)}</span><span class="tk-grow"></span><${Badge}>${evs.length} ${evs.length === 1 ? 'Termin' : 'Termine'}<//></div>
+        return html`<div><div class="tk-agenda__day" data-today=${isToday}><b>${isToday ? 'Heute' : k === dayKey(addDays(ctx.today, 1)) ? 'Morgen' : weekdayName(d)}</b><span class="tk-subtle" style="font-size:var(--tk-fs-sm)">${dayMonth(d)}</span><span class="tk-grow"></span><${Badge}>${evs.length} ${evs.length === 1 ? 'Termin' : 'Termine'}<//></div>
           ${!evs.length ? html`<div class="tk-agenda__empty"><${Icon} name="sun" size=${16} />Keine Termine – freier Tag.</div>` : rows.map((r) => r.t === 'free'
             ? (r.b - r.a >= 45 ? html`<div class="tk-agenda__free"><${Icon} name="timer" size=${15} /><span><b>${hm(r.a)}–${hm(r.b)}</b> frei · ${durLabel(r.b - r.a)}</span><span class="tk-grow"></span><${Button} size="sm" variant="ghost" onClick=${() => { ctx.emit('agenda.free.use', { from: hm(r.a) }); openCreateDialog(ctx, setData, { date: k, start: hm(r.a), end: hm(Math.min(r.b, r.a + 60)) }); }}>Nutzen<//></div>` : null)
             : html`<button type="button" class="tk-agenda__row" data-past=${isToday && !r.e.allDay && minutesOf(r.e._e) <= nowMin} onClick=${() => openEvent(ctx, setData, r.e, all, props)}>

@@ -67,7 +67,7 @@ const home = {
     'Im Szenario „Erster Start“ zeigt die Seite Einladungen („Wertpapier beobachten“, „Order simulieren“) statt Nullwerten.',
   ],
   flows: [
-    { id: 'fl-papier', name: 'Wertpapier prüfen', steps: [{ featureId: 'trading.home', action: 'Position in „Positionen“ antippen' }, { featureId: 'trading.detail', action: 'Zeitraum wechseln, Kennzahlen lesen' }, { featureId: 'trading.order', action: '„Kaufen (Simulation)“ und Ticket prüfen' }] },
+    { id: 'fl-papier', name: 'Wertpapier prüfen', steps: [{ featureId: 'trading.home', action: 'Position in „Positionen“ antippen' }, { featureId: 'trading.detail', action: 'Zeitraum wechseln, Kennzahlen lesen' }, { featureId: 'trading.order', action: '„Kauf simulieren“ und Ticket prüfen' }] },
     { id: 'fl-alarm', name: 'Alarm setzen', steps: [{ featureId: 'trading.home', action: 'Im Fokus-Rahmen Wertpapier, Richtung und Marke eintippen' }, { featureId: 'trading.alerts', action: 'Alarm in der Liste sehen' }] },
     { id: 'fl-termine', name: 'Termine prüfen', steps: [{ featureId: 'trading.home', action: '„Als Nächstes“ antippen' }, { featureId: 'savings.plan', action: 'Sparplan ansehen' }] },
   ],
@@ -257,13 +257,13 @@ const detail = {
     { text: 'Kennzahlen: Tageshoch und -tief, Spanne 52 Wochen mit Lage des Kurses, Wertentwicklung je Zeitraum, bei ETFs Kosten und Ausschüttung', type: 'info', priority: 'must' },
     { text: 'Eigene Position: Stück, Ø-Einstand, Wert, Gewinn/Verlust, Anteil am Depot; Ø-Einstand als Linie im Diagramm', type: 'info', priority: 'must' },
     { text: 'Sparplan-Bezug: Rate, nächste Ausführung und Weg zum Sparplan-Detail (nur wenn ein Plan besteht)', type: 'info', priority: 'should' },
-    { text: 'Aktionen: Kaufen und Verkaufen (Simulation), Alarm anlegen, Beobachten ein/aus', type: 'action', priority: 'must' },
+    { text: 'Aktionen: Kauf simulieren und Verkauf simulieren, Alarm anlegen, Beobachten ein/aus', type: 'action', priority: 'must' },
     { text: 'Krypto: Hinweis „Hochspekulativ, Totalverlust möglich“ am Kopf', type: 'rule', priority: 'must' },
     { text: 'Ohne Kursdaten zeigt das Diagramm einen Leerzustand', type: 'state', priority: 'must' },
     R_LEGAL, R_PRIVACY,
   ],
   interactions: [
-    { trigger: '„Kaufen (Simulation)“ oder „Verkaufen“', result: 'Order-Ticket mit dem Wertpapier und der Richtung', event: 'order.new', to: 'trading.order' },
+    { trigger: '„Kauf simulieren“ oder „Verkauf simulieren“', result: 'Order-Ticket mit dem Wertpapier und der Richtung', event: 'order.new', to: 'trading.order' },
     { trigger: '„Alarm“ antippen', result: 'Kursalarme mit dem Wertpapier', event: 'alert.new', to: 'trading.alerts' },
     { trigger: 'Sparplan in „Meine Position“', result: 'Sparplan-Detail im Modul Sparpläne', event: 'plan.open', to: 'savings.plan' },
     { trigger: 'Zeitraum wechseln', result: 'Diagramm zeigt den Zeitraum', event: 'chart.range' },
@@ -274,10 +274,10 @@ const detail = {
   acceptance: [
     'Mit Pfeiltasten lässt sich im Diagramm ein Punkt wählen; die Zeile darüber nennt Datum, Kurs und Veränderung.',
     'Für All-World zeigt „Meine Position“ 152,31 Stück, Ø-Einstand 96,10 € und den Sparplan über 300 € mit nächster Ausführung am 01.12.',
-    'Für ein Wertpapier ohne Bestand ist „Verkaufen“ deaktiviert und „Meine Position“ lädt zur simulierten Order ein.',
-    '„Kaufen (Simulation)“ öffnet das Ticket mit dem Papier und der Richtung Kauf.',
+    'Für ein Wertpapier ohne Bestand ist „Verkauf simulieren“ deaktiviert und „Meine Position“ lädt zur simulierten Order ein.',
+    '„Kauf simulieren“ öffnet das Ticket mit dem Papier und der Richtung Kauf.',
   ],
-  flows: [{ id: 'fl-detail', name: 'Vom Papier zur simulierten Order', steps: [{ featureId: 'trading.detail', action: 'Zeitraum 1J, Kennzahlen lesen' }, { featureId: 'trading.order', action: '„Kaufen (Simulation)“, Stückzahl 5, prüfen' }] }],
+  flows: [{ id: 'fl-detail', name: 'Vom Papier zur simulierten Order', steps: [{ featureId: 'trading.detail', action: 'Zeitraum 1J, Kennzahlen lesen' }, { featureId: 'trading.order', action: '„Kauf simulieren“, Stückzahl 5, prüfen' }] }],
   viewports: ALL_VP, demoData: demo(['1T', '1W', '1M', '1J', '5J']),
   variants: [
     {
@@ -315,7 +315,7 @@ const order = {
   id: 'trading.order', name: 'Order (Simulation)', group: 'Orders', status: 'review', tier: 1, usage: 'wöchentlich',
   purpose: 'Eine Kauf- oder Verkaufsorder durchspielen: Markt, Limit oder Stop, mit Kostenvorschau, Plausibilitätsprüfung und Bestätigung. Es wird nichts an einen Broker gesendet, das Depot bleibt unverändert.',
   requirements: [
-    { text: 'Kaufen oder Verkaufen, Wertpapier, Stückzahl und Ordertyp (Markt, Limit, Stop) mit Gültigkeit (Tag, 30 Tage) erfassen', type: 'action', priority: 'must' },
+    { text: 'Kauf oder Verkauf wählen, Wertpapier, Stückzahl und Ordertyp (Markt, Limit, Stop) mit Gültigkeit (Tag, 30 Tage) erfassen', type: 'action', priority: 'must' },
     { text: 'Kostenvorschau live: Kurs, Wert, Gebühr (Annahme mit Stand), Gesamtkosten oder Erlös; beim Verkauf realisierter Gewinn und Steuer-Orientierung; Wirkung auf Guthaben und Anteil', type: 'info', priority: 'must' },
     { text: 'Prüfung: Stückzahl größer 0, erlaubte Nachkommastellen, Verkauf nur bis Bestand, Kauf nur bis Guthaben, Limit und Stop sinnvoll zum Kurs', type: 'rule', priority: 'must' },
     { text: 'Plausibilitätsschutz: Limit weit vom Kurs, Order größer als ein Viertel des Depots, Stop weit entfernt verlangen „Eingabe geprüft“; Hinweise zu Börsenzeiten und doppelten Orders', type: 'rule', priority: 'must' },
@@ -328,7 +328,7 @@ const order = {
     { trigger: 'Richtung oder Ordertyp wechseln', result: 'Felder und Kostenvorschau passen sich an', event: 'order.side' },
     { trigger: '„Order prüfen“ / „Weiter“', result: 'Prüfung; bei Erfolg Bestätigung oder nächster Schritt', event: 'order.review' },
     { trigger: 'Ungültige Eingabe', result: 'Fehlermeldung unter dem Feld', event: 'order.invalid' },
-    { trigger: '„Simuliert vormerken“', result: 'Order erscheint in der Liste, Toast, Depot unverändert', event: 'order.confirm' },
+    { trigger: '„Order simulieren“', result: 'Order erscheint in der Liste, Toast, Depot unverändert', event: 'order.confirm' },
     { trigger: 'Abbrechen im Dialog', result: 'Dialog schließt, Eingaben bleiben', event: 'order.cancel' },
     { trigger: '„Zum Wertpapier“ nach dem Vormerken', result: 'Wertpapier mit Kursverlauf', event: 'order.done', to: 'trading.detail' },
     { trigger: 'Order in der Liste antippen', result: 'Wertpapier mit Kursverlauf', event: 'order.open', to: 'trading.detail' },
@@ -338,10 +338,10 @@ const order = {
     'Verkauf von 200 Stück All-World ergibt „Im Depot sind nur 152,31 Stück“; „Alles“ trägt den Bestand ein.',
     'Ein Kauf von 5 Stück All-World zeigt Gesamtkosten 593,10 € (592,10 € plus 1,00 € Gebühr); das Guthaben danach beträgt 656,90 €.',
     'Ein Limit 20 % über dem Kurs verlangt „Ich habe die Eingabe geprüft“, bevor die Bestätigung öffnet.',
-    'Nach „Simuliert vormerken“ erscheint die Order oben in der Liste, das Depot bleibt unverändert.',
+    'Nach „Order simulieren“ erscheint die Order oben in der Liste, das Depot bleibt unverändert.',
     'Banner „Simulation“ ist in allen drei Bedienkonzepten sichtbar und nicht wegklickbar.',
   ],
-  flows: [{ id: 'fl-order', name: 'Order durchspielen', steps: [{ featureId: 'trading.order', action: 'Wertpapier wählen, 5 Stück, Markt' }, { featureId: 'trading.order', action: 'Kostenvorschau prüfen, „Order prüfen“' }, { featureId: 'trading.order', action: '„Simuliert vormerken“, Order in der Liste' }] }],
+  flows: [{ id: 'fl-order', name: 'Order durchspielen', steps: [{ featureId: 'trading.order', action: 'Wertpapier wählen, 5 Stück, Markt' }, { featureId: 'trading.order', action: 'Kostenvorschau prüfen, „Order prüfen“' }, { featureId: 'trading.order', action: '„Order simulieren“, Order in der Liste' }] }],
   viewports: ALL_VP, demoData: demo(),
   variants: [
     {
@@ -360,7 +360,7 @@ const order = {
     },
     {
       id: 'C', name: 'Schnell-Sheet', direction: 'fokus',
-      concept: 'Ein Wertpapier, Kaufen oder Verkaufen, Stückzahl mit Plus und Minus, Summe groß darunter, eine Taste zum Vormerken. Für die Order „nach der Karte“ in wenigen Taps.',
+      concept: 'Ein Wertpapier, Kauf oder Verkauf, Stückzahl mit Plus und Minus, Summe groß darunter, eine Taste „Order simulieren“. Für die Order „nach der Karte“ in wenigen Taps.',
       description: '+ In unter fünf Taps erledigt, Summe immer sichtbar  − Nur Marktorder, Limit und Stop im Ticket',
       layout: { type: 'stack', narrow: true },
       blocks: [hdr({ title: 'Schnell-Order', subtitle: 'Simulation' }), SIM(), blk('ticket', 'order-ticket', 'main', { mode: 'quick', title: 'Marktorder', showNote: false }), blk('list', 'trd-order-list', 'main', { limit: 2, title: 'Zuletzt' }), KURS(), FOOT],

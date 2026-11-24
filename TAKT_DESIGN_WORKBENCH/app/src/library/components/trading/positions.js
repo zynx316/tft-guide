@@ -3,20 +3,19 @@ import { html } from '../../../lib/html.js';
 import { useState } from 'preact/hooks';
 import { Card, Button, EmptyState, Sparkline, Icon } from '../../ui.js';
 import { money, percent } from '../../helpers.js';
-import { fmtNumber, fmtPercent } from '../../../lib/format.js';
+import { fmtPercent } from '../../../lib/format.js';
 import { holdings, arr } from './_calc.js';
-import { slots, Chg, Gain, Px, Tile, TRD_CSS, openSecurity, TONE_COLOR, upDown } from './_trd.js';
+import { slots, qtyText, Chg, Gain, Px, Tile, TRD_CSS, openSecurity, TONE_COLOR, upDown } from './_trd.js';
 import { ex } from './_example.js';
 
 const COLS = [['name', 'Position'], ['value', 'Wert'], ['day', 'Heute'], ['gain', 'Gewinn/Verlust'], ['weight', 'Anteil']];
-const qty = (r) => fmtNumber(r.q, { digits: r.q % 1 ? 3 : 0 });
 
 export const trdPositions = {
   id: 'trd-positions',
   name: 'Positionen',
   category: 'Trading',
   description: 'Alle Positionen des Depots mit Stückzahl, Kurs, Wert, Tagesveränderung, Gewinn/Verlust und Anteil. Als sortierbare Tabelle, als Karten mit Verlauf oder als schlanke Zeilen. Tippen öffnet das Wertpapier. Gewinn mit Vorzeichen und Pfeil, Beträge maskierbar.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Positionen' },
     { name: 'style', label: 'Darstellung', type: 'select', options: ['table', 'cards', 'rows'], default: 'table' },
@@ -55,15 +54,15 @@ export const trdPositions = {
     const name = (r) => r.short || r.name;
     const sortBy = (k) => { setSort((s) => ({ k, dir: s.k === k ? -s.dir : k === 'name' ? 1 : -1 })); ctx.emit('positions.sort', { by: k }); };
     if (props.style === 'cards') return html`<${Card} title=${props.title} icon="pie-chart" actions=${html`<span class="tk-trd-meta">${rows.length} Positionen</span>`}><div class="tk-trd-ps__cards">${shown.map((r) => html`<button type="button" class="tk-trd-ps__card" onClick=${() => open(r)} aria-label=${`${name(r)} öffnen`}>
-      <div class="tk-trd-row"><${Tile} type=${r.type} size=${34} /><span class="tk-trd-grow"><span class="tk-trd-title" style="display:block">${name(r)}</span><span class="tk-trd-sub">${qty(r)} Stück · ${fmtPercent(r.weight, { digits: 0 })} vom Depot</span></span></div>
+      <div class="tk-trd-row"><${Tile} type=${r.type} size=${34} /><span class="tk-trd-grow"><span class="tk-trd-title" style="display:block">${name(r)}</span><span class="tk-trd-sub">${qtyText(ctx, r.q)} Stück · ${fmtPercent(r.weight, { digits: 0 })} vom Depot</span></span></div>
       <${Sparkline} values=${arr(r.spark)} width=${200} height=${40} tone=${r.dayPct >= 0 ? 'success' : 'danger'} />
       <div class="tk-trd-row" style="justify-content:space-between;align-items:flex-end;flex-wrap:wrap"><strong class="tk-trd-num" style="font-size:var(--tk-fs-xl)">${money(ctx, r.value)}</strong><${Gain} ctx=${ctx} v=${r.gain} pct=${r.gainPct} /></div></button>`)}</div>${more}<//>`;
     if (props.style === 'rows') return html`<${Card} title=${props.title} icon="pie-chart"><div class="tk-trd-list">${shown.map((r) => html`<button type="button" class="tk-trd-tap tk-trd-item" onClick=${() => open(r)} aria-label=${`${name(r)} öffnen`}><${Tile} type=${r.type} size=${34} />
-      <span class="tk-trd-grow"><span class="tk-trd-title" style="display:block">${name(r)}</span><span class="tk-trd-sub">${qty(r)} × <${Px} v=${r.price} /></span></span><span style="text-align:right"><strong class="tk-trd-num" style="display:block">${money(ctx, r.value)}</strong><${Gain} ctx=${ctx} v=${r.gain} pct=${r.gainPct} /></span></button>`)}</div>${more}<//>`;
+      <span class="tk-trd-grow"><span class="tk-trd-title" style="display:block">${name(r)}</span><span class="tk-trd-sub">${qtyText(ctx, r.q)} × <${Px} v=${r.price} /></span></span><span style="text-align:right"><strong class="tk-trd-num" style="display:block">${money(ctx, r.value)}</strong><${Gain} ctx=${ctx} v=${r.gain} pct=${r.gainPct} /></span></button>`)}</div>${more}<//>`;
     return html`<${Card} title=${props.title} icon="pie-chart" actions=${html`<span class="tk-trd-meta">${rows.length} Positionen</span>`}>
       <div class="tk-trd-ps__h">${COLS.map(([k, l], i) => html`<button type="button" aria-pressed=${String(sort.k === k)} class=${k === 'weight' ? 'tk-trd-ps__x' : k === 'day' ? 'tk-trd-ps__x2' : ''} aria-label=${`Nach ${l} sortieren`} onClick=${() => sortBy(k)}>${l}${sort.k === k ? (sort.dir > 0 ? ' ↑' : ' ↓') : ''}</button>`)}<span class="tk-trd-ps__x2"></span></div>
       ${shown.map((r) => { const p = plan(r); return html`<div class="tk-trd-ps__r"><button type="button" class="tk-trd-ps__main" onClick=${() => open(r)} aria-label=${`${name(r)} öffnen`}><${Tile} type=${r.type} size=${34} />
-        <span class="tk-trd-grow"><span class="tk-trd-title" style="display:block">${name(r)}</span><span class="tk-trd-sub">${qty(r)} × <${Px} v=${r.price} />${p ? ` · Sparplan ${money(ctx, p.monthly, { digits: 0 })}` : ''}</span></span></button>
+        <span class="tk-trd-grow"><span class="tk-trd-title" style="display:block">${name(r)}</span><span class="tk-trd-sub">${qtyText(ctx, r.q)} × <${Px} v=${r.price} />${p ? ` · Sparplan ${money(ctx, p.monthly, { digits: 0 })}` : ''}</span></span></button>
         <strong class="tk-trd-num">${money(ctx, r.value)}</strong><span class="tk-trd-ps__x2"><${Chg} v=${r.dayPct} /></span><span><${Gain} ctx=${ctx} v=${r.gain} pct=${r.gainPct} digits=${0} /></span><span class="tk-trd-num tk-trd-meta tk-trd-ps__x">${fmtPercent(r.weight, { digits: 1 })}</span>
         ${props.showTrade ? html`<span class="tk-trd-ps__x2"><button type="button" class="tk-trd-tap" style="justify-content:center;width:36px;height:36px" aria-label=${`Order für ${name(r)} simulieren`} onClick=${() => { ctx.setUi('selectedId', r.id); ctx.emit('position.trade', { id: r.id, to: 'trading.order' }); }}><${Icon} name="trending-up" size=${16} /></button></span>` : html`<span class="tk-trd-ps__x2"></span>`}</div>`; })}
       <div class="tk-trd-ps__sum"><span>Summe Positionen</span><span class="tk-trd-num">${money(ctx, hd.invested)}</span><span class="tk-trd-ps__x2"><${Chg} v=${hd.dayPct} /></span><span><${Gain} ctx=${ctx} v=${hd.gain} pct=${hd.gainPct} digits=${0} /></span><span class="tk-trd-ps__x"></span><span class="tk-trd-ps__x2"></span></div>

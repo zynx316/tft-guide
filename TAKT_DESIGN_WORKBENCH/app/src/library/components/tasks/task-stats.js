@@ -9,7 +9,7 @@ export const taskStats = {
   name: 'Aufgaben-Kennzahlen',
   category: 'Aufgaben',
   description: 'Kennzahlen, die sich aus den Aufgaben berechnen: heute fällig (mit geplanter Zeit), überfällig, Eingang, diese Woche erledigt und Fokus-Blöcke heute. Jede Kachel führt in den passenden Bereich.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'style', label: 'Darstellung', type: 'select', options: ['tiles', 'strip'], default: 'tiles' },
     { name: 'items', label: 'Kennzahlen', type: 'list', default: ['today', 'overdue', 'inbox', 'done', 'focus'] },

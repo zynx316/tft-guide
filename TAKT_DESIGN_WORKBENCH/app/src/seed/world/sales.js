@@ -60,31 +60,32 @@ function deriveSales(orders, channels) {
   const toDo = orders.filter((o) => o.status === 'new' || o.status === 'paid').length;
   const has = channels.length > 0;
   // 7-Tage-Reihen je Kanal (Mi 18.11. bis Di 24.11., heute bis 09:30); der heutige Wert entsteht aus den Bestellungen
-  const revenue = { labels: ['Mi', 'Do', 'Fr', 'Sa', 'So', 'Mo', 'Di'], series: [
-    { name: 'Shopify', values: has ? [212, 246, 301, 188, 163, 229, todayBy('shopify')] : [0, 0, 0, 0, 0, 0, 0] },
-    { name: 'Amazon', values: has ? [141, 162, 138, 187, 126, 152, todayBy('amazon')] : [0, 0, 0, 0, 0, 0, 0] },
-    { name: 'Eigener Shop', values: has ? [88, 74, 121, 96, 85, 103, todayBy('shop')] : [0, 0, 0, 0, 0, 0, 0] },
-    { name: 'Etsy', values: has ? [59, 71, 64, 38, 47, 52, 0] : [0, 0, 0, 0, 0, 0, 0] }] };
+  // Ohne Kanal gibt es keine Reihen: das Diagramm zeigt seinen Leerzustand statt einer Nulllinie mit Achse „1 · 1 · 0“
+  const revenue = { labels: ['Mi', 'Do', 'Fr', 'Sa', 'So', 'Mo', 'Di'], series: !has ? [] : [
+    { name: 'Shopify', values: [212, 246, 301, 188, 163, 229, todayBy('shopify')] },
+    { name: 'Amazon', values: [141, 162, 138, 187, 126, 152, todayBy('amazon')] },
+    { name: 'Eigener Shop', values: [88, 74, 121, 96, 85, 103, todayBy('shop')] },
+    { name: 'Etsy', values: [59, 71, 64, 38, 47, 52, 0] }] };
   const sumDay = (i) => r2(revenue.series.reduce((s, x) => s + x.values[i], 0));
   const dayTotals = revenue.labels.map((_, i) => sumDay(i));
   const shares = { segments: channels.map((c) => ({ label: c.name, value: c.revenue })).sort((a, b) => b.value - a.value) };
-  const stageChart = { segments: ['new', 'paid', 'shipped', 'delivered'].map((k) => ({ label: { new: 'Neu', paid: 'Bezahlt', shipped: 'Versendet', delivered: 'Zugestellt' }[k], value: orders.filter((o) => o.status === k).length })) };
+  const stageChart = { segments: !orders.length ? [] : ['new', 'paid', 'shipped', 'delivered'].map((k) => ({ label: { new: 'Neu', paid: 'Bezahlt', shipped: 'Versendet', delivered: 'Zugestellt' }[k], value: orders.filter((o) => o.status === k).length })) };
+  // Kennzahlen als Rohwerte mit Art (kind): die Komponente formatiert und maskiert sie im Privatsphäre-Modus. Ohne Datenbasis `raw: null` → „–“, keine Veränderung.
   const metrics = [
-    { label: 'Umsatz heute', value: new Intl.NumberFormat('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(todayRevenue), unit: '€', icon: 'banknote', tone: 'success', spark: dayTotals },
-    { label: 'Bestellungen heute', value: today.length, icon: 'shopping-cart', tone: 'accent', spark: has ? [6, 8, 7, 9, 12, 10, today.length] : [0, 0, 0, 0, 0, 0, 0] },
-    { label: 'Zu bearbeiten', value: toDo, icon: 'inbox', tone: 'warning' },
-    { label: 'Retourenquote', value: has ? '2,8' : '0', unit: '%', icon: 'rotate-ccw', tone: 'info', delta: has ? -0.4 : 0, suffix: ' PP', invert: true },
+    { label: 'Umsatz heute', raw: todayRevenue, kind: 'money', icon: 'banknote', tone: 'success', ...(has ? { spark: dayTotals } : {}) },
+    { label: 'Bestellungen heute', raw: today.length, icon: 'shopping-cart', tone: 'accent', ...(has ? { spark: [6, 8, 7, 9, 12, 10, today.length] } : {}) },
+    { label: 'Zu bearbeiten', raw: toDo, icon: 'inbox', tone: 'warning' },
+    { label: 'Retourenquote', raw: has ? 2.8 : null, kind: 'percent', digits: 1, icon: 'rotate-ccw', tone: 'info', ...(has ? { delta: -0.4 } : {}), suffix: ' PP', invert: true },
   ];
-  const aov = totalOrders ? r2(totalRevenue / totalOrders) : 0;
+  const aov = totalOrders ? r2(totalRevenue / totalOrders) : null;
   const metricsRevenue = [
-    { label: 'Umsatz 30 Tage', value: new Intl.NumberFormat('de-DE', { maximumFractionDigits: 0 }).format(totalRevenue), unit: '€', icon: 'banknote', tone: 'success', delta: has ? 6.1 : 0 },
-    { label: 'Bestellungen', value: totalOrders, icon: 'shopping-cart', tone: 'accent', delta: has ? 4.3 : 0 },
-    { label: 'Ø Warenkorb', value: new Intl.NumberFormat('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(aov), unit: '€', icon: 'package', tone: 'info', delta: has ? 1.8 : 0 },
-    { label: 'Retourenquote', value: has ? '2,8' : '0', unit: '%', icon: 'rotate-ccw', tone: 'warning', delta: has ? -0.4 : 0, suffix: ' PP', invert: true },
+    { label: 'Umsatz 30 Tage', raw: has ? totalRevenue : null, kind: 'money', digits: 0, sensitive: true, icon: 'banknote', tone: 'success', ...(has ? { delta: 6.1 } : {}) },
+    { label: 'Bestellungen', raw: totalOrders, sensitive: true, icon: 'shopping-cart', tone: 'accent', ...(has ? { delta: 4.3 } : {}) },
+    { label: 'Ø Warenkorb', raw: aov, kind: 'money', sensitive: true, icon: 'package', tone: 'info', ...(has ? { delta: 1.8 } : {}) },
+    { label: 'Retourenquote', raw: has ? 2.8 : null, kind: 'percent', digits: 1, icon: 'rotate-ccw', tone: 'warning', ...(has ? { delta: -0.4 } : {}), suffix: ' PP', invert: true },
   ];
-  const nf = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' });
   const rows = channels.map((c) => ({ id: c.id, title: c.name, icon: c.icon, status: { connected: 'Verbunden', error: 'Fehler', paused: 'Pausiert' }[c.status], tone: { connected: 'success', error: 'danger', paused: 'neutral' }[c.status],
-    revenue: c.revenue, orders: c.orders, change: c.delta / 100, trend: c.trend, subtitle: c.error || `${c.orders} Bestellungen in 30 Tagen`, meta: { shopify: 'vor 12 Min.', etsy: 'gestern 21:40', amazon: 'vor 45 Min.', ebay: '18.11.', shop: 'vor 5 Min.' }[String(c.id).split('~')[0]], revenueText: nf.format(c.revenue) }));
+    revenue: c.revenue, orders: c.orders, change: c.delta / 100, trend: c.trend, subtitle: c.error || `${c.orders} Bestellungen in 30 Tagen`, meta: { shopify: 'vor 12 Min.', etsy: 'gestern 21:40', amazon: 'vor 45 Min.', ebay: '18.11.', shop: 'vor 5 Min.' }[String(c.id).split('~')[0]]}));
   const syncLog = channels.flatMap((c) => c.log.map((l, i) => ({ id: `${c.id}-${i}`, title: `${c.name}: ${l.text}`, time: l.at, icon: l.tone === 'danger' ? 'alert-triangle' : l.tone === 'success' ? 'refresh-cw' : 'info', tone: l.tone === 'info' ? 'accent' : l.tone }))).sort((a, b) => b.time.localeCompare(a.time));
   return { today, todayRevenue, totalRevenue, totalOrders, toDo, revenue, shares, stageChart, metrics, metricsRevenue, rows, syncLog };
 }

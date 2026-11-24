@@ -2,7 +2,7 @@
 import { html } from '../../../lib/html.js';
 import { useState, useEffect } from 'preact/hooks';
 import { Button } from '../../ui.js';
-import { addDays, startOfWeek, dayKey, parseDay, selDate, monthStart, monthName, occurrences, WEEKDAYS, catColor } from './_cal.js';
+import { addDays, startOfWeek, dayKey, parseDay, selDate, monthStart, monthName, occurrences, WEEKDAYS, catColor, fullDay } from './_cal.js';
 
 export const miniMonth = {
   id: 'mini-month',
@@ -53,7 +53,7 @@ export const miniMonth = {
       <div class="tk-mm__grid">${WEEKDAYS.map((w) => html`<div class="tk-mm__dow">${w}</div>`)}
         ${shown.map((d) => { const k = dayKey(d); const ev = occs.filter((o) => dayKey(o._s) === k).slice(0, 3);
           return html`<button type="button" class="tk-mm__day" data-out=${d.getMonth() !== m.getMonth()} data-today=${k === todayKey} data-sel=${k === selKey}
-            data-week=${props.highlightWeek && k >= wkStart && k <= wkEnd} onClick=${() => pick(d)} aria-label=${new Intl.DateTimeFormat('de-DE', { dateStyle: 'full' }).format(d)} aria-pressed=${k === selKey}>
+            data-week=${props.highlightWeek && k >= wkStart && k <= wkEnd} onClick=${() => pick(d)} aria-label=${fullDay(d)} aria-pressed=${k === selKey}>
             <span>${d.getDate()}</span>${ev.length > 0 && html`<em class="tk-mm__dot" aria-hidden="true">${ev.map((e) => html`<i style=${`--ec:${catColor(e)}`}></i>`)}</em>`}</button>`; })}
       </div>
       ${props.showTodayButton && html`<div style="margin-top:8px"><${Button} size="sm" onClick=${() => { setM(monthStart(ctx.today)); pick(ctx.today); }}>Heute<//></div>`}

@@ -1,6 +1,7 @@
 // Finanzen: Ausgaben nach Kategorie (Monat) mit Vormonats-Marke; Balken oder Ring.
 import { html } from '../../../lib/html.js';
 import { Card, Icon, EmptyState, toneColor } from '../../ui.js';
+import { MASK_PERCENT } from '../../helpers.js';
 import { monthsSeries, spentByCategory, catMeta, arr, r2 } from './_calc.js';
 import { SlimEmpty, slots, pctx, eur, eur0, Tile } from './_fin.js';
 import { fmtPercent } from '../../../lib/format.js';
@@ -11,7 +12,7 @@ export const finSpendBreakdown = {
   name: 'Ausgaben nach Kategorie',
   category: 'Finanzen',
   description: 'Wohin das Geld im Monat geht: Kategorien nach Betrag, mit Anteil und der Marke des Vormonats. Tippen zeigt die Buchungen der Kategorie. Umbuchungen zählen nicht als Ausgaben.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Ausgaben nach Kategorie' },
     { name: 'style', label: 'Darstellung', type: 'select', options: ['bars', 'donut'], default: 'bars' },
@@ -36,7 +37,7 @@ export const finSpendBreakdown = {
     if (rows.length > props.limit) { const rest = rows.slice(props.limit - 1); rows = [...rows.slice(0, props.limit - 1), { cat: 'Weitere', v: r2(rest.reduce((s, r) => s + r.v, 0)), meta: { icon: 'more-horizontal', tone: 'neutral', label: 'Weitere' }, rest: true }]; }
     const open = (r) => !r.rest && ctx.emit('category.open', { id: r.cat, ui: { filter: r.cat } });
     const max = Math.max(...rows.map((r) => Math.max(r.v, r.prev || 0)), 1);
-    const pct = (v) => (c.privacy ? '•• %' : fmtPercent(total ? v / total : 0, { digits: 0 }));
+    const pct = (v) => (c.privacy ? MASK_PERCENT : fmtPercent(total ? v / total : 0, { digits: 0 }));
     if (props.style === 'donut') {
       const R = 52, C = 2 * Math.PI * R; let off = 0;
       return html`<${Card} title=${props.title} icon="pie-chart"><div class="tk-fnd__donut"><div style="position:relative;width:150px;height:150px" role="img" aria-label=${`Ausgaben ${eur0(c, total)}: ${rows.map((r) => `${r.meta.label} ${pct(r.v)}`).join(', ')}`}><svg width="150" height="150" viewBox="0 0 150 150" aria-hidden="true">

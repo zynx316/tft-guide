@@ -2,6 +2,7 @@
 import { html } from '../../../lib/html.js';
 import { useState } from 'preact/hooks';
 import { Card, Button, Badge, Icon, EmptyState, Chip } from '../../ui.js';
+import { MASK_PERCENT } from '../../helpers.js';
 import { fmtDate, fmtPercent, fmtRelativeDay } from '../../../lib/format.js';
 import { arr, todayOf, eur, eur2, Tile, Stat, Gain, Stepper, Ring, SV_CSS, TrackerNote, pct, whenLabel } from './_savings.js';
 import { planTarget, planStatus, rhythmLabel, planExecutions, planHistory, planStats, confirmedSet, patchPlan, setPlanActive, pauseUntil, nextRaise, perExecution } from './_plans.js';
@@ -23,7 +24,7 @@ export const savingsPlanDetail = {
   name: 'Sparplan-Detail',
   category: 'Sparpläne',
   description: 'Ein Sparplan im Detail: Eingezahlt, Wert, Rendite (Modell), Rate, nächste Ausführung, Dynamik. Aktionen: Rate ändern, Pausieren, Dynamik, Was-wäre-wenn im Rechner, Wertpapier öffnen. Dichte Liste, Hero-Karte oder Aktionsliste.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'style', label: 'Darstellung', type: 'select', options: ['dense', 'hero', 'actions'], default: 'dense' },
     { name: 'showActions', label: 'Aktionen', type: 'boolean', default: true },
@@ -76,7 +77,7 @@ export const savingsPlanDetail = {
       ...(open ? [{ i: 'candlestick-chart', t: 'Wertpapier', s: `${tgt.label} ansehen`, f: open }] : []),
     ];
     const head = html`<div class="tk-svd__id"><${Tile} tone=${plan.tone || 1} icon=${tgt.icon} /><div class="tk-grow" style="min-width:160px"><h2>${plan.name}</h2><span class="tk-sv-meta">${tgt.label}${tgt.sub ? ` · ${tgt.sub}` : ''}</span></div><${Badge} tone=${st.tone} icon=${st.icon}>${st.label}<//></div>`;
-    const rows = [['Eingezahlt', eur(ctx, stats.invested)], ['Wert', eur(ctx, stats.value)], ['Ertrag', html`<${Gain} ctx=${ctx} value=${stats.gain} ratio=${stats.ratio} />`], ...(hist ? [[`Rendite p. a. (Modell)`, ctx.privacy ? '•• %' : fmtPercent(hist.ratePa, { digits: 1 })]] : []),
+    const rows = [['Eingezahlt', eur(ctx, stats.invested)], ['Wert', eur(ctx, stats.value)], ['Ertrag', html`<${Gain} ctx=${ctx} value=${stats.gain} ratio=${stats.ratio} />`], ...(hist ? [[`Rendite p. a. (Modell)`, ctx.privacy ? MASK_PERCENT : fmtPercent(hist.ratePa, { digits: 1 })]] : []),
       ['Rate', `${eur(ctx, plan.monthly)} · ${rhythmLabel(plan)}`], ['Nächste Ausführung', next ? `${fmtDate(next.date, { style: 'weekday' })} · ${eur2(ctx, perExecution(plan))}` : '–'], ['Seit', fmtDate(plan.startDate)], ...(goal ? [['Ziel', goal.name]] : [])];
     const actions = props.showActions && html`<div class="tk-svd__acts">${acts.map((a) => html`<button type="button" class="tk-svd__act" onClick=${a.f}><${Tile} tone="accent" icon=${a.i} size=${16} /><div><strong>${a.t}</strong><small>${a.s}</small></div></button>`)}</div>`;
     const raiseNote = raise && html`<div class="tk-svd__note"><${Icon} name="trending-up" size=${16} /><span>Die Rate steigt am ${whenLabel(raise.date, today)} von ${eur(ctx, raise.from)} auf ${eur(ctx, raise.to)}.</span></div>`;
@@ -84,7 +85,7 @@ export const savingsPlanDetail = {
     if (props.style === 'hero') {
       const share = stats.value ? Math.max(0, stats.gain) / stats.value : 0;
       return html`<${Card}><div class="tk-svd"><div class="tk-svd__id"><${Tile} tone=${plan.tone || 1} icon=${tgt.icon} /><div class="tk-grow" style="min-width:160px"><h2 style="margin:0;font-size:var(--tk-fs-xl)">${plan.name}</h2><span class="tk-sv-meta">${tgt.label}</span></div><${Badge} tone=${st.tone} icon=${st.icon}>${st.label}<//></div>
-        <div class="tk-svd__hero"><${Ring} size=${132} stroke=${14} value=${share} tone="accent" label=${`Ertrag ${pct(share)} vom Wert`}><span class="tk-sv-meta" style="font-size:var(--tk-fs-xs)">Ertrag</span><strong class="tk-num" style="font-size:var(--tk-fs-xl)">${pct(share)}</strong><//>
+        <div class="tk-svd__hero"><${Ring} size=${132} stroke=${14} value=${ctx.privacy ? 0 : share} tone="accent" label=${ctx.privacy ? 'Ertrag ausgeblendet' : `Ertrag ${pct(share)} vom Wert`}><span class="tk-sv-meta" style="font-size:var(--tk-fs-xs)">Ertrag</span><strong class="tk-num" style="font-size:var(--tk-fs-xl)">${ctx.privacy ? MASK_PERCENT : pct(share)}</strong><//>
           <div><${Stat} big label="Wert heute" value=${eur(ctx, stats.value)} sub=${html`<span>eingezahlt ${eur(ctx, stats.invested)} · </span><${Gain} ctx=${ctx} value=${stats.gain} ratio=${stats.ratio} />`} />
             <span class="tk-sv-meta">${eur(ctx, plan.monthly)} · ${rhythmLabel(plan)}${next ? ` · nächste Ausführung ${fmtDate(next.date, { style: 'weekday' })}` : ''}</span></div></div>${raiseNote}${actions}${tracker}</div><//>`;
     }

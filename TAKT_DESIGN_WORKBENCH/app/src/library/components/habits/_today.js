@@ -2,6 +2,7 @@
 // Alles relativ zu ctx.today; Beträge über money()/percent() (Privatsphäre-Modus).
 import { money, percent } from '../../helpers.js';
 import { isoDay, addDays } from '../../../lib/util.js';
+import { fmtNumber } from '../../../lib/format.js';
 import { occurrences, dayStart, minutesOf, timeStr, durLabel } from '../calendar/_cal.js';
 import { dueInfo, sortTasks, prio } from '../tasks/_tasks.js';
 import { list, todayKey, progressOf, isDue, isDone, countOn, target, weekCount, perWeek, dayLabel, hourOf } from './_habits.js';
@@ -20,7 +21,7 @@ const trainOf = (t) => (t && t.nextWhen ? { next: t.nextWhen, nextName: t.nextNa
 const nutOf = (n) => (n && n.eatenKcal != null ? { kcal: n.eatenKcal, kcalGoal: n.goalKcal, protein: Math.round(n.protein), proteinGoal: n.proteinGoal, waterMl: n.waterMl, waterGoal: n.waterGoal } : n || {});
 const lit = (ml) => `${nf(ml / 1000, 1)}`;
 const obj = (v) => (v && typeof v === 'object' && !Array.isArray(v) ? v : {});
-export const nf = (n, d = 0) => new Intl.NumberFormat('de-DE', { maximumFractionDigits: d, minimumFractionDigits: d }).format(n);
+export const nf = (n, d = 0) => fmtNumber(n, { digits: d });
 
 const hasTime = (t) => (t.due && t.due.length > 10 ? 1 : 0);
 const byUrgency = (a, b) => (prio(a).rank - prio(b).rank) || (hasTime(b) - hasTime(a)) || String(a.due || '9').localeCompare(String(b.due || '9'));

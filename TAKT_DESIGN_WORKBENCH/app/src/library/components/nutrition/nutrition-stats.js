@@ -10,7 +10,7 @@ export const nutritionStats = {
   name: 'Auswertungs-Bausteine',
   category: 'Ernährung',
   description: 'Vier ruhige Auswertungen in einer Komponente: Makro-Verteilung, Top-5-Lebensmittel nach Kalorien oder Eiweiß, Ballaststoffe/Zucker/Salz gegen Orientierungswerte und Gewichtstrend neben der Ernährung. Nur erfasste Tage zählen; unter drei Tagen gibt es keine Statistik.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'mode', label: 'Inhalt', type: 'select', options: ['macros', 'top', 'micro', 'weight'], default: 'macros' },
     { name: 'title', label: 'Titel (leer = automatisch)', type: 'text', default: '' },
@@ -49,6 +49,7 @@ export const nutritionStats = {
     const few = html`<${EmptyState} icon="bar-chart-3" title="Noch zu wenig Daten" text="Ab drei erfassten Tagen zeigt TAKT Durchschnitte. Nicht erfasste Tage zählen nie als 0 kcal." />`;
     if (props.mode === 'weight') {
       const w = arr(prof.weightTrend);
+      if (ctx.world?.get?.('prefs')?.health?.hideWeight) return card(html`<${EmptyState} icon="eye-off" title="Werte ausgeblendet" text="Du hast Gewichtswerte ausgeblendet. Einblenden kannst du sie in Fitness unter Körperwerte." />`, 'scale');
       if (w.length < 2) return card(html`<${EmptyState} icon="scale" title="Noch kein Gewichtstrend" text="Trage dein Gewicht ein, dann siehst du hier den Verlauf. Einzelne Tage sagen wenig, der Trend zählt." />`, 'scale');
       const d = w[w.length - 1].kg - w[0].kg;
       return card(html`<div class="tk-ns"><div class="tk-ns__w"><div><div class="tk-nu-big">${num(w[w.length - 1].kg, 1)} kg</div><div class="tk-nu-meta">${d <= 0 ? '−' : '+'}${num(Math.abs(d), 1)} kg seit ${dayShort(w[0].date)}</div></div>

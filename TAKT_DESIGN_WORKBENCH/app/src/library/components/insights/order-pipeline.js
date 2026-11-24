@@ -13,7 +13,7 @@ export const orderPipeline = {
   name: 'Bestell-Pipeline',
   category: 'Vertrieb',
   description: 'Bestellungen nach Status (neu → bezahlt → versendet → zugestellt) mit Zählern, Summen und Weiterschalten per Aktion. Als Reiter-Liste oder Spalten (Desktop). Ein Tipp auf eine Bestellung öffnet einen Dialog oder – mit openIn „select“ – meldet order.open mit ID (für die Navigation zum Bestelldetail).',
-  version: '1.2',
+  version: '1.3',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Bestellungen' },
     { name: 'stages', label: 'Angezeigte Status', type: 'list', default: ['new', 'paid', 'shipped', 'delivered'] },
@@ -21,11 +21,13 @@ export const orderPipeline = {
     { name: 'initial', label: 'Start-Status', type: 'text', default: '' },
     { name: 'openIn', label: 'Öffnen in', type: 'select', options: ['dialog', 'select'], default: 'dialog' },
     { name: 'respectFilter', label: 'Suche/Filter beachten', type: 'boolean', default: true },
+    { name: 'quietEmpty', label: 'Ohne Bestellungen nichts anzeigen', type: 'boolean', default: false },
   ],
   data: [{ slot: 'orders', label: 'Bestellungen', default: 'orders', shape: '{id,number,customer,channel,items,total,date,status:new|paid|shipped|delivered}[]', required: true }],
   events: ['order.open', 'order.advance', 'pipeline.stage'],
   states: ['empty'],
   css: `
+  [data-tk-large-text] .tk-order-pipeline__sub, [data-tk-large-text] .tk-order-pipeline__no { white-space:normal; overflow:visible; text-overflow:clip; overflow-wrap:anywhere; }
   .tk-order-pipeline__stats { display:grid; grid-template-columns:repeat(var(--n,4), minmax(0,1fr)); gap:var(--tk-space-2); margin-bottom:var(--tk-space-3); }
   .tk-order-pipeline__stat { display:flex; flex-direction:column; gap:2px; padding:10px 12px; border-radius:var(--tk-radius-md); border:1px solid var(--tk-c-border); background:var(--tk-c-surface2); cursor:pointer; text-align:left; color:inherit; min-width:0; min-height:56px; }
   .tk-order-pipeline__stat[aria-pressed="true"] { border-color:var(--tk-c-accent); background:var(--tk-c-accent-soft); }
@@ -96,7 +98,7 @@ export const orderPipeline = {
     const empty = (txt) => html`<${EmptyState} icon="package" title="Keine Bestellungen" text=${txt || (ctx.ui.query ? `Keine Treffer für „${ctx.ui.query}“.` : 'Sobald Bestellungen eingehen, erscheinen sie hier.')} />`;
     const sum = (k) => by(k).reduce((a, o) => a + o.total, 0);
 
-    if (!all.length) return html`<${Card} title=${props.title}>${empty()}<//>`;
+    if (!all.length) return props.quietEmpty && !ctx.ui.query ? null : html`<${Card} title=${props.title}>${empty()}<//>`;   // quietEmpty: Startseite ohne Daten zeigt nur eine Aktion
     const stats = html`<div class="tk-order-pipeline__stats" style=${`--n:${keys.length}`}>${keys.map((k) => html`<button type="button" class="tk-order-pipeline__stat" aria-pressed=${props.mode === 'tabs' || ctx.bp === 'mobile' ? String(cur === k) : 'false'}
       onClick=${() => { setActive(k); ctx.emit('pipeline.stage', { stage: k }); }}>
       <span style=${`color:var(--tk-c-${STAGES[k].tone})`}><${Icon} name=${STAGES[k].icon} size=${14} /><span style="color:var(--tk-c-text-muted)">${STAGES[k].label}</span></span>

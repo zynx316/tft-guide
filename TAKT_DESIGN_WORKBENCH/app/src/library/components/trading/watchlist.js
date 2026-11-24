@@ -15,7 +15,7 @@ export const trdWatchlist = {
   name: 'Watchlist',
   category: 'Trading',
   description: 'Beobachtete Wertpapiere mit Kurs, Tagesveränderung und Mini-Verlauf. Als Tabelle mit Aktionen in der Zeile, als Karten oder als schlanke Liste. Suchen, nach Typ filtern, sortieren, hinzufügen und entfernen (mit Rückgängig). Kurse sind fiktiv.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Watchlist' },
     { name: 'style', label: 'Darstellung', type: 'select', options: ['table', 'cards', 'compact'], default: 'table' },

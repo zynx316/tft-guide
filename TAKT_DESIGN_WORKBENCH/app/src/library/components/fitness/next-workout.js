@@ -13,16 +13,17 @@ export const nextWorkout = {
   name: 'Nächstes Training',
   category: 'Fitness',
   description: 'Was steht an: heute trainieren oder Erholungstag mit Blick auf die nächste Einheit. Zeigt Übungen, Dauer, Termine davor aus dem Kalender und startet das Training.',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'style', label: 'Darstellung', type: 'select', options: ['hero', 'plain'], default: 'hero' },
     { name: 'showExercises', label: 'Übungen zeigen', type: 'boolean', default: true },
-    { name: 'contextNote', label: 'Zusatzhinweis (z. B. Wetter)', type: 'text', default: '' },
+    { name: 'contextNote', label: 'Zusatzhinweis (überschreibt den Wetter-Hinweis aus der Welt)', type: 'text', default: '' },
     { name: 'showContext', label: 'Kalender-Kontext zeigen', type: 'boolean', default: true },
   ],
   data: [
     { slot: 'today', label: 'Heute', default: 'today', shape: '{kind,headline,text,nextDayId,nextDate,nextWhen,nextName,nextMinutes,nextSets,nextExercises,lastTitle,weekSessions,weekGoal}', required: true },
     { slot: 'program', label: 'Programm (leer = noch kein Plan)', default: 'program', shape: '{days}' },
+    { slot: 'wxnote', label: 'Wetter-Hinweis zum Training (Text aus der Wetter-Welt)', default: 'wxnote', shape: 'string' },
     { slot: 'events', label: 'Termine', default: 'events', shape: '{id,title,start,end,category}[]' },
   ],
   events: ['workout.open', 'plan.open'],
@@ -41,6 +42,7 @@ export const nextWorkout = {
     if (!t || !t.nextDayId || noPlan) return html`<${Card} title="Training"><${EmptyState} icon="dumbbell" title="Kein Training geplant" text="Wähle im Plan einen Rhythmus, dann erscheint hier dein nächstes Training." action=${html`<${Button} size="sm" icon="calendar-days" onClick=${() => ctx.emit('plan.open')}>Plan wählen<//>`} /><//>`;
     const isToday = t.kind === 'strength'; const evs = props.showContext ? dayEvents(data.events, t.nextDate) : [];
     const before = evs.filter((e) => clockOf(e.end) <= '18:30').pop();
+    const note = props.contextNote || (typeof data.wxnote === 'string' ? data.wxnote : '');
     const open = () => ctx.emit('workout.open', { id: t.nextDayId });
     return html`<${Card}><div class=${`tk-nw tk-nw--${props.style}`} data-qa="next-workout">
       ${!isToday && html`<div class="tk-nw__rest"><span class="tk-nw__moon"><${Icon} name="moon" size=${24} /></span><div class="tk-grow"><div class="tk-h3">${t.headline}</div><div class="tk-muted" style="font-size:var(--tk-fs-sm)">${t.text}</div></div></div>`}
@@ -48,7 +50,7 @@ export const nextWorkout = {
         <div><div class="tk-h2">${t.nextName}</div><div class="tk-muted" style="font-size:var(--tk-fs-sm);margin-top:2px">ca. ${t.nextMinutes} Min. · ${t.nextSets} Sätze · ${(t.nextExercises || []).length} Übungen</div></div>
         ${props.showExercises && html`<div class="tk-fit-chips">${(t.nextExercises || []).slice(0, 5).map((n) => html`<${Badge}>${n}<//>`)}${(t.nextExercises || []).length > 5 && html`<${Badge}>+${t.nextExercises.length - 5}<//>`}</div>`}
         ${before && html`<div class="tk-nw__ctx"><${Icon} name="calendar-clock" size=${15} /><span>Davor: ${before.title} bis ${clockOf(before.end)} – dein Training um 18:30 passt gut dazu.</span></div>`}
-        ${props.contextNote && html`<div class="tk-nw__ctx"><${Icon} name="cloud-sun-rain" size=${15} /><span>${props.contextNote}</span></div>`}
+        ${note && html`<div class="tk-nw__ctx"><${Icon} name="cloud-sun-rain" size=${15} /><span>${note}</span></div>`}
         <div class="tk-nw__cta"><${Button} variant="primary" icon="play" onClick=${open}>${isToday ? 'Training starten' : 'Training ansehen'}<//><${Button} icon="calendar-days" onClick=${() => ctx.emit('plan.open')}>Plan<//></div></div>
     </div><//>`;
   },

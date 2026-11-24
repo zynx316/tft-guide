@@ -37,7 +37,7 @@ export const savingsGoalCard = {
   name: 'Sparziele mit Prognose',
   category: 'Sparpläne',
   description: 'Sparziele mit Fortschritt, voraussichtlichem Datum und nötiger Rate (Modellrechnung). Liste (dicht), Karten mit Ring oder Fokus-Karte für das Ziel, das Aufmerksamkeit braucht. Rate anpassen direkt im Dialog.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Sparziele' },
     { name: 'style', label: 'Darstellung', type: 'select', options: ['list', 'cards', 'hero'], default: 'list' },

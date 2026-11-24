@@ -2,18 +2,18 @@
 import { html } from '../../../lib/html.js';
 import { Card, Icon, Button, EmptyState } from '../../ui.js';
 import { dayStart, addDays, dayKey, selDate, occurrences, onDay, minutesOf, timeStr, hm, durLabel, catColor, layoutDay, freeSlots, longDay, openCreateDialog } from './_cal.js';
-import { openEvent, OPEN_MODE_PROP, hoursLabel, bookedMinutes } from './_cal-info.js';
+import { openEvent, OPEN_MODE_PROP, hoursLabel, bookedMinutes, freeWindows } from './_cal-info.js';
 
 export const dayBand = {
   id: 'day-band',
   name: 'Tagesband',
   category: 'Kalender',
   description: 'Der Tag als Zeitstreifen: farbige Blöcke für Termine, schraffierte freie Fenster, Jetzt-Marke. Darunter die Termine als antippbare Zeilen. Zeigt auf einen Blick, wie voll und wo Luft ist.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Heute im Überblick' },
     { name: 'startHour', label: 'Beginn (Std.)', type: 'number', default: 8 },
-    { name: 'endHour', label: 'Ende (Std.)', type: 'number', default: 19 },
+    { name: 'endHour', label: 'Ende / Feierabend (Std.)', type: 'number', default: 18 },
     { name: 'day', label: 'Tag', type: 'select', options: ['today', 'selectedDate'], default: 'today' },
     { name: 'showList', label: 'Terminzeilen', type: 'boolean', default: true },
     { name: 'listLimit', label: 'Max. Zeilen', type: 'number', default: 4 },
@@ -47,7 +47,7 @@ export const dayBand = {
     if (!events.length) return html`<${Card} title=${props.title}><${EmptyState} icon="calendar" title="Keine Termine" text="Lege einen Termin an, dann erscheint das Tagesband." /><//>`;
     const pct = (m) => `${Math.max(0, Math.min(100, (m - s0) / span * 100))}%`;
     const lanes = layoutDay(timed, 10);
-    const free = freeSlots(timed, Math.max(s0, isToday ? Math.ceil(nowMin / 15) * 15 : s0), e0, 30);
+    const free = isToday ? freeWindows(timed, nowMin, e0, s0) : freeSlots(timed, s0, e0, 30);
     const freeMin = free.reduce((n, [a, b]) => n + b - a, 0), rest = timed.filter((o) => !isToday || minutesOf(o._e) > nowMin);
     return html`<${Card} title=${props.title} icon="gauge" actions=${html`<span class="tk-subtle" style="font-size:var(--tk-fs-sm)">${longDay(day)}</span>`}>
       <div class="tk-cal-band" role="img" aria-label=${`${timed.length} Termine, ${hoursLabel(bookedMinutes(timed))} gebucht, ${hoursLabel(freeMin)} frei`}>

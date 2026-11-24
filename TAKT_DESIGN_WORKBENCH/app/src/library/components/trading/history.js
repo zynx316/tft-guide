@@ -7,7 +7,7 @@ import { fmtDate, fmtNumber } from '../../../lib/format.js';
 import { MONTHS_LONG, parseLocal } from '../../../lib/date.js';
 import { download } from '../../../lib/util.js';
 import { buildLedger, kindLabel, arr, byId, known, sum } from './_calc.js';
-import { slots, Tile, Stat, Note, Px, TRD_CSS, openSecurity } from './_trd.js';
+import { slots, qtyText, Tile, Stat, Note, Px, TRD_CSS, openSecurity } from './_trd.js';
 import { ex } from './_example.js';
 
 const ICON = { buy: 'trending-up', sell: 'trending-down', plan: 'repeat', dividend: 'coins', sim: 'circle-dashed' };
@@ -19,7 +19,7 @@ export const trdHistory = {
   name: 'Transaktionen',
   category: 'Trading',
   description: 'Alle Bewegungen im Depot nach Monat: Käufe, Verkäufe (mit realisiertem Gewinn und Steuer-Orientierung), Sparplan-Ausführungen, Dividenden und simulierte Orders. Filtern, suchen, Detail öffnen und als CSV ausgeben.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Transaktionen' },
     { name: 'limit', label: 'Max. Einträge (0 = alle)', type: 'number', default: 0 },
@@ -46,7 +46,7 @@ export const trdHistory = {
     const exportCsv = () => { const rows = [['Datum', 'Art', 'Wertpapier', 'Stück', 'Kurs', 'Gebühr', 'Betrag'], ...list.map((e) => [fmtDate(e.date), kindLabel(e.kind), nm(e), fmtNumber(e.qty, { digits: 4 }), fmtNumber(e.price, { digits: 2 }), fmtNumber(e.fee || 0, { digits: 2 }), fmtNumber(e.amount, { digits: 2 })])];
       try { download('transaktionen.csv', rows.map((r) => r.join(';')).join('\n'), 'text/csv'); } catch { /* Vorschau ohne Download */ } ctx.emit('history.export', { rows: list.length }); ctx.toast(`CSV mit ${list.length} Zeilen erstellt (Demo)`); };
     const detail = (e) => { ctx.emit('history.open', { id: e.id }); ctx.openDialog({ title: e.title, body: (close) => html`<div class="tk-col" style="gap:12px"><dl class="tk-trd-hs__dl"><dt>Datum</dt><dd>${fmtDate(e.date, { style: 'weekday' })}</dd><dt>Art</dt><dd>${kindLabel(e.kind)}${e.simulated ? ' (Simulation)' : ''}</dd>
-        <dt>Stück</dt><dd>${fmtNumber(e.qty, { digits: e.qty % 1 ? 4 : 0 })}</dd><dt>${e.kind === 'dividend' ? 'je Aktie' : 'Kurs'}</dt><dd><${Px} v=${e.price} /></dd><dt>Gebühr</dt><dd>${money(ctx, e.fee || 0)}</dd><dt>Betrag</dt><dd><strong>${money(ctx, e.amount, { sign: true })}</strong></dd>
+        <dt>Stück</dt><dd>${ctx.privacy ? '••' : fmtNumber(e.qty, { digits: e.qty % 1 ? 4 : 0 })}</dd><dt>${e.kind === 'dividend' ? 'je Aktie' : 'Kurs'}</dt><dd><${Px} v=${e.price} /></dd><dt>Gebühr</dt><dd>${money(ctx, e.fee || 0)}</dd><dt>Betrag</dt><dd><strong>${money(ctx, e.amount, { sign: true })}</strong></dd>
         ${e.gain != null && html`<dt>Realisierter Gewinn</dt><dd>${money(ctx, e.gain, { sign: true })}</dd><dt>Steuer (Schätzung)</dt><dd>${money(ctx, e.tax)}</dd>`}</dl>
         ${e.simulated && html`<${Note} icon="info">Simuliert: Es wurde nichts an einen Broker gesendet.<//>`}${e.gain != null && html`<${Note} icon="scale">Steuer-Orientierung, keine Steuerberatung. Annahmen Stand 01/2026, mit Freistellungsauftrag.<//>`}</div>`,
         footer: (close) => html`<${Button} onClick=${close}>Schließen<//>${e.securityId && html`<${Button} variant="primary" icon="arrow-up-right" onClick=${() => { close(); openSecurity(ctx, e.securityId); }}>Wertpapier öffnen<//>`}` }); };
@@ -56,7 +56,7 @@ export const trdHistory = {
       <div class="tk-trd-hs__tools"><${Search} value=${q} onInput=${setQ} placeholder="Transaktionen durchsuchen" /></div><div class="tk-row" style="gap:6px;flex-wrap:wrap" role="group" aria-label="Art der Transaktion">${FILTERS.map(([v, l]) => html`<${Chip} active=${f === v} onClick=${() => { setF(v); ctx.emit('history.filter', { kind: v }); }}>${l} ${cnt(v)}<//>`)}</div>
       ${groups.length ? groups.map((g) => { const [y, m] = g.k.split('-'); return html`<section><div class="tk-trd-hs__m"><strong>${MONTHS_LONG[Number(m) - 1]} ${y}</strong><span class="tk-trd-meta tk-trd-num">${money(ctx, sum(g.items.filter((e) => !e.simulated), (e) => e.amount), { sign: true })}</span></div>
         <div class="tk-trd-list">${g.items.map((e) => html`<button type="button" class="tk-trd-hs__row" onClick=${() => detail(e)} aria-label=${`${e.title}, Details`}><${Tile} icon=${ICON[e.kind]} tone=${TONE[e.kind]} size=${34} />
-          <span class="tk-trd-grow"><span class="tk-trd-title" style="display:block">${e.title}</span><span class="tk-trd-sub">${fmtDate(parseLocal(e.date), { style: 'weekday' })}${e.kind !== 'dividend' && e.qty ? ` · ${fmtNumber(e.qty, { digits: e.qty % 1 ? 3 : 0 })} Stück` : ''}${e.status === 'offen' ? ' · offen' : ''}</span></span>
+          <span class="tk-trd-grow"><span class="tk-trd-title" style="display:block">${e.title}</span><span class="tk-trd-sub">${fmtDate(parseLocal(e.date), { style: 'weekday' })}${e.kind !== 'dividend' && e.qty ? ` · ${qtyText(ctx, e.qty)} Stück` : ''}${e.status === 'offen' ? ' · offen' : ''}</span></span>
           ${e.simulated && html`<span class="tk-trd-pill tk-trd-pill--info">Simulation</span>`}<strong class="tk-trd-num">${money(ctx, e.amount, { sign: true })}</strong></button>`)}</div></section>`; })
         : html`<${EmptyState} icon="search" title="Keine Treffer" text="Passe Filter oder Suche an." />`}</div><//>`;
   },

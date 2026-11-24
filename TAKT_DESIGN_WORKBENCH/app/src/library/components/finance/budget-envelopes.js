@@ -25,7 +25,7 @@ export const finBudgetEnvelopes = {
   name: 'Budget-Hüllen',
   category: 'Finanzen',
   description: 'Budgets als Hüllen: Rest, Tagesbudget und Monatsverlauf je Kategorie. Warnfarbe ab 85 %, bei Überschreitung sachlich in Warnton. Hüllen lassen sich anpassen, hinzufügen und entfernen.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Budgets' },
     { name: 'style', label: 'Darstellung', type: 'select', options: ['bars', 'envelopes', 'attention'], default: 'bars' },
@@ -74,8 +74,8 @@ export const finBudgetEnvelopes = {
     const text = (b) => (b.status === 'over' ? `${eur(c, -b.left)} über dem Budget` : b.status === 'warn' ? `Knapp: noch ${eur(c, b.left)}` : `Noch ${eur(c, b.left)}`);
     const bar = (b) => html`<div class="tk-fnb__track"><div class="tk-fn-bar" role="progressbar" aria-valuenow=${Math.round(b.pct * 100)} aria-valuemin="0" aria-valuemax="100" aria-label=${`${b.label}: ${Math.round(b.pct * 100)} Prozent`}><i style=${`width:${Math.min(100, b.pct * 100)}%;background:${STAT[b.status].col}`}></i></div>
       ${props.showPace && html`<span class="tk-fnb__tick" style=${`left:${b.paceTick * 100}%`} title=${`Nach ${Math.round(b.paceTick * 100)} % des Monats wären ${eur(c, b.expected)} üblich`}></span>`}</div>`;
-    const totT = shown.reduce((s, b) => s + b.target, 0), totU = shown.reduce((s, b) => s + b.used, 0);
-    const foot = html`<div class="tk-fnb__foot"><span>Zugeteilt ${eur0(c, totT)}</span><span>Ausgegeben ${eur0(c, totU)}</span><span>${totT - totU >= 0 ? `Übrig ${eur0(c, totT - totU)}` : `${eur0(c, totU - totT)} über Plan`}</span></div>`;
+    const allEnv = all.map((b) => envelope(b, spent, ctx.today, txs.length > 0)), totT = allEnv.reduce((s, b) => s + b.target, 0), totU = allEnv.reduce((s, b) => s + b.used, 0), A = { cents: 'auto' };
+    const foot = html`<div class="tk-fnb__foot">${shown.length < allEnv.length && html`<span>Alle ${allEnv.length} Budgets:</span>`}<span>Zugeteilt ${eur(c, totT, A)}</span><span>Ausgegeben ${eur(c, totU, A)}</span><span>${totT - totU >= 0 ? `Übrig ${eur(c, totT - totU, A)}` : `${eur(c, totU - totT, A)} über Plan`}</span></div>`;
     if (props.style === 'envelopes') return html`<${Card} title=${props.title} icon="wallet" actions=${addBtn}><div class="tk-fnb__grid">${shown.map((b) => html`<div class="tk-fnb__env"><button type="button" class="tk-fnb__open" onClick=${() => open(b)} aria-label=${`${b.label}: ${text(b)}`}>
       <div class="tk-fn-row"><${Tile} icon=${b.icon} tone=${b.status === 'ok' ? 'accent' : 'warning'} size=${32} /><span class="tk-fn-title">${b.label}</span></div>
       <div><div class="tk-fnb__rest" style=${b.status !== 'ok' ? 'color:var(--tk-c-warning)' : ''}>${text(b)}</div><div class="tk-fn-sub">${eur(c, b.used)} von ${eur0(c, b.target)}${b.left > 0 ? ` · ${eur(c, b.perDay)} pro Tag` : ''}</div></div>${bar(b)}</button>

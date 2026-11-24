@@ -6,7 +6,7 @@ import { MEALS, mealInfo, num, todayIso, shiftDay, dayLabel, hhmm, viewDay, MACR
 import { recipePerServing, scaleIngredients, recipeAllergens, recipeToEntry, recipeTime } from './_recipes.js';
 import { logEntry } from './_portion.js';
 import { CookView, COOK_CSS } from './cook-mode.js';
-import { Stepper, arr, obj, tintBox } from './_ui.js';
+import { Stepper, LBL_CSS, arr, obj, tintBox, labelNote } from './_ui.js';
 
 function LogSheet({ r, servings0, onSave }) {
   const [k, setK] = useState(1), [meal, setMeal] = useState(r.meal || 'lunch');
@@ -27,7 +27,7 @@ export const recipeDetail = {
   name: 'Rezept-Detail',
   category: 'Ernährung',
   description: 'Ein Rezept mit skalierbaren Portionen, Zutaten, Schritten, Nährwerten je Portion (aus den Zutaten berechnet) und Allergenen. Aktionen: ins Tagebuch, in den Plan, Zutaten zur Einkaufsliste und Kochmodus.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'defaultRecipe', label: 'Standard-Rezept (ID)', type: 'text', default: '' },
     { name: 'showActions', label: 'Aktionen zeigen', type: 'boolean', default: true },
@@ -41,7 +41,7 @@ export const recipeDetail = {
   ],
   events: ['recipe.log', 'recipe.plan', 'recipe.shop', 'recipe.cook', 'recipe.favorite', 'recipe.servings', 'portion.confirm'],
   states: ['empty'],
-  css: `${COOK_CSS}
+  css: `${COOK_CSS}${LBL_CSS}
   .tk-nrec { display:flex; flex-direction:column; gap:var(--tk-space-4); min-width:0; }
   .tk-nrec__head { display:flex; gap:14px; align-items:flex-start; } .tk-nrec__head h2 { margin:0; font-size:var(--tk-nfs-2xl); letter-spacing:var(--tk-ls-tight); line-height:1.2; }
   .tk-nrec__cover { width:64px; height:64px; border-radius:18px; display:grid; place-items:center; flex:none; background:color-mix(in srgb, var(--rc) 18%, var(--tk-c-surface)); color:var(--rc); }
@@ -80,6 +80,7 @@ export const recipeDetail = {
       <div class="tk-row" style="gap:12px;flex-wrap:wrap"><span class="tk-nu-meta">Portionen</span><${Stepper} value=${k} onChange=${(n) => { setServings(n); ctx.emit('recipe.servings', { id: r.id, servings: n }); }} step=${1} min=${1} max=${24} label="Portionen" /><span class="tk-nu-meta">Nährwerte je Portion bleiben gleich</span></div>
       <div class="tk-nrec__nut" aria-label="Nährwerte pro Portion"><div><strong>${num(ps.kcal)}</strong><span>kcal je Portion</span></div>${MACROS.map((m) => html`<div><strong>${num(ps[m.id], 1)} g</strong><span>${m.label}</span></div>`)}</div>
       <div class="tk-nu-meta">Gesamt für ${num(k, k % 1 ? 1 : 0)} Portion${k === 1 ? '' : 'en'}: ${num(ps.kcal * k)} kcal · E ${num(ps.protein * k)} g · Ballaststoffe ${num(ps.fiber * k)} g${allergens.length ? ` · Enthält: ${allergens.join(', ')}` : ''}</div>
+      ${labelNote()}
       ${props.showActions && html`<div class="tk-nrec__act"><${Button} variant="primary" icon="plus" onClick=${log}>Ins Tagebuch<//><${Button} icon="calendar-plus" onClick=${plan}>In den Plan<//><${Button} icon="shopping-cart" onClick=${shop}>Zutaten zur Einkaufsliste<//><${Button} icon="chef-hat" onClick=${cooking}>Kochmodus<//></div>`}</div><//>
       <div class="tk-nrec__cols"><${Card} title="Zutaten" icon="list-checks"><ul class="tk-nrec__ing">${ing.map((x) => html`<li><span>${x.name}</span><strong>${x.label}</strong></li>`)}</ul><//>
         <${Card} title="Zubereitung" icon="list-ordered"><ol class="tk-nrec__steps">${(r.steps || []).map((s) => html`<li><div style="min-width:0">${s.text}${s.minutes ? html` <${Badge} icon="timer">${s.minutes} Min.<//>` : null}</div></li>`)}</ol><//></div></div>`;

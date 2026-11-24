@@ -23,6 +23,7 @@ export const kbAreas = {
   events: ['kb.area'],
   states: ['empty'],
   css: `
+  [data-tk-large-text] .tk-kb-tree .tk-truncate, [data-tk-large-text] .tk-kb-areas .tk-truncate, [data-tk-large-text] .tk-kb-next .tk-truncate { white-space:normal; overflow:visible; text-overflow:clip; overflow-wrap:anywhere; }
   .tk-kb-areas { display:grid; gap:var(--tk-space-3); grid-template-columns:repeat(auto-fill, minmax(min(100%, var(--minw,240px)), 1fr)); }
   .tk-kb-area { display:flex; flex-direction:column; gap:12px; text-align:left; padding:var(--tk-space-5); color:inherit; font:inherit; cursor:pointer; min-width:0; }
   .tk-kb-area__ico { width:48px; height:48px; border-radius:16px; display:grid; place-items:center; }

@@ -2,9 +2,9 @@
 import { html } from '../../../lib/html.js';
 import { Card, Badge, Icon, Button, EmptyState, Sparkline } from '../../ui.js';
 import { money, percent } from '../../helpers.js';
-import { fmtNumber, fmtPercent } from '../../../lib/format.js';
+import { fmtPercent } from '../../../lib/format.js';
 import { holdings, arr } from '../trading/_calc.js';
-import { Gain, Px, TRD_CSS, TYPE_ICON, slots } from '../trading/_trd.js';
+import { qtyText, Gain, Px, TRD_CSS, TYPE_ICON, slots } from '../trading/_trd.js';
 import { ex } from '../trading/_example.js';
 
 export const portfolioSummary = {
@@ -12,7 +12,7 @@ export const portfolioSummary = {
   name: 'Depot-Übersicht',
   category: 'Trading',
   description: 'Depotwert, Gewinn/Verlust (absolut und prozentual), Tagesveränderung, Allokation und Positionsliste. Per „layout“ nur Kopf, nur Positionen oder alles. Positionen im Weltformat, Antippen öffnet das Wertpapier. Ausdrücklich Anzeige und Simulation.',
-  version: '2.0',
+  version: '2.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Depot' },
     { name: 'layout', label: 'Umfang', type: 'select', options: ['full', 'summary', 'positions'], default: 'full' },
@@ -46,7 +46,7 @@ export const portfolioSummary = {
       ctx.setUi('selectedId', r.id);
       if (ctx.emit('position.open', { id: r.id, to: 'trading.detail' }) || ctx.mode === 'app') return;
       ctx.openDialog({ title: r.short || r.name, body: () => html`<div class="tk-col" style="gap:10px"><div class="tk-row"><${Badge}>${r.type}<//><${Badge} tone="info">Simulation<//></div>
-        <dl style="display:grid;grid-template-columns:minmax(110px,auto) 1fr;gap:8px 16px;margin:0;font-size:var(--tk-fs-sm)"><dt class="tk-subtle">Stückzahl</dt><dd style="margin:0">${fmtNumber(r.q, { digits: r.q % 1 ? 3 : 0 })}</dd><dt class="tk-subtle">Einstandskurs</dt><dd style="margin:0"><${Px} v=${r.buy} /></dd>
+        <dl style="display:grid;grid-template-columns:minmax(110px,auto) 1fr;gap:8px 16px;margin:0;font-size:var(--tk-fs-sm)"><dt class="tk-subtle">Stückzahl</dt><dd style="margin:0">${qtyText(ctx, r.q)}</dd><dt class="tk-subtle">Einstandskurs</dt><dd style="margin:0">${money(ctx, r.buy)}</dd>
           <dt class="tk-subtle">Aktueller Kurs</dt><dd style="margin:0"><${Px} v=${r.price} /></dd><dt class="tk-subtle">Marktwert</dt><dd style="margin:0;font-weight:600">${money(ctx, r.value)}</dd><dt class="tk-subtle">Gewinn/Verlust</dt><dd style="margin:0"><${Gain} ctx=${ctx} v=${r.gain} pct=${r.gainPct} /></dd></dl></div>`,
         footer: (close) => html`<${Button} onClick=${close}>Schließen<//><${Button} variant="primary" icon="arrow-up-right" onClick=${() => { ctx.emit('position.trade', { id: r.id, to: 'trading.order' }); ctx.toast('Order-Ticket (Simulation) vorbereitet'); close(); }}>Order simulieren<//>` });
     };
@@ -56,7 +56,7 @@ export const portfolioSummary = {
       <div class="tk-portfolio__alloc" role="img" aria-label="Allokation">${groups.map(([k, v], i) => html`<span title=${`${k}: ${fmtPercent(v / hd.total, { digits: 0 })}`} style=${`flex:${v};background:var(--tk-chart-${(i % 6) + 1})`}></span>`)}</div>
       <div class="tk-portfolio__legend">${groups.map(([k, v], i) => html`<span><i class="tk-dot" style=${`background:var(--tk-chart-${(i % 6) + 1})`}></i>${k} <strong class="tk-num" style="color:var(--tk-c-text)">${fmtPercent(v / hd.total, { digits: 0 })}</strong></span>`)}</div></div>`;
     const positions = rows.length ? rows.map((r) => html`<button type="button" class="tk-portfolio__pos" aria-selected=${ctx.ui.selectedId === r.id ? 'true' : 'false'} onClick=${() => open(r)} aria-label=${`${r.short || r.name} öffnen`}>
-        <span class="tk-portfolio__ico"><${Icon} name=${TYPE_ICON[r.type] || 'circle'} size=${17} /></span><span class="tk-grow" style="min-width:0"><span class="tk-truncate" style="display:block;font-weight:600">${r.short || r.name}</span><span class="tk-truncate tk-subtle" style="display:block;font-size:var(--tk-fs-sm)">${fmtNumber(r.q, { digits: r.q % 1 ? 3 : 0 })} × <${Px} v=${r.price} /></span></span>
+        <span class="tk-portfolio__ico"><${Icon} name=${TYPE_ICON[r.type] || 'circle'} size=${17} /></span><span class="tk-grow" style="min-width:0"><span class="tk-truncate" style="display:block;font-weight:600">${r.short || r.name}</span><span class="tk-truncate tk-subtle" style="display:block;font-size:var(--tk-fs-sm)">${qtyText(ctx, r.q)} × <${Px} v=${r.price} /></span></span>
         ${props.showSpark && ctx.bp === 'desktop' && arr(r.spark).length > 1 && html`<${Sparkline} values=${r.spark} width=${64} height=${24} tone=${r.gain >= 0 ? 'success' : 'danger'} />`}
         <span class="tk-portfolio__num"><strong>${money(ctx, r.value)}</strong><${Gain} ctx=${ctx} v=${r.gain} pct=${r.gainPct} digits=${0} /></span></button>`)
       : html`<${EmptyState} icon="search" title="Keine Treffer" text=${`Keine Position für „${ctx.ui.query}“.`} />`;

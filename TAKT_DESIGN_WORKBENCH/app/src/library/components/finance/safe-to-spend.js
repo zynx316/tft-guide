@@ -11,7 +11,7 @@ export const finSafeToSpend = {
   name: 'Frei verfügbar',
   category: 'Finanzen',
   description: 'Was bis Monatsende frei bleibt: Girokonto minus offene Kreditkarte, Abbuchungen bis zum Monatswechsel, Sparraten und Puffer. Jede Zahl ist über „Wie berechnet?“ herleitbar.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Frei verfügbar' },
     { name: 'style', label: 'Darstellung', type: 'select', options: ['hero', 'compact', 'formula'], default: 'hero' },
@@ -30,6 +30,7 @@ export const finSafeToSpend = {
   .tk-fns__how dt { color:var(--tk-c-text-muted); min-width:0; } .tk-fns__how dd { margin:0; text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
   .tk-fns__how .tk-fns__sum { font-weight:var(--tk-fw-bold); color:var(--tk-c-text); border-top:1px solid var(--tk-c-border-strong); padding-top:6px; }
   .tk-fns__row { display:flex; align-items:center; gap:12px; min-width:0; } .tk-fns__row .tk-fn-big { font-size:var(--tk-fs-2xl); }
+  [data-tk-large-text] .tk-fns__row { flex-wrap:wrap; } [data-tk-large-text] .tk-fns__row > .tk-fn-grow { flex:1 1 100%; }
   .tk-fns__formula { display:flex; flex-wrap:wrap; align-items:baseline; gap:4px 8px; font-variant-numeric:tabular-nums; font-size:var(--tk-fs-sm); color:var(--tk-c-text-muted); }
   .tk-fns__formula b { color:var(--tk-c-text); }`,
   example: { props: { openHow: true }, data: ex('accounts', 'transactions', 'subscriptions', 'plans', 'events', 'prefs') },

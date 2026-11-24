@@ -37,20 +37,14 @@ const TILES = [
   { id: 'training', label: 'Training', icon: 'dumbbell', tone: 6, on: true, size: 'S' }, { id: 'nutrition', label: 'Ernährung', icon: 'apple', tone: 4, on: false, size: 'S' },
   { id: 'quick', label: 'Schnellerfassung', icon: 'plus', tone: 'accent', on: true, size: 'M' },
 ];
-// Wochenwerte (letzte 7 Tage, Mi–Di): Aufgaben aus dem Diagramm, Fokuszeit aus dem Kalender, Auszahlungen aus den Finanzbuchungen (Shopify 21.11. + Etsy 23.11.)
-const week = { labels: ['Mi', 'Do', 'Fr', 'Sa', 'So', 'Mo', 'Di'], series: [{ name: 'Erledigt', values: [6, 4, 7, 2, 1, 8, 3] }, { name: 'Neu', values: [4, 5, 3, 1, 2, 6, 4] }] };
-const stats = [
-  { key: 'tasks', label: 'Aufgaben erledigt', value: 31, prev: 26, icon: 'list-checks', tone: 'warning', module: 'tasks' },
-  { key: 'focus', label: 'Fokuszeit', value: 11.5, unit: 'h', prev: 9.8, icon: 'target', tone: 'success', module: 'calendar' },
-  { key: 'payout', label: 'Shop-Auszahlungen', value: 2952.4, money: true, prev: 2410, icon: 'store', tone: 'accent2', module: 'finance' },
-];
+// Wochenwerte (Aufgaben, Fokuszeit, Auszahlungen) werden nie hier gepflegt: Diagramm und Rückblick rechnen sie aus der Welt (tasks, taskActivity, taskFocusLog, transactions).
 
-const world = { events: '@world:events', tasks: '@world:tasks', finance: '@world:financeSummary', plans: '@world:savingsPlans', budgets: '@world:budgets', subs: '@world:subscriptions', weather: '@world:wxActive', training: '@world:fitnessToday', nutrition: '@world:nutSummary' };
+const world = { events: '@world:events', tasks: '@world:tasks', finance: '@world:financeSummary', plans: '@world:savingsPlans', budgets: '@world:budgets', subs: '@world:subscriptions', weather: '@world:wxActive', training: '@world:fitnessToday', nutrition: '@world:nutSummary', activity: '@world:taskActivity', log: '@world:taskFocusLog', transactions: '@world:transactions' };
 const local = { habits: '@world:habits', hints: HINTS };
 const ALL_VP = ['desktop', 'notebook', 'tablet', 'mobile'];
-const demoToday = { ...world, ...local, tiles: TILES, week };
+const demoToday = { ...world, ...local, tiles: TILES };
 const demoBrief = { ...world, ...local };
-const demoReview = { ...world, ...local, stats, week };
+const demoReview = { ...world, ...local };
 
 const EXTRA_NAV = [
   { trigger: 'Gewohnheit antippen', result: 'Detail der Gewohnheit (Serie, Heatmap)', event: 'habit.open', to: 'habits.detail' },
@@ -129,7 +123,7 @@ export default {
           description: '+ Maximale Übersicht auf großen Bildschirmen  − Auf Mobile lange Seite',
           layout: { type: 'grid' },
           blocks: [
-            { id: 'hdr', component: 'page-header', region: 'header', props: { eyebrow: 'Dienstag, 24. November', title: 'Guten Morgen, Jonas', subtitle: 'Heute zählt: Angebot Müller um 14:00', primaryLabel: 'Briefing', primaryIcon: 'sunrise', primaryEvent: 'briefing.open', secondaryLabel: 'Anpassen', secondaryIcon: 'sliders-horizontal' } },
+            { id: 'hdr', component: 'page-header', region: 'header', props: { eyebrow: 'Dienstag, 24. November', title: 'Guten Morgen, Jonas', subtitle: 'Dein Tag auf einen Blick', primaryLabel: 'Briefing', primaryIcon: 'sunrise', primaryEvent: 'briefing.open', secondaryLabel: 'Anpassen', secondaryIcon: 'sliders-horizontal' } },
             { id: 'kpi', component: 'today-tiles', region: 'main', span: 12, spanTablet: 12, props: { layout: 'strip', tiles: ['calendar', 'tasks', 'habits', 'weather'] } },
             { id: 'hints', component: 'hint-cards', region: 'main', span: 12, spanTablet: 12, bind: { hints: 'hints' }, props: { title: 'Hinweise', style: 'list', limit: 2, dense: true } },
             { id: 'agenda', component: 'agenda', region: 'main', span: 7, spanTablet: 12, bind: { events: 'events' }, props: { title: 'Agenda heute', days: 1, startFrom: 'today', showFree: true } },
@@ -144,11 +138,11 @@ export default {
           description: '+ Klare Reihenfolge, schnell bedienbar  − Weniger Überblick auf Desktop',
           layout: { type: 'stack', narrow: true },
           blocks: [
-            { id: 'hdr', component: 'page-header', region: 'header', props: { title: 'Heute', subtitle: 'Di, 24. November · das Wichtigste zuerst', primaryLabel: '', secondaryLabel: 'Anpassen', secondaryIcon: 'sliders-horizontal' } },
+            { id: 'hdr', component: 'page-header', region: 'header', props: { title: 'Heute', subtitle: 'Di, 24. November', primaryLabel: 'Briefing', primaryIcon: 'sunrise', primaryEvent: 'briefing.open', secondaryLabel: 'Anpassen', secondaryIcon: 'sliders-horizontal' } },
             { id: 'note', component: 'hint-cards', region: 'main', bind: { hints: 'hints' }, props: { style: 'banner' } },
             { id: 'next', component: 'focus-next', region: 'main', bind: { events: 'events', tasks: 'tasks' }, props: { title: 'Als Nächstes' } },
             { id: 'habit', component: 'habit-list', region: 'main', bind: { habits: 'habits' }, props: { title: 'Gewohnheiten', style: 'next', allLabel: 'Alle Gewohnheiten' } },
-            { id: 'ctx', component: 'today-tiles', region: 'main', props: { title: 'Kontext', layout: 'list', tiles: ['weather', 'training', 'nutrition', 'finance', 'savings'] } },
+            { id: 'ctx', component: 'today-tiles', region: 'main', props: { title: 'Kontext', layout: 'list', tiles: ['calendar', 'tasks', 'weather', 'training', 'nutrition', 'finance', 'savings'] } },
             { id: 'cap', component: 'quick-capture', region: 'bottom', bind: { tasks: 'tasks', habits: 'habits' }, props: { elevated: true } },
           ],
         },
@@ -162,7 +156,7 @@ export default {
             { id: 'agenda', component: 'agenda', region: 'main', span: 7, spanTablet: 12, bind: { events: 'events' }, props: { title: 'Heute', days: 1, startFrom: 'today', showFree: true } },
             { id: 'cards', component: 'today-tiles', region: 'main', span: 12, spanTablet: 12, props: { layout: 'cards', columns: 3, tiles: ['weather', 'finance', 'training', 'nutrition', 'savings', 'tasks'] } },
             { id: 'habits', component: 'habit-list', region: 'main', span: 12, spanTablet: 12, bind: { habits: 'habits' }, props: { title: 'Gewohnheiten', style: 'cards', allLabel: 'Alle Gewohnheiten' } },
-            { id: 'chart', component: 'chart', region: 'main', span: 7, spanTablet: 12, bind: { series: 'week' }, props: { title: 'Aufgaben – letzte 7 Tage', type: 'bar', height: 180 } },
+            { id: 'chart', component: 'task-week-chart', region: 'main', span: 7, spanTablet: 12, bind: { tasks: 'tasks', activity: 'activity', log: 'log' }, props: { title: 'Aufgaben – letzte 7 Tage' } },
             { id: 'hints', component: 'hint-cards', region: 'main', span: 5, spanTablet: 12, bind: { hints: 'hints' }, props: { title: 'Hinweise', style: 'list', limit: 3 } },
           ],
         },
@@ -264,7 +258,7 @@ export default {
           blocks: [
             { id: 'hdr', component: 'page-header', region: 'header', props: { eyebrow: 'Start', title: 'Rückblick', subtitle: 'Abend abschließen, Woche verstehen', primaryLabel: '', secondaryLabel: 'Startseite', secondaryIcon: 'home' } },
             { id: 'day', component: 'ritual-stepper', region: 'main', tab: 'Abend', bind: { tasks: 'tasks', habits: 'habits' }, props: { style: 'list' } },
-            { id: 'week', component: 'week-review', region: 'main', tab: 'Woche', bind: { stats: 'stats', habits: 'habits', finance: 'finance', budgets: 'budgets' }, props: { scope: 'all', style: 'list' } },
+            { id: 'week', component: 'week-review', region: 'main', tab: 'Woche', bind: { tasks: 'tasks', activity: 'activity', log: 'log', transactions: 'transactions', habits: 'habits', finance: 'finance', budgets: 'budgets' }, props: { scope: 'all', style: 'list' } },
           ],
         },
         {
@@ -273,8 +267,8 @@ export default {
           layout: { type: 'tabs' },
           blocks: [
             { id: 'hdr', component: 'page-header', region: 'header', props: { eyebrow: 'Start', title: 'Rückblick', subtitle: 'Was diese Woche geschafft wurde', primaryLabel: '', secondaryLabel: 'Startseite', secondaryIcon: 'home' } },
-            { id: 'week', component: 'week-review', region: 'main', tab: 'Woche', bind: { stats: 'stats', habits: 'habits', finance: 'finance', budgets: 'budgets' }, props: { scope: 'all', style: 'cards' } },
-            { id: 'chart', component: 'chart', region: 'main', tab: 'Woche', bind: { series: 'week' }, props: { title: 'Aufgaben – letzte 7 Tage', type: 'bar', height: 170 } },
+            { id: 'week', component: 'week-review', region: 'main', tab: 'Woche', bind: { tasks: 'tasks', activity: 'activity', log: 'log', transactions: 'transactions', habits: 'habits', finance: 'finance', budgets: 'budgets' }, props: { scope: 'all', style: 'cards' } },
+            { id: 'chart', component: 'task-week-chart', region: 'main', tab: 'Woche', bind: { tasks: 'tasks', activity: 'activity', log: 'log' }, props: { title: 'Aufgaben – letzte 7 Tage' } },
             { id: 'day', component: 'ritual-stepper', region: 'main', tab: 'Abend', bind: { tasks: 'tasks', habits: 'habits' }, props: { style: 'wizard' } },
           ],
         },

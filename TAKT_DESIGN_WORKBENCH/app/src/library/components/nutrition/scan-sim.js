@@ -4,7 +4,7 @@ import { useState, useEffect } from 'preact/hooks';
 import { Card, Button, Icon, Chip, Input, Field, EmptyState } from '../../ui.js';
 import { eanValid, num } from './_calc.js';
 import { PortionForm, PF_CSS, useLogMeal } from './_portion.js';
-import { NU_CSS, arr } from './_ui.js';
+import { NU_CSS, LBL_CSS, arr, labelNote } from './_ui.js';
 
 const UNKNOWN = '4099999999993';
 
@@ -13,7 +13,7 @@ export const scanSim = {
   name: 'Barcode-Scan (Simulation)',
   category: 'Ernährung',
   description: 'Simuliert den Barcode-Scanner: Sucherrahmen mit Scanlinie (bei reduzierter Bewegung statisch), Demo-Codes zum Antippen, manuelle EAN-Eingabe mit Prüfziffer und die Zustände Treffer, nicht gefunden und Kamera verweigert.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Barcode scannen' },
     { name: 'startMode', label: 'Startzustand', type: 'select', options: ['idle', 'denied'], default: 'idle' },
@@ -25,7 +25,8 @@ export const scanSim = {
   ],
   events: ['scan.start', 'scan.result', 'scan.manual', 'scan.denied', 'food.create', 'quick.open', 'portion.confirm'],
   states: ['empty'],
-  css: `${NU_CSS}${PF_CSS}
+  css: `${NU_CSS}${PF_CSS}${LBL_CSS}
+  .tk-nscan-wrap { display:flex; flex-direction:column; gap:var(--tk-space-3); min-width:0; }
   .tk-nscan { display:flex; flex-direction:column; gap:var(--tk-space-3); min-width:0; }
   .tk-nscan__view { position:relative; aspect-ratio:16/10; max-height:240px; border-radius:var(--tk-radius-lg); background:linear-gradient(160deg, var(--tk-c-surface3), var(--tk-c-surface2)); border:1px solid var(--tk-c-border); display:grid; place-items:center; overflow:hidden; }
   .tk-nscan__frame { position:relative; width:62%; height:56%; } .tk-nscan__frame::before, .tk-nscan__frame::after { content:''; position:absolute; inset:0; border:3px solid var(--tk-c-accent); border-radius:10px; mask:linear-gradient(#000 0 0) top left/22px 22px no-repeat, linear-gradient(#000 0 0) top right/22px 22px no-repeat, linear-gradient(#000 0 0) bottom left/22px 22px no-repeat, linear-gradient(#000 0 0) bottom right/22px 22px no-repeat; }
@@ -65,7 +66,7 @@ export const scanSim = {
         <${Button} variant="ghost" size="sm" icon="zap" class="tk-nscan__torch" aria-pressed=${String(torch)} aria-label="Taschenlampe" onClick=${() => setTorch(!torch)}>${torch ? 'An' : 'Aus'}<//>
         <div class="tk-nscan__hint">${mode === 'scanning' ? 'Code wird gelesen …' : 'Barcode in den Rahmen halten (Simulation)'}</div></div>
       <div><div class="tk-nu-meta" style="margin-bottom:6px">Demo-Codes antippen</div><div class="tk-nscan__chips">${withCode.slice(0, 5).map((f) => html`<${Chip} icon="barcode" onClick=${() => scan(f.barcode)}>${f.brand || f.name}<//>`)}<${Chip} icon="circle-help" onClick=${() => scan(UNKNOWN)}>Unbekannter Code<//><${Chip} icon="camera" onClick=${() => { setMode('denied'); ctx.emit('scan.denied'); }}>Kamera verweigert<//></div></div>${manualRow}</div>`;
-    return wrap(body);
+    return wrap(html`<div class="tk-nscan-wrap">${body}${labelNote()}</div>`);
   },
 };
 export default [scanSim];

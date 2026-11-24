@@ -49,6 +49,7 @@ export default {
         { trigger: 'Erfassungs-Karte antippen', result: 'Ergebnis der Erfassung', event: 'card.open', to: 'picture-to-text.result' },
         { trigger: 'Beleg antippen', result: 'Beleg prüfen und buchen', event: 'receipt.open', to: 'picture-to-text.receipt' },
         { trigger: '„Verlauf“', result: 'Alle Erfassungen mit Suche', event: 'header.secondary', to: 'picture-to-text.history' },
+        { trigger: '„Alle (n)“ an Verlauf oder „Zu prüfen“', result: 'Alle Erfassungen mit Suche', event: 'list.all.open', to: 'picture-to-text.history' },
         { trigger: 'Kennzahl antippen', result: 'Verlauf', event: 'metric.open', to: 'picture-to-text.history' },
       ],
       acceptance: [
@@ -71,8 +72,8 @@ export default {
             hdr({ eyebrow: 'Picture to Text', title: 'Übersicht', subtitle: 'Erfassungen prüfen, Belege buchen', primaryLabel: '', secondaryLabel: 'Verlauf', secondaryIcon: 'history' }),
             { id: 'launch', component: 'capture-launcher', region: 'main', props: { style: 'row' } },
             { id: 'flt', component: 'search-filter', region: 'main', props: { placeholder: 'Erkannten Text suchen …', filters: SRC } },
-            { id: 'hist', component: 'item-list', region: 'main', bind: { items: 'captures' }, props: { title: 'Verlauf', limit: 6, emptyTitle: 'Noch keine Erfassungen' } },
-            { id: 'rev', component: 'item-list', region: 'aside', bind: { items: 'toReview' }, props: { title: 'Zu prüfen', dense: true, emptyTitle: 'Alles geprüft' } },
+            { id: 'hist', component: 'count-list', region: 'main', bind: { items: 'captures' }, props: { title: 'Verlauf', limit: 6, link: 'Alle', emptyTitle: 'Noch keine Erfassungen', emptyText: 'Wähle oben einen der vier Wege, um den ersten Text zu erkennen.' } },
+            { id: 'rev', component: 'count-list', region: 'aside', bind: { items: 'toReview' }, props: { title: 'Zu prüfen', dense: true, emptyTitle: 'Nichts zu prüfen', emptyText: 'Erfassungen mit unsicheren Wörtern erscheinen hier.' } },
             { id: 'rcp', component: 'receipt-review', region: 'aside', props: { mode: 'list', title: 'Belege', limit: 3 } },
           ],
         },
@@ -83,7 +84,7 @@ export default {
           blocks: [
             hdr({ eyebrow: 'Picture to Text', title: 'Übersicht', subtitle: 'Was möchtest du erkennen?', primaryLabel: '', secondaryLabel: 'Verlauf', secondaryIcon: 'history' }),
             { id: 'launch', component: 'capture-launcher', region: 'main', span: 12, props: { style: 'tiles' } },
-            { id: 'kpi', component: 'metric-row', region: 'main', span: 8, spanTablet: 12, bind: { metrics: 'metrics' }, props: { columns: 4, showSpark: false } },
+            { id: 'kpi', component: 'kpi-tiles', region: 'main', span: 8, spanTablet: 12, bind: { metrics: 'metrics' }, props: { columns: 4, showSpark: false } },
             { id: 'src', component: 'chart', region: 'main', span: 4, spanTablet: 12, bind: { series: 'bySource' }, props: { title: 'Quellen', type: 'donut' } },
             { id: 'gal', component: 'card-grid', region: 'main', span: 12, bind: { items: 'captures' }, props: { title: 'Zuletzt erkannt', cover: true, minWidth: 230 } },
           ],
@@ -95,9 +96,9 @@ export default {
           blocks: [
             hdr({ title: 'Erkennen', subtitle: 'Di, 24. November', primaryLabel: '', secondaryLabel: 'Verlauf', secondaryIcon: 'history' }),
             { id: 'launch', component: 'capture-launcher', region: 'main', props: { style: 'hero' } },
-            { id: 'next', component: 'receipt-review', region: 'main', props: { mode: 'next' } },
-            { id: 'rev', component: 'item-list', region: 'main', bind: { items: 'toReview' }, props: { title: 'Zu prüfen', dense: true, limit: 3, emptyTitle: 'Alles geprüft' } },
-            { id: 'hist', component: 'item-list', region: 'main', bind: { items: 'captures' }, props: { title: 'Zuletzt', dense: true, limit: 3, emptyTitle: 'Noch keine Erfassungen' } },
+            { id: 'next', component: 'receipt-review', region: 'main', props: { mode: 'next', quietEmpty: true } },
+            { id: 'rev', component: 'count-list', region: 'main', bind: { items: 'toReview' }, props: { title: 'Zu prüfen', dense: true, limit: 3, link: 'Alle', quietEmpty: true, emptyTitle: 'Nichts zu prüfen', emptyText: 'Erfassungen mit unsicheren Wörtern erscheinen hier.' } },
+            { id: 'hist', component: 'count-list', region: 'main', bind: { items: 'captures' }, props: { title: 'Zuletzt', dense: true, limit: 3, link: 'Alle', emptyTitle: 'Noch keine Erfassungen', emptyText: 'Starte oben mit „Dokument scannen“.' } },
           ],
         },
       ],
@@ -136,7 +137,7 @@ export default {
             hdr({ eyebrow: 'Picture to Text', title: 'Text aus Bildern', subtitle: 'Foto aufnehmen, Datei wählen oder Bild einfügen', primaryLabel: '' }),
             { id: 'cap', component: 'capture-panel', region: 'main', props: { title: 'Bild erfassen', compact: true } },
             { id: 'res', component: 'ocr-result', region: 'main', props: { showImage: true } },
-            { id: 'hist', component: 'item-list', region: 'aside', bind: { items: 'captures' }, props: { title: 'Verlauf', limit: 6, emptyTitle: 'Noch keine Erfassungen' } },
+            { id: 'hist', component: 'count-list', region: 'aside', bind: { items: 'captures' }, props: { title: 'Verlauf', limit: 6, emptyTitle: 'Noch keine Erfassungen', emptyText: 'Das erste erkannte Bild erscheint hier.' } },
           ],
         },
         {
@@ -356,10 +357,10 @@ export default {
         {
           id: 'A', name: 'Liste + Ergebnis', direction: 'kompakt', concept: 'Seitenleiste mit Suche, Quellenfilter und Verlaufsliste; im Hauptbereich das Ergebnis der gewählten Erfassung.',
           description: '+ Schnell durchblättern  − Auf Mobile ist die Liste einklappbar',
-          layout: { type: 'sidebar', panelLabel: 'Verlauf & Suche' },
+          layout: { type: 'sidebar', panelLabel: 'Verlauf & Suche', panelOpen: true },
           blocks: [
             { id: 'flt', component: 'search-filter', region: 'panel', props: { placeholder: 'Erkannten Text suchen …', filters: SRC, layout: 'stacked' } },
-            { id: 'hist', component: 'item-list', region: 'panel', bind: { items: 'captures' }, props: { title: 'Erfassungen', emptyTitle: 'Keine Erfassungen gefunden' } },
+            { id: 'hist', component: 'count-list', region: 'panel', bind: { items: 'captures' }, props: { title: 'Erfassungen', emptyTitle: 'Keine Erfassungen gefunden', emptyText: 'Wähle oben einen Weg, um den ersten Text zu erkennen.' } },
             { id: 'res', component: 'ocr-result', region: 'main', props: { showImage: true } },
           ],
         },

@@ -3,7 +3,7 @@ import { html } from '../../../lib/html.js';
 import { Button, Icon, EmptyState } from '../../ui.js';
 import {
   addDays, startOfWeek, dayKey, selDate, isoWeek, occurrences, onDay, layoutDay, eventsFiltered, minutesOf, timeStr, hm,
-  catColor, openEventDialog, openCreateDialog, WEEKDAYS, monthName, EVENT_CSS,
+  catColor, openEventDialog, openCreateDialog, WEEKDAYS, monthName, longDay, fullDay, shortDay, EVENT_CSS,
 } from './_cal.js';
 import { dueDate, prio } from '../tasks/_tasks.js';
 import { toneColor } from '../../ui.js';
@@ -16,7 +16,7 @@ export const calendarWeek = {
   name: 'Kalender Tag/Woche',
   category: 'Kalender',
   description: 'Zeitraster mit Terminen nach Uhrzeit, Überlappungen nebeneinander, Jetzt-Linie und Anlegen per Klick auf freie Zeit. Mobil: 3-Tage-Raster mit Tagesleiste. Reagiert auf ctx.ui.view (Tag/Woche) und selectedDate.',
-  version: '1.2',
+  version: '1.3',
   props: [
     { name: 'startHour', label: 'Erste Stunde', type: 'number', default: 7 },
     { name: 'endHour', label: 'Letzte Stunde', type: 'number', default: 20 },
@@ -63,6 +63,12 @@ export const calendarWeek = {
       repeating-linear-gradient(to bottom, transparent 0, transparent calc(var(--hh) / 2), color-mix(in srgb, var(--tk-c-border) 45%, transparent) calc(var(--hh) / 2), color-mix(in srgb, var(--tk-c-border) 45%, transparent) calc(var(--hh) / 2 + 1px), transparent calc(var(--hh) / 2 + 1px), transparent var(--hh)); }
   .tk-cw__col[data-today="true"] { background-color:color-mix(in srgb, var(--tk-c-accent) 5%, transparent); }
   .tk-cw__ev { position:absolute; border-radius:var(--tk-radius-sm); padding:3px 6px; overflow:hidden; cursor:pointer; text-align:left; border-left:3px solid var(--ec); background:color-mix(in srgb, var(--ec) 22%, var(--tk-c-surface)); color:var(--tk-c-text); font-size:var(--tk-fs-xs); line-height:1.25; box-shadow:0 0 0 1px var(--tk-c-surface); transition:filter var(--tk-motion-fast); }
+  .tk-cw__more { position:absolute; display:flex; align-items:center; justify-content:center; gap:3px; border:1px dashed var(--tk-c-border-strong); border-radius:var(--tk-radius-sm); background:var(--tk-c-surface2); color:var(--tk-c-text); font:inherit; font-size:var(--tk-fs-xs); font-weight:var(--tk-fw-semibold); cursor:pointer; padding:0 4px; min-width:0; box-shadow:0 0 0 1px var(--tk-c-surface); }
+  .tk-cw__more:hover { background:var(--tk-c-accent-soft); }
+  .tk-cw__more:focus-visible { outline:2px solid var(--tk-c-focus); z-index:3; }
+  .tk-cw__morerow { display:flex; align-items:center; gap:10px; width:100%; min-height:48px; padding:6px 0; border:0; border-top:1px solid var(--tk-c-border); background:transparent; color:var(--tk-c-text); font:inherit; text-align:left; cursor:pointer; }
+  .tk-cw__morerow i { width:4px; align-self:stretch; border-radius:2px; background:var(--ec); flex:none; }
+  .tk-cw__morerow time { width:48px; flex:none; font-size:var(--tk-fs-sm); color:var(--tk-c-text-muted); font-variant-numeric:tabular-nums; }
   .tk-cw__ev:hover { filter:brightness(1.12); z-index:2; }
   .tk-cw__ev:focus-visible { outline:2px solid var(--tk-c-focus); z-index:3; }
   .tk-cw__ev b { display:block; font-weight:var(--tk-fw-semibold); display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:var(--tl,2); overflow:hidden; }
@@ -80,6 +86,7 @@ export const calendarWeek = {
   .tk-cw__stripbtn[data-today="true"] b { color:var(--tk-c-accent); }
   .tk-cw__stripbtn[data-sel="true"] { border-color:var(--tk-c-accent); }
   .bp-mobile .tk-cw__ev { min-height:32px; }
+  .bp-mobile .tk-cw__more { min-height:36px; }
   .bp-mobile .tk-cw__allchip { min-height:32px; }
   .bp-mobile .tk-cw__dayhead { min-height:56px; }
   .bp-tablet .tk-cw__dnum { width:28px; height:28px; font-size:var(--tk-fs-md); }`,
@@ -116,13 +123,24 @@ export const calendarWeek = {
     const nav = (dir) => { const step = n === 1 ? 1 : mobile ? n : 7; const next = dayKey(addDays(sel, dir * step)); ctx.setUi('selectedDate', next); ctx.emit('calendar.navigate', { date: next }); };
     const goToday = () => { ctx.setUi('selectedDate', todayKey); ctx.emit('calendar.navigate', { date: todayKey }); };
     const pick = (d) => { ctx.setUi('selectedDate', dayKey(d)); ctx.emit('date.select', { date: dayKey(d) }); };
-    const title = n === 1 ? new Intl.DateTimeFormat('de-DE', { weekday: 'long', day: 'numeric', month: 'long' }).format(first)
+    const title = n === 1 ? longDay(first)
       : `${first.getDate()}.${first.getMonth() === days[n - 1].getMonth() ? '' : ` ${monthName(first).slice(0, 3)}.`} – ${days[n - 1].getDate()}. ${monthName(days[n - 1])}`;
     const createAt = (d, e) => {
       if (e.target !== e.currentTarget) return;
       const y = e.offsetY; const m = Math.min(24 * 60 - 60, s0 * 60 + Math.floor(y / hh * 2) * 30);
       openCreateDialog(ctx, setData, { date: dayKey(d), start: hm(m), end: hm(m + 60) });
     };
+    // Überlappungen: höchstens so viele Spalten je Tag, dass jeder Block mindestens ~48 px breit bleibt; der Rest wird zu „+N“.
+    const maxCols = Math.max(2, Math.min(4, Math.floor((((ctx.blockWidth || ctx.width || 390) - 44) / n) / 48)));
+    const collapse = (list) => {
+      const keep = [], chips = []; let cur = null;
+      for (const it of list) {
+        if (it.cols > maxCols && it.col >= maxCols - 1) { if (cur && it.s < cur.e) { cur.list.push(it); cur.e = Math.max(cur.e, it.e); } else { cur = { s: it.s, e: it.e, list: [it] }; chips.push(cur); } }
+        else keep.push(it.cols > maxCols ? { ...it, cols: maxCols } : it);
+      }
+      return { keep, chips };
+    };
+    const openMore = (d, c) => ctx.openDialog({ title: `Weitere Termine · ${longDay(d)}`, body: (close) => html`<div role="list">${c.list.map(({ ev }) => html`<button type="button" role="listitem" class="tk-cw__morerow" style=${`--ec:${catColor(ev)}`} onClick=${() => { close(); openEvent(ctx, setData, ev, all, props); }}><i></i><time>${timeStr(ev._s)}</time><span class="tk-grow">${ev.title}</span></button>`)}</div>` });
     const nowMin = minutesOf(ctx.today);
     const showNow = props.showNow && nowMin >= s0 * 60 && nowMin <= e0 * 60;
     const strip = mobile && n > 1 ? html`<div class="tk-cw__strip" role="group" aria-label="Woche">${Array.from({ length: 7 }, (_, i) => addDays(startOfWeek(sel), i)).map((d, i) => {
@@ -144,7 +162,7 @@ export const calendarWeek = {
       <div class="tk-cw__frame" data-qa="calendar-frame">
         <div class="tk-cw__grid tk-cw__head" style=${`--n:${n}`}>
           <div></div>
-          ${days.map((d) => { const k = dayKey(d); return html`<button type="button" class="tk-cw__dayhead" data-today=${k === todayKey} data-sel=${k === dayKey(sel) && n > 1} onClick=${() => pick(d)} aria-label=${new Intl.DateTimeFormat('de-DE', { dateStyle: 'full' }).format(d)}>
+          ${days.map((d) => { const k = dayKey(d); return html`<button type="button" class="tk-cw__dayhead" data-today=${k === todayKey} data-sel=${k === dayKey(sel) && n > 1} onClick=${() => pick(d)} aria-label=${fullDay(d)}>
             <span class="tk-cw__dow">${WEEKDAYS[(d.getDay() + 6) % 7]}</span><span class="tk-cw__dnum">${d.getDate()}</span></button>`; })}
         </div>
         ${hasAll ? html`<div class="tk-cw__grid tk-cw__allday" style=${`--n:${n}`}>
@@ -157,13 +175,15 @@ export const calendarWeek = {
         </div>` : null}
         <div class="tk-cw__grid" style=${`--n:${n};--hh:${hh}px`}>
           <div class="tk-cw__gutter" style=${`height:${H}px`}>${Array.from({ length: hours }, (_, i) => i > 0 && html`<span class="tk-cw__hour" style=${`top:${i * hh}px`}>${String(s0 + i).padStart(2, '0')}:00</span>`)}</div>
-          ${days.map((d) => { const k = dayKey(d); const items = layoutDay(onDay(timed, d), Math.ceil(((mobile ? 32 : 20) + 2) / hh * 60));
+          ${days.map((d) => { const k = dayKey(d); const { keep: items, chips } = collapse(layoutDay(onDay(timed, d), Math.ceil(((mobile ? 32 : 20) + 2) / hh * 60)));
             return html`<div class="tk-cw__col" data-today=${k === todayKey} style=${`height:${H}px`} onClick=${(e) => createAt(d, e)} aria-label=${`Freie Zeit am ${k}`}>
               ${items.map(({ ev, col, cols, s, e }) => { const top = (s - s0 * 60) / 60 * hh; const h = Math.max(mobile ? 32 : 20, (e - s) / 60 * hh - 2); const lineH = props.density === 'spacious' ? 16 : 14, padV = props.density === 'spacious' ? 12 : 6; const lines = Math.floor((h - padV) / lineH); const narrow = cols > 1 && n > 4 && ctx.bp !== 'desktop'; const one = lines < 2 || narrow; const tl = Math.max(1, lines - 1);
                 return html`<div class="tk-cw__ev" role="button" tabindex="0" data-clip-ok data-one=${one} style=${`--ec:${catColor(ev)};--tl:${tl};top:${top + 1}px;height:${h}px;left:calc(${col} / ${cols} * 100% + 1px);width:calc(100% / ${cols} - 3px)`}
                     onClick=${() => openEvent(ctx, setData, ev, all, props)} onKeyDown=${(k2) => k2.key === 'Enter' && openEvent(ctx, setData, ev, all, props)} aria-label=${`${ev.title}, ${timeStr(ev._s)} bis ${timeStr(ev._e)}`}>
                   ${one ? html`<b>${ev.title}</b>${cols === 1 && html`<span>${timeStr(ev._s)}</span>`}` : html`<b>${ev.title}</b><span>${timeStr(ev._s)}–${timeStr(ev._e)}</span>${(props.showLocation || props.density === 'spacious') && ev.location && lines > 3 && html`<span>${ev.location}</span>`}`}
                 </div>`; })}
+              ${chips.map((c) => html`<button type="button" class="tk-cw__more" style=${`top:${(c.s - s0 * 60) / 60 * hh + 1}px;height:${Math.max(mobile ? 36 : 28, (c.e - c.s) / 60 * hh - 2)}px;left:calc(${maxCols - 1} / ${maxCols} * 100% + 1px);width:calc(100% / ${maxCols} - 3px)`}
+                  onClick=${(ev) => { ev.stopPropagation(); openMore(d, c); }} aria-label=${`${c.list.length} weitere Termine am ${shortDay(d)} anzeigen`}>+${c.list.length}</button>`)}
               ${showNow && k === todayKey && html`<div class="tk-cw__now" style=${`top:${(nowMin - s0 * 60) / 60 * hh}px`} aria-hidden="true"></div>`}
             </div>`; })}
         </div>

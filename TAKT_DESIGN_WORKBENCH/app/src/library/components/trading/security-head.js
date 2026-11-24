@@ -1,4 +1,4 @@
-// Trading: Kopf eines Wertpapiers – Name, Kürzel, Kurs mit Tagesveränderung und die Aktionen Kaufen, Verkaufen, Alarm, Beobachten.
+// Trading: Kopf eines Wertpapiers – Name, Kürzel, Kurs mit Tagesveränderung und die Aktionen Kauf simulieren, Verkauf simulieren, Alarm, Beobachten.
 import { html } from '../../../lib/html.js';
 import { Card, Button, Badge, EmptyState } from '../../ui.js';
 import { fmtNumber } from '../../../lib/format.js';
@@ -12,8 +12,8 @@ export const trdSecurityHead = {
   id: 'trd-security-head',
   name: 'Wertpapier-Kopf',
   category: 'Trading',
-  description: 'Kopf der Wertpapier-Seite: Name, Kürzel, Typ und ISIN, aktueller Kurs mit Tagesveränderung (fiktiv, Stand 09:30) und die Aktionen Kaufen und Verkaufen (Simulation), Kursalarm und Beobachten. Folgt der Auswahl.',
-  version: '1.0',
+  description: 'Kopf der Wertpapier-Seite: Name, Kürzel, Typ und ISIN, aktueller Kurs mit Tagesveränderung (fiktiv, Stand 09:30) und die Aktionen Kauf simulieren und Verkauf simulieren, Kursalarm und Beobachten. Folgt der Auswahl.',
+  version: '1.1',
   props: [
     { name: 'followSelection', label: 'Auswahl folgen', type: 'boolean', default: true },
     { name: 'showActions', label: 'Aktionen zeigen', type: 'boolean', default: true },
@@ -36,8 +36,8 @@ export const trdSecurityHead = {
     return html`<${Card}><div class="tk-trd-sh"><div class="tk-trd-sh__id"><${Tile} type=${inst.type} size=${48} /><div style="min-width:0"><div class="tk-trd-sh__name">${inst.name}</div>
       <div class="tk-row" style="gap:6px;flex-wrap:wrap;margin-top:4px"><${Badge}>${inst.symbol}<//><${Badge}>${inst.type}<//>${inst.isin && html`<span class="tk-trd-sub">ISIN ${inst.isin} (Demo)</span>`}${pos && html`<${Badge} tone="accent" icon="check">Im Depot<//>`}</div>
       <div class="tk-trd-sh__price"><span class="tk-trd-num"><${Px} v=${inst.price} /></span><${Chg} v=${chg} digits=${2} /><span class="tk-trd-sub">heute · ${TXT.stand}</span></div></div></div>
-      ${props.showActions && html`<div class="tk-trd-sh__acts"><${Button} variant="primary" icon="trending-up" onClick=${() => buy('buy')}>Kaufen (Simulation)<//>
-        <${Button} icon="trending-down" disabled=${!pos} title=${pos ? '' : 'Nicht im Depot'} onClick=${() => buy('sell')}>Verkaufen<//><${Button} icon="bell" onClick=${() => ctx.emit('alert.new', { id: inst.id, to: 'trading.alerts' })}>Alarm<//>
+      ${props.showActions && html`<div class="tk-trd-sh__acts"><${Button} variant="primary" icon="trending-up" onClick=${() => buy('buy')}>Kauf simulieren<//>
+        <${Button} icon="trending-down" disabled=${!pos} title=${pos ? '' : 'Nicht im Depot'} onClick=${() => buy('sell')}>Verkauf simulieren<//><${Button} icon="bell" onClick=${() => ctx.emit('alert.new', { id: inst.id, to: 'trading.alerts' })}>Alarm<//>
         <${Button} icon=${watched ? 'star' : 'plus'} aria-pressed=${String(watched)} onClick=${() => toggleWatch(ctx, inst, data.watchlist, setData)}>${watched ? 'Beobachtet' : 'Beobachten'}<//></div>`}</div>
       ${inst.type === 'Krypto' && html`<div style="margin-top:12px"><${Note} tone="warning" icon="alert-triangle"><strong>Kryptowert:</strong> ${TXT.krypto}. Gewinne können steuerpflichtig sein.<//></div>`}<//>`;
   },

@@ -9,6 +9,7 @@
 //   wxSettings       Einheiten, Empfindlichkeit, Allergene, Benachrichtigungen
 //   wxAlertLevels    Warnstufen 1–4 (DWD-Schema) mit Bedeutung
 //   wxVenues         Orte aus dem Kalender -> Verkehrsmittel, Wegzeit (für Termin- und Pendelfenster)
+//   wxTrainingNote   Wetter-Hinweis zum nächsten Krafttraining (Text, abgeleitet aus Warnungen und Stunden; Fitness bindet ihn)
 //   wxTraining       geplante Trainingseinheiten der nächsten 7 Tage (aus der Fitness-Welt: Mo/Mi/Fr Kraft, Sa Lauf; So Wanderung aus dem Kalender)
 import { trainingProgram, fitnessProfile } from './fitness.js';
 const p2 = (n) => String(n).padStart(2, '0');
@@ -296,7 +297,7 @@ export const wxSettings = {
 };
 export const wxVenues = {
   'Café Moll': { mode: 'Fuß', min: 8, outdoor: true }, 'Trattoria Bella': { mode: 'Fuß', min: 10, outdoor: true }, 'Markt am Dom': { mode: 'Fuß', min: 10, outdoor: true, stayOutdoor: true },
-  'Praxis Lindner': { mode: 'Rad', min: 15, outdoor: true }, 'Praxis Dr. Weber': { mode: 'Rad', min: 12, outdoor: true }, 'Studio Kraftwerk': { mode: 'Rad', min: 12, outdoor: true }, 'FitX Bielefeld': { mode: 'Rad', min: 12, outdoor: true },
+  'Praxis Lindner': { mode: 'Rad', min: 15, outdoor: true }, 'Praxis Dr. Weber': { mode: 'Rad', min: 12, outdoor: true }, 'FitX Bielefeld': { mode: 'Rad', min: 12, outdoor: true },
   'Studio Ehrenfeld': { mode: 'Auto', min: 25, outdoor: false }, 'Kanzlei Brandt': { mode: 'Auto', min: 18, outdoor: false }, Brauhaus: { mode: 'Fuß', min: 12, outdoor: true },
 };
 // Trainingstage kommen aus der Fitness-Welt (Eigentümer: Fitness): Mo Unterkörper, Mi Oberkörper A, Fr Ganzkörper, Sa lockerer Lauf.
@@ -336,4 +337,20 @@ export const weatherNotifications = alertNow ? [
 
 // Szenarien: Wetter und Orte kommen von außen und bleiben im Ersten Start erhalten. Geplantes Training gibt es erst mit einem gewählten Plan
 // (der Erste Start hat noch keinen Termin im Kalender), darum ist `wxTraining` dort leer (Referenzen auf Termine bleiben auflösbar).
-export const scenarios = { erststart: { wxTraining: [] } };
+// Wetter-Hinweis zum nächsten Krafttraining. Fitness bindet ihn (`@world:wxTrainingNote`), es gibt keinen Festtext im Seed:
+// Warnung, die in das Trainingsfenster fällt, sonst eine Warnung vom Vormittag (vorbei), sonst „kein Wetterhinweis“.
+const WDAY = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag'];
+export const wxTrainingNote = (() => {
+  const t = wxTraining.find((x) => x.kind === 'Kraft' && x.start && x.date >= NOW.slice(0, 10));
+  if (!t) return '';
+  const wd = WDAY[dowOfIso(t.date)], lo = `${t.date}T${t.start}:00`, hi = `${t.date}T${t.end}:00`;
+  const during = wxActive.alerts.find((a) => a.from < hi && a.to > lo);
+  if (during) return `${wd}: ${during.short} bis ${hm(during.to)} Uhr. Der Weg zum Studio ist betroffen, im Studio bist du drinnen.`;
+  const hour = wxActive.hours.find((h) => h.time.startsWith(`${t.date}T${t.start.slice(0, 2)}`));
+  const earlier = wxActive.alerts.find((a) => a.from.startsWith(t.date) && a.to <= lo);
+  const weather = hour ? ` ${hour.temp} °C${hour.pop >= 50 ? ', Regen möglich' : ', kaum Regen'}.` : '';
+  return earlier
+    ? `${wd}: ${earlier.short}, Warnung bis ${hm(earlier.to)} Uhr. Um ${t.start} Uhr ist sie vorbei.${weather}`
+    : `${wd} um ${t.start} Uhr: kein Wetterhinweis für den Weg zum Studio.${weather}`;
+})();
+export const scenarios = { erststart: { wxTraining: [], wxTrainingNote: '' } };

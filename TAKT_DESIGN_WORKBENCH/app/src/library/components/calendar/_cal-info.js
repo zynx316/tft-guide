@@ -1,6 +1,7 @@
 // Gemeinsame Helfer der Kalender-Startseite, des Termin-Details und der Quellen:
 // Termin-Auflösung, Konflikte, Wochenlast, Schnell-Eingabe (Text → Termin), Navigation (Dialog oder Screen).
-import { addDays, dayStart, dayKey, parseDay, occurrences, onDay, minutesOf, hm, durLabel, freeSlots, startOfWeek, openEventDialog, WEEKDAYS } from './_cal.js';
+import { addDays, dayStart, dayKey, parseDay, occurrences, onDay, minutesOf, hm, durLabel, freeSlots, startOfWeek, openEventDialog, shortDay, WEEKDAYS } from './_cal.js';
+import { fmtNumber, NBSP } from '../../../lib/format.js';
 
 /** Standard-Quelle je Kategorie (Termine ohne eigene `source`). */
 export const SOURCE_BY_CATEGORY = { Arbeit: 'work', Sales: 'work', Fokus: 'work', Privat: 'family', Fitness: 'personal', Gesundheit: 'personal', Feiertag: 'holidays', Geburtstag: 'birthdays' };
@@ -64,7 +65,17 @@ export function weekLoad(events, anyDay, workFrom = 8, workTo = 18) {
     return { day, key: dayKey(day), label: WEEKDAYS[i], n: list.filter((o) => !o.allDay).length, allDay: list.filter((o) => o.allDay), booked, free: Math.max(0, work - booked), over: booked > work * 0.7, conflicts: conflictPairs(list).length };
   });
 }
-export const hoursLabel = (min) => `${(Math.round(min / 6) / 10).toLocaleString('de-DE', { maximumFractionDigits: 1 })} h`;
+/** Stunden als Zahl: 270 → „4,5“, 240 → „4“ (de-DE, ohne Einheit). */
+export const hoursNum = (min) => { const h = Math.round(min / 6) / 10; return fmtNumber(h, { digits: Number.isInteger(h) ? 0 : 1 }); };
+/** Stunden mit Einheit: „4,5 h“ (geschütztes Leerzeichen). */
+export const hoursLabel = (min) => `${hoursNum(min)}${NBSP}h`;
+/** Gebuchte Minuten einer ganzen Woche: Summe der Tageswerte (Überlappungen je Tag nur einmal gezählt). */
+export const weekBookedMinutes = (events, anyDay) => weekLoad(events, anyDay).reduce((n, d) => n + d.booked, 0);
+/**
+ * Freie Fenster des laufenden Tages ab jetzt bis Feierabend (ein gemeinsamer Wert für Kennzahlen, Tagesband und Fokus-Hinweise).
+ * `floorMin` = frühester Beginn (Arbeitstag), `workEndMin` = Feierabend in Minuten.
+ */
+export const freeWindows = (timedToday, nowMin, workEndMin, floorMin = 8 * 60) => freeSlots(timedToday, Math.max(Math.ceil(nowMin / 15) * 15, floorMin), workEndMin, 30);
 export const inLabel = (min) => (min <= 0 ? 'jetzt' : `in ${durLabel(min)}`);
 export { freeSlots, hm };
 
@@ -88,7 +99,7 @@ export function parseWhen(text, today) {
   if ((m = cut(/\s(?:um\s+|ab\s+)?(\d{1,2})[:.](\d{2})(?:\s*uhr)?(?=\s|$)/i)) || (m = cut(/\s(?:um\s+|ab\s+)?(\d{1,2})\s*uhr(?=\s|$)/i)) || (m = cut(/\sum\s+(\d{1,2})(?=\s|$)/i))) start = hm(Math.min(23, +m[1]) * 60 + (m[2] ? Math.min(59, +m[2]) : 0));
   const title = t.replace(/\s+(am|um|für|dauer)(?=\s|$)/gi, ' ').replace(/\s+/g, ' ').trim();
   const cat = (CAT_WORDS.find(([re]) => re.test(title)) || [])[1];
-  if (date) hints.push(new Intl.DateTimeFormat('de-DE', { weekday: 'short', day: 'numeric', month: 'short' }).format(date));
+  if (date) hints.push(shortDay(date));
   if (start) hints.push(`${start} Uhr`);
   if (mins) hints.push(durLabel(mins));
   return { title: title ? title[0].toUpperCase() + title.slice(1) : '', date, start, mins, category: cat, hints };

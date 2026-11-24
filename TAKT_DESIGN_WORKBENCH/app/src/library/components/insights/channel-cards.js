@@ -14,7 +14,7 @@ export const channelCards = {
   name: 'Kanal-Karten',
   category: 'Vertrieb',
   description: 'Verkaufskanäle (Shopify, Etsy, Amazon …) als Karten oder Zeilen mit Status, Umsatz, Bestellungen und letztem Sync. Aktion „Synchronisieren“ mit Ladezustand; Fehlerkanäle optional zuerst. Ein Tipp auf den Kanal meldet channel.open mit ID.',
-  version: '1.2',
+  version: '1.3',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Verkaufskanäle' },
     { name: 'minWidth', label: 'Min. Kartenbreite (px)', type: 'number', default: 260 },
@@ -23,11 +23,13 @@ export const channelCards = {
     { name: 'density', label: 'Dichte', type: 'select', options: ['comfortable', 'compact'], default: 'comfortable' },
     { name: 'layout', label: 'Darstellung', type: 'select', options: ['cards', 'rows'], default: 'cards' },
     { name: 'respectFilter', label: 'Suche/Filter beachten', type: 'boolean', default: true },
+    { name: 'quietEmpty', label: 'Ohne Kanäle nichts anzeigen', type: 'boolean', default: false },
   ],
   data: [{ slot: 'channels', label: 'Kanäle', default: 'channels', shape: '{id,name,icon?,status:connected|error|paused,lastSync,revenue,orders,delta?,pending?,error?,needsAuth?}[]', required: true }],
   events: ['channel.open', 'channel.sync', 'channel.reconnect', 'channel.resume'],
   states: ['empty'],
   css: `
+  [data-tk-large-text] .tk-channel-card__sub { white-space:normal; overflow:visible; text-overflow:clip; overflow-wrap:anywhere; }
   .tk-channel-cards { display:grid; gap:var(--tk-space-3); grid-template-columns:repeat(auto-fill, minmax(min(100%, var(--minw,260px)), 1fr)); }
   .tk-channel-card { display:flex; flex-direction:column; gap:var(--tk-space-3); text-align:left; }
   .tk-channel-card[data-status="error"] { border-color:color-mix(in srgb, var(--tk-c-danger) 45%, transparent); }
@@ -47,7 +49,8 @@ export const channelCards = {
   .tk-channel-row .tk-btn { flex:none; min-width:36px; } .bp-mobile .tk-channel-row .tk-btn { min-width:44px; min-height:44px; }
   .tk-channel-row:last-child { border-bottom:0; } .tk-channel-row:hover { background:var(--tk-c-surface2); }
   .tk-spin-btn .icon { animation:tk-spin .9s linear infinite; }
-  ${SPIN_CSS}`,
+  ${SPIN_CSS}
+  [data-tk-large-text] .tk-channel-card__name, [data-tk-large-text] .tk-channel-card .tk-truncate, [data-tk-large-text] .tk-attn__body strong { white-space:normal; overflow:visible; text-overflow:clip; overflow-wrap:anywhere; }`,
   example: { props: { title: 'Verkaufskanäle' }, data: { channels: [
     { id: 'shopify', name: 'Shopify', icon: 'shopping-cart', status: 'connected', lastSync: '2026-11-24T09:18:00', revenue: 6240.5, orders: 78, delta: 8.2, pending: 3 },
     { id: 'etsy', name: 'Etsy', icon: 'store', status: 'error', lastSync: '2026-11-23T21:40:00', revenue: 1980, orders: 31, delta: -4.1, error: 'Token abgelaufen', needsAuth: true },
@@ -82,6 +85,7 @@ export const channelCards = {
     }); };
     const resume = (ch) => { patch(ch.id, { status: 'connected' }); ctx.emit('channel.resume', { id: ch.id }); ctx.toast(`${ch.name} fortgesetzt`); };
 
+    if (!(data.channels || []).length && props.quietEmpty && !ctx.ui.query) return null;   // quietEmpty: andere Karte der Seite trägt die Aktion „Kanal verbinden“
     if (!items.length) return html`<${Card} title=${props.title}><${EmptyState} icon="store" title="Keine Verkaufskanäle" text=${ctx.ui.query || (ctx.ui.filter && !/^alle?$/i.test(ctx.ui.filter)) ? 'Keine Kanäle für diese Suche oder diesen Filter.' : 'Verbinde deinen ersten Kanal, um Bestellungen zentral zu sehen.'} /><//>`;
     const sec = ctx.bp === 'mobile';
     if (props.layout === 'rows') {
@@ -218,8 +222,8 @@ export const salesAttention = {
   id: 'sales-attention',
   name: 'Jetzt zu tun (Vertrieb)',
   category: 'Vertrieb',
-  description: 'Priorisierte Handlungen im Vertrieb: getrennte Kanäle, neue Bestellungen zum Zahlungsabgleich, Bestellungen zum Versenden und Kontext aus Kalender und Aufgaben (Termin mit betroffenem Kanal, überfällige Buchungsaufgabe). Jede Zeile hat eine Aktion; Erledigtes verschwindet.',
-  version: '1.0',
+  description: 'Priorisierte Handlungen im Vertrieb (ohne verbundenen Kanal: „Kanal verbinden“ als einzige Aktion): getrennte Kanäle, neue Bestellungen zum Zahlungsabgleich, Bestellungen zum Versenden und Kontext aus Kalender und Aufgaben (Termin mit betroffenem Kanal, überfällige Buchungsaufgabe). Jede Zeile hat eine Aktion; Erledigtes verschwindet.',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Jetzt zu tun' },
     { name: 'limit', label: 'Max. Einträge (0 = alle)', type: 'number', default: 0 },
@@ -230,7 +234,7 @@ export const salesAttention = {
     { slot: 'events', label: 'Termine (Kalender)', default: 'events', shape: '{id,title,start,category,allDay?}[]', required: false },
     { slot: 'tasks', label: 'Aufgaben', default: 'tasks', shape: '{id,title,due?,done?,project?,status?}[]', required: false },
   ],
-  events: ['channel.open', 'order.open', 'channel.reconnect', 'task.toggle'],
+  events: ['channel.open', 'order.open', 'channel.reconnect', 'channel.connect', 'task.toggle'],
   states: ['empty'],
   css: `
   .tk-attn { display:flex; gap:12px; align-items:flex-start; padding:12px var(--tk-space-4); border-bottom:1px solid var(--tk-c-border); min-width:0; }
@@ -256,6 +260,7 @@ export const salesAttention = {
     const task = (data.tasks || []).find((t) => !t.done && t.status !== 'Erledigt' && t.due && new Date(t.due) < new Date(dayKey(ctx.today)) && /etsy|shopify|amazon|ebay|gebühr|auszahlung/i.test(t.title));
     if (task) items.push({ k: 't', tone: 'neutral', icon: 'list-checks', title: `Überfällig: ${task.title}`, text: `Fällig seit ${fmt.dateShort(task.due)}, aus deiner Aufgabenliste.`, acts: [['Erledigt', 'check', () => { setData('tasks', (all) => all.map((t) => (t.id === task.id ? { ...t, done: true, status: 'Erledigt' } : t))); ctx.emit('task.toggle', { id: task.id }); ctx.toast('Aufgabe erledigt'); }]] });
     const shown = props.limit > 0 ? items.slice(0, props.limit) : items;
+    if (!chs.length) return html`<${Card} title=${props.title} icon="store"><${EmptyState} icon="store" title="Noch kein Kanal verbunden" text="Verbinde Shopify, Etsy, Amazon oder eBay, dann erscheinen hier Bestellungen und nächste Schritte." action=${html`<${Button} variant="primary" icon="plus" onClick=${() => ctx.emit('channel.connect')}>Kanal verbinden<//>`} /><//>`;
     if (!shown.length) return html`<${Card} title=${props.title} icon="check-circle-2"><${EmptyState} icon="check-circle-2" title="Nichts zu tun" text="Alle Kanäle laufen, keine Bestellung wartet." /><//>`;
     return html`<${Card} flush title=${props.title} icon="target" actions=${html`<${Badge} tone="warning">${items.length}<//>`}>${shown.map((it) => html`<div class="tk-attn"><span class="tk-attn__ico" style=${`background:color-mix(in srgb, ${toneColor(it.tone)} 16%, transparent);color:${toneColor(it.tone)}`}><${Icon} name=${it.icon} size=${18} /></span>
       <div class="tk-attn__body"><strong>${it.title}</strong><div class="tk-attn__text">${it.text}</div>${it.acts.length > 0 && html`<div class="tk-attn__acts">${it.acts.map(([label, icon, fn, primary]) => html`<${Button} size="sm" variant=${primary ? 'primary' : 'default'} icon=${icon === 'chevron-right' ? undefined : icon} iconRight=${icon === 'chevron-right' ? icon : undefined} onClick=${fn}>${label}<//>`)}</div>`}</div></div>`)}<//>`;

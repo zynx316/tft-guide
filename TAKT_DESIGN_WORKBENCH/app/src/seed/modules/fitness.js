@@ -10,7 +10,7 @@ const legal = { id: 'legal', component: 'legal-notice', region: 'footer', props:
 const D = {
   session: W('activeWorkout'), program: W('trainingProgram'), history: W('workoutHistory'), library: W('exerciseLibrary'), runs: W('runLog'), today: W('fitnessToday'), events: W('events'),
   log: W('bodyWeightLog'), summary: W('bodySummary'), measures: W('bodyMeasurements'), activity: W('activityLog'), stepsToday: W('stepsToday'), rings: W('fitnessRings'), activityItems: W('activityItems'),
-  sleep: W('sleepLog'), checkins: W('recoveryCheckins'), streak: W('fitnessStreak'), goals: W('fitnessGoals'), milestones: W('fitnessMilestones'), recap: W('weeklyRecap'), metrics: W('fitnessMetrics'), volume: W('volumeSeries'),
+  sleep: W('sleepLog'), checkins: W('recoveryCheckins'), streak: W('fitnessStreak'), goals: W('fitnessGoals'), milestones: W('fitnessMilestones'), recap: W('weeklyRecap'), metrics: W('fitnessMetrics'), volume: W('volumeSeries'), wxnote: W('wxTrainingNote'),
 };
 const pick = (...keys) => Object.fromEntries(keys.map((k) => [k, D[k]]));
 
@@ -18,7 +18,7 @@ const REF = 'Referenzmodul – mit bestehendem TAKT-Fitnesskonzept in Phase 1 ab
 
 export default {
   module: {
-    id: 'fitness', name: 'Fitness', icon: 'dumbbell', status: 'active', area: 'Gesundheit', theme: 'graphite', designVersion: '0.3', isReference: true, homeFeatureId: 'fitness.home',
+    id: 'fitness', name: 'Fitness', icon: 'dumbbell', status: 'active', area: 'Gesundheit', legal: ['gesundheit'], theme: 'graphite', designVersion: '0.3', isReference: true, homeFeatureId: 'fitness.home',
     description: 'Training, Aktivität, Körperwerte, Erholung und Ziele: Einheiten im Studio mit einem Tap pro Satz protokollieren, Fortschritt ohne Vergleichsdruck sehen und dranbleiben.',
     source: 'Referenzmodul aus dem TAKT-Projekt (Konzept liegt beim Auftraggeber) – Workbench-Stand ist ein Gestaltungsvorschlag, nicht auditiert',
     infoArchitecture: L(
@@ -80,7 +80,7 @@ export default {
         { id: 'f-plan', name: 'Plan einsehen und starten', steps: [{ featureId: 'fitness.home', action: 'Tag im Wochenstreifen antippen' }, { featureId: 'fitness.plan', action: '„Starten“ am Trainingstag' }, { featureId: 'fitness.session', action: 'Einheit läuft mit Vorgaben' }] },
         { id: 'f-record', name: 'Rekord ansehen', steps: [{ featureId: 'fitness.home', action: 'Rekord antippen' }, { featureId: 'fitness.exercise', action: 'Verlauf der Übung ansehen' }] },
       ],
-      viewports: ALL_VP, demoData: pick('metrics', 'today', 'events', 'program', 'history', 'runs', 'library', 'goals', 'rings', 'volume', 'streak', 'sleep', 'checkins', 'log'),
+      viewports: ALL_VP, demoData: pick('metrics', 'today', 'events', 'program', 'history', 'runs', 'library', 'goals', 'rings', 'volume', 'streak', 'sleep', 'checkins', 'log', 'wxnote'),
       variants: [
         {
           id: 'A', name: 'Kompakt', direction: 'kompakt', concept: 'Zahlen und Listen: Kennzahlenreihe, nächstes Training und Wochenliste nebeneinander, darunter Rekorde und Wochenziele als dichte Listen.',
@@ -88,8 +88,8 @@ export default {
           layout: { type: 'grid', stretch: true },
           blocks: [
             { id: 'hdr', component: 'page-header', region: 'header', props: { eyebrow: 'Gesundheit', title: 'Fitness', subtitle: 'Di, 24.11. · Erholungstag', primaryLabel: 'Training', primaryIcon: 'play', primaryEvent: 'workout.open', secondaryLabel: 'Fortschritt', secondaryIcon: 'trending-up' } },
-            { id: 'kpi', component: 'metric-row', region: 'main', span: 12, bind: { metrics: 'metrics' } },
-            { id: 'next', component: 'next-workout', region: 'main', span: 5, props: { style: 'plain', contextNote: 'Mittwoch: Sturmböen ab Mittag – im Studio bist du drinnen gut aufgehoben.' } },
+            { id: 'kpi', component: 'fit-kpis', region: 'main', span: 12, bind: { metrics: 'metrics' } },
+            { id: 'next', component: 'next-workout', region: 'main', span: 5, props: { style: 'plain' } },
             { id: 'week', component: 'training-week', region: 'main', span: 7, props: { layout: 'list', title: 'Diese Woche' } },
             { id: 'rec', component: 'records-list', region: 'main', span: 7, props: { title: 'Letzte Rekorde', limit: 4, showRange: false } },
             { id: 'goals', component: 'goal-list', region: 'main', span: 5, props: { title: 'Wochenziele' } },
@@ -104,7 +104,7 @@ export default {
           blocks: [
             { id: 'hdr', component: 'page-header', region: 'header', props: { eyebrow: 'Gesundheit', title: 'Fitness', subtitle: 'Dein Tag auf einen Blick', primaryLabel: '', secondaryLabel: 'Fortschritt', secondaryIcon: 'trending-up' } },
             { id: 'rings', component: 'activity-rings', region: 'main', span: 5, bind: { rings: 'rings' }, props: { title: 'Heute', size: 170, layout: 'stacked' } },
-            { id: 'next', component: 'next-workout', region: 'main', span: 7, props: { style: 'hero', contextNote: 'Mittwoch: Sturmböen ab Mittag – im Studio bist du drinnen gut aufgehoben.' } },
+            { id: 'next', component: 'next-workout', region: 'main', span: 7, props: { style: 'hero' } },
             { id: 'vol', component: 'chart', region: 'main', span: 7, bind: { series: 'volume' }, props: { title: 'Trainingsvolumen pro Woche (t, nach KW)', type: 'bar', height: 200, showLegend: false } },
             { id: 'streak', component: 'streak-card', region: 'main', span: 5 },
             { id: 'rec', component: 'records-list', region: 'main', span: 12, props: { title: 'Neue Bestwerte', view: 'highlights', limit: 3, showRange: false } },
@@ -118,7 +118,7 @@ export default {
           blocks: [
             { id: 'hdr', component: 'page-header', region: 'header', props: { eyebrow: 'Gesundheit', title: 'Heute', subtitle: 'Ein kurzer Check-in, dann weiter', primaryLabel: '', secondaryLabel: 'Fortschritt', secondaryIcon: 'trending-up' } },
             { id: 'ready', component: 'readiness-card', region: 'main', props: { layout: 'decision', title: 'Erholung heute', openEvent: 'recovery.open', showFactors: false } },
-            { id: 'next', component: 'next-workout', region: 'main', props: { style: 'hero', contextNote: 'Mittwoch: Sturmböen ab Mittag – im Studio bist du drinnen gut aufgehoben.' } },
+            { id: 'next', component: 'next-workout', region: 'main', props: { style: 'hero' } },
             { id: 'wt', component: 'weight-entry', region: 'main', props: { title: 'Heute wiegen', layout: 'card', openEvent: 'body.open' } },
             { id: 'streak', component: 'streak-card', region: 'main', props: { layout: 'compact' } },
             legal,
@@ -231,7 +231,7 @@ export default {
         'Die Muskelgruppen-Balance lässt sich zwischen „Plan“ und „Letzte 4 Wochen“ umschalten.',
       ],
       flows: [{ id: 'f-plan2', name: 'Tag wählen und starten', steps: [{ featureId: 'fitness.plan', action: 'Tag wählen' }, { featureId: 'fitness.session', action: 'Einheit startet mit Vorgaben' }] }],
-      viewports: ALL_VP, demoData: pick('program', 'history', 'library', 'runs', 'today', 'events'),
+      viewports: ALL_VP, demoData: pick('program', 'history', 'library', 'runs', 'today', 'events', 'wxnote'),
       variants: [
         {
           id: 'A', name: 'Raster + Tag-Detail', direction: 'kompakt', concept: 'Wochenstreifen und Programm mit Tag-Reitern im Hauptbereich, daneben die Sätze je Muskelgruppe aus dem Plan.',
@@ -263,7 +263,7 @@ export default {
           layout: { type: 'stack', narrow: true },
           blocks: [
             { id: 'hdr', component: 'page-header', region: 'header', props: { eyebrow: 'Fitness', title: 'Plan', subtitle: 'Was kommt als Nächstes', primaryLabel: '' } },
-            { id: 'next', component: 'next-workout', region: 'main', props: { style: 'hero', contextNote: 'Mittwoch: Sturmböen ab Mittag – im Studio bist du drinnen gut aufgehoben.' } },
+            { id: 'next', component: 'next-workout', region: 'main', props: { style: 'hero' } },
             { id: 'week', component: 'training-week', region: 'main', props: { layout: 'list', title: 'Rest der Woche' } },
             { id: 'prog', component: 'program-card', region: 'main', props: { layout: 'tabs' } },
             legal,
@@ -473,7 +473,7 @@ export default {
           layout: { type: 'stack' },
           blocks: [
             { id: 'hdr', component: 'page-header', region: 'header', props: { eyebrow: 'Fitness', title: 'Dein Körper', subtitle: 'Entwicklung über 90 Tage', primaryLabel: '' } },
-            { id: 'kpi', component: 'metric-row', region: 'main', bind: { metrics: 'bmetrics' }, props: { showSpark: false } },
+            { id: 'kpi', component: 'fit-kpis', region: 'main', bind: { metrics: 'bmetrics' }, props: { showSpark: false } },
             { id: 'trend', component: 'weight-trend', region: 'main', props: { height: 260 } },
             { id: 'meas', component: 'body-measures', region: 'main', bind: { items: 'measures' }, props: { title: 'Umfänge' } },
             { id: 'entry', component: 'weight-entry', region: 'main', props: { layout: 'card', title: 'Heute wiegen' } },

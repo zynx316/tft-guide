@@ -117,6 +117,7 @@ export const FIN_CSS = `
   .tk-fn-title { font-weight:var(--tk-fw-medium); min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .tk-fn-bar { height:8px; border-radius:4px; background:var(--tk-c-surface3); overflow:hidden; display:flex; position:relative; }
   .tk-fn-bar > i { display:block; height:100%; }
+  [data-tk-large-text] .tk-fn-title { white-space:normal; overflow:visible; text-overflow:clip; overflow-wrap:break-word; }
   .tk-fn-tap { width:100%; border:0; background:transparent; color:inherit; font:inherit; text-align:left; cursor:pointer; padding:0; display:flex; align-items:center; gap:12px; min-width:0; border-radius:var(--tk-radius-md); }
   .tk-fn-tap:hover { background:var(--tk-c-surface2); }
   .tk-fn-tap:focus-visible, .tk-fn-btn:focus-visible { outline:2px solid var(--tk-c-focus); outline-offset:2px; }

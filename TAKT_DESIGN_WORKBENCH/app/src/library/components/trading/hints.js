@@ -35,7 +35,7 @@ export const trdHints = {
   name: 'Hinweise Trading',
   category: 'Trading',
   description: 'Priorisierte, sachliche Hinweise: Kursalarm nah an der Marke, simulierte Orders offen, nächste Sparplan-Abbuchung mit Deckungs-Check, Abweichung vom Zielwert. Antippen führt zum passenden Bereich. Ohne Handlungsempfehlungen.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Wichtig' },
     { name: 'limit', label: 'Max. Hinweise', type: 'number', default: 4 },

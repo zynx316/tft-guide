@@ -68,6 +68,12 @@ export const NU_CSS = `${FILL}
   .tk-nu-sticky { position:sticky; bottom:0; }
 `;
 
+/** Pflichttext für Lebensmittel-, Rezept- und Scan-Features (HEALTH_GUIDELINES 7, Punkt 4). */
+export const LABEL_NOTE = 'Angaben ohne Gewähr. Prüfe das Etikett.';
+export const labelNote = () => html`<p class="tk-nu-lbl" role="note"><${Icon} name="info" size=${13} /><span>${LABEL_NOTE}</span></p>`;
+export const LBL_CSS = `.tk-nu-lbl { margin:0; display:flex; gap:6px; align-items:flex-start; font-size:var(--tk-nfs-xs); color:var(--tk-c-text-subtle); line-height:var(--tk-lh-snug); }
+  .tk-nu-lbl svg { flex:none; margin-top:2px; }`;
+
 export const tintBox = (tone, icon, size = 18) => html`<span class="tk-nu-icon" style=${`background:color-mix(in srgb, ${toneColor(tone)} 16%, transparent);color:${toneColor(tone)}`}><${Icon} name=${icon} size=${size} /></span>`;
 
 const CAT = {

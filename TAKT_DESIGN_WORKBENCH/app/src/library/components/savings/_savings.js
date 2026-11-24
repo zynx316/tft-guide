@@ -3,7 +3,7 @@
 import { html } from '../../../lib/html.js';
 import { useState } from 'preact/hooks';
 import { Icon, toneColor } from '../../ui.js';
-import { money } from '../../helpers.js';
+import { money, MASK_PERCENT } from '../../helpers.js';
 import { fmtPercent, fmtNumber, fmtDate, fmtRelativeDay } from '../../../lib/format.js';
 import { dayStart, dayDiff } from '../../../lib/date.js';
 
@@ -86,7 +86,7 @@ export const Stat = ({ label, value, sub, tone, big }) => html`<div class=${`tk-
 export function Gain({ ctx, value, ratio, digits = 0, showAmount = true }) {
   const up = value >= 0;
   return html`<span class="tk-sv-gain tk-num" style=${`color:var(--tk-c-${value === 0 ? 'text-muted' : up ? 'success' : 'danger'})`}>
-    <${Icon} name=${up ? 'arrow-up-right' : 'arrow-down-right'} size=${13} />${showAmount && eur(ctx, value, { sign: true, digits })}${ratio != null && html`<span class="tk-sv-gain__p">${ctx.privacy ? '•• %' : fmtPercent(ratio, { digits: 1, sign: true })}</span>`}</span>`;
+    <${Icon} name=${up ? 'arrow-up-right' : 'arrow-down-right'} size=${13} />${showAmount && eur(ctx, value, { sign: true, digits })}${ratio != null && html`<span class="tk-sv-gain__p">${ctx.privacy ? MASK_PERCENT : fmtPercent(ratio, { digits: 1, sign: true })}</span>`}</span>`;
 }
 
 export const SV_CSS = `
@@ -122,6 +122,10 @@ export const SV_CSS = `
   .bp-mobile .tk-sv-btnrow .tk-btn { min-height:var(--tk-size-touch); }
   .tk-sv-undo { display:flex; align-items:center; gap:8px; padding:6px 6px 6px 12px; border-radius:var(--tk-radius-md); background:var(--tk-c-surface2); border:1px solid var(--tk-c-border); font-size:var(--tk-fs-sm); }
   .tk-sv-undo > span { flex:1; min-width:0; }
+  .tk-sv-stat__l { overflow-wrap:break-word; }
+  [data-tk-large-text] .tk-sve__it strong, [data-tk-large-text] .tk-sve__it small, [data-tk-large-text] .tk-svgl__row strong, [data-tk-large-text] .tk-svpl__cmp strong, [data-tk-large-text] .tk-svpl__card .tk-truncate, [data-tk-large-text] .tk-sv-row .tk-truncate, [data-tk-large-text] .tk-sx__r strong { white-space:normal; overflow:visible; text-overflow:clip; overflow-wrap:break-word; }
+  [data-tk-large-text] .tk-sve__it, [data-tk-large-text] .tk-sv-row { flex-wrap:wrap; } [data-tk-large-text] .tk-sve__it > button.m { flex:1 1 100%; flex-wrap:wrap; } [data-tk-large-text] .tk-sve__it > button.m > .tk-grow { flex:1 1 calc(100% - 3em); } [data-tk-large-text] .tk-svpl__cmp { flex-wrap:wrap; } [data-tk-large-text] .tk-svpl__cmp > div { flex:1 1 calc(100% - 3em); }
+  [data-tk-large-text] .tk-svsum__grid, .bp-mobile[data-tk-large-text] .tk-svsum__grid { grid-template-columns:minmax(0,1fr); }
   .tk-sv-sr { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
   .tk-sv-foot { display:flex; flex-direction:column; gap:var(--tk-space-2); }
   .tk-sv-lead { font-size:var(--tk-fs-lg); font-weight:var(--tk-fw-semibold); line-height:var(--tk-lh-snug); }

@@ -210,7 +210,7 @@ export default {
         { id: 'fl-befehl', name: 'Befehl ausführen', steps: [{ featureId: 'system.search', action: '„Neue Aufgabe“ wählen' }, { featureId: 'system.capture', action: 'Aufgabe erfassen' }] },
       ],
       viewports: ALL_VP,
-      demoData: { events: '@world:events', tasks: '@world:tasks', transactions: '@world:transactions', accounts: '@world:accounts', savingsPlans: '@world:savingsPlans', positions: '@world:positions', nutRecipes: '@world:nutRecipes', nutFoods: '@world:nutFoods', searchIndex: '@world:searchIndex', recents: ['Müller', 'Rewe', 'Sparplan'] },
+      demoData: { events: '@world:events', tasks: '@world:tasks', transactions: '@world:transactions', accounts: '@world:accounts', savingsPlans: '@world:savingsPlans', positions: '@world:positions', nutRecipes: '@world:nutRecipes', nutFoods: '@world:nutFoods', notes: '@world:notes', articles: '@world:articles', habits: '@world:habits', orders: '@world:orders', channels: '@world:channels', captures: '@world:captures', searchIndex: '@world:searchIndex', recents: ['Müller', 'Rewe', 'Sparplan'] },
       variants: [
         {
           id: 'A', name: 'Volltext mit Gruppen', direction: 'kompakt',

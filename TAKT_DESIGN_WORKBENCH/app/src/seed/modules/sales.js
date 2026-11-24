@@ -71,7 +71,7 @@ export default {
           layout: { type: 'grid' },
           blocks: [
             hdr({ eyebrow: 'Dienstag, 24. November', title: 'Übersicht', subtitle: 'Kanäle, Bestellungen und Umsatz', primaryLabel: 'Kanal verbinden', primaryIcon: 'plus', primaryEvent: 'channel.connect', secondaryLabel: 'Bestellungen', secondaryIcon: 'package' }),
-            { id: 'kpi', component: 'metric-row', region: 'main', span: 12, bind: { metrics: 'metrics' } },
+            { id: 'kpi', component: 'kpi-tiles', region: 'main', span: 12, bind: { metrics: 'metrics' } },
             { id: 'cards', component: 'channel-cards', region: 'main', span: 12, bind: { channels: 'channels' }, props: { title: 'Verkaufskanäle', minWidth: 250 } },
             { id: 'rev', component: 'chart', region: 'main', span: 7, spanTablet: 12, bind: { series: 'revenue' }, props: { title: 'Umsatz – letzte 7 Tage', type: 'bar', height: 190, format: 'currency' } },
             { id: 'share', component: 'chart', region: 'main', span: 5, spanTablet: 12, bind: { series: 'shares' }, props: { title: 'Umsatzanteil (30 Tage)', type: 'donut', format: 'currency' } },
@@ -97,8 +97,8 @@ export default {
           blocks: [
             hdr({ title: 'Heute zu tun', subtitle: 'Fehler beheben, Bestellungen bearbeiten', primaryLabel: '', secondaryLabel: 'Umsatz', secondaryIcon: 'bar-chart-3' }),
             { id: 'att', component: 'sales-attention', region: 'main', bind: { channels: 'channels', orders: 'orders', events: 'events', tasks: 'tasks' }, props: { title: 'Jetzt zu tun' } },
-            { id: 'pipe', component: 'order-pipeline', region: 'main', bind: { orders: 'orders' }, props: { title: 'Offene Bestellungen', stages: 'new, paid', openIn: 'select', respectFilter: false } },
-            { id: 'cards', component: 'channel-cards', region: 'aside', bind: { channels: 'channels' }, props: { title: 'Kanäle', layout: 'rows', errorsFirst: true } },
+            { id: 'pipe', component: 'order-pipeline', region: 'main', bind: { orders: 'orders' }, props: { title: 'Offene Bestellungen', stages: 'new, paid', openIn: 'select', respectFilter: false, quietEmpty: true } },
+            { id: 'cards', component: 'channel-cards', region: 'aside', bind: { channels: 'channels' }, props: { title: 'Kanäle', layout: 'rows', errorsFirst: true, quietEmpty: true } },
           ],
         },
       ],
@@ -336,7 +336,7 @@ export default {
           layout: { type: 'grid' },
           blocks: [
             hdr({ title: 'Umsatz', subtitle: 'November 2026', primaryLabel: 'Export', primaryIcon: 'download' }),
-            { id: 'kpi', component: 'metric-row', region: 'main', span: 12, bind: { metrics: 'metrics' } },
+            { id: 'kpi', component: 'kpi-tiles', region: 'main', span: 12, bind: { metrics: 'metrics' } },
             { id: 'rev', component: 'chart', region: 'main', span: 8, spanTablet: 12, bind: { series: 'revenue' }, props: { title: 'Umsatz je Kanal – 7 Tage', type: 'area', height: 220, format: 'currency' } },
             { id: 'share', component: 'chart', region: 'main', span: 4, spanTablet: 12, bind: { series: 'shares' }, props: { title: 'Anteile', type: 'donut', format: 'currency' } },
             { id: 'tbl', component: 'data-table', region: 'main', span: 12, bind: { rows: 'rows' }, props: { title: 'Kanäle im Vergleich', columns: 'title:Kanal:text, revenue:Umsatz:currency, orders:Bestellungen:number, change:Veränderung:percent, trend:Verlauf:spark' } },
@@ -348,7 +348,7 @@ export default {
           layout: { type: 'grid' },
           blocks: [
             hdr({ title: 'Umsatz', subtitle: 'Wo kommt der Umsatz her?', primaryLabel: '' }),
-            { id: 'kpi', component: 'metric-row', region: 'main', span: 12, bind: { metrics: 'metrics' }, props: { variant: 'plain', showSpark: false } },
+            { id: 'kpi', component: 'kpi-tiles', region: 'main', span: 12, bind: { metrics: 'metrics' }, props: { variant: 'plain', showSpark: false } },
             { id: 'rev', component: 'chart', region: 'main', span: 8, spanTablet: 12, bind: { series: 'revenue' }, props: { title: 'Umsatz je Kanal', type: 'bar', height: 280, format: 'currency', ranges: '7 Tage' } },
             { id: 'share', component: 'chart', region: 'main', span: 4, spanTablet: 12, bind: { series: 'shares' }, props: { title: 'Anteile (30 Tage)', type: 'donut', format: 'currency' } },
           ],

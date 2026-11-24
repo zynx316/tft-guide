@@ -1,7 +1,7 @@
 // Aufgaben + Kalender: „Als Nächstes“ – Termine, fällige Aufgaben und freie Zeitfenster zu einem Tagesfokus verbinden.
 import { html } from '../../../lib/html.js';
 import { Card, Check, Badge, Button, Icon, EmptyState, toneColor } from '../../ui.js';
-import { occurrences, dayStart, addDays, minutesOf, timeStr, hm, durLabel, freeSlots, catColor, catTone, openEventDialog, toIso } from '../calendar/_cal.js';
+import { occurrences, dayStart, addDays, minutesOf, timeStr, hm, durLabel, freeSlots, catColor, catTone, openEventDialog, openCreateDialog, newEventId, toIso } from '../calendar/_cal.js';
 import { openEvent, OPEN_MODE_PROP } from '../calendar/_cal-info.js';
 import { dueInfo, sortTasks, toggleTask, PrioFlag, DueText, TASK_CSS } from './_tasks.js';
 
@@ -10,7 +10,7 @@ export const focusNext = {
   name: 'Fokus: Als Nächstes',
   category: 'Aufgaben',
   description: 'Verbindet Termine und Aufgaben zur Tagesfokus-Liste: laufender/nächster Termin, überfällige Aufgaben, Zeitleiste mit freien Fenstern und passenden Aufgabenvorschlägen, die sich mit einem Klick einplanen lassen.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Als Nächstes' },
     { name: 'workEnd', label: 'Arbeitstag bis (Std.)', type: 'number', default: 18 },
@@ -66,13 +66,13 @@ export const focusNext = {
     const slots = props.showSuggestions ? freeSlots(occs, Math.ceil(nowMin / 15) * 15, endMin, Number(props.minSlot)) : [];
     const plan = slots.map(([a, b]) => { let left = b - a, at = a; const sug = []; for (const t of pool) { const d = Number(t.estimate) || 30; if (d <= left && sug.length < 2) { sug.push({ t, d, at }); left -= d; at += d; pool = pool.filter((x) => x !== t); } } return { a, b, sug }; });
     const remaining = pool;
-    if (!tasks.length && !events.length) return html`<${Card} title=${props.title}><${EmptyState} icon="target" title="Nichts geplant" text="Keine Termine oder Aufgaben für heute – Zeit für etwas Ruhe." /><//>`;
-    const schedule = (t, at, d) => { const s = new Date(today); s.setHours(0, at, 0, 0); const e = new Date(+s + d * 60000); const ev = { id: `ev${Date.now().toString(36)}`, title: t.title, start: toIso(s), end: toIso(e), category: 'Fokus', tone: 'success', taskId: t.id, note: 'Aus Aufgabe eingeplant' }; setData('events', (a) => [ev, ...a]); ctx.emit('focus.schedule', { task: t.id, at: hm(at) }); ctx.toast(`„${t.title}“ um ${hm(at)} eingeplant`); };
+    if (!tasks.length && !events.length) return html`<${Card} title=${props.title}><${EmptyState} icon="target" title="Heute ist nichts geplant" text="Ein freier Tag. Trage einen Termin ein oder erfasse eine Aufgabe." action=${html`<${Button} variant="primary" icon="plus" onClick=${() => openCreateDialog(ctx, setData, {})}>Termin hinzufügen<//>`} /><//>`;
+    const schedule = (t, at, d) => { const s = new Date(today); s.setHours(0, at, 0, 0); const e = new Date(+s + d * 60000); const ev = { id: newEventId(ctx), title: t.title, start: toIso(s), end: toIso(e), category: 'Fokus', tone: 'success', taskId: t.id, note: 'Aus Aufgabe eingeplant' }; setData('events', (a) => [ev, ...a]); ctx.emit('focus.schedule', { task: t.id, at: hm(at) }); ctx.toast(`„${t.title}“ um ${hm(at)} eingeplant`); };
     const taskRow = (t) => html`<div class="tk-fn__row"><${Check} checked=${t.done} onChange=${() => toggleTask(ctx, setData, t)} label=${`${t.title} erledigt`} />
       <div class="tk-grow" role="button" tabindex="0" style="cursor:pointer;min-width:0" onClick=${() => { ctx.setUi('selectedId', t.id); ctx.emit('task.open', { id: t.id }); }}><div class="tk-truncate" style="font-weight:500">${t.title}</div><${DueText} t=${t} today=${ctx.today} /></div><${PrioFlag} t=${t} /></div>`;
     const head = (icon, text, n) => html`<div class="tk-fn__sec"><${Icon} name=${icon} size=${13} />${text}${n != null && html`<span>${n}</span>`}</div>`;
     const timeline = [...rest.map((o) => ({ at: minutesOf(o._s), o })), ...plan.map((p) => ({ at: p.a, p }))].sort((x, y) => x.at - y.at);
-    return html`<${Card} flush=${true} title=${props.title} icon="target" actions=${html`<${Badge} tone="accent">${rest.length} Termine · ${open.filter((t) => dueInfo(t, ctx.today).diff <= 0).length} fällig<//>`}>
+    return html`<${Card} flush=${true} title=${props.title} icon="target" actions=${html`<${Badge} tone="accent">${rest.length} Termine · ${overdue.length + dueToday.length} fällig<//>`}>
       ${props.showHero && next && html`<button type="button" class="tk-fn__hero" onClick=${() => openEvent(ctx, setData, next, events, props)}><span class="tk-fn__badge"><${Icon} name=${current ? 'play' : 'clock'} size=${22} /></span>
         <span class="tk-grow"><div class="tk-fn__eyebrow">${current ? `Läuft jetzt · noch ${durLabel(minutesOf(next._e) - nowMin)}` : `Als Nächstes · in ${durLabel(minutesOf(next._s) - nowMin)}`}</div>
           <div class="tk-truncate" style="font-size:var(--tk-fs-lg);font-weight:600">${next.title}</div><div class="tk-muted" style="font-size:var(--tk-fs-sm)">${timeStr(next._s)}–${timeStr(next._e)}${next.location ? ` · ${next.location}` : ''}</div></span><${Icon} name="chevron-right" size=${18} /></button>`}

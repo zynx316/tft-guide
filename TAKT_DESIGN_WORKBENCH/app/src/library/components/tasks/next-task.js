@@ -10,7 +10,7 @@ export const nextTask = {
   name: 'Jetzt dran',
   category: 'Aufgaben',
   description: 'Schlägt die eine Aufgabe vor, die jetzt sinnvoll ist (überfällig vor heute fällig, Priorität, „In Arbeit“ zuerst). Zeigt den nächsten Schritt und bietet Fokus starten, Erledigt und „Andere Aufgabe“.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Überschrift', type: 'text', default: 'Jetzt dran' },
     { name: 'showAlternatives', label: 'Weitere Vorschläge', type: 'boolean', default: true },
@@ -30,7 +30,7 @@ export const nextTask = {
   render: function NextTask({ props, data, setData, ctx }) {
     const [skip, setSkip] = useState(0);
     const list = rankedOpen(data.tasks, ctx.today);
-    if (!list.length) return html`<${Card} title=${props.title}><${EmptyState} icon="check-check" title="Alles erledigt" text="Keine offene Aufgabe – genieße die freie Zeit." /><//>`;
+    if (!list.length) return html`<${Card} title=${props.title}><${EmptyState} icon="check-check" title=${(Array.isArray(data.tasks) && data.tasks.length) ? 'Nichts mehr offen' : 'Keine Aufgaben'} text=${(Array.isArray(data.tasks) && data.tasks.length) ? 'Alle Aufgaben sind erledigt.' : 'Was du erledigen willst, sammelst du hier.'} /><//>`;
     const t = list[skip % list.length], step = (t.subtasks || []).find((s) => !s.done), sp = subProgress(t);
     return html`<section class="tk-tsk-next" data-qa="next-task" aria-label=${props.title} key=${t.id}>
       <div class="tk-tsk-next__eyebrow"><${Icon} name="target" size=${14} />${props.title}${t.status === 'In Arbeit' && html`<${Badge} tone="accent">In Arbeit<//>`}</div>

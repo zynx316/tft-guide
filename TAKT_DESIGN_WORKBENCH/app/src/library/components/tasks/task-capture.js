@@ -5,6 +5,7 @@ import { Card, Button, Input, Badge, Icon } from '../../ui.js';
 import { isoDay } from '../../../lib/util.js';
 import { parseTask, makeTask, PROJECT_NAMES } from './_tasks-x.js';
 import { PRIORITY } from './_tasks.js';
+import { shortDay } from '../calendar/_cal.js';
 
 const EXAMPLES = ['Rechnung prüfen morgen !! #Finanzen', 'Lieferanten anrufen Freitag 10 Uhr 15 min', 'Idee: Adventsbundle #Shop'];
 
@@ -13,7 +14,7 @@ export const taskCapture = {
   name: 'Aufgabe schnell erfassen',
   category: 'Aufgaben',
   description: 'Erfassen ohne Umweg: Datum, Uhrzeit, Priorität (! / !!), Projekt (#Name) und Dauer werden aus dem Satz erkannt. Ziel wahlweise die Aufgabenliste oder der Eingang zum späteren Sortieren.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Neue Aufgabe' },
     { name: 'target', label: 'Ziel', type: 'select', options: ['tasks', 'inbox'], default: 'tasks' },
@@ -44,13 +45,13 @@ export const taskCapture = {
     const due = p.due || (!toInbox && props.defaultToday ? isoDay(ctx.today) : null);
     const submit = () => {
       if (!p.title) { ctx.emit('form.invalid', { field: 'title' }); ctx.toast('Bitte eine Aufgabe eingeben'); return; }
-      if (toInbox) { const it = { id: `in${Date.now().toString(36)}`, title: p.title, source: 'Erfassen', at: `${isoDay(ctx.today)}T${String(ctx.today.getHours()).padStart(2, '0')}:${String(ctx.today.getMinutes()).padStart(2, '0')}:00` }; setData('inbox', (a) => [it, ...(Array.isArray(a) ? a : [])]); ctx.emit('inbox.add', { id: it.id, title: it.title }); ctx.toast(`„${it.title}“ im Eingang`); }
-      else { const t = makeTask({ ...p, due }); setData('tasks', (a) => [t, ...(Array.isArray(a) ? a : [])]); ctx.emit('task.create', { id: t.id, title: t.title }); ctx.toast(`„${t.title}“ angelegt`); }
+      if (toInbox) { const it = { id: ctx.newId('in'), title: p.title, source: 'Erfassen', at: `${isoDay(ctx.today)}T${String(ctx.today.getHours()).padStart(2, '0')}:${String(ctx.today.getMinutes()).padStart(2, '0')}:00` }; setData('inbox', (a) => [it, ...(Array.isArray(a) ? a : [])]); ctx.emit('inbox.add', { id: it.id, title: it.title }); ctx.toast(`„${it.title}“ im Eingang`); }
+      else { const t = makeTask(ctx, { ...p, due }); setData('tasks', (a) => [t, ...(Array.isArray(a) ? a : [])]); ctx.emit('task.create', { id: t.id, title: t.title }); ctx.toast(`„${t.title}“ angelegt`); }
       setText('');
     };
     const body = html`<div class="tk-tsk-cap" data-qa="task-capture">
       <div class="tk-tsk-cap__row"><${Input} value=${text} onInput=${setText} placeholder=${toInbox ? 'Gedanke festhalten … (Enter)' : 'Aufgabe eingeben … (Enter)'} aria-label="Aufgabe in einem Satz" onKeyDown=${(e) => e.key === 'Enter' && submit()} /><${Button} variant="primary" icon="plus" aria-label="Hinzufügen" onClick=${submit} /></div>
-      <div class="tk-tsk-cap__parsed" aria-live="polite">${p.title ? html`${due && html`<${Badge} icon="calendar">${new Intl.DateTimeFormat('de-DE', { weekday: 'short', day: 'numeric', month: 'short' }).format(new Date(`${due.slice(0, 10)}T00:00:00`))}${due.length > 10 ? `, ${due.slice(11, 16)}` : ''}<//>`}${p.priority && html`<${Badge} tone=${PRIORITY[p.priority].tone} icon="flag">${PRIORITY[p.priority].label}<//>`}${p.project && html`<${Badge} tone="accent" icon="folder">${p.project}<//>`}${p.estimate && html`<${Badge} icon="timer">${p.estimate} Min.<//>`}${toInbox && html`<${Badge} icon="inbox">Eingang<//>`}`
+      <div class="tk-tsk-cap__parsed" aria-live="polite">${p.title ? html`${due && html`<${Badge} icon="calendar">${shortDay(new Date(`${due.slice(0, 10)}T00:00:00`))}${due.length > 10 ? `, ${due.slice(11, 16)}` : ''}<//>`}${p.priority && html`<${Badge} tone=${PRIORITY[p.priority].tone} icon="flag">${PRIORITY[p.priority].label}<//>`}${p.project && html`<${Badge} tone="accent" icon="folder">${p.project}<//>`}${p.estimate && html`<${Badge} icon="timer">${p.estimate} Min.<//>`}${toInbox && html`<${Badge} icon="inbox">Eingang<//>`}`
         : html`<span class="tk-subtle" style="font-size:var(--tk-fs-sm)">${toInbox ? 'Erst festhalten, später sortieren.' : 'Datum, ! für Priorität, #Projekt und Dauer werden erkannt.'}</span>`}</div>
       ${props.showExamples && !text && html`<div class="tk-tsk-cap__ex">${EXAMPLES.map((x) => html`<button type="button" onClick=${() => setText(x)}>${x}</button>`)}</div>`}</div>`;
     return props.bare ? body : html`<${Card} title=${props.title} icon="circle-plus">${body}<//>`;

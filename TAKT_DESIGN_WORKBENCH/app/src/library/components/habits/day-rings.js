@@ -10,7 +10,7 @@ export const dayRings = {
   name: 'Tagesringe',
   category: 'Start',
   description: 'Der Tag in vier Ringen: Aufgaben, Gewohnheiten, Wasser und Termine. Live berechnet, ruhig formuliert, jede Zeile öffnet ihr Modul.',
-  version: '1.0',
+  version: '1.2',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Dein Tag' },
     { name: 'size', label: 'Durchmesser (px)', type: 'number', default: 192 },
@@ -24,9 +24,9 @@ export const dayRings = {
   events: ['tile.open.tasks', 'tile.open.habits', 'tile.open.calendar', 'tile.open.nutrition'],
   states: ['empty'],
   css: `
-  .tk-dr { display:flex; align-items:center; gap:var(--tk-space-6); flex-wrap:wrap; } .tk-dr--stacked { flex-direction:column; align-items:stretch; } .tk-dr svg { flex:none; margin:0 auto; } .tk-dr__legend { flex:1 1 220px; display:flex; flex-direction:column; gap:4px; min-width:0; }
-  .tk-dr__item { display:flex; align-items:center; gap:12px; padding:8px 10px; min-height:52px; border-radius:var(--tk-radius-md); border:1px solid transparent; background:none; color:inherit; font:inherit; text-align:left; cursor:pointer; min-width:0; } .tk-dr__item:hover { background:var(--tk-c-surface2); border-color:var(--tk-c-border); }
-  .tk-dr__dot { width:34px; height:34px; border-radius:11px; display:grid; place-items:center; flex:none; background:color-mix(in srgb, var(--rc) 16%, transparent); color:var(--rc); } .tk-dr__val { text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; } .tk-dr__val strong { display:block; } .tk-dr__val small { color:var(--tk-c-text-subtle); font-size:var(--tk-fs-xs); }
+  .tk-dr { display:flex; align-items:center; gap:var(--tk-space-6); flex-wrap:wrap; } .tk-dr--stacked { flex-direction:column; align-items:stretch; } .tk-dr svg { flex:none; margin:0 auto; max-width:100%; height:auto; } .tk-dr__legend { flex:1 1 220px; display:flex; flex-direction:column; gap:4px; min-width:0; }
+  .tk-dr__item { display:flex; align-items:center; gap:12px; padding:8px 10px; min-height:52px; border-radius:var(--tk-radius-md); border:1px solid transparent; background:none; color:inherit; font:inherit; text-align:left; cursor:pointer; min-width:0; flex-wrap:wrap; } .tk-dr__item .tk-grow { flex:1 1 auto; } .tk-dr__item .tk-grow.tk-truncate { overflow-wrap:break-word !important; } .tk-dr__item:hover { background:var(--tk-c-surface2); border-color:var(--tk-c-border); }
+  .tk-dr__dot { width:34px; height:34px; border-radius:11px; display:grid; place-items:center; flex:none; background:color-mix(in srgb, var(--rc) 16%, transparent); color:var(--rc); } .tk-dr__val { text-align:right; font-variant-numeric:tabular-nums; margin-left:auto; min-width:0; overflow-wrap:anywhere; } .tk-dr__val strong { display:block; } .tk-dr__val small { color:var(--tk-c-text-subtle); font-size:var(--tk-fs-xs); }
   .tk-dr__note { margin-top:12px; font-size:var(--tk-fs-sm); color:var(--tk-c-text-muted); text-align:center; }`,
   example: { data: { events: [{ id: 'e', title: 'Daily Stand-up', start: '2026-11-24T09:15:00', end: '2026-11-24T09:30:00' }, { id: 'f', title: 'Call', start: '2026-11-24T15:00:00', end: '2026-11-24T16:00:00' }], tasks: [{ id: 't1', title: 'Angebot', due: '2026-11-24T14:00:00' }, { id: 't2', title: 'Belege', due: '2026-11-24', done: true }], habits: [
     { id: 'w', name: 'Wasser trinken', icon: 'droplet', tone: 3, rhythm: { type: 'daily' }, goal: { target: 8, unit: 'Gläser', step: 1 }, link: { module: 'nutrition' }, since: '2026-09-01', log: { '2026-11-24': 3 } },

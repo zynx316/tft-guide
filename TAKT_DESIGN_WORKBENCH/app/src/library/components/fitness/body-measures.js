@@ -3,7 +3,7 @@ import { html } from '../../../lib/html.js';
 import { Card, Button, Badge, Icon, Sparkline, EmptyState, Select } from '../../ui.js';
 import { isoDay } from '../../../lib/util.js';
 import { num, dateShort, r1 } from './_calc.js';
-import { Stepper, FIT_CSS, hideVal } from './_ui.js';
+import { Stepper, FIT_CSS, hideVal, weightHidden } from './_ui.js';
 import { useState } from 'preact/hooks';
 
 function AddForm({ items, close, onSave }) {
@@ -18,7 +18,7 @@ export const bodyMeasures = {
   name: 'Umfänge & Körperwerte',
   category: 'Fitness',
   description: 'Umfänge (Taille, Brust, Hüfte, Oberarm, Oberschenkel) und Körperfett (Waagen-Schätzung) mit Verlauf seit der ersten Messung. Änderungen werden neutral dargestellt, ohne Bewertungsfarbe. Messung per Dialog erfassen; Werte lassen sich ausblenden.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Umfänge' },
     { name: 'showAdd', label: 'Erfassen-Knopf', type: 'boolean', default: true },
@@ -38,7 +38,7 @@ export const bodyMeasures = {
     return html`<${Card} title=${props.title} icon="ruler" actions=${props.showAdd && html`<${Button} size="sm" icon="plus" onClick=${add}>Messung<//>`}>
       ${items.map((m) => { const p = m.points; const first = p[0], last = p.at(-1); const d = r1(last.value - first.value);
         return html`<div class="tk-bm__row"><div class="tk-grow"><div style="font-weight:600">${m.label}</div><div class="tk-subtle" style="font-size:var(--tk-fs-sm)">seit ${dateShort(first.date)}${hideVal(ctx, '') ? '' : ` · ${d > 0 ? '+' : d < 0 ? '−' : '±'}${num(Math.abs(d), 1)} ${m.unit}`}</div></div>
-          ${!ctx.ui.hideWeight && p.length > 1 && html`<${Sparkline} values=${p.map((x) => x.value)} width=${72} height=${26} tone="accent" />`}<div class="tk-bm__v"><strong>${hideVal(ctx, num(last.value, 1))}</strong><span>${m.unit} · ${dateShort(last.date)}</span></div></div>`; })}<//>`;
+          ${!weightHidden(ctx) && p.length > 1 && html`<${Sparkline} values=${p.map((x) => x.value)} width=${72} height=${26} tone="accent" />`}<div class="tk-bm__v"><strong>${hideVal(ctx, num(last.value, 1))}</strong><span>${m.unit} · ${dateShort(last.date)}</span></div></div>`; })}<//>`;
   },
 };
 export default [bodyMeasures];

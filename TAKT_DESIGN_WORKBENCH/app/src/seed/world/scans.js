@@ -54,16 +54,16 @@ function deriveScans(list, receiptList) {
   const unsure = (c) => (c.uncertain || []).length;
   const toReview = list.filter((c) => unsure(c) > 0).map((c) => ({ id: c.id, title: c.title, subtitle: c.uncertain.map((u) => u.word).join(', '), meta: c.meta, badge: `${unsure(c)} unsicher`, tone: 'warning', icon: 'alert-triangle', group: c.group }));
   const open = receiptList.filter((r) => r.status === 'offen').length;
-  const avg = list.length ? Math.round((list.reduce((s, c) => s + c.confidence, 0) / list.length) * 100) : 0;
+  const avg = list.length ? Math.round((list.reduce((s, c) => s + c.confidence, 0) / list.length) * 100) : null;   // ohne Erfassung kein Durchschnitt
   return {
     toReview, open, count: list.length,
     metrics: [
       { label: 'Erfassungen', value: list.length, icon: 'scan-text', tone: 'accent' },
       { label: 'Zu prüfen', value: toReview.length, icon: 'alert-triangle', tone: 'warning' },
       { label: 'Belege offen', value: open, icon: 'receipt', tone: 'info' },
-      { label: 'Ø Konfidenz', value: avg, unit: '%', icon: 'gauge', tone: 'success' },
+      { label: 'Ø Konfidenz', raw: avg, kind: 'percent', icon: 'gauge', tone: 'success' },
     ],
-    bySource: { segments: ['camera', 'file', 'clipboard'].map((s) => ({ label: { camera: 'Kamera', file: 'Datei', clipboard: 'Zwischenablage' }[s], value: list.filter((c) => c.source === s).length })) },
+    bySource: { segments: !list.length ? [] : ['camera', 'file', 'clipboard'].map((s) => ({ label: { camera: 'Kamera', file: 'Datei', clipboard: 'Zwischenablage' }[s], value: list.filter((c) => c.source === s).length })) },
   };
 }
 const ds = deriveScans(captures, receipts);

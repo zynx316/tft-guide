@@ -2,7 +2,7 @@
 import { html } from '../../../lib/html.js';
 import { useState } from 'preact/hooks';
 import { Card, Button } from '../../ui.js';
-import { EventForm, formToEvent, openCreateDialog, dayKey, selDate, EVENT_CSS } from './_cal.js';
+import { EventForm, formToEvent, openCreateDialog, dayKey, selDate, newEventId, EVENT_CSS } from './_cal.js';
 
 export const eventForm = {
   id: 'event-form',
@@ -27,7 +27,7 @@ export const eventForm = {
     if (props.mode === 'dialog') return html`<${Button} variant="primary" icon="plus" onClick=${() => openCreateDialog(ctx, setData, { date })}>${props.title}<//>`;
     return html`<${Card} title=${props.title} icon="calendar-plus"><${EventForm} key=${n} initial=${{ date }} submitLabel=${props.submitLabel}
       onInvalid=${(er) => ctx.emit('form.invalid', er)}
-      onSubmit=${(v) => { const ev = formToEvent(v, `ev${Date.now().toString(36)}`); setData('events', (all) => [ev, ...(Array.isArray(all) ? all : [])]); ctx.setUi('selectedDate', v.date); ctx.emit('event.create', { id: ev.id, title: ev.title }); ctx.toast(`„${ev.title}“ angelegt`); setN(n + 1); }} /><//>`;
+      onSubmit=${(v) => { const ev = formToEvent(v, newEventId(ctx)); setData('events', (all) => [ev, ...(Array.isArray(all) ? all : [])]); ctx.setUi('selectedDate', v.date); ctx.emit('event.create', { id: ev.id, title: ev.title }); ctx.toast(`„${ev.title}“ angelegt`); setN(n + 1); }} /><//>`;
   },
 };
 export default eventForm;

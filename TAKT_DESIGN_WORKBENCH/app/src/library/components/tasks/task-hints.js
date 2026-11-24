@@ -11,7 +11,7 @@ export const taskHints = {
   name: 'Aufgaben-Hinweise',
   category: 'Aufgaben',
   description: 'Berechnete Hinweise statt Datenwüste: überfällige Aufgaben, unsortierter Eingang, Tagesplan gegen freie Zeit aus dem Kalender (passt / überlastet) und Aufgaben mit Uhrzeit. Jeder Hinweis hat eine Aktion.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Hinweise' },
     { name: 'limit', label: 'Max. Hinweise', type: 'number', default: 4 },
@@ -44,7 +44,8 @@ export const taskHints = {
     if (today.length && Array.isArray(data.events) && data.events.length) hints.push({ id: 'plan', tone: plan > free ? 'warning' : 'success', icon: plan > free ? 'alert-triangle' : 'check-circle-2', title: plan > free ? `Heute überlastet: ${hoursOf(plan)} geplant, ${hoursOf(free)} frei` : `Tagesplan passt: ${hoursOf(plan)} von ${hoursOf(free)} freier Zeit`, text: plan > free ? 'Verschiebe eine Aufgabe auf morgen oder kürze Termine.' : `${today.length} Aufgaben heute fällig, die Lücken im Kalender reichen.`, acts: [] });
     if (inbox.length) hints.push({ id: 'inbox', tone: 'accent', icon: 'inbox', title: `${inbox.length} Einträge im Eingang`, text: 'Kurz sortieren: Heute, Morgen, Diese Woche oder Irgendwann.', acts: [{ label: 'Eingang sortieren', primary: true, run: () => ctx.emit('inbox.open', { id: 'inbox' }) }] });
     const shown = hints.filter((h) => !gone.includes(h.id)).slice(0, Number(props.limit) || 4);
-    if (!tasks.length || !shown.length) return html`<${Card} title=${props.title} icon="sparkles"><${EmptyState} icon="check-circle-2" title="Alles im Griff" text="Nichts überfällig, der Eingang ist leer." /><//>`;
+    if (!tasks.length) return html`<${Card} title=${props.title} icon="sparkles"><${EmptyState} icon="sparkles" title="Keine Hinweise" text="Sobald Aufgaben existieren, erscheinen hier Hinweise zu Fristen und Zeit." /><//>`;
+    if (!shown.length) return html`<${Card} title=${props.title} icon="sparkles"><${EmptyState} icon="check-circle-2" title="Keine Hinweise" text="Nichts überfällig, der Eingang ist leer." /><//>`;
     return html`<div class="tk-tsk-hints" data-qa="task-hints">${props.title && html`<span class="tk-label">${props.title}</span>`}${shown.map((h) => html`<div class="tk-tsk-hint" style=${`--hc:${toneColor(h.tone)}`}><span class="tk-tsk-hint__ico"><${Icon} name=${h.icon} size=${18} /></span>
       <div class="tk-grow"><div class="tk-tsk-hint__t">${h.title}</div>${!props.dense && html`<div class="tk-tsk-hint__x">${h.text}</div>`}${h.acts.length > 0 && html`<div class="tk-tsk-hint__a">${h.acts.map((a) => html`<${Button} size="sm" variant=${a.primary ? 'primary' : 'default'} onClick=${a.run}>${a.label}<//>`)}</div>`}</div>
       <${Button} size="sm" variant="ghost" icon="x" class="tk-tsk-hint__close" aria-label=${`Hinweis „${h.title}“ ausblenden`} onClick=${() => { setGone((g) => [...g, h.id]); ctx.emit('hint.dismiss', { id: h.id }); }} /></div>`)}</div>`;

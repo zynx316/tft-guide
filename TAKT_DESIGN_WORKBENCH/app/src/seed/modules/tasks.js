@@ -328,12 +328,13 @@ export default {
       variants: [
         {
           id: 'A', name: 'Master-Detail', direction: 'kompakt', concept: 'Liste links (zwei Drittel Breite → Hauptspalte), Detailpanel rechts. Auswahl wechselt das Detail ohne Seitenwechsel.',
-          description: '+ Schnelles Durchklicken, Kontext bleibt  − Auf Mobile Detail unter der Liste',
+          description: '+ Schnelles Durchklicken, Kontext bleibt  − Auf Mobile steht das Detail oben, die Liste verkürzt darunter',
           layout: { type: 'split', even: true },
           blocks: [
             { id: 'hdr', component: 'page-header', region: 'header', props: { eyebrow: 'Aufgaben', title: 'Aufgaben bearbeiten', primaryLabel: '' } },
-            { id: 'list', component: 'task-list', region: 'main', bind: { tasks: 'tasks' }, props: { title: 'Aufgaben', groupBy: 'due', showDone: false, dense: true } },
+            { id: 'list', component: 'task-list', region: 'main', hideOn: ['mobile', 'tablet'], bind: { tasks: 'tasks' }, props: { title: 'Aufgaben', groupBy: 'due', showDone: false, dense: true } },
             { id: 'detail', component: 'task-detail', region: 'aside', bind: { tasks: 'tasks' }, props: {} },
+            { id: 'switch', component: 'task-list', region: 'aside', hideOn: ['desktop'], bind: { tasks: 'tasks' }, props: { title: 'Andere Aufgabe wählen', groupBy: 'due', showDone: false, dense: true, limit: 6 } },
           ],
         },
         {
@@ -344,6 +345,18 @@ export default {
             { id: 'hdr', component: 'page-header', region: 'header', props: { eyebrow: 'Aufgaben', title: 'Detail', primaryLabel: '' } },
             { id: 'detail', component: 'task-detail', region: 'main', bind: { tasks: 'tasks' }, props: {} },
             { id: 'list', component: 'task-list', region: 'main', bind: { tasks: 'tasks' }, props: { title: 'Weitere Aufgaben', groupBy: 'none', showDone: false, dense: true, limit: 6 } },
+          ],
+        },
+        {
+          id: 'C', name: 'Große Karte', direction: 'visuell', concept: 'Die Aufgabe als große Karte mit Unteraufgaben und Fokus-Start; daneben der Tagesfortschritt als Ring und der Wochenverlauf. Darunter wenige Karten zum Wechseln.',
+          description: '+ Aufgabe und Tagesbild zusammen, ruhig  − Weniger Aufgaben gleichzeitig sichtbar',
+          layout: { type: 'grid' },
+          blocks: [
+            { id: 'hdr', component: 'page-header', region: 'header', props: { eyebrow: 'Aufgaben', title: 'Aufgabe', primaryLabel: '' } },
+            { id: 'detail', component: 'task-detail', region: 'main', span: 7, spanTablet: 12, bind: { tasks: 'tasks' }, props: {} },
+            { id: 'ring', component: 'task-day-ring', region: 'main', span: 5, spanTablet: 12, bind: { tasks: 'tasks', activity: 'activity' }, props: { title: 'Dein Tag' } },
+            { id: 'week', component: 'task-week-chart', region: 'main', span: 5, spanTablet: 12, bind: { tasks: 'tasks', activity: 'activity', log: 'log' }, props: { title: 'Letzte 7 Tage' } },
+            { id: 'list', component: 'task-list', region: 'main', span: 12, spanTablet: 12, bind: { tasks: 'tasks' }, props: { title: 'Andere Aufgabe wählen', groupBy: 'none', showDone: false, dense: true, limit: 5 } },
           ],
         },
       ],
@@ -498,7 +511,8 @@ export default {
         { text: 'Datum im Detail per Datumsfeld änderbar', type: 'action', priority: 'must' },
       ],
       interactions: [
-        I('Banner „Ansehen“', 'Banner-Aktion wird ausgelöst (Prototyp: Hinweis)', 'notice.action'),
+        I('Hinweis „Überfällige ansehen“', 'Aufgabenliste öffnet sich', 'overdue.open', 'tasks.list'),
+        I('Hinweis ausblenden', 'Hinweis verschwindet', 'hint.dismiss'),
         I('Filter „Überfällig“', 'Nur überfällige Aufgaben', 'filter.change'),
         I('Aufgabe abhaken', 'Überfällig-Zähler sinkt', 'task.toggle'),
         I('Aufgabe antippen', 'Aufgaben-Detail öffnet sich', 'task.open', 'tasks.detail'),

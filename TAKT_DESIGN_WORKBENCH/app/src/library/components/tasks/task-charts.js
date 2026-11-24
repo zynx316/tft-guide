@@ -11,7 +11,7 @@ export const taskDayRing = {
   name: 'Tagesfortschritt',
   category: 'Aufgaben',
   description: 'Ring mit „erledigt von heute“ (erledigte plus heute fällige Aufgaben) und Legende: noch offen, überfällig, geplante Zeit. Eine Botschaft: wie weit ist der Tag?',
-  version: '1.0',
+  version: '1.1',
   props: [{ name: 'title', label: 'Titel', type: 'text', default: 'Heute' }],
   data: [
     { slot: 'tasks', label: 'Aufgaben', default: 'tasks', shape: TASK_SHAPE, required: true },
@@ -24,8 +24,8 @@ export const taskDayRing = {
   .tk-tsk-ring__fig { position:relative; width:132px; height:132px; flex:none; }
   .tk-tsk-ring__num { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:var(--tk-fs-2xl); font-weight:var(--tk-fw-bold); font-variant-numeric:tabular-nums; line-height:1.1; }
   .tk-tsk-ring__num small { font-size:var(--tk-fs-xs); font-weight:var(--tk-fw-regular); color:var(--tk-c-text-muted); }
-  .tk-tsk-ring__legend { display:flex; flex-direction:column; gap:8px; flex:1; min-width:150px; }
-  .tk-tsk-ring__legend div { display:flex; align-items:center; gap:8px; font-size:var(--tk-fs-md); } .tk-tsk-ring__legend b { margin-left:auto; font-variant-numeric:tabular-nums; }
+  .tk-tsk-ring__legend { display:flex; flex-direction:column; gap:8px; flex:1; min-width:min(150px, 100%); }
+  .tk-tsk-ring__legend div { display:flex; align-items:center; flex-wrap:wrap; gap:4px 8px; font-size:var(--tk-fs-md); min-width:0; } .tk-tsk-ring__legend b { margin-left:auto; font-variant-numeric:tabular-nums; }
   .tk-tsk-ring__legend i { width:10px; height:10px; border-radius:3px; background:var(--lc); flex:none; }`,
   example: { data: { tasks: [{ id: 'a', title: 'A', due: '2026-11-24', estimate: 60 }, { id: 'b', title: 'B', due: '2026-11-23' }, { id: 'c', title: 'C', due: '2026-11-24', done: true, doneAt: '2026-11-24' }], activity: [{ day: '2026-11-24', archived: 1 }] } },
   render: ({ props, data, ctx }) => {

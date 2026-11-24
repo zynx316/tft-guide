@@ -1,7 +1,7 @@
 // Trading – gemeinsame UI-Bausteine, Datenslots und Basis-CSS (Präfix tk-trd-).
 import { html } from '../../../lib/html.js';
 import { Icon, toneColor } from '../../ui.js';
-import { money, percent } from '../../helpers.js';
+import { money, percent, MASK_PERCENT } from '../../helpers.js';
 import { fmtNumber, fmtPercent } from '../../../lib/format.js';
 import { arr } from './_calc.js';
 
@@ -33,9 +33,11 @@ export const upDown = (v) => (v > 0 ? 'up' : v < 0 ? 'down' : 'flat');
 export const TONE_COLOR = { up: 'var(--tk-c-success)', down: 'var(--tk-c-danger)', flat: 'var(--tk-c-text-muted)' };
 
 /** Kurs als Zahl mit abgesetzter Einheit (Marktdaten, nicht maskiert; Einheit als eigenes Element). */
-export const Px = ({ v, unit = '€', dec }) => html`<span class="tk-trd-num">${fmtNumber(v, { digits: dec ?? (v >= 5000 ? 0 : 2) })}<span class="tk-trd-u">${unit}</span></span>`;
+export const Px = ({ v, unit = '€', dec }) => html`<span class="tk-trd-num">${fmtNumber(v, { digits: dec ?? (v >= 5000 ? 0 : 2) })}\u00A0<span class="tk-trd-u">${unit}</span></span>`;
+/** Stückzahl: gehört zum privaten Bestand und wird im Privatmodus durch „••“ ersetzt (sonst verrät Stück × Kurs den Wert). */
+export const qtyText = (ctx, q) => (ctx?.privacy ? '••' : fmtNumber(q, { digits: q % 1 ? 3 : 0 }));
 /** Veränderung in Prozent mit Pfeil und Vorzeichen (Farbe nie allein). */
-export const Chg = ({ v, digits = 1, mask }) => { const k = upDown(Math.round(v * 10 ** (digits + 2)) / 10 ** (digits + 2)); return html`<span class=${`tk-trd-num tk-trd-${k}`}><span aria-hidden="true">${k === 'up' ? '▲' : k === 'down' ? '▼' : '•'}</span> ${mask ? '•• %' : fmtPercent(v, { digits, sign: true })}</span>`; };
+export const Chg = ({ v, digits = 1, mask }) => { const k = upDown(Math.round(v * 10 ** (digits + 2)) / 10 ** (digits + 2)); return html`<span class=${`tk-trd-num tk-trd-${k}`}><span aria-hidden="true">${k === 'up' ? '▲' : k === 'down' ? '▼' : '•'}</span> ${mask ? MASK_PERCENT : fmtPercent(v, { digits, sign: true })}</span>`; };
 /** Gewinn/Verlust privat (Betrag und Prozent maskierbar). */
 export const Gain = ({ ctx, v, pct, digits = 2 }) => { const k = upDown(Math.round(v * 100) / 100); return html`<span class=${`tk-trd-num tk-trd-${k}`}><span aria-hidden="true">${k === 'up' ? '▲' : k === 'down' ? '▼' : '•'}</span> ${money(ctx, v, { sign: true, digits })}${pct != null && html` <span class="tk-trd-sub">(${percent(ctx, pct)})</span>`}</span>`; };
 export const Tile = ({ type, icon, tone, size = 36 }) => { const t = tone ?? TYPE_TONE[type] ?? 1; return html`<span class="tk-trd-ico" style=${`width:${size}px;height:${size}px;background:color-mix(in srgb, ${toneColor(t)} 16%, transparent);color:${toneColor(t)}`}><${Icon} name=${icon || TYPE_ICON[type] || 'circle'} size=${Math.round(size * 0.5)} /></span>`; };
@@ -63,7 +65,7 @@ export const TRD_CSS = `
   .tk-trd-row { display:flex; align-items:center; gap:12px; min-width:0; }
   .tk-trd-grow { flex:1 1 auto; min-width:0; }
   .tk-trd-num { font-variant-numeric:tabular-nums; white-space:nowrap; }
-  .tk-trd-u { font-size:.82em; margin-left:.2em; color:var(--tk-c-text-muted); font-weight:var(--tk-fw-medium); }
+  .tk-trd-u { font-size:.82em; color:var(--tk-c-text-muted); font-weight:var(--tk-fw-medium); }
   .tk-trd-big { font-size:var(--tk-fs-3xl); font-weight:var(--tk-fw-bold); letter-spacing:var(--tk-ls-tight); line-height:1.05; font-variant-numeric:tabular-nums; white-space:nowrap; }
   .tk-trd-big--xl { font-size:var(--tk-fs-4xl); }
   .bp-mobile .tk-trd-big--xl { font-size:var(--tk-fs-3xl); }
@@ -71,6 +73,10 @@ export const TRD_CSS = `
   .tk-trd-meta { color:var(--tk-c-text-muted); font-size:var(--tk-fs-sm); }
   .tk-trd-sub { color:var(--tk-c-text-muted); font-size:var(--tk-fs-xs); font-weight:var(--tk-fw-regular, 400); }
   .tk-trd-title { font-weight:var(--tk-fw-medium); min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  [data-tk-large-text] .tk-trd-big, [data-tk-large-text] .tk-trd-big--xl { font-size:var(--tk-fs-2xl); white-space:normal; overflow-wrap:anywhere; }
+  [data-tk-large-text] .tk-trd-title { white-space:normal; overflow:visible; text-overflow:clip; overflow-wrap:break-word; }
+  [data-tk-large-text] .tk-trd-ps__r, [data-tk-large-text] .tk-trd-ps__sum { grid-template-columns:minmax(0,1fr); row-gap:6px; } [data-tk-large-text] .tk-trd-ps__r > *, [data-tk-large-text] .tk-trd-ps__sum > * { grid-row:auto !important; grid-column:auto !important; text-align:left !important; }
+  [data-tk-large-text] .tk-trd-item, [data-tk-large-text] .tk-trd-row { flex-wrap:wrap; } [data-tk-large-text] .tk-trd-item > .tk-trd-grow { flex:1 1 calc(100% - 3.5em); }
   .tk-trd-up { color:var(--tk-c-success); } .tk-trd-down { color:var(--tk-c-danger); } .tk-trd-flat { color:var(--tk-c-text-muted); }
   .tk-trd-up, .tk-trd-down, .tk-trd-flat { font-weight:var(--tk-fw-semibold); }
   .tk-trd-stat { display:flex; flex-direction:column; gap:2px; min-width:0; } .tk-trd-stat .tk-trd-num { white-space:normal; } .tk-trd-stat strong { font-size:var(--tk-fs-lg); }

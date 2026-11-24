@@ -30,7 +30,7 @@ export const savingsSummary = {
   name: 'Sparplan-Zusammenfassung',
   category: 'Sparpläne',
   description: 'Sparrate pro Monat, Wert der Sparpläne, nächste Ausführung und Ziele im Plan. Als dichte Kennzahlen-Zeile oder als große Karte mit Verhältnis Eingezahlt zu Ertrag.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Sparen im Überblick' },
     { name: 'style', label: 'Darstellung', type: 'select', options: ['strip', 'hero'], default: 'strip' },

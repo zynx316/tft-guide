@@ -1,4 +1,5 @@
 // Domänen-Komponenten "calendar"
+import { withBigText } from './_cal.js';
 import calendarWeek from './calendar-week.js';
 import calendarMonth from './calendar-month.js';
 import agenda from './agenda.js';
@@ -20,4 +21,4 @@ import calendarSources from './calendar-sources.js';
 import holidayList from './holiday-list.js';
 import calendarPrefs from './calendar-prefs.js';
 import shortcutBar from './shortcut-bar.js';
-export default [calendarWeek, calendarMonth, agenda, miniMonth, calendarLegend, eventForm, calStats, weekLoad, specialDays, nextEvent, dayBand, calHints, eventQuickAdd, eventDetail, eventAttendees, eventReminders, eventConflicts, calendarSources, holidayList, calendarPrefs, shortcutBar];
+export default withBigText([calendarWeek, calendarMonth, agenda, miniMonth, calendarLegend, eventForm, calStats, weekLoad, specialDays, nextEvent, dayBand, calHints, eventQuickAdd, eventDetail, eventAttendees, eventReminders, eventConflicts, calendarSources, holidayList, calendarPrefs, shortcutBar]);

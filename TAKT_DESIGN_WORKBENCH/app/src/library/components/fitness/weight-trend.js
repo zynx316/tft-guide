@@ -5,14 +5,14 @@ import { Card, Segmented, Icon, EmptyState, Progress } from '../../ui.js';
 import { isoDay, addDays } from '../../../lib/util.js';
 import { trendOf, num, dateShort, dayShort, diffDays, addDaysIso, r1 } from './_calc.js';
 import { LineChart, CHART_CSS } from './_charts.js';
-import { FIT_CSS, hideVal, Toggle } from './_ui.js';
+import { FIT_CSS, hideVal, Toggle, weightHidden, setWeightHidden } from './_ui.js';
 
 export const weightTrend = {
   id: 'weight-trend',
   name: 'Gewichtstrend',
   category: 'Fitness',
   description: 'Gewichtsverlauf mit exponentiell geglättetem Trend (Rohwerte blass), Zielwert und Wochenänderung auf Trend-Basis. Tagesschwankungen werden eingeordnet statt bewertet. „Werte ausblenden“ blendet alle Gewichtszahlen im Feature aus.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Gewichtstrend' },
     { name: 'height', label: 'Höhe (px)', type: 'number', default: 200 },
@@ -33,12 +33,12 @@ export const weightTrend = {
     const [range, setRange] = useState('3 Monate');
     const log = [...(data.log || [])].sort((a, b) => (a.date < b.date ? -1 : 1));
     if (!log.length) return html`<${Card} title=${props.title}><${EmptyState} icon="scale" title="Noch keine Werte" text="Trage dein Gewicht ein – schon wenige Werte pro Woche zeigen einen Trend." /><//>`;
-    const hide = !!ctx.ui.hideWeight; const today = isoDay(ctx.today); const all = trendOf(log);
+    const hide = weightHidden(ctx); const today = isoDay(ctx.today); const all = trendOf(log);
     const from = isoDay(addDays(ctx.today, range === '4 Wochen' ? -28 : -90)); const pts = all.filter((p) => p.date >= from);
     const now = all.at(-1); const wk = all.filter((p) => p.date <= addDaysIso(now.date, -7)).at(-1); const delta = wk ? r1((now.trend - wk.trend) * 10) / 10 : null;
     const goal = data.summary?.goalKg; const start = data.summary?.startKg; const prog = goal && start ? Math.max(0, Math.min(1, (start - now.trend) / (start - goal))) : null;
     const gap = diffDays(today, now.date); const v = (k) => hideVal(ctx, `${num(k, 1)} kg`);
-    const toggle = props.showHide && html`<${Toggle} checked=${hide} label="Werte ausblenden" onChange=${(on) => { ctx.setUi('hideWeight', on); ctx.emit('body.hide', { hidden: on }); }} />`;
+    const toggle = props.showHide && html`<${Toggle} checked=${hide} label="Werte ausblenden" onChange=${(on) => { setWeightHidden(ctx, on); ctx.emit('body.hide', { hidden: on }); }} />`;
     return html`<${Card} title=${props.title} icon="scale" actions=${html`<${Segmented} label="Zeitraum" value=${range} onChange=${(r) => { setRange(r); ctx.emit('body.range', { range: r }); }} options=${['4 Wochen', '3 Monate'].map((r) => ({ value: r, label: r }))} />`}><div class="tk-wt" data-qa="weight-trend">
       <div class="tk-wt__stats"><div class="tk-fit-stat"><span>Trend</span><strong>${hide ? '•••' : num(now.trend, 1)}<small>${hide ? '' : ' kg'}</small></strong></div>
         <div class="tk-fit-stat"><span>Letzte 7 Tage</span><strong>${hide || delta == null ? '•••' : `${delta > 0 ? '+' : delta < 0 ? '−' : '±'}${num(Math.abs(delta), 1)}`}<small>${hide ? '' : ' kg'}</small></strong></div>

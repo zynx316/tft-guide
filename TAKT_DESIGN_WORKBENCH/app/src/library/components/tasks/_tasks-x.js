@@ -1,6 +1,6 @@
 // Gemeinsame Helfer für Aufgaben-Startseite, Eingang und Fokus-Timer: Text → Aufgabe, Kennzahlen, Fokus-Sitzungen.
 import { isoDay } from '../../../lib/util.js';
-import { parseWhen } from '../calendar/_cal-info.js';
+import { parseWhen, hoursLabel, freeWindows } from '../calendar/_cal-info.js';
 import { dayStart, addDays, dayKey, minutesOf, occurrences, onDay, freeSlots } from '../calendar/_cal.js';
 import { dueInfo, dueDate, prio, sortTasks } from './_tasks.js';
 
@@ -19,9 +19,10 @@ export function parseTask(text, today, projects = PROJECT_NAMES) {
   return { title: w.title, due, priority, project, estimate: w.mins || null, hints: w.hints };
 }
 
-export const newTaskId = () => `t${Date.now().toString(36)}${Math.random().toString(36).slice(2, 5)}`;
-export function makeTask({ title, due, priority, project, estimate }) {
-  return { id: newTaskId(), title, due: due || undefined, priority: priority || 'mittel', project: project || undefined, category: CATEGORY_BY_PROJECT[project] || 'Arbeit', status: 'Offen', done: false, estimate: estimate || undefined, subtasks: [] };
+/** Neue Aufgaben-ID: deterministisch über ctx.newId (kein Zufall, keine Uhrzeit). */
+export const newTaskId = (ctx) => (ctx && ctx.newId ? ctx.newId('t') : 't-neu');
+export function makeTask(ctx, { title, due, priority, project, estimate }) {
+  return { id: newTaskId(ctx), title, due: due || undefined, priority: priority || 'mittel', project: project || undefined, category: CATEGORY_BY_PROJECT[project] || 'Arbeit', status: 'Offen', done: false, estimate: estimate || undefined, subtasks: [] };
 }
 
 /** Wochenende-Datum für „Diese Woche“: Freitag der laufenden Woche (an Fr–So der heutige Tag). */
@@ -31,7 +32,7 @@ export const openTasks = (tasks) => (Array.isArray(tasks) ? tasks : []).filter((
 export const dueToday = (tasks, today) => openTasks(tasks).filter((t) => dueInfo(t, today).diff === 0);
 export const overdueTasks = (tasks, today) => openTasks(tasks).filter((t) => dueInfo(t, today).overdue);
 export const planMinutes = (list) => list.reduce((n, t) => n + (Number(t.estimate) || 30), 0);
-export const hoursOf = (min) => `${(Math.round(min / 6) / 10).toLocaleString('de-DE', { maximumFractionDigits: 1 })} h`;
+export const hoursOf = (min) => hoursLabel(min);
 export const minLabel = (min) => (min < 60 ? `${min} Min.` : `${Math.floor(min / 60)} Std.${min % 60 ? ` ${min % 60} Min.` : ''}`);
 
 /** Erledigungen je Tag: archivierte (activity) + Aufgaben mit doneAt. */
@@ -51,7 +52,7 @@ export function focusByDay(log, days, today) {
 /** Restliche freie Zeit des Tages (Minuten) aus den Terminen – optional. */
 export function freeToday(events, today, workEnd = 18) {
   const d = dayStart(today), occ = onDay(occurrences(Array.isArray(events) ? events : [], d, addDays(d, 1)), d).filter((o) => !o.allDay);
-  return freeSlots(occ, Math.max(Math.ceil(minutesOf(today) / 15) * 15, 8 * 60), workEnd * 60, 30).reduce((n, [x, y]) => n + y - x, 0);
+  return freeWindows(occ, minutesOf(today), workEnd * 60).reduce((n, [x, y]) => n + y - x, 0);
 }
 
 // ---------------------------------------------------------------- Fokus-Timer ---

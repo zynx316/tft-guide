@@ -11,7 +11,7 @@ export const nutritionTable = {
   name: 'Nährwert-Tabelle',
   category: 'Ernährung',
   description: 'Nährwerte eines Lebensmittels im EU-Muster: Brennwert in kJ und kcal, Fett (davon gesättigt), Kohlenhydrate (davon Zucker), Ballaststoffe, Eiweiß, Salz. Umschalter je 100 g oder je Portion, Allergene als Chips und ein Quellenhinweis.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Nährwerte' },
     { name: 'defaultFood', label: 'Standard-Lebensmittel (ID)', type: 'text', default: '' },
@@ -54,7 +54,7 @@ export const nutritionTable = {
         <${Row} k="Kohlenhydrate" v=${`${num(n.carbs, 1)} g`} /><${Row} cls="sub" k="davon Zucker" v=${`${num(n.sugar, 1)} g`} />
         <${Row} k="Ballaststoffe" v=${`${num(n.fiber, 1)} g`} /><${Row} k="Eiweiß" v=${`${num(n.protein, 1)} g`} /><${Row} k="Salz" v=${`${num(n.salt, 2)} g`} /></tbody></table>
       <div class="tk-nu-chips" aria-label="Allergene">${(food.allergens || []).length ? food.allergens.map((a) => html`<${Badge} tone="warning" icon="alert-triangle">${a}<//>`) : html`<span class="tk-nu-meta">Keine der 14 Hauptallergene hinterlegt.</span>`}</div>
-      <div class="tk-nt__foot"><${Icon} name="info" size=${13} /><span>${food.source || 'Eigene Angabe'}. Angaben ohne Gewähr, bitte das Etikett prüfen.</span></div>
+      <div class="tk-nt__foot"><${Icon} name="info" size=${13} /><span>${food.source || 'Eigene Angabe'}. Angaben ohne Gewähr. Prüfe das Etikett.</span></div>
       ${props.showLog && html`<${Button} variant="primary" icon="plus" onClick=${() => openPortion(ctx, setData, food, { grams: portion?.g })}>Erfassen<//>`}</div><//>`;
   },
 };

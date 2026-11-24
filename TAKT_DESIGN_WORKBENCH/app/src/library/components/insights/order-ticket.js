@@ -11,7 +11,7 @@ import { useOrderForm, Preview, Notes, review, place, OT_CSS } from '../trading/
 import { ex } from '../trading/_example.js';
 
 const Sim = () => html`<${Note} icon="info"><strong>Simulation</strong> – keine echte Orderausführung, es fließt kein Geld. Das Depot bleibt unverändert.<//>`;
-const Sides = ({ f }) => html`<div class="tk-trd-ot__sides" role="group" aria-label="Richtung">${[['buy', 'Kaufen', 'trending-up'], ['sell', 'Verkaufen', 'trending-down']].map(([k, l, ic]) => html`<button type="button" class="tk-trd-ot__side" data-side=${k} aria-pressed=${String(f.side === k)} onClick=${() => f.setSide(k)}><${Icon} name=${ic} size=${16} />${l}</button>`)}</div>`;
+const Sides = ({ f }) => html`<div class="tk-trd-ot__sides" role="group" aria-label="Richtung">${[['buy', 'Kauf', 'trending-up'], ['sell', 'Verkauf', 'trending-down']].map(([k, l, ic]) => html`<button type="button" class="tk-trd-ot__side" data-side=${k} aria-pressed=${String(f.side === k)} onClick=${() => f.setSide(k)}><${Icon} name=${ic} size=${16} />${l}</button>`)}</div>`;
 
 function secOptions(f, data) {
   const held = new Set(arr(data.positions).map((p) => p.id)), list = f.side === 'sell' && held.size ? f.insts.filter((i) => held.has(i.id)) : f.insts;
@@ -33,7 +33,7 @@ function Steps({ f, data, setData, ctx }) {
   const [done, order] = ctx.ui.otDone || [false, null], step = ctx.ui.otStep || 1, go = (n) => { ctx.setUi('otStep', n); ctx.emit('order.step', { step: n }); };
   const { chk } = f, valid = [true, chk.ok, chk.ok && (!chk.warnings.length || f.ack)];
   if (done && order) return html`<div class="tk-col" style="gap:var(--tk-space-4);text-align:center;align-items:center"><span class="tk-trd-ico" style="width:56px;height:56px;background:var(--tk-c-success-soft);color:var(--tk-c-success)"><${Icon} name="check" size=${28} /></span>
-    <div><div style="font-size:var(--tk-fs-xl);font-weight:var(--tk-fw-bold)">Simulierte Order vorgemerkt</div><div class="tk-trd-meta" style="margin-top:4px">${order.side === 'buy' ? 'Kauf' : 'Verkauf'} ${fmtNumber(order.qty, { digits: order.qty % 1 ? 3 : 0 })} × ${f.insts.find((i) => i.id === order.securityId)?.short || ''} · ${order.status === 'offen' ? 'offen, wartet auf den Kurs' : 'simuliert zum Kurs'}</div></div>
+    <div><div style="font-size:var(--tk-fs-xl);font-weight:var(--tk-fw-bold)">Simulierte Order gespeichert</div><div class="tk-trd-meta" style="margin-top:4px">${order.side === 'buy' ? 'Kauf' : 'Verkauf'} ${fmtNumber(order.qty, { digits: order.qty % 1 ? 3 : 0 })} × ${f.insts.find((i) => i.id === order.securityId)?.short || ''} · ${order.status === 'offen' ? 'offen, wartet auf den Kurs' : 'simuliert zum Kurs'}</div></div>
     <${Note} icon="info">Es wurde nichts an einen Broker gesendet. Das Depot bleibt unverändert.<//>
     <div class="tk-trd-cta" style="justify-content:center"><${Button} variant="primary" onClick=${() => { ctx.setUi('otDone', null); go(1); }}>Neue Order<//><${Button} onClick=${() => ctx.emit('order.done', { id: order.securityId, to: 'trading.detail' })}>Zum Wertpapier<//></div></div>`;
   return html`<div class="tk-trd-ot"><div class="tk-trd-ot__steps" role="img" aria-label=${`Schritt ${step} von 3`}>${[1, 2, 3].map((n) => html`<i data-on=${String(n <= step)}></i>`)}</div>
@@ -44,7 +44,7 @@ function Steps({ f, data, setData, ctx }) {
     ${step === 3 && html`<${Preview} f=${f} ctx=${ctx} /><${Notes} f=${f} ctx=${ctx} />`}
     <div class="tk-trd-cta" style="justify-content:space-between">${step > 1 ? html`<${Button} icon="arrow-left" onClick=${() => go(step - 1)}>Zurück<//>` : html`<span></span>`}
       ${step < 3 ? html`<${Button} variant="primary" iconRight="arrow-right" onClick=${() => { f.setShow(true); if (valid[step - 1]) go(step + 1); }}>Weiter<//>`
-        : html`<${Button} variant="primary" icon="check" disabled=${!valid[2]} onClick=${() => place(f, ctx, setData, (o) => { ctx.setUi('otDone', [true, o]); })}>Simuliert vormerken<//>`}</div></div>`;
+        : html`<${Button} variant="primary" icon="check" disabled=${!valid[2]} onClick=${() => place(f, ctx, setData, (o) => { ctx.setUi('otDone', [true, o]); })}>Order simulieren<//>`}</div></div>`;
 }
 
 function Quick({ f, data, setData, ctx, note }) {
@@ -54,7 +54,7 @@ function Quick({ f, data, setData, ctx, note }) {
     ${f.side === 'sell' && chk.pv.held > 0 && html`<div class="tk-trd-ot__chips" style="justify-content:center">${[[0.5, '50 %'], [1, 'Alles']].map(([r, l]) => html`<${Chip} onClick=${() => f.setQty(String(Math.floor(chk.pv.held * r * 10 ** dp) / 10 ** dp).replace('.', ','))}>${l}<//>`)}</div>`}
     <div class="tk-trd-ot__big" aria-live="polite">${money(ctx, chk.pv.total)}</div><div class="tk-trd-meta" style="text-align:center;margin-top:-8px">${f.side === 'buy' ? 'Gesamtkosten' : 'Erlös'} inkl. ${money(ctx, chk.pv.fee)} Gebühr (Annahme) · Marktorder</div>
     ${f.show && chk.errors.qty && html`<${Note} tone="danger" icon="alert-triangle">${chk.errors.qty}<//>`}<${Notes} f=${f} ctx=${ctx} />
-    <${Button} variant="primary" icon="check" style="width:100%;justify-content:center" onClick=${() => review(f, ctx, setData)}>Simuliert vormerken<//>${note && html`<${Sim} />`}</div>`;
+    <${Button} variant="primary" icon="check" style="width:100%;justify-content:center" onClick=${() => review(f, ctx, setData)}>Order simulieren<//>${note && html`<${Sim} />`}</div>`;
 }
 
 export const orderTicket = {
@@ -62,7 +62,7 @@ export const orderTicket = {
   name: 'Order-Ticket (Simulation)',
   category: 'Trading',
   description: 'Kauf oder Verkauf durchspielen: Markt-, Limit- und Stop-Order, Kostenvorschau mit Gebühr (Annahme) und Steuer-Orientierung, Plausibilitätsschutz (Tippfehler, Größe, Börsenzeiten) und Bestätigung. Als Ticket, in vier Schritten oder als Schnell-Sheet. Immer als Simulation gekennzeichnet, das Depot bleibt unverändert.',
-  version: '2.0',
+  version: '2.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Order erfassen' },
     { name: 'mode', label: 'Bedienkonzept', type: 'select', options: ['ticket', 'steps', 'quick'], default: 'ticket' },

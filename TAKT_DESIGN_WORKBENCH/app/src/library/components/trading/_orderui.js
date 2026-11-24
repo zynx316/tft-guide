@@ -49,7 +49,7 @@ export function Notes({ f, ctx }) {
 export function place(f, ctx, setData, after) {
   const { chk, inst, side, type, validity } = f, o = makeOrder({ ctx, inst, side, type, chk, validity });
   setData('orders', (all) => [o, ...arr(all)]); ctx.emit('order.confirm', { id: inst.id, side, type, qty: chk.qty, status: o.status });
-  ctx.toast(o.status === 'offen' ? 'Simulierte Order vorgemerkt (offen)' : 'Simulierte Order vorgemerkt'); f.reset(); after && after(o); return o;
+  ctx.toast(o.status === 'offen' ? 'Simulierte Order gespeichert (offen). Es wurde nichts ausgeführt.' : 'Simulierte Order gespeichert. Es wurde nichts ausgeführt.'); f.reset(); after && after(o); return o;
 }
 /** Prüfen: Fehler und unbestätigte Warnungen zeigen, sonst Bestätigungsdialog (Simulation, nicht wegklickbar). */
 export function review(f, ctx, setData, after) {
@@ -61,7 +61,7 @@ export function review(f, ctx, setData, after) {
   ctx.openDialog({ title: 'Order prüfen (Simulation)', body: () => html`<div class="tk-col" style="gap:12px"><${Note} icon="info"><strong>Simulation.</strong> Es wird nichts an einen Broker gesendet, es fließt kein Geld und das Depot bleibt unverändert.<//>
       <div class="tk-trd-ot__box"><${Row} k="Wertpapier">${inst.short || inst.name}<//><${Row} k="Art">${side === 'buy' ? 'Kauf' : 'Verkauf'} · ${TYPE_LABEL[type]}<//><${Row} k="Stück">${fmtNumber(chk.qty, { digits: chk.qty % 1 ? 3 : 0 })}<//>
         <${Row} k=${type === 'limit' ? 'Limit' : type === 'stop' ? 'Stop-Kurs' : 'Kurs (ca.)'}><${Px} v=${pv.price} /><//><${Row} k="Gebühr (Annahme)">${money(ctx, pv.fee)}<//><${Row} k=${side === 'buy' ? 'Gesamtkosten' : 'Erlös'} strong>${money(ctx, pv.total)}<//>${type !== 'markt' && html`<${Row} k="Gültigkeit">${validity}<//>`}</div></div>`,
-    footer: (close) => html`<${Button} onClick=${() => { ctx.emit('order.cancel'); close(); }}>Abbrechen<//><${Button} variant="primary" icon="check" onClick=${() => { place(f, ctx, setData, after); close(); }}>Simuliert vormerken<//>` });
+    footer: (close) => html`<${Button} onClick=${() => { ctx.emit('order.cancel'); close(); }}>Abbrechen<//><${Button} variant="primary" icon="check" onClick=${() => { place(f, ctx, setData, after); close(); }}>Order simulieren<//>` });
 }
 
 export const OT_CSS = `

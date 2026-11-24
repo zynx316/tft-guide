@@ -4,7 +4,7 @@ import { useState } from 'preact/hooks';
 import { Card, Search, Chip, Button, Icon, EmptyState, toneColor } from '../../ui.js';
 import { num, mealInfo } from './_calc.js';
 import { recipePerServing, recipeTime } from './_recipes.js';
-import { NU_CSS, arr, tintBox } from './_ui.js';
+import { NU_CSS, LBL_CSS, arr, tintBox, labelNote } from './_ui.js';
 
 const TAGS = ['vegetarisch', 'vegan', 'proteinreich', 'meal-prep', 'schnell'];
 const TIMES = [{ id: 'all', label: 'Jede Dauer' }, { id: '15', label: 'bis 15 Min.' }, { id: '30', label: 'bis 30 Min.' }];
@@ -14,7 +14,7 @@ export const recipeList = {
   name: 'Rezept-Liste',
   category: 'Ernährung',
   description: 'Rezepte als Karten oder Liste mit Suche und Filtern nach Mahlzeit, Zubereitungszeit und Tags. Jede Karte zeigt Zeit, Kalorien und Eiweiß je Portion; Antippen öffnet das Rezept.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Rezepte' },
     { name: 'style', label: 'Darstellung', type: 'select', options: ['grid', 'list'], default: 'grid' },
@@ -27,7 +27,7 @@ export const recipeList = {
   ],
   events: ['recipe.open', 'recipe.favorite', 'recipe.create'],
   states: ['empty'],
-  css: `${NU_CSS}
+  css: `${NU_CSS}${LBL_CSS}
   .tk-rl { display:flex; flex-direction:column; gap:var(--tk-space-3); min-width:0; }
   .tk-rl__grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:var(--tk-space-4); }
   .tk-rl__card { position:relative; display:flex; flex-direction:column; text-align:left; border-radius:var(--tk-radius-lg); border:1px solid var(--tk-c-border); background:var(--tk-c-surface); color:inherit; font:inherit; cursor:pointer; overflow:hidden; padding:0; min-width:0; }
@@ -67,7 +67,7 @@ export const recipeList = {
       <div class="tk-rl__body"><div class="tk-rl__title">${r.title}</div><div class="tk-rl__sub">${r.subtitle}</div>
         <div class="tk-rl__meta"><span><${Icon} name="timer" size=${14} /><strong>${recipeTime(r)}</strong> Min.</span><span><strong>${num(p.kcal)}</strong> kcal</span><span><strong>${num(p.protein)} g</strong> E</span></div>
         <div class="tk-rl__tags">${(r.tags || []).slice(0, 3).map((t) => html`<span class="tk-badge">${t}</span>`)}</div></div></button>${favBtn(r)}</div>`; })}</div>`;
-    return wrap(html`<div class="tk-rl">${filters}${body}</div>`);
+    return wrap(html`<div class="tk-rl">${filters}${body}${labelNote()}</div>`);
   },
 };
 export default [recipeList];

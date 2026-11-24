@@ -41,6 +41,9 @@ export function coverageCheck({ plans, accounts, subscriptions, transactions, to
   }
   const inc = arr(transactions).filter((t) => t.type === 'income' && t.account === giro.id && t.category === 'Einnahmen').sort((a, b) => (a.date < b.date ? 1 : -1))[0];
   if (inc) for (const d of monthlyDates(toDate(inc.date).getDate(), t0, until)) events.push({ date: d, kind: 'einkommen', title: `${inc.title} (wie im Vormonat)`, amount: inc.amount });
+  // Wiederkehrende Privatentnahme (Umbuchung Geschäftskonto → Girokonto, Kategorie „Umbuchung“): kein Einkommen in der Statistik, aber ein echter Zufluss für die Deckung.
+  const draw = arr(transactions).filter((t) => t.type === 'transfer' && t.account === giro.id && t.amount > 0 && t.category === 'Umbuchung' && t.from).sort((x, y) => (x.date < y.date ? 1 : -1))[0];
+  if (draw) for (const d of monthlyDates(toDate(draw.date).getDate(), t0, until)) events.push({ date: d, kind: 'einkommen', title: `${draw.title} (wie im Vormonat)`, amount: draw.amount });
   events.sort((a, b) => a.date - b.date || (a.kind === 'einkommen' ? -1 : 1));
 
   const days = new Map();

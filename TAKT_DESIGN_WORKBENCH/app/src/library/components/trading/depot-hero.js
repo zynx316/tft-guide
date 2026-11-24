@@ -27,7 +27,7 @@ export const trdDepotHero = {
   name: 'Depot-Kopf',
   category: 'Trading',
   description: 'Depotwert mit Tagesveränderung, Gesamtgewinn und Verrechnungskonto. Als dichter Streifen (Zahlen exakt), als großer Held mit Verlaufsfläche oder als schlanke Fokus-Zeile. Tippen öffnet das Depot. Ausdrücklich Anzeige und Simulation.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Depot' },
     { name: 'style', label: 'Darstellung', type: 'select', options: ['strip', 'hero', 'focus'], default: 'strip' },

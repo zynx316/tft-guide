@@ -21,7 +21,7 @@ export const noteList = {
   name: 'Notizliste',
   category: 'Inhalte',
   description: 'Notizen als Liste, einzeilige Kompaktliste oder Karten-Raster: angeheftete zuerst, Auszug, Tags, Checklisten-Fortschritt, relatives Datum. Beachtet Suche/Filter („Angeheftet“, „Eingang“, „Archiv“, Tags). Auswahl über ctx.ui.selectedId – oder Bearbeiten im Dialog.',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Notizen' },
     { name: 'layout', label: 'Darstellung', type: 'select', options: ['list', 'compact', 'grid'], default: 'list' },
@@ -77,7 +77,8 @@ export const noteList = {
   .tk-note-card__foot { display:flex; align-items:center; justify-content:space-between; gap:8px; }
   .tk-note-card__tags { display:flex; gap:6px; flex-wrap:wrap; min-width:0; }
   .tk-note-card__bar { display:flex; align-items:center; gap:8px; font-size:var(--tk-fs-xs); color:var(--tk-c-text-muted); }
-  .tk-note-card__bar .tk-progress { flex:1; }`,
+  .tk-note-card__bar .tk-progress { flex:1; }
+  [data-tk-large-text] .tk-note-list .tk-truncate, [data-tk-large-text] .tk-note-card .tk-truncate, [data-tk-large-text] .tk-note-row__excerpt, [data-tk-large-text] .tk-note-checks__card .tk-truncate, [data-tk-large-text] .tk-note-checks__next, [data-tk-large-text] .tk-note-checks__head .tk-truncate, [data-tk-large-text] .tk-note-inbox__title .tk-truncate, [data-tk-large-text] .tk-note-checks__big small { white-space:normal; overflow:visible; text-overflow:clip; overflow-wrap:anywhere; }`,
   example: { props: { title: 'Notizen' }, data: { notes: [
     { id: 'n1', title: 'Ideen TAKT V2', body: '## Fokus\n- Modulweise Entwicklung\n- Workbench als Designarbeitsplatz', tags: ['Projekt'], pinned: true, updated: '2026-11-24T07:40:00' },
     { id: 'n2', title: 'Einkaufsliste Wochenende', body: '- [ ] Hafermilch\n- [x] Tomaten\n- [ ] Basilikum', tags: ['Privat'], updated: '2026-11-23T18:20:00' },
@@ -92,7 +93,9 @@ export const noteList = {
     items = sortNotes(items);
     if (props.scope === 'angeheftet') items = items.filter((n) => n.pinned);
     if (props.scope === 'zuletzt') items = items.slice().sort((a, b) => String(b.updated).localeCompare(String(a.updated)));
+    const total = items.length;
     if (props.limit > 0) items = items.slice(0, props.limit);
+    const countText = total > items.length ? `${items.length} von ${total}` : items.length;
     const activeId = ctx.ui.selectedId ?? (props.autoSelect ? items[0]?.id : null);
     const open = (n) => {
       ctx.setUi('selectedId', n.id); const nav = ctx.emit('note.open', { id: n.id });
@@ -118,7 +121,7 @@ export const noteList = {
           ${props.showExcerpt && html`<div class="tk-note-card__text">${stripMd(n.body) || 'Leere Notiz'}</div>`}
           <div class="tk-note-card__bottom">${st.total > 0 && html`<div class="tk-note-card__bar"><${Progress} value=${st.done / st.total} tone=${st.open ? 'accent' : 'success'} /><span class="tk-num">${st.done}/${st.total}</span></div>`}
           <div class="tk-note-card__foot"><div class="tk-note-card__tags">${tagsOf(n)}</div><span class="tk-subtle" style="font-size:var(--tk-fs-xs);white-space:nowrap">${relDay(n.updated, ctx.today)}</span></div></div></div>`; })}</div>`;
-      return html`<div class="tk-col" style="gap:12px">${(props.title || addBtn) && html`<div class="tk-row"><div class="tk-h3 tk-grow">${props.title} <span class="tk-subtle tk-num" style="font-weight:400">${items.length}</span></div>${addBtn}</div>`}${body}</div>`;
+      return html`<div class="tk-col" style="gap:12px">${(props.title || addBtn) && html`<div class="tk-row"><div class="tk-h3 tk-grow">${props.title} <span class="tk-subtle tk-num" style="font-weight:400">${countText}</span></div>${addBtn}</div>`}${body}</div>`;
     }
 
     const compact = props.layout === 'compact';
@@ -132,7 +135,7 @@ export const noteList = {
     const pinned = group ? items.filter((n) => n.pinned) : []; const rest = group ? items.filter((n) => !n.pinned) : items;
     const body = !items.length ? empty : html`${pinned.length > 0 && html`<div class="tk-note-list__group"><${Icon} name="pin" size=${12} />Angeheftet</div>${pinned.map(row)}`}
       ${pinned.length > 0 && rest.length > 0 && html`<div class="tk-note-list__group">Weitere</div>`}${rest.map(row)}`;
-    return html`<${Card} flush title=${props.title} class="tk-note-list" actions=${html`<div class="tk-row"><${Badge}>${items.length}<//>${addBtn}</div>`}>${body}<//>`;
+    return html`<${Card} flush title=${props.title} class="tk-note-list" actions=${html`<div class="tk-row"><${Badge}>${countText}<//>${addBtn}</div>`}>${body}<//>`;
   },
 };
 
@@ -142,7 +145,7 @@ export const noteChecklists = {
   name: 'Checklisten-Übersicht',
   category: 'Inhalte',
   description: 'Alle Checklisten der Notizen an einem Ort: offene Punkte direkt abhaken (wirkt in der Notiz) oder der Fortschritt je Liste als Karte. Ein Tipp auf den Listennamen öffnet die Notiz.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Checklisten' },
     { name: 'mode', label: 'Darstellung', type: 'select', options: ['list', 'progress'], default: 'list' },
@@ -175,12 +178,12 @@ export const noteChecklists = {
       .map((n) => ({ n, items: checklistItems(n.body), st: checklistStats(n.body) }))
       .sort((a, b) => (b.st.open > 0) - (a.st.open > 0) || String(b.n.updated).localeCompare(String(a.n.updated)));
     if (props.mode === 'list' && !props.showDone) lists = lists.filter((l) => l.st.open > 0);
+    const openTotal = lists.reduce((sum, l) => sum + l.st.open, 0);   // Gesamtzahl aller Listen, nicht nur des sichtbaren Ausschnitts
     if (props.limit > 0) lists = lists.slice(0, props.limit);
     const openNote = (n) => { ctx.setUi('selectedId', n.id); ctx.emit('note.open', { id: n.id }); };
     const toggle = (n, it) => { setData('notes', (all) => all.map((x) => (x.id === n.id ? { ...x, body: toggleTaskLine(x.body, it.idx), updated: isoLocal(ctx.today) } : x))); ctx.emit('note.checklist.toggle', { id: n.id }); };
     if (!lists.length) return html`<${Card} title=${props.title} icon="list-checks"><${EmptyState} icon="list-checks" title="Keine offenen Punkte" text="Schreibe „- [ ]“ in eine Notiz, um eine Checkliste anzulegen." /><//>`;
     const linkBtn = props.link && html`<${Button} size="sm" variant="ghost" iconRight="chevron-right" onClick=${() => ctx.emit('note.checklists.open')}>${props.link}<//>`;
-    const openTotal = lists.reduce((s, l) => s + l.st.open, 0);
     if (props.mode === 'progress') {
       return html`<div class="tk-col" style="gap:12px">${(props.title || props.link) && html`<div class="tk-row"><div class="tk-h3 tk-grow">${props.title}</div>${linkBtn}</div>`}
         <div class="tk-note-checks__cards" style=${`--minw:${props.minWidth}px`}>${lists.map(({ n, items, st }) => { const next = items.find((i) => !i.done);
@@ -202,7 +205,7 @@ export const noteInbox = {
   name: 'Notiz-Eingang',
   category: 'Inhalte',
   description: 'Schnellnotiz ohne Umweg und Eingang zum Einsortieren: Tag vergeben, als Aufgabe übernehmen, behalten oder archivieren. Als Liste mit Aktionen in der Zeile oder als Sortier-Assistent (eine Notiz nach der anderen).',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Eingang' },
     { name: 'mode', label: 'Darstellung', type: 'select', options: ['list', 'triage'], default: 'list' },
@@ -241,6 +244,7 @@ export const noteInbox = {
   render: ({ props, data, setData, ctx }) => {
     const [text, setText] = useState('');
     let inbox = (data.notes || []).filter((n) => n.inbox && !n.archived).sort((a, b) => String(b.updated).localeCompare(String(a.updated)));
+    const inboxTotal = inbox.length;   // Badge zeigt den ganzen Eingang, auch wenn nur ein Ausschnitt sichtbar ist
     if (props.limit > 0) inbox = inbox.slice(0, props.limit);
     const tags = Array.isArray(props.tags) ? props.tags : String(props.tags).split(',').map((s) => s.trim()).filter(Boolean);
     const patch = (id, p) => setData('notes', (all) => all.map((n) => (n.id === id ? { ...n, ...p } : n)));
@@ -260,12 +264,12 @@ export const noteInbox = {
     const open = (n) => { ctx.setUi('selectedId', n.id); ctx.emit('note.open', { id: n.id }); };
     const capture = props.showCapture && html`<div class="tk-note-inbox__capture"><${Input} value=${text} onInput=${setText} placeholder="Schnellnotiz … (Enter)" aria-label="Schnellnotiz" onKeyDown=${(e) => e.key === 'Enter' && add()} /><${Button} variant="primary" icon="plus" aria-label="Im Eingang speichern" onClick=${add}>${ctx.bp === 'mobile' ? null : 'Erfassen'}<//></div>`;
     const empty = html`<${EmptyState} icon="inbox" title="Eingang ist leer" text="Alles einsortiert. Neue Gedanken landen hier, bis du sie ablegst." />`;
-    const badge = html`<div class="tk-row"><${Badge} tone=${inbox.length ? 'warning' : 'success'}>${inbox.length}<//>${props.link && html`<${Button} size="sm" variant="ghost" iconRight="chevron-right" onClick=${() => ctx.emit('note.inbox.open')}>${props.link}<//>`}</div>`;
+    const badge = html`<div class="tk-row"><${Badge} tone=${inboxTotal ? 'warning' : 'success'}>${inboxTotal}<//>${props.link && html`<${Button} size="sm" variant="ghost" iconRight="chevron-right" onClick=${() => ctx.emit('note.inbox.open')}>${props.link}<//>`}</div>`;
 
     if (props.mode === 'triage') {
       const n = inbox[0];
       return html`<${Card} flush title=${props.title} icon="inbox" actions=${badge}>${capture}${!n ? empty : html`<div class="tk-note-inbox__big">
-        <div class="tk-subtle tk-num" style="font-size:var(--tk-fs-sm)">1 von ${inbox.length} · ${relDay(n.updated, ctx.today)}</div>
+        <div class="tk-subtle tk-num" style="font-size:var(--tk-fs-sm)">1 von ${inboxTotal} · ${relDay(n.updated, ctx.today)}</div>
         <h3>${n.title}</h3>${n.body && n.body !== n.title && html`<div class="tk-muted" style="line-height:1.6">${stripMd(n.body)}</div>`}
         <div class="tk-label">Einsortieren in</div>
         <div class="tk-note-inbox__acts">${tags.map((t) => html`<${Button} size="sm" onClick=${() => sort(n, t)}>${t}<//>`)}</div>

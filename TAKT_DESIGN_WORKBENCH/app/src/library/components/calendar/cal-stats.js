@@ -2,7 +2,7 @@
 import { html } from '../../../lib/html.js';
 import { Icon, EmptyState } from '../../ui.js';
 import { addDays, dayKey, dayStart, startOfWeek, occurrences, onDay, minutesOf, durLabel } from './_cal.js';
-import { bookedMinutes, hoursLabel, freeSlots } from './_cal-info.js';
+import { bookedMinutes, hoursNum, hoursLabel, weekBookedMinutes, freeWindows } from './_cal-info.js';
 
 const ALL = ['today', 'booked', 'week', 'focus', 'free'];
 
@@ -11,7 +11,7 @@ export const calStats = {
   name: 'Kalender-Kennzahlen',
   category: 'Kalender',
   description: 'Kennzahlen aus den Terminen: Termine heute, gebuchte Zeit, Woche, Fokuszeit und freie Zeit bis Feierabend. Alles berechnet relativ zu „heute“; Antippen öffnet Tag oder Woche.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'style', label: 'Darstellung', type: 'select', options: ['tiles', 'strip'], default: 'tiles' },
     { name: 'items', label: 'Kennzahlen', type: 'list', default: ALL },
@@ -47,14 +47,14 @@ export const calStats = {
     const timedToday = todays.filter((o) => !o.allDay), booked = bookedMinutes(todays);
     const weekTimed = week.filter((o) => !o.allDay), focus = weekTimed.filter((o) => o.category === 'Fokus').reduce((n, o) => n + Math.round((o._e - o._s) / 60000), 0);
     const left = timedToday.filter((o) => minutesOf(o._e) > nowMin).length;
-    const free = freeSlots(timedToday, Math.max(Math.ceil(nowMin / 15) * 15, 8 * 60), Number(props.workEnd) * 60, 30).reduce((n, [a, b]) => n + b - a, 0);
+    const slots = freeWindows(timedToday, nowMin, Number(props.workEnd) * 60), free = slots.reduce((n, [a, b]) => n + b - a, 0);
     const go = (name, detail) => ctx.emit(name, detail);
     const T = {
       today: { icon: 'calendar-days', label: 'Termine heute', value: timedToday.length, sub: left ? `${left} noch offen` : 'alle vorbei', ev: ['day.open', { id: dayKey(today), ui: { selectedDate: dayKey(today) } }] },
-      booked: { icon: 'clock', label: 'Gebucht heute', value: hoursLabel(booked).replace(' h', ''), unit: 'h', sub: `von ${props.workEnd - 8} h Arbeitstag`, ev: ['day.open', { id: dayKey(today), ui: { selectedDate: dayKey(today) } }] },
-      week: { icon: 'calendar-range', label: 'Termine diese Woche', value: weekTimed.length, sub: `${hoursLabel(bookedMinutes(weekTimed))} gebucht`, ev: ['week.open', null] },
-      focus: { icon: 'target', label: 'Fokuszeit Woche', value: hoursLabel(focus).replace(' h', ''), unit: 'h', sub: `${weekTimed.filter((o) => o.category === 'Fokus').length} Fokus-Blöcke`, ev: ['week.open', null] },
-      free: { icon: 'timer', label: 'Frei bis Feierabend', value: hoursLabel(free).replace(' h', ''), unit: 'h', sub: free ? `längstes Fenster ${durLabel(Math.max(0, ...freeSlots(timedToday, Math.max(Math.ceil(nowMin / 15) * 15, 8 * 60), Number(props.workEnd) * 60, 30).map(([a, b]) => b - a)))}` : 'heute voll', ev: ['day.open', { id: dayKey(today), ui: { selectedDate: dayKey(today) } }] },
+      booked: { icon: 'clock', label: 'Gebucht heute', value: hoursNum(booked), unit: 'h', sub: `von ${props.workEnd - 8} h Arbeitstag`, ev: ['day.open', { id: dayKey(today), ui: { selectedDate: dayKey(today) } }] },
+      week: { icon: 'calendar-range', label: 'Termine diese Woche', value: weekTimed.length, sub: `${hoursLabel(weekBookedMinutes(events, today))} gebucht`, ev: ['week.open', null] },
+      focus: { icon: 'target', label: 'Fokuszeit Woche', value: hoursNum(focus), unit: 'h', sub: `${weekTimed.filter((o) => o.category === 'Fokus').length} Fokus-Blöcke`, ev: ['week.open', null] },
+      free: { icon: 'timer', label: 'Frei bis Feierabend', value: hoursNum(free), unit: 'h', sub: free ? `längstes Fenster ${durLabel(Math.max(0, ...slots.map(([a, b]) => b - a)))}` : 'heute voll', ev: ['day.open', { id: dayKey(today), ui: { selectedDate: dayKey(today) } }] },
     };
     const items = (Array.isArray(props.items) ? props.items : String(props.items || '').split(',').map((s) => s.trim())).filter((k) => T[k]);
     return html`<div class=${`tk-cal-stats tk-cal-stats--${props.style}`} data-qa="cal-stats" role="list">${items.map((k) => { const t = T[k];

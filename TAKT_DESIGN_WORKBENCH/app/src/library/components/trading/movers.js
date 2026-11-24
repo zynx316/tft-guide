@@ -20,7 +20,7 @@ export const trdMovers = {
   name: 'Top-Bewegungen',
   category: 'Trading',
   description: 'Die größten Kursbewegungen des Tages aus Depot und Watchlist. Als Liste mit Euro-Wirkung, als Gewinner-/Verlierer-Balken oder als schlanke Chips. Tippen öffnet das Wertpapier.',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Top-Bewegungen' },
     { name: 'style', label: 'Darstellung', type: 'select', options: ['list', 'bars', 'chips'], default: 'list' },

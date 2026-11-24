@@ -17,7 +17,7 @@ export const trdDividends = {
   name: 'Dividenden',
   category: 'Trading',
   description: 'Dividenden aus dem Depot: Zahlungskalender über zwölf Monate, erhaltene und erwartete Zahlungen, Prognose für die nächsten zwölf Monate (Annahme: gleichbleibende Ausschüttung) und Steuer-Orientierung mit dem Freistellungsauftrag.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Dividenden' },
     { name: 'style', label: 'Darstellung', type: 'select', options: ['calendar', 'list', 'next'], default: 'calendar' },

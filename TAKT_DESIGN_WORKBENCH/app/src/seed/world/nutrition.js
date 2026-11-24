@@ -8,6 +8,7 @@ import { triple } from './_util.js';
 import { fmtNumber } from '../../lib/format.js';
 const num = (v) => fmtNumber(v, { digits: 0 });
 import { fitnessProfile, bodySummary, bodyWeightLog, trainingProgram } from './fitness.js';
+import { trendOf } from '../../library/components/fitness/_calc.js';
 import { recipeToEntry, recipePerServing, planNutrition } from '../../library/components/nutrition/_recipes.js';
 
 const TODAY = '2026-11-24';
@@ -154,8 +155,9 @@ export const nutWater = {
 // Körperwerte kommen aus der Fitness-Welt (gemeinsames Profil: Größe, Gewicht, Zielgewicht)
 const profileBase = { sex: 'm', age: 38, heightCm: fitnessProfile.heightCm, weightKg: bodySummary.weightKg, goalWeightKg: fitnessProfile.goalKg, activity: 'aktiv', goalType: 'abnehmen', pace: 0.27, preset: 'eiweiss' };
 export const nutGoals = { kcal: 2400, protein: 140, carbs: 291, fat: 75, fiber: 30, water: 2500, trainingDays: trainingProgram.days.map((x) => x.weekdayLabel), trainingBonus: 150, useTrainingBonus: false, includeActivity: false, showNumbers: true, setOn: d(-21) };
+const bodyTrend = trendOf([...bodyWeightLog].sort((a, b) => (a.date < b.date ? -1 : 1)));
 export const nutProfile = { ...profileBase, bmr: bmr(profileBase), tdee: tdee(profileBase),
-  weightTrend: [-49, -42, -35, -28, -21, -14, -7, 0].map((n) => d(n)).map((date) => ({ date, kg: ([...bodyWeightLog].filter((w) => w.date <= date).pop() || bodyWeightLog[0]).kg })) };
+  weightTrend: [-49, -42, -35, -28, -21, -14, -7, 0].map((n) => d(n)).map((date) => ({ date, kg: r1(([...bodyTrend].filter((w) => w.date <= date).pop() || bodyTrend[0]).trend) })) }; // geglätteter Trend wie in Fitness (nicht die Tageszahl)
 
 // ------------------------------------------------------------------ Plan
 const P = (date, meal, rid, o = {}) => ({ id: `p-${date.slice(8)}-${meal}`, date, meal, kind: 'recipe', recipeId: rid, servings: 1, status: 'planned', ...o });
@@ -176,6 +178,14 @@ for (const p of nutPlan) {
   if (p.kind === 'food') p.label = `${FOOD[p.foodId].name}${p.grams ? ` (${p.grams} g)` : ''}`;
   const n = planNutrition(p, nutRecipes, nutFoods); // Nährwerte am Planpunkt zwischenspeichern (Komponenten ohne Rezept-Daten)
   Object.assign(p, { kcal: n.kcal, protein: n.protein, carbs: n.carbs, fat: n.fat });
+}
+
+// Heute: erledigte Planpunkte (Frühstück, Snack) spiegeln das Tagebuch, damit Wochenplan und Übersicht dieselbe Tagessumme zeigen.
+{
+  const asEaten = (meal) => { const t = totals(dayEntries(nutDiary, TODAY).filter((e) => e.meal === meal && !e.prelogged)); return { kcal: t.kcal, protein: t.protein, carbs: t.carbs, fat: t.fat }; };
+  Object.assign(nutPlan.find((p) => p.date === TODAY && p.meal === 'breakfast'), asEaten('breakfast'));
+  const at = nutPlan.findIndex((p) => p.date === TODAY && p.meal === 'snack');
+  nutPlan.splice(at, 0, { id: `p-${TODAY.slice(8)}-snack-done`, date: TODAY, meal: 'snack', kind: 'food', foodId: 'f-apfel', grams: 180, label: 'Apfel und Mandeln', servings: 1, status: 'done', ...asEaten('snack') });
 }
 
 // -------------------------------------------------------- Einkauf & Vorlagen

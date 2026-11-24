@@ -22,6 +22,7 @@ import streakCard from './streak-card.js';
 import goalList from './goal-list.js';
 import milestoneList from './milestone-list.js';
 import weeklyRecap from './weekly-recap.js';
+import kpiRow from './kpi-row.js';
 
 export default [...sessionHeader, ...setLogger, ...focusSet, ...restTimer, ...workoutSummary, ...exerciseList, ...exerciseDetail, ...exerciseAlternatives, ...trainingWeek, ...programCard, ...nextWorkout,
-  ...recordsList, ...muscleBalance, ...weightTrend, ...weightEntry, ...bodyMeasures, ...stepsChart, ...sleepChart, ...readinessCard, ...streakCard, ...goalList, ...milestoneList, ...weeklyRecap];
+  ...recordsList, ...muscleBalance, ...weightTrend, ...weightEntry, ...bodyMeasures, ...stepsChart, ...sleepChart, ...readinessCard, ...streakCard, ...goalList, ...milestoneList, ...weeklyRecap, ...kpiRow];

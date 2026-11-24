@@ -2,7 +2,7 @@
 import { html } from '../../../lib/html.js';
 import { Card, Button, Badge, Icon, EmptyState } from '../../ui.js';
 import { isoDay } from '../../../lib/util.js';
-import { addDays, dayStart, parseDay } from '../calendar/_cal.js';
+import { addDays, dayStart, parseDay, shortDay } from '../calendar/_cal.js';
 import { makeTask, weekEnd } from './_tasks-x.js';
 import { PRIORITY } from './_tasks.js';
 
@@ -14,7 +14,7 @@ export const taskInbox = {
   name: 'Aufgaben-Eingang',
   category: 'Aufgaben',
   description: 'Eingang für schnell Erfasstes (Sprache, Notiz, Teilen, Scan). Triage mit einem Tipp: Heute, Morgen, Diese Woche oder Irgendwann – der Eintrag wird zur Aufgabe und verschwindet aus dem Eingang. Darstellung als Liste oder Karte für Karte.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Eingang' },
     { name: 'style', label: 'Darstellung', type: 'select', options: ['list', 'steps'], default: 'list' },
@@ -50,13 +50,13 @@ export const taskInbox = {
     const inbox = Array.isArray(data.inbox) ? data.inbox : [];
     const today = dayStart(ctx.today), WHEN = { Heute: isoDay(today), Morgen: isoDay(addDays(today, 1)), 'Diese Woche': isoDay(weekEnd(ctx.today)), Irgendwann: null };
     const sort = (it, label) => {
-      const s = it.suggest || {}, t = makeTask({ title: it.title, due: label ? WHEN[label] : undefined, priority: s.priority, project: s.project });
+      const s = it.suggest || {}, t = makeTask(ctx, { title: it.title, due: label ? WHEN[label] : undefined, priority: s.priority, project: s.project });
       setData('tasks', (a) => [t, ...a]); setData('inbox', (a) => a.filter((x) => x.id !== it.id));
       ctx.emit('inbox.triage', { id: it.id, to: label || 'Vorschlag' }); ctx.emit('task.create', { id: t.id, title: t.title }); ctx.toast(`„${it.title}“ → ${label || 'übernommen'}`);
     };
-    const accept = (it) => { const s = it.suggest || {}; const t = makeTask({ title: it.title, due: s.due, priority: s.priority, project: s.project }); setData('tasks', (a) => [t, ...a]); setData('inbox', (a) => a.filter((x) => x.id !== it.id)); ctx.emit('inbox.triage', { id: it.id, to: 'Vorschlag' }); ctx.emit('task.create', { id: t.id, title: t.title }); ctx.toast(`„${it.title}“ übernommen`); };
+    const accept = (it) => { const s = it.suggest || {}; const t = makeTask(ctx, { title: it.title, due: s.due, priority: s.priority, project: s.project }); setData('tasks', (a) => [t, ...a]); setData('inbox', (a) => a.filter((x) => x.id !== it.id)); ctx.emit('inbox.triage', { id: it.id, to: 'Vorschlag' }); ctx.emit('task.create', { id: t.id, title: t.title }); ctx.toast(`„${it.title}“ übernommen`); };
     const del = (it) => { setData('inbox', (a) => a.filter((x) => x.id !== it.id)); ctx.emit('inbox.delete', { id: it.id }); ctx.toast('Eintrag gelöscht'); };
-    const sugText = (s) => [s.project, s.due ? new Intl.DateTimeFormat('de-DE', { weekday: 'short', day: 'numeric', month: 'numeric' }).format(parseDay(s.due)) : null, s.priority ? `Priorität ${PRIORITY[s.priority]?.label.toLowerCase()}` : null].filter(Boolean).join(' · ');
+    const sugText = (s) => [s.project, s.due ? shortDay(parseDay(s.due)) : null, s.priority ? `Priorität ${PRIORITY[s.priority]?.label.toLowerCase()}` : null].filter(Boolean).join(' · ');
     if (!inbox.length) return html`<${Card} title=${props.title} icon="inbox"><${EmptyState} icon="check-check" title="Eingang leer" text="Alles sortiert. Neue Gedanken landen beim Erfassen hier." /><//>`;
     const head = html`<${Badge} tone="accent">${inbox.length} offen<//>`;
     const acts = (it) => html`${Object.keys(WHEN).map((l) => html`<${Button} size="sm" onClick=${() => sort(it, l)}>${l}<//>`)}`;

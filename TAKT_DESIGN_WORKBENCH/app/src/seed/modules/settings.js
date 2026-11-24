@@ -248,7 +248,7 @@ export default {
           description: '+ Zeigt, was jetzt zu tun ist, Hinweise statt Suchen  − Die Liste rutscht nach unten, Empfehlungen brauchen gute Regeln',
           layout: { type: 'stack', narrow: true },
           blocks: [
-            { id: 'hdr', component: 'page-header', region: 'header', props: { eyebrow: 'Einstellungen', title: 'Einstellungen', subtitle: '3 Dinge sind offen', primaryLabel: '' } },
+            { id: 'hdr', component: 'page-header', region: 'header', props: { eyebrow: 'Einstellungen', title: 'Einstellungen', subtitle: 'Empfehlungen zuerst, dann deine Einstellungen', primaryLabel: '' } },
             { id: 'todo', component: 'setup-checklist', region: 'main', bind: { items: 'steps' }, props: { title: 'Empfohlen für dich' } },
             { id: 'list', component: 'settings-list', region: 'main', props: { style: 'inset', groupIds: ['g-look', 'g-app', 'g-safe', 'g-help'] } },
           ],

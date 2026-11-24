@@ -5,7 +5,10 @@
 const ALL_VP = ['desktop', 'notebook', 'tablet', 'mobile'];
 /** demoData-Bindungen auf die Welt: D('diary','goals') → { diary: '@world:nutDiary', goals: '@world:nutGoals' } */
 const D = (...names) => Object.fromEntries(names.map((n) => [n, `@world:nut${n[0].toUpperCase()}${n.slice(1)}`]));
-const LEGAL = { id: 'legal', component: 'legal-notice', region: 'footer', props: { kind: 'gesundheit', style: 'collapsible' } };
+// Gesundheitshinweis dauerhaft sichtbar (wie in Fitness), nicht eingeklappt: HEALTH_GUIDELINES 1, Pflicht für jede Variante.
+const LEGAL = { id: 'legal', component: 'legal-notice', region: 'footer', props: { kind: 'gesundheit', style: 'footnote' } };
+/** Hängt den Gesundheitshinweis an jede Variante, die ihn noch nicht trägt (Pflicht für jede Variante, HEALTH 1). */
+const withLegal = (f) => ({ ...f, variants: (f.variants || []).map((v) => (v.blocks.some((b) => b.component === 'legal-notice' && b.props?.kind === 'gesundheit') ? v : { ...v, blocks: [...v.blocks, LEGAL] })) });
 const hdr = (props) => ({ id: 'hdr', component: 'page-header', region: 'header', props: { eyebrow: 'Ernährung', primaryLabel: '', ...props } });
 
 // ================================================================ Übersicht
@@ -205,7 +208,7 @@ const water = {
   ],
   acceptance: ['+250 ml aktualisiert den Wasserstand in der Übersicht und hier gleichzeitig.', 'Rückgängig entfernt genau den letzten Eintrag.', 'Beim Erreichen des Ziels gibt es keine Animation und keine Farbe außerhalb der Tokens.', 'Alle Schnelltasten sind auf Mobile mindestens 44 px hoch.'],
   viewports: ALL_VP,
-  demoData: { ...D('water', 'goals') },
+  demoData: { ...D('water', 'goals', 'history', 'diary', 'plan', 'foods') },
   variants: [
     {
       id: 'A', name: 'Glas-Raster', direction: 'visuell',
@@ -216,10 +219,10 @@ const water = {
     },
     {
       id: 'B', name: 'Verlauf kompakt', direction: 'kompakt',
-      concept: 'Balken, Schnelltasten und die Einträge des Tages als Zeitleiste mit Entfernen-Knopf, daneben die Woche. Für alle, die genau nachsehen wollen.',
+      concept: 'Balken, Schnelltasten und die Einträge des Tages als Zeitleiste mit Entfernen-Knopf, darunter die Woche, daneben ein ruhiger Hinweis zur Einordnung. Für alle, die genau nachsehen wollen.',
       description: '+ Jeder Eintrag sichtbar und korrigierbar  − Weniger anschaulich',
       layout: { type: 'split' },
-      blocks: [hdr({ title: 'Wasser', subtitle: 'Heute, Di 24.11.' }), { id: 'w', component: 'water-tracker', region: 'main', props: { style: 'timeline', showWeek: false } }, { id: 'week', component: 'kcal-trend', region: 'aside', props: { title: 'Zur Einordnung: Kalorien', range: 'week', showStats: false } }],
+      blocks: [hdr({ title: 'Wasser', subtitle: 'Heute, Di 24.11.' }), { id: 'w', component: 'water-tracker', region: 'main', props: { style: 'timeline', showWeek: true } }, { id: 'hint', component: 'nutrition-hints', region: 'aside', props: { limit: 2, title: 'Zur Einordnung' } }],
     },
     {
       id: 'C', name: 'Ein Tap', direction: 'fokus',
@@ -509,7 +512,7 @@ const insights = {
   ],
   acceptance: ['Der Durchschnitt wird über erfasste Tage berechnet: bei sieben Tagen mit einer Lücke und dem laufenden heutigen Tag über fünf Tage.', 'Unter drei erfassten Tagen erscheint der Hinweis statt Zahlen.', 'Der Verlauf nutzt keine Rottöne, auch nicht für Tage über dem Ziel.'],
   viewports: ALL_VP,
-  demoData: { ...D('history', 'diary', 'goals', 'profile', 'foods') },
+  demoData: { ...D('history', 'diary', 'goals', 'profile', 'foods', 'water', 'plan') },
   variants: [
     {
       id: 'A', name: 'Analyse kompakt', direction: 'kompakt',
@@ -561,7 +564,7 @@ const habit = {
 
 export default {
   module: {
-    id: 'nutrition', name: 'Ernährung', icon: 'salad', area: 'Gesundheit', status: 'active', theme: 'graphite', designVersion: '0.2',
+    id: 'nutrition', name: 'Ernährung', icon: 'salad', area: 'Gesundheit', legal: ['gesundheit'], status: 'active', theme: 'graphite', designVersion: '0.2',
     description: 'Mahlzeiten in zwei bis drei Taps erfassen, Kalorien und Makros ohne Druck im Blick behalten, Rezepte, Wochenplan und Einkaufsliste verbinden.',
     source: 'Workbench V2 (Bauplan Brainstorming 24.11.2026); Abgleich mit dem echten TAKT-Konzept in Phase 1',
     infoArchitecture: 'Einstieg „Übersicht“ (Heute). Erfassen ist die zentrale Primäraktion und von jedem Screen erreichbar (Primärbutton, „+“ je Mahlzeit, Erfassen-Leiste). Modulnavigation: Übersicht · Plan · Rezepte · Einkauf · Auswertung, Rest unter „Mehr“. Gruppen: Übersicht, Tagebuch (Erfassen, Wasser, Vorlagen), Wissen (Lebensmittel, Rezepte, Rezept-Detail), Planung (Wochenplan, Einkaufsliste), Ziele und Auswertung (Ziele & Bedarf, Auswertung, Gewohnheitsmodus). Wege: Übersicht → Erfassen / Wasser / Auswertung · Rezepte → Rezept · Plan → Rezept → Einkaufsliste.',
@@ -586,7 +589,7 @@ export default {
     links: ['fitness', 'calendar', 'tasks', 'finance', 'weather', 'home', 'settings'],
     homeFeatureId: 'nutrition.home',
   },
-  features: [home, log, water, foods, recipes, recipe, plan, shopping, goals, insights, templates, habit],
+  features: [home, log, water, foods, recipes, recipe, plan, shopping, goals, insights, templates, habit].map(withLegal),
   decisions: [
     { featureId: 'nutrition.home', title: 'Ernährung als eigenes Modul oder Teil von Fitness?', decision: 'Eigenes Modul. Körperprofil (Gewicht, Größe, Aktivität) und Gewichtstrend werden gemeinsam mit Fitness genutzt.', rationale: 'Ernährung wird täglich mehrfach mit eiligen Fingern benutzt und hat einen eigenen Erfassungsfluss; Fitness hat Trainingseinheiten und Fortschritt.', tradeoffs: 'Zwei Module mit gemeinsamer Datenbasis brauchen sauberen Datenvertrag (Welt-Schlüssel nutProfile).', status: 'decided', decidedAt: '2026-11-24T09:00:00' },
     { featureId: 'nutrition.goals', title: 'Aktivitätskalorien im Essensbudget anrechnen?', decision: 'Standardmäßig nicht. Aktivität wird als Information gezeigt, die Anrechnung bleibt eine bewusste Option.', rationale: 'Aktivitätskalorien sind Schätzungen; automatische Anrechnung kann zu zu geringer Zufuhr führen (Leitplanke).', tradeoffs: 'Weniger „Belohnungsgefühl“ nach dem Training, dafür ruhigere und sicherere Bilanz.', status: 'decided', decidedAt: '2026-11-24T09:10:00' },

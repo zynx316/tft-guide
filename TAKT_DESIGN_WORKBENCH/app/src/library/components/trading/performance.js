@@ -2,8 +2,8 @@
 import { html } from '../../../lib/html.js';
 import { useState, useRef, useEffect } from 'preact/hooks';
 import { Card, EmptyState, Segmented } from '../../ui.js';
-import { money } from '../../helpers.js';
-import { fmtPercent, fmtPP } from '../../../lib/format.js';
+import { money, percent } from '../../helpers.js';
+import { fmtPercent } from '../../../lib/format.js';
 import { dayDiff, toDate } from '../../../lib/date.js';
 import { cagr } from '../../../core/finmath.js';
 import { holdings, dividendPlan, buildLedger, arr, obj, sum } from './_calc.js';
@@ -26,9 +26,9 @@ function Chart({ c, mode, ctx, name }) {
   const S = mode === 'return' ? [['Depot', ret(c.dep), 'var(--tk-c-accent)', ''], [name, ret(c.idx), 'var(--tk-chart-4)', '5 4']] : [['Depot', c.dep, 'var(--tk-c-accent)', ''], [name, c.idx, 'var(--tk-chart-4)', '5 4'], ['Eingezahlt', c.inv, 'var(--tk-c-text-subtle)', '2 4']];
   const H = ctx.bp === 'mobile' ? 190 : 240, P = { l: 6, r: mode === 'return' ? 46 : 54, t: 10, b: 22 }, n = c.dep.length, all = S.flatMap((s) => s[1]), lo = Math.min(...all), hi = Math.max(...all), pad = (hi - lo) * 0.1 || 1;
   const x = (i) => P.l + (i / (n - 1)) * (w - P.l - P.r), y = (v) => P.t + (1 - (v - (lo - pad)) / (hi - lo + 2 * pad)) * (H - P.t - P.b);
-  const ticks = [0, 1, 2, 3].map((k) => lo - pad + ((hi - lo + 2 * pad) * k) / 3), fmtT = (v) => (mode === 'return' ? fmtPercent(v, { digits: 0 }) : v >= 1000 ? `${Math.round(v / 1000)} Tsd.` : Math.round(v));
+  const ticks = [0, 1, 2, 3].map((k) => lo - pad + ((hi - lo + 2 * pad) * k) / 3), fmtT = (v) => (ctx.privacy ? '••' : mode === 'return' ? fmtPercent(v, { digits: 0 }) : v >= 1000 ? `${Math.round(v / 1000)} Tsd.` : Math.round(v));
   const at = (e) => { const r = e.currentTarget.getBoundingClientRect(); return Math.max(0, Math.min(n - 1, Math.round(((e.clientX - r.left) / r.width * w - P.l) / ((w - P.l - P.r) / (n - 1))))); };
-  const val = (s, i) => (mode === 'return' ? fmtPercent(s[1][i], { digits: 1, sign: true }) : money(ctx, s[1][i], { digits: 0 }));
+  const val = (s, i) => (mode === 'return' ? percent(ctx, s[1][i], { digits: 1 }) : money(ctx, s[1][i], { digits: 0 }));
   return html`<div><div class="tk-trd-pf__tip" aria-live="polite">${hv != null ? html`<strong>${c.labels[hv]}</strong>${S.map((s) => html`<span><i style=${`background:${s[2]}`}></i>${s[0]} <strong>${val(s, hv)}</strong></span>`)}` : S.map((s) => html`<span><i style=${`background:${s[2]}`}></i>${s[0]}</span>`)}</div>
     <div ref=${box} style="position:relative;touch-action:pan-y"><svg width=${w} height=${H} viewBox=${`0 0 ${w} ${H}`} tabindex="0" role="img" aria-label=${`Wertentwicklung ${c.labels[0]} bis ${c.labels[n - 1]}: Depot, ${name}${mode === 'return' ? ', Rendite in Prozent' : ' und Einzahlungen'}. Pfeiltasten wählen einen Monat.`}
       onPointerMove=${(e) => setHv(at(e))} onPointerLeave=${() => setHv(null)} onClick=${(e) => setHv(at(e))} onKeyDown=${(e) => { if (e.key === 'ArrowRight') setHv(Math.min(n - 1, (hv ?? -1) + 1)); else if (e.key === 'ArrowLeft') setHv(Math.max(0, (hv ?? n) - 1)); else if (e.key === 'Escape') setHv(null); }}>
@@ -43,7 +43,7 @@ export const trdPerformance = {
   name: 'Wertentwicklung',
   category: 'Trading',
   description: 'Depot gegen einen Vergleichsindex, der dieselben Einzahlungen erhalten hätte (Wert in Euro oder Rendite in Prozent), dazu Kennzahlen: Gewinn seit Kauf, Wertzuwachs 12 Monate, Dividenden, realisierte Gewinne und Rendite pro Jahr der Einzelaktien. Modellrechnung auf Demo-Daten.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Wertentwicklung' },
     { name: 'part', label: 'Umfang', type: 'select', options: ['both', 'chart', 'kpis'], default: 'both' },
@@ -67,9 +67,9 @@ export const trdPerformance = {
       <span class="tk-trd-meta">Index mit denselben Einzahlungen: ${name}</span></div><${Chart} c=${c} mode=${mode} ctx=${ctx} name=${name} /></div>`;
     const kpis = html`<div class="tk-trd-stats"><${Stat} label="Gewinn seit Kauf"><${Gain} ctx=${ctx} v=${hd.gain} pct=${hd.gainPct} digits=${0} /><//>
       <${Stat} label="Wertzuwachs 12 Monate" sub="bezogen auf den Startwert"><${Gain} ctx=${ctx} v=${c.depGain} pct=${c.depPct} digits=${0} /><//>
-      <${Stat} label=${`Gegenüber ${name}`} sub=${`Index: ${fmtPercent(c.idxPct, { digits: 1, sign: true })}`}>${fmtPP(diff)}<//>
+      <${Stat} label=${`Gegenüber ${name}`} sub=${`Index: ${percent(ctx, c.idxPct)}`}>${percent(ctx, diff, { pp: true })}<//>
       <${Stat} label="Dividenden 2026">${money(ctx, dv.paidSum)}<//><${Stat} label="Realisiert 2026">${money(ctx, realized, { sign: true })}<//></div>
-      ${single.length > 0 && html`<div><div class="tk-trd-cap" style="margin-bottom:6px">Rendite pro Jahr, Einzelaktien (vereinfacht, seit dem Kauf)</div><div class="tk-trd-pf__pa">${single.map((s) => html`<span class="tk-trd-title">${s.r.short || s.r.name}</span><span class="tk-trd-meta">${s.yrs.toFixed(1).replace('.', ',')} Jahre</span><strong>${fmtPercent(s.pa, { digits: 1, sign: true })} p. a.</strong>`)}</div></div>`}`;
+      ${single.length > 0 && html`<div><div class="tk-trd-cap" style="margin-bottom:6px">Rendite pro Jahr, Einzelaktien (vereinfacht, seit dem Kauf)</div><div class="tk-trd-pf__pa">${single.map((s) => html`<span class="tk-trd-title">${s.r.short || s.r.name}</span><span class="tk-trd-meta">${s.yrs.toFixed(1).replace('.', ',')} Jahre</span><strong class="tk-trd-num">${percent(ctx, s.pa)} p. a.</strong>`)}</div></div>`}`;
     return html`<${Card} title=${props.title} icon="line-chart"><div class="tk-trd-pf">${props.part !== 'kpis' && chart}${props.part !== 'chart' && kpis}
       <${Note} icon="info">Modellrechnung auf fiktiven Demo-Daten: Der Index ist erfunden, Kosten und Steuern sind nicht enthalten. Die Wertentwicklung der Vergangenheit ist kein verlässlicher Indikator für die Zukunft.<//></div><//>`;
   },

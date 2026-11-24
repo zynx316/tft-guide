@@ -13,7 +13,7 @@ export const habitWeekGrid = {
   name: 'Gewohnheits-Wochenraster',
   category: 'Gewohnheiten',
   description: 'Alle Gewohnheiten auf einen Blick: Zeilen = Gewohnheiten, Spalten = Mo–So. Tage lassen sich tippen und nachtragen, Wochen wechseln. Zustände sind auch ohne Farbe lesbar (Haken, Punkt, Strich).',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Wochenraster' },
     { name: 'editable', label: 'Nachtragen erlauben', type: 'boolean', default: true },
@@ -31,6 +31,7 @@ export const habitWeekGrid = {
   .tk-wg__h b { font-size:var(--tk-fs-sm); color:var(--tk-c-text-muted); } .tk-wg__h[data-today="true"] b, .tk-wg__h[data-today="true"] { color:var(--tk-c-accent); }
   .tk-wg__name { justify-content:flex-start !important; gap:10px; padding:0 8px 0 16px; background:none; border:0; border-bottom:1px solid var(--tk-c-border); color:inherit; font:inherit; text-align:left; cursor:pointer; }
   .tk-wg__name span:last-child { flex:1; min-width:0; font-weight:var(--tk-fw-medium); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  ${['1.5','1.75','2'].map((v) => `:root[style*="--tk-text-scale: ${v}"] .tk-wg__name span:last-child`).join(', ')} { white-space:normal; text-overflow:clip; overflow-wrap:anywhere; }
   .tk-wg__cell { border:0; border-bottom:1px solid var(--tk-c-border); background:none; padding:0; cursor:pointer; color:var(--tk-c-text-subtle); font:inherit; }
   .tk-wg__cell[disabled] { cursor:default; opacity:.55; } .tk-wg__cell:not([disabled]):hover .tk-wg__mark { border-color:var(--tk-c-accent); }
   .tk-wg__mark { width:28px; height:28px; border-radius:9px; border:1.5px solid var(--tk-c-border-strong); display:grid; place-items:center; font-size:11px; font-weight:var(--tk-fw-semibold); }

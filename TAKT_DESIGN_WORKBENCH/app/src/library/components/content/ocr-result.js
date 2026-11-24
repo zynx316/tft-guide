@@ -173,13 +173,14 @@ export const receiptReview = {
   name: 'Beleg erkennen',
   category: 'Inhalte',
   description: 'Erkannter Beleg als prüfbares Formular (Händler, Datum, Betrag, MwSt, Kategorie, Konto) mit Konfidenz-Hinweisen, Dublettenprüfung gegen vorhandene Buchungen und „Als Ausgabe buchen“: in der App öffnet Schnell erfassen (Finanzen) mit den Angaben als Vorbelegung, im Einzel-Screen schreibt es direkt in die Buchungen der Datenwelt. Auch als Belegliste und als „Nächster Beleg“-Karte.',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'mode', label: 'Darstellung', type: 'select', options: ['review', 'list', 'next'], default: 'review' },
     { name: 'title', label: 'Titel', type: 'text', default: 'Beleg prüfen' },
     { name: 'showImage', label: 'Belegvorschau', type: 'boolean', default: true },
     { name: 'showItems', label: 'Positionen', type: 'boolean', default: true },
     { name: 'limit', label: 'Max. Einträge (Liste)', type: 'number', default: 0 },
+    { name: 'quietEmpty', label: 'Ohne Belege nichts anzeigen (Darstellung „next“)', type: 'boolean', default: false },
   ],
   data: [
     { slot: 'receipts', label: 'Belege', default: 'receipts', shape: '{id,merchant,date,total,vatRate,category,account?,payment,status:offen|gebucht,lines?,conf?}[]', required: true },
@@ -188,6 +189,8 @@ export const receiptReview = {
   events: ['receipt.open', 'receipt.book', 'receipt.finance'],
   states: ['empty'],
   css: `
+  [data-tk-large-text] .tk-rcpt__row .tk-truncate, [data-tk-large-text] .tk-ocr .tk-truncate { white-space:normal; overflow:visible; text-overflow:clip; overflow-wrap:anywhere; }
+  [data-tk-large-text] .tk-rcpt__row { flex-wrap:wrap; }
   .tk-rcpt { display:grid; grid-template-columns:minmax(0,1fr); gap:var(--tk-space-5); min-width:0; }
   .bp-desktop .tk-rcpt--img { grid-template-columns:220px minmax(0,1fr); }
   .tk-rcpt__grid { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:var(--tk-space-3); align-items:start; }
@@ -209,6 +212,7 @@ export const receiptReview = {
     const all = (data.receipts || []).slice().sort((a, b) => String(b.date).localeCompare(String(a.date)));
     const sel = all.find((r) => r.id === ctx.ui.selectedId) || all.find((r) => r.status === 'offen') || all[0];
     const open = (r) => { ctx.setUi('selectedId', r.id); ctx.emit('receipt.open', { id: r.id }); };
+    if (!all.length && props.quietEmpty && props.mode === 'next') return null;   // Startseite ohne Daten: nur eine Aktion (die Wege oben), keine leere Karte
     if (!all.length) return html`<${Card} title=${props.title} icon="receipt"><${EmptyState} icon="receipt" title="Noch kein Beleg" text="Fotografiere einen Kassenbon oder eine Rechnung, TAKT liest Händler, Datum und Betrag aus." /><//>`;
     if (props.mode === 'list') {
       const list = props.limit > 0 ? all.slice(0, props.limit) : all;

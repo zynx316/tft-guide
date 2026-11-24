@@ -2,10 +2,10 @@
 import { html } from '../../../lib/html.js';
 import { useState } from 'preact/hooks';
 import { Card, Button, Icon, EmptyState, toneColor } from '../../ui.js';
-import { dayStart, addDays, dayKey, occurrences, onDay, minutesOf, timeStr, hm, durLabel, freeSlots, toIso, longDay } from './_cal.js';
+import { dayStart, addDays, dayKey, occurrences, onDay, minutesOf, timeStr, hm, durLabel, freeSlots, toIso, longDay, weekdayName, newEventId } from './_cal.js';
 import { conflictPairs, weekLoad, hoursLabel } from './_cal-info.js';
 
-const sameDayLabel = (d, today) => (dayKey(d) === dayKey(today) ? 'heute' : dayKey(d) === dayKey(addDays(today, 1)) ? 'morgen' : new Intl.DateTimeFormat('de-DE', { weekday: 'long' }).format(d));
+const sameDayLabel = (d, today) => (dayKey(d) === dayKey(today) ? 'heute' : dayKey(d) === dayKey(addDays(today, 1)) ? 'morgen' : weekdayName(d));
 
 export const calHints = {
   id: 'cal-hints',
@@ -46,7 +46,7 @@ export const calHints = {
     const slot = freeSlots(todays, Math.ceil(nowMin / 15) * 15, end, 45).sort((x, y) => (y[1] - y[0]) - (x[1] - x[0]))[0];
     const fit = slot && pool.find((t) => (Number(t.estimate) || 30) <= slot[1] - slot[0]);
     if (slot) hints.push({ id: 'free', tone: 'success', icon: 'timer', title: `${hm(slot[0])}–${hm(slot[1])} Uhr frei (${durLabel(slot[1] - slot[0])})`, text: fit ? `Passt für „${fit.title}“ (ca. ${durLabel(Number(fit.estimate) || 30)}).` : 'Zeit für Pause, Spaziergang oder Spontanes.',
-      act: fit ? { label: 'Einplanen', primary: true, run: () => { const s = new Date(today); s.setHours(0, slot[0], 0, 0); const d = Number(fit.estimate) || 30; const ev = { id: `ev${Date.now().toString(36)}`, title: fit.title, start: toIso(s), end: toIso(new Date(+s + d * 60000)), category: 'Fokus', tone: 'success', taskId: fit.id, note: 'Aus Aufgabe eingeplant' }; setData('events', (a) => [ev, ...a]); ctx.emit('focus.schedule', { task: fit.id, at: hm(slot[0]) }); ctx.toast(`„${fit.title}“ um ${hm(slot[0])} eingeplant`); setGone((g) => [...g, 'free']); } } : null });
+      act: fit ? { label: 'Einplanen', primary: true, run: () => { const s = new Date(today); s.setHours(0, slot[0], 0, 0); const d = Number(fit.estimate) || 30; const ev = { id: newEventId(ctx), title: fit.title, start: toIso(s), end: toIso(new Date(+s + d * 60000)), category: 'Fokus', tone: 'success', taskId: fit.id, note: 'Aus Aufgabe eingeplant' }; setData('events', (a) => [ev, ...a]); ctx.emit('focus.schedule', { task: fit.id, at: hm(slot[0]) }); ctx.toast(`„${fit.title}“ um ${hm(slot[0])} eingeplant`); setGone((g) => [...g, 'free']); } } : null });
     const timedTask = tasks.filter((t) => !t.done && t.due && t.due.length > 10 && dayKey(new Date(t.due)) === dayKey(today) && new Date(t.due) > ctx.today)[0];
     if (timedTask) hints.push({ id: `t-${timedTask.id}`, tone: 'danger', icon: 'list-checks', title: `${timedTask.title} fällig um ${timeStr(timedTask.due)}`, text: 'Aufgabe mit Uhrzeit – im Kalender als Frist sichtbar.', act: { label: 'Aufgabe öffnen', run: () => { ctx.setUi('selectedId', timedTask.id); ctx.emit('task.open', { id: timedTask.id }); } } });
     const loads = weekLoad(events, ctx.today).filter((d) => d.over && d.key >= dayKey(today)).sort((x, y) => y.booked - x.booked);

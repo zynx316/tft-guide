@@ -8,14 +8,14 @@ import { XC_CSS } from './_xc-css.js';
 import { MODULES, moduleMeta } from './_system.js';
 
 const SUGGEST = ['Müller', 'Rewe', 'Sparplan', 'Jana', 'Skyr'];
-const SOURCES = ['events', 'tasks', 'transactions', 'accounts', 'savingsPlans', 'positions', 'nutRecipes', 'nutFoods'];
+const SOURCES = ['events', 'tasks', 'transactions', 'accounts', 'savingsPlans', 'positions', 'nutRecipes', 'nutFoods', 'notes', 'articles', 'habits', 'orders', 'channels', 'captures'];
 
 export const globalSearch = {
   id: 'global-search',
   name: 'Globale Suche',
   category: 'Querschnitt',
   description: 'Eine Suche über alle Module: Aufgaben, Termine, Buchungen, Konten, Sparpläne, Depot, Rezepte und Module, dazu Befehle wie „Neue Aufgabe“. Drei Darstellungen: gruppierte Liste, Karten mit Vorschlägen und Befehlspalette mit Tastatur.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'mode', label: 'Darstellung', type: 'select', options: ['list', 'cards', 'palette'], default: 'list' },
     { name: 'placeholder', label: 'Platzhalter', type: 'text', default: 'Suchen oder Befehl eingeben' },
@@ -40,8 +40,8 @@ export const globalSearch = {
     const [scope, setScope] = useState(ctx.ui?.gsScope || 'all');
     const [open, setOpen] = useState({});
     const [active, setActive] = useState(0);
-    const index = useMemo(() => buildIndex(data, ctx), [data, ctx.today]);
-    const dataCount = index.filter((e) => ['task', 'event', 'transaction', 'account', 'plan'].includes(e.group)).length;
+    const index = useMemo(() => buildIndex(data, ctx), [data, ctx.today, ctx.privacy]);
+    const dataCount = index.filter((e) => ['task', 'event', 'transaction', 'account', 'plan', 'note', 'article', 'habit', 'order', 'scan'].includes(e.group)).length;
     const sc = SCOPES.find((s) => s.id === scope) || SCOPES[0];
     const res = useMemo(() => (q.trim() ? runSearch(index, q, sc.groups) : { groups: [], total: 0 }), [index, q, scope]);
     const cmds = props.showCommands ? (scope === 'all' ? matchCommands(q) : []) : [];

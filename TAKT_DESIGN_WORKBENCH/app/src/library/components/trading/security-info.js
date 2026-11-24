@@ -4,7 +4,7 @@ import { Card, Button, EmptyState, Icon } from '../../ui.js';
 import { money } from '../../helpers.js';
 import { fmtNumber, fmtPercent, fmtDate } from '../../../lib/format.js';
 import { arr, holdings, stats, planExecutions, alertInfo } from './_calc.js';
-import { slots, Px, Chg, Gain, Stat, Tile, TRD_CSS, pickSecurity } from './_trd.js';
+import { slots, qtyText, Px, Chg, Gain, Stat, Tile, TRD_CSS, pickSecurity } from './_trd.js';
 import { ex } from './_example.js';
 
 export const trdFacts = {
@@ -41,7 +41,7 @@ export const trdHolding = {
   name: 'Meine Position',
   category: 'Trading',
   description: 'Die eigene Position im gewählten Wertpapier: Stückzahl, Einstand, Wert, Gewinn/Verlust, Anteil am Depot, dazu der Sparplan-Bezug mit nächster Ausführung, aktive Alarme und offene simulierte Orders. Ohne Bestand: Hinweis und Weg zur Order.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Meine Position' },
     { name: 'followSelection', label: 'Auswahl folgen', type: 'boolean', default: true },
@@ -62,7 +62,7 @@ export const trdHolding = {
     const planBtn = plan && html`<button type="button" class="tk-trd-hd__plan" onClick=${() => ctx.emit('plan.open', { id: plan.id, to: 'savings.plan' })} aria-label=${`Sparplan ${plan.name} öffnen`}><${Tile} icon="repeat" tone="info" size=${34} />
       <span class="tk-trd-grow"><span class="tk-trd-title" style="display:block">Sparplan ${money(ctx, plan.monthly, { digits: 0 })} monatlich${plan.active ? '' : ' (pausiert)'}</span><span class="tk-trd-sub">${nextEx ? `Nächste Ausführung ${fmtDate(nextEx.date, { style: 'weekday' })}` : `Ausführung am ${plan.day}. des Monats`} · führt dein Broker aus</span></span><${Icon} name="chevron-right" size=${16} /></button>`;
     return html`<${Card} title=${props.title} icon="wallet"><div class="tk-trd-hd">${r ? html`<div><div class="tk-trd-cap">Wert</div><div class="tk-trd-big">${money(ctx, r.value)}</div><div style="margin-top:6px"><${Gain} ctx=${ctx} v=${r.gain} pct=${r.gainPct} /> <span class="tk-trd-meta">seit Kauf</span></div></div>
-      <dl class="tk-trd-hd__kv"><dt>Stück</dt><dd>${fmtNumber(r.q, { digits: r.q % 1 ? 3 : 0 })}</dd><dt>Ø Einstand</dt><dd><${Px} v=${r.buy} /></dd><dt>Eingesetzt</dt><dd>${money(ctx, r.cost)}</dd><dt>Heute</dt><dd><${Gain} ctx=${ctx} v=${r.day} pct=${r.dayPct} /></dd><dt>Anteil am Depot</dt><dd>${fmtPercent(r.weight, { digits: 1 })}</dd></dl>`
+      <dl class="tk-trd-hd__kv"><dt>Stück</dt><dd>${qtyText(ctx, r.q)}</dd><dt>Ø Einstand</dt><dd>${money(ctx, r.buy)}</dd><dt>Eingesetzt</dt><dd>${money(ctx, r.cost)}</dd><dt>Heute</dt><dd><${Gain} ctx=${ctx} v=${r.day} pct=${r.dayPct} /></dd><dt>Anteil am Depot</dt><dd>${fmtPercent(r.weight, { digits: 1 })}</dd></dl>`
       : html`<${EmptyState} icon="wallet" title="Nicht im Depot" text="Du hältst dieses Wertpapier nicht. Du kannst eine Order simulieren oder einen Kursalarm anlegen." action=${html`<${Button} icon="trending-up" onClick=${() => ctx.emit('order.new', { id: inst.id, to: 'trading.order', ui: { side: 'buy', selectedId: inst.id } })}>Order simulieren<//>`} />`}
       ${planBtn}${(al.length > 0 || open.length > 0) && html`<div class="tk-trd-meta">${al.length > 0 && html`Kursalarm: ${al.map((a, i) => html`${i ? ', ' : ''}${a.dir === 'above' ? 'über' : 'unter'} <${Px} v=${a.price} />${alertInfo(a, inst).near ? ' (nah)' : ''}`)}. `}${open.length > 0 && `${open.length} offene simulierte Order${open.length > 1 ? 's' : ''}.`}</div>`}</div><//>`;
   },

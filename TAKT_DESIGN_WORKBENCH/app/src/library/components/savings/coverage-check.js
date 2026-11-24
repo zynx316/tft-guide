@@ -11,7 +11,7 @@ export const coverageCheckCard = {
   name: 'Deckungs-Check',
   category: 'Sparpläne',
   description: 'Prüft für die nächsten Ausführungen, ob das Girokonto nach Fixkosten, Sparraten und erwartetem Einkommen ausreicht – mit einstellbarem Puffer und aufklappbarer Herleitung („Wie berechnet?“). Nie als Alarm formuliert.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Deckung Girokonto' },
     { name: 'limit', label: 'Ausführungstage', type: 'number', default: 3 },

@@ -12,7 +12,7 @@ export const hintCards = {
   name: 'Smart-Hinweise',
   category: 'Start',
   description: 'Regelbasierte Hinweise aus mehreren Modulen („Sturmböen und Termin“, „Frist heute“, „Abo ungenutzt“) mit Quelle, Aktion, Wegwischen und „Später erinnern“. Stile: Liste, Karten, Banner (nur der wichtigste Hinweis).',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Hinweise' },
     { name: 'style', label: 'Stil', type: 'select', options: ['list', 'cards', 'banner'], default: 'list' },
@@ -48,7 +48,7 @@ export const hintCards = {
         && (!n.plans || !Array.isArray(data.plans) || data.plans.some((p) => p.active !== false)) && (!n.sub || has(data.subs, n.sub)); };
     const all = (Array.isArray(data.hints) ? data.hints : []).filter(ok);
     const hints = props.limit > 0 || props.style === 'banner' ? all.slice(0, props.style === 'banner' ? 1 : props.limit) : all;
-    if (!all.length) return html`<${Card} title=${props.title}><${EmptyState} icon="sparkles" title="Keine Hinweise" text="Alles im Griff – hier erscheint etwas, sobald es wichtig wird." /><//>`;
+    if (!all.length) return html`<${Card} title=${props.title}><${EmptyState} icon="sparkles" title="Keine Hinweise" text="Hier erscheint etwas, sobald es wichtig wird." /><//>`;
     const act = (h) => ctx.emit(h.module ? `hint.open.${h.module}` : 'hint.open', { id: h.id });
     const dismiss = (h) => { setData('hints', (xs) => xs.filter((x) => x.id !== h.id)); ctx.emit('hint.dismiss', { id: h.id }); ctx.toast('Hinweis ausgeblendet'); };
     const snooze = (h) => { setData('hints', (xs) => xs.filter((x) => x.id !== h.id)); ctx.emit('hint.snooze', { id: h.id }); ctx.toast('Ich erinnere dich später'); };

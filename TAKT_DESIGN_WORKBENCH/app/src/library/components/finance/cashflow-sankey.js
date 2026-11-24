@@ -1,6 +1,7 @@
 // Finanzen: Geldfluss des Monats (Sankey-ähnlich): Einnahmen verteilen sich auf Kategorien, Gespartes und Übriges.
 import { html } from '../../../lib/html.js';
 import { Card, Icon, EmptyState, toneColor } from '../../ui.js';
+import { MASK_PERCENT } from '../../helpers.js';
 import { flow, monthTx, spentByCategory, catMeta, arr, r2 } from './_calc.js';
 import { SlimEmpty, slots, pctx, eur, eur0 } from './_fin.js';
 import { fmtPercent } from '../../../lib/format.js';
@@ -13,7 +14,7 @@ export const finCashflowSankey = {
   name: 'Geldfluss (Sankey)',
   category: 'Finanzen',
   description: 'Wohin die Einnahmen des Monats fließen: Kategorien, Gespartes und Übriges als Bänder mit Beträgen. Reicht das Geld nicht, erscheint die Lücke als Quelle „Aus Guthaben“.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Geldfluss im Monat' },
     { name: 'limit', label: 'Max. Kategorien', type: 'number', default: 5 },
@@ -41,7 +42,7 @@ export const finCashflowSankey = {
     let y = 0; const nodes = dst.map((n) => { const h = Math.max(MIN_H, n.v * k), top = y; y += h + GAP; return { ...n, h, top, t: n.v * k }; });
     const H = Math.max(y - GAP, 120);
     let y0 = 0; const bands = nodes.map((n) => { const a = y0; y0 += n.t; const b = n.top + (n.h - n.t) / 2; return { n, a, b }; });
-    const pct = (v) => (c.privacy ? '•• %' : fmtPercent(v / T, { digits: 0 }));
+    const pct = (v) => (c.privacy ? MASK_PERCENT : fmtPercent(v / T, { digits: 0 }));
     const path = ({ n, a, b }) => `M0,${a} C50,${a} 50,${b} 100,${b} L100,${b + n.t} C50,${b + n.t} 50,${a + n.t} 0,${a + n.t} Z`;
     return html`<${Card} title=${props.title} icon="git-branch"><div class="tk-fnsk__head"><div><div class="tk-fn-cap">Einnahmen</div><strong class="tk-fn-big" style="font-size:var(--tk-fs-xl)">${eur0(c, f.income)}</strong></div><div style="text-align:right"><div class="tk-fn-cap">Ausgaben + Gespart</div><strong class="tk-fn-num">${eur0(c, f.expenses + f.saved)}</strong></div></div>
       <div class="tk-fnsk" style=${`height:${H}px`} role="group" aria-label="Geldfluss: Einnahmen verteilen sich auf Kategorien">

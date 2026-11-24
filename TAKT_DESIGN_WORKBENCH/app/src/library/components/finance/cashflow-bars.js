@@ -2,6 +2,7 @@
 import { html } from '../../../lib/html.js';
 import { useState } from 'preact/hooks';
 import { Card, Icon, EmptyState, toneColor } from '../../ui.js';
+import { MASK_PERCENT } from '../../helpers.js';
 import { monthsSeries, catMeta, arr, r2 } from './_calc.js';
 import { SlimEmpty, slots, pctx, eur, eur0 } from './_fin.js';
 import { fmtPercent } from '../../../lib/format.js';
@@ -21,7 +22,7 @@ export const finCashflowBars = {
   name: 'Cashflow-Balken',
   category: 'Finanzen',
   description: 'Sechs Monate Cashflow: Jeder Balken zeigt, wohin das Geld ging (Ausgaben nach Gruppen und Gespartes); die Marke zeigt die Einnahmen. Monat antippen für Details, oder als Tabelle.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Cashflow' },
     { name: 'style', label: 'Darstellung', type: 'select', options: ['stacked', 'table'], default: 'stacked' },
@@ -54,7 +55,7 @@ export const finCashflowBars = {
     if (!ser.length) return SlimEmpty({ props, icon: "bar-chart-3", title: "Noch keine Auswertung", text: "Sobald Buchungen vorliegen, erscheint hier der Cashflow." });
     const cur = ser.find((m) => m.key === sel) || ser[ser.length - 1];
     const pick = (m) => { setSel(m.key); ctx.emit('cashflow.month', { key: m.key }); };
-    const rate = (m) => (c.privacy ? '•• %' : fmtPercent(m.rate, { digits: 0 }));
+    const rate = (m) => (c.privacy ? MASK_PERCENT : fmtPercent(m.rate, { digits: 0 }));
     const lab = (m) => `${m.label}${m.partial ? '*' : ''}`;
     const detail = props.showDetail && html`<div class="tk-fncb__detail" aria-live="polite"><div><span class="tk-fn-cap">${lab(cur)}: Einnahmen</span><strong>${eur0(c, cur.income)}</strong></div><div><span class="tk-fn-cap">Ausgaben</span><strong>${eur0(c, cur.expenses)}</strong></div><div><span class="tk-fn-cap">Gespart</span><strong>${eur0(c, cur.saved)}</strong></div><div><span class="tk-fn-cap">Sparquote</span><strong>${rate(cur)}</strong></div></div>`;
     const note = ser.some((m) => m.partial) && html`<p class="tk-fn-note" style="margin:var(--tk-space-3) 0 0"><${Icon} name="info" size=${14} />* Der laufende Monat ist noch nicht abgeschlossen (Stand 24.11.). Umbuchungen und die Privatentnahme zählen nicht als Einnahme oder Ausgabe.</p>`;

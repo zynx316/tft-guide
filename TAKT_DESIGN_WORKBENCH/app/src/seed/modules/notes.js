@@ -79,7 +79,7 @@ export default {
           layout: { type: 'grid' },
           blocks: [
             hdr({ eyebrow: 'Notizen', title: 'Übersicht', subtitle: 'Dein Denkraum auf einen Blick', primaryLabel: '', secondaryLabel: 'Alle Notizen', secondaryIcon: 'layout-list' }),
-            { id: 'kpi', component: 'metric-row', region: 'main', span: 12, bind: { metrics: 'metrics' }, props: { showSpark: false } },
+            { id: 'kpi', component: 'kpi-tiles', region: 'main', span: 12, bind: { metrics: 'metrics' }, props: { showSpark: false } },
             { id: 'pinned', component: 'note-list', region: 'main', span: 7, spanTablet: 12, props: { title: 'Angeheftet', layout: 'grid', scope: 'angeheftet', cardSize: 'large', autoSelect: false, showCreate: false, minWidth: 220 } },
             { id: 'tags', component: 'chart', region: 'main', span: 5, spanTablet: 12, bind: { series: 'tagChart' }, props: { title: 'Notizen nach Tag', type: 'donut' } },
             { id: 'checks', component: 'note-checklists', region: 'main', span: 12, props: { title: 'Listen im Fortschritt', mode: 'progress', limit: 4, link: 'Alle Listen' } },
@@ -137,7 +137,7 @@ export default {
           description: '+ Starker Überblick, gut für wenige bis mittlere Notizmengen  − Wechsel zwischen Notizen kostet jeweils Dialog öffnen/schließen',
           layout: { type: 'stack' },
           blocks: [
-            hdr({ eyebrow: 'Notizen', title: 'Alle Notizen', subtitle: '9 Notizen · 2 angeheftet', primaryLabel: '' }),
+            hdr({ eyebrow: 'Notizen', title: 'Alle Notizen', subtitle: 'Angeheftete zuerst, dann zuletzt bearbeitet', primaryLabel: '' }),
             { id: 'flt', component: 'search-filter', region: 'main', props: { placeholder: 'Notizen durchsuchen …', filters: FILTERS } },
             { id: 'grid', component: 'note-list', region: 'main', props: { title: 'Notizen', layout: 'grid', openIn: 'dialog', showCreate: true } },
           ],
@@ -145,7 +145,7 @@ export default {
         {
           id: 'B', name: 'Master-Detail', direction: 'kompakt', concept: 'Zwei-Spalten-Arbeitsplatz: links Suche und kompakte Liste, rechts der Editor der gewählten Notiz. Schnelles Springen zwischen Notizen ohne Kontextverlust.',
           description: '+ Effizient für Vielschreiber, Bearbeiten direkt in der Übersicht  − Auf Mobile ist die Liste einklappbar und der Editor füllt den Bildschirm',
-          layout: { type: 'sidebar', panelLabel: 'Notizen & Suche' },
+          layout: { type: 'sidebar', panelLabel: 'Notizen & Suche', panelOpen: true },
           blocks: [
             { id: 'flt', component: 'search-filter', region: 'panel', props: { placeholder: 'Suchen …', filters: FILTERS, layout: 'stacked' } },
             { id: 'list', component: 'note-list', region: 'panel', props: { title: 'Notizen', layout: 'list' } },

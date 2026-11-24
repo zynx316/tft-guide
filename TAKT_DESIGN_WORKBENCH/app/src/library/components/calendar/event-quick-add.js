@@ -2,7 +2,7 @@
 import { html } from '../../../lib/html.js';
 import { useState } from 'preact/hooks';
 import { Card, Button, Input, Badge, Icon } from '../../ui.js';
-import { dayKey, dayStart, addDays, occurrences, hm, timeStr, CATEGORY_TONES, formToEvent } from './_cal.js';
+import { dayKey, dayStart, addDays, occurrences, hm, timeStr, CATEGORY_TONES, formToEvent, shortDay, newEventId } from './_cal.js';
 import { parseWhen, overlapsWith } from './_cal-info.js';
 
 const EXAMPLES = ['Zahnarzt morgen 14 Uhr', 'Call mit Lieferant Freitag 10:30 45 min', 'Wochenmarkt Samstag 10 Uhr 2 h'];
@@ -12,7 +12,7 @@ export const eventQuickAdd = {
   name: 'Termin schnell erfassen',
   category: 'Kalender',
   description: 'Ein Eingabefeld statt Formular: Datum, Uhrzeit und Dauer werden aus dem Satz erkannt und live angezeigt. Warnt bei Überschneidung und legt den Termin mit Enter an.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Termin erfassen' },
     { name: 'placeholder', label: 'Platzhalter', type: 'text', default: 'z. B. Zahnarzt morgen 14 Uhr' },
@@ -47,12 +47,12 @@ export const eventQuickAdd = {
     const cat = p.category || 'Arbeit';
     const submit = () => {
       if (!p.title) { ctx.emit('form.invalid', { field: 'title' }); ctx.toast('Bitte einen Titel eingeben'); return; }
-      const ev = formToEvent({ title: p.title, date: dayKey(date), start, end, category: cat, repeat: 'Keine', location: '', note: '' }, `ev${Date.now().toString(36)}`);
+      const ev = formToEvent({ title: p.title, date: dayKey(date), start, end, category: cat, repeat: 'Keine', location: '', note: '' }, newEventId(ctx));
       setData('events', (all) => [ev, ...(Array.isArray(all) ? all : [])]); ctx.setUi('selectedDate', dayKey(date)); ctx.emit('event.create', { id: ev.id, title: ev.title }); ctx.toast(`„${ev.title}“ angelegt`); setText('');
     };
     return html`<${Card} title=${props.title} icon="calendar-plus" class=${props.elevated ? 'tk-cal-quick--elevated' : ''}><div class="tk-cal-quick" data-qa="event-quick-add">
       <div class="tk-cal-quick__row"><${Input} value=${text} onInput=${setText} placeholder=${props.placeholder} aria-label="Termin in einem Satz" onKeyDown=${(e) => e.key === 'Enter' && submit()} /><${Button} variant="primary" icon="plus" aria-label="Termin anlegen" onClick=${submit} /></div>
-      <div class="tk-cal-quick__parsed" aria-live="polite">${p.title ? html`<${Badge} tone=${CATEGORY_TONES[cat]} dot>${cat}<//><${Badge} icon="calendar">${new Intl.DateTimeFormat('de-DE', { weekday: 'short', day: 'numeric', month: 'short' }).format(date)}<//><${Badge} icon="clock">${start}–${end} Uhr<//>${!p.start && html`<span class="tk-subtle" style="font-size:var(--tk-fs-xs)">Uhrzeit vorgeschlagen</span>`}`
+      <div class="tk-cal-quick__parsed" aria-live="polite">${p.title ? html`<${Badge} tone=${CATEGORY_TONES[cat]} dot>${cat}<//><${Badge} icon="calendar">${shortDay(date)}<//><${Badge} icon="clock">${start}–${end} Uhr<//>${!p.start && html`<span class="tk-subtle" style="font-size:var(--tk-fs-xs)">Uhrzeit vorgeschlagen</span>`}`
         : html`<span class="tk-subtle" style="font-size:var(--tk-fs-sm)">Datum, Uhrzeit und Dauer werden aus dem Satz erkannt.</span>`}</div>
       ${clash.length > 0 && html`<div class="tk-row" style="color:var(--tk-c-warning);font-size:var(--tk-fs-sm)" role="status"><${Icon} name="alert-triangle" size=${15} /><span>Überschneidet sich mit „${clash[0].title}“ (${timeStr(clash[0]._s)}–${timeStr(clash[0]._e)}).</span></div>`}
       ${props.showExamples && !text && html`<div class="tk-cal-quick__ex">${EXAMPLES.map((x) => html`<button type="button" onClick=${() => setText(x)}>${x}</button>`)}</div>`}

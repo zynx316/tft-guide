@@ -12,7 +12,7 @@ export const focusTimer = {
   name: 'Fokus-Timer',
   category: 'Aufgaben',
   description: 'Pomodoro an einer Aufgabe: Fokusblock, kurze Pause, nach vier Blöcken lange Pause. Start, Pause, Zurücksetzen, Überspringen, Presets (25/5, 50/10, 15/3) und ein Zeitraffer für die Demo. Abgeschlossene Blöcke landen im Fokus-Protokoll und auf der Aufgabe.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Fokus' },
     { name: 'style', label: 'Darstellung', type: 'select', options: ['ring', 'compact'], default: 'ring' },
@@ -45,7 +45,7 @@ export const focusTimer = {
   example: { data: { tasks: [{ id: 't1', title: 'Angebot Müller GmbH finalisieren', due: '2026-11-24T14:00:00', priority: 'hoch', estimate: 60, subtasks: [{ id: 'a', title: 'PDF erzeugen', done: false }] }], log: [], goal: { sessionsPerDay: 6 } } },
   render: function FocusTimer({ props, data, setData, ctx }) {
     const tasks = (Array.isArray(data.tasks) ? data.tasks : []).filter((t) => !t.done).sort(sortTasks);
-    const pick = tasks.find((t) => t.id === ctx.ui.selectedId) || tasks.find((t) => dueInfo(t, ctx.today).diff <= 0) || tasks[0];
+    const pick = tasks.find((t) => t.id === ctx.ui.selectedId) || tasks.find((t) => !t.done && dueInfo(t, ctx.today).diff != null && dueInfo(t, ctx.today).diff <= 0) || tasks[0];
     const [taskId, setTaskId] = useState(pick?.id), [presetKey, setPreset] = useState(props.preset), [phase, setPhase] = useState('Fokus');
     const P = PRESETS[presetKey] || PRESETS['25 / 5'], len = (ph) => (ph === 'Fokus' ? P.focus : ph === 'Pause' ? P.brk : P.long) * 60;
     const [left, setLeft] = useState(len('Fokus')), [running, setRunning] = useState(false), [fast, setFast] = useState(false), [block, setBlock] = useState(0), [offset, setOffset] = useState(0);
@@ -55,7 +55,7 @@ export const focusTimer = {
       const next = phase !== 'Fokus' ? 'Fokus' : (block + 1) % 4 === 0 ? 'Lange Pause' : 'Pause';
       if (phase === 'Fokus' && log && task) {
         const start = new Date(+ctx.today + offset * 60000);
-        setData('log', (l) => [...(Array.isArray(l) ? l : []), { id: `fl${Date.now().toString(36)}`, taskId: task.id, title: task.title, start: toIso(start), minutes: P.focus, kind: 'Fokus' }]);
+        setData('log', (l) => [...(Array.isArray(l) ? l : []), { id: ctx.newId('fl'), taskId: task.id, title: task.title, start: toIso(start), minutes: P.focus, kind: 'Fokus' }]);
         setData('tasks', (all) => all.map((t) => (t.id === task.id ? { ...t, spent: (t.spent || 0) + P.focus } : t)));
         ctx.emit('focus.complete', { id: task.id, minutes: P.focus }); ctx.toast(`Fokusblock geschafft – ${next === 'Pause' ? P.brk : P.long} Min. Pause`);
       } else if (phase !== 'Fokus' && log) ctx.toast('Pause vorbei – weiter geht’s');

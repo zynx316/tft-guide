@@ -122,12 +122,13 @@ export const kbNext = {
   name: 'Wissens-Impulse',
   category: 'Inhalte',
   description: 'Handlungsorientierte Karten für die Wissensbasis: „Weiterlesen“ (zuletzt gelesener Artikel mit Fortschritt), „Passend zu heute“ (Artikel zum nächsten Termin) und „Aktualität prüfen“ (lange nicht geänderte Artikel, mit „Als aktuell markieren“).',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'mode', label: 'Art', type: 'select', options: ['resume', 'context', 'review'], default: 'resume' },
     { name: 'title', label: 'Titel (leer = Standard)', type: 'text', default: '' },
     { name: 'reviewDays', label: 'Prüfen nach (Tage)', type: 'number', default: 21 },
     { name: 'limit', label: 'Max. Einträge (Prüfen)', type: 'number', default: 3 },
+    { name: 'quietEmpty', label: 'Ohne Artikel nichts anzeigen (nur Weiterlesen erklärt)', type: 'boolean', default: false },
   ],
   data: [
     { slot: 'articles', label: 'Artikel', default: 'articles', shape: '{id,title,area,category,body,updated,lastRead?,readProgress?,tags?}[]', required: true },
@@ -152,7 +153,11 @@ export const kbNext = {
     const arts = (data.articles || []).filter((a) => a.status !== 'draft');
     const label = props.title || MODES[props.mode];
     const open = (a) => { ctx.setUi('selectedId', a.id); ctx.emit('kb.open', { id: a.id }); };
-    const empty = (txt) => html`<${Card} title=${label}><${EmptyState} icon="book-open" title=${props.mode === 'review' ? 'Alles aktuell' : 'Noch nichts hier'} text=${txt} /><//>`;
+    // Ohne Artikel gibt es nichts zu prüfen oder zuzuordnen: ehrliche Aussage statt „Alles aktuell“, und mit `quietEmpty` nur eine Karte je Seite
+    const none = arts.length === 0;
+    const empty = (txt) => (none && props.quietEmpty && props.mode !== 'resume' ? null
+      : none ? html`<${Card} title=${label}><${EmptyState} icon="book-open" title="Noch keine Artikel" text=${props.mode === 'resume' ? 'Lege den ersten Wissensartikel an, dann kannst du hier weiterlesen.' : 'Sobald Artikel vorliegen, erscheinen hier passende Hinweise.'} /><//>`
+      : html`<${Card} title=${label}><${EmptyState} icon="book-open" title=${props.mode === 'review' ? 'Alles aktuell' : 'Noch nichts hier'} text=${txt} /><//>`);
     if (props.mode === 'resume') {
       const a = arts.filter((x) => x.lastRead).sort((x, y) => (Number(x.readProgress >= 1) - Number(y.readProgress >= 1)) || String(y.lastRead).localeCompare(String(x.lastRead)))[0];
       if (!a) return empty('Sobald du einen Artikel liest, kannst du hier später weitermachen.');

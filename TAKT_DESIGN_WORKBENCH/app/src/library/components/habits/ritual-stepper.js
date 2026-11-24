@@ -16,7 +16,7 @@ export const ritualStepper = {
   name: 'Tagesabschluss',
   category: 'Start',
   description: 'Abendliches Ritual in 3 Schritten: offene Aufgaben erledigen, auf morgen schieben oder streichen · Gewohnheiten bestätigen · Top 3 für morgen und kurzer Energie-Check. Stile: Schritt für Schritt oder alles auf einer Seite.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Tagesabschluss' },
     { name: 'style', label: 'Stil', type: 'select', options: ['wizard', 'list'], default: 'wizard' },
@@ -29,6 +29,8 @@ export const ritualStepper = {
   states: ['empty'],
   css: `
   .tk-rs__steps { display:flex; gap:6px; padding:14px 16px 0; } .tk-rs__s { flex:1; display:flex; flex-direction:column; gap:6px; min-width:0; font-size:var(--tk-fs-xs); color:var(--tk-c-text-subtle); font-weight:var(--tk-fw-semibold); } .tk-rs__s i { display:block; height:5px; border-radius:3px; background:var(--tk-c-surface3); } .tk-rs__s[data-on="true"] i { background:var(--tk-c-accent); } .tk-rs__s[data-on="true"] { color:var(--tk-c-text); } .tk-rs__s span { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  ${['1.5','1.75','2'].map((v) => `:root[style*="--tk-text-scale: ${v}"] .tk-rs__steps`).join(', ')} { flex-direction:column; } ${['1.5','1.75','2'].map((v) => `:root[style*="--tk-text-scale: ${v}"] .tk-rs__s span`).join(', ')} { white-space:normal; text-overflow:clip; }
+ 
   .tk-rs__sec { padding:14px 0 6px; } .tk-rs__h { padding:0 16px 8px; } .tk-rs__h b { display:block; font-size:var(--tk-fs-lg); letter-spacing:var(--tk-ls-tight); } .tk-rs__h span { font-size:var(--tk-fs-sm); color:var(--tk-c-text-muted); }
   .tk-rs__row { display:flex; align-items:center; gap:10px; padding:8px 12px 8px 16px; min-height:60px; border-top:1px solid var(--tk-c-border); min-width:0; } .tk-rs__t { flex:1; min-width:0; } .tk-rs__t b { display:block; font-weight:var(--tk-fw-medium); } .tk-rs__t span { font-size:var(--tk-fs-sm); color:var(--tk-c-text-subtle); }
   .tk-rs__acts { display:flex; gap:2px; flex:none; } .tk-rs__acts .tk-btn { gap:5px; } .tk-rs__star { color:var(--tk-c-text-subtle); } .tk-rs__star[aria-pressed="true"] { color:var(--tk-c-warning); } .tk-rs__star[aria-pressed="true"] svg { fill:currentColor; }

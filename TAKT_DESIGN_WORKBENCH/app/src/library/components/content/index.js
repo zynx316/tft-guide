@@ -6,6 +6,8 @@ import { kbTree, kbAreas } from './kb-tree.js';
 import { kbArticle, kbNext } from './kb-article.js';
 import { capturePanel, captureLauncher, docScanner } from './capture-panel.js';
 import { ocrResult, receiptReview, businessCard } from './ocr-result.js';
+import { kpiTiles } from './kpi-tiles.js';
+import { countList } from './count-list.js';
 import { weatherNow } from './weather-now.js';
 import { weatherHourly } from './weather-hourly.js';
 import { weatherDaily } from './weather-daily.js';
@@ -15,6 +17,6 @@ export default [
   noteList, noteChecklists, noteInbox, noteEditor, noteFocus,
   kbTree, kbAreas, kbArticle, kbNext,
   capturePanel, captureLauncher, docScanner,
-  ocrResult, receiptReview, businessCard,
+  ocrResult, receiptReview, businessCard, countList, kpiTiles,
   weatherNow, weatherHourly, weatherDaily, weatherAlerts,
 ];

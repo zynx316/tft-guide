@@ -36,7 +36,7 @@ export const trdAllocation = {
   name: 'Aufteilung Soll und Ist',
   category: 'Trading',
   description: 'Verteilung des Depots nach Baustein, Anlageklasse, Region oder Sektor mit Ist-Anteil, eigenem Soll-Anteil und Abweichung in Prozentpunkten. Zielwerte lassen sich anpassen (Summe 100 %). Als Tabelle oder als zwei gestapelte Balken. Keine Empfehlung.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Aufteilung' },
     { name: 'style', label: 'Darstellung', type: 'select', options: ['table', 'bars'], default: 'table' },
