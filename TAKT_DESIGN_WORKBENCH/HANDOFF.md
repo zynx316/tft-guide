@@ -1,89 +1,88 @@
-# Übergabe – TAKT Design Workbench (Stand 24.11.2026, Nacht-Session)
+# Übergabe – TAKT Design Workbench (Stand 24.11.2026, nach Session 2 „V2 – beste Basis“)
 
 ## Kurzfassung
-Die Workbench ist **lauffähig, getestet und dokumentiert**. Sie bildet 12 Module, 60 Features und 57 interaktive Designvarianten
-ab, setzt Varianten deklarativ aus 45 Bibliothekskomponenten zusammen und rendert sie in echten Gerätebreiten. Dazu kommen
-Themes über zentrale Tokens, Versionierung mit Freigabe und Sperre, ein Entscheidungslog und automatisierte QA in der
-Oberfläche und per CLI. Gespeichert wird in eine Datei mit Backups, Export und Import.
+Die Workbench ist eine **vollständige Entscheidungs- und Designumgebung** für TAKT V2.0:
+- **Demo-Launcher:** die ganze App bedienbar in **drei Versionen** (Kompakt mit Tab-Leiste · Visuell mit Launchpad · Fokus mit
+  Erfassen-Knopf) plus „Meine Auswahl“, auf dem Laptop nebeneinander (gekoppelte Navigation) oder auf dem Handy im Vollbild.
+  Szenarien (Alltag, Erster Start, Stress-Tag), Offline, Schrift bis 200 %, Beträge ausblenden, Bewertung mit fünf Kriterien.
+- **16 Module** mit Startseite in drei Richtungen und echten Navigationswegen, gemeinsame **Datenwelt** (eine Persona, ein Tag,
+  alle Zahlen konsistent und getestet): Start, Kalender, Aufgaben, Gewohnheiten, Notizen, Wissensdatenbank, Picture to Text,
+  Sales, **Finanzen, Sparpläne, Trading, Fitness, Ernährung, Wetter**, TAKT Kern (Suche, Mitteilungen, Erfassen), Einstellungen.
+  Zahlen: `docs/FEATURE_IDS.md` und `docs/KOMPONENTEN.md` (automatisch erzeugt).
+- **Entscheiden ohne Endlosschleifen:** App-Ebene (Leitbild, 11 Grundsatzfragen, 20 Muster – jeweils mit begründeter
+  Empfehlung), Entscheidungs-Inbox nach Blockierwirkung, **Entscheidungsrunden** mit Zeitbox und Rundenlimit 2, Gates
+  (bereit/fertig), Scorecard, Arbeitsauftrag für Claude Code.
+- **Qualität:** `npm run check` (< 1 s), `npm test` (~275 Node-Tests), `npm run qa` (Vertrag, 32 E2E-Tests, Screenshot-Matrix,
+  Regression), QA-Sonde mit 9 Prüfungen inkl. Barrierefreiheit und Privatsphäre. Leitlinien für Gesundheit, Finanzen und Text.
 
-**Nicht erledigt, weil technisch unmöglich:** Die Bestandsaufnahme des echten TAKT-Projekts (Phase 1). Die Cloud-Umgebung hatte
-keinen Zugriff auf `G:\`. Die Module und Features stammen deshalb aus dem Auftrag und sind als „zu verifizieren“ markiert.
-Das ist die erste Aufgabe zuhause (`/takt-phase1`).
+**Nicht erledigt, weil technisch unmöglich:** Phase 1 (Abgleich mit dem echten TAKT-Projekt auf `G:\`) – die Cloud-Umgebung hat
+keinen Zugriff. Module/Features sind Annahmen (Annahmen-Register in der Workbench). Erste Aufgabe zuhause: `/takt-phase1`.
 
 ## 1. Auf den eigenen Rechner holen (Windows, PowerShell)
-Die Dateien liegen im GitHub-Repo **`zynx316/tft-guide`**, Branch **`ccr-95570849-lkvyto`**, Ordner **`TAKT_DESIGN_WORKBENCH/`**.
-Das Repo dient nur als Transportweg; die Workbench gehört dort fachlich nicht hin.
-
-**Variante A – per Git:**
+Repo **`zynx316/tft-guide`**, Branch **`ccr-95570849-lkvyto`**, Ordner **`TAKT_DESIGN_WORKBENCH/`** (das Repo ist nur Transportweg).
 ```powershell
 cd G:\Projekte\97_Uebernahme
 git clone --depth 1 --branch ccr-95570849-lkvyto https://github.com/zynx316/tft-guide.git _wb_transfer
 robocopy _wb_transfer\TAKT_DESIGN_WORKBENCH TAKT_DESIGN_WORKBENCH /E
 Remove-Item -Recurse -Force _wb_transfer
 ```
-**Variante B – ohne Git:** GitHub öffnen, Branch `ccr-95570849-lkvyto` wählen, dann „Code › Download ZIP“. Den Ordner
-`TAKT_DESIGN_WORKBENCH` nach `G:\Projekte\97_Uebernahme\` entpacken.
-
+Ohne Git: GitHub › Branch wählen › „Code › Download ZIP“, Ordner `TAKT_DESIGN_WORKBENCH` entpacken.
 > Den Ordner **neben** `TAKT-Merge-Git` ablegen, **nicht hinein**. Das TAKT-Repo bleibt unberührt.
+
+**Hattest du die Workbench (Session 1) schon in Gebrauch?** Dann nach dem Kopieren in der Workbench **Daten & Backup ›
+„Seed abgleichen …“** ausführen: Neues kommt hinzu, von dir unveränderte Features werden aktualisiert (vorher gesichert),
+Freigegebenes bleibt unberührt (erscheint als „Seed-Vorschlag“). Ohne eigene Arbeit: einfach „Zurücksetzen“ (Backup entsteht).
 
 ## 2. Einrichten & starten
 ```powershell
 cd G:\Projekte\97_Uebernahme\TAKT_DESIGN_WORKBENCH
-git init; git add .; git commit -m "TAKT Design Workbench – Übernahme"   # optional, empfohlen: eigenes Repo
-npm install                         # playwright, pixelmatch, pngjs (nur für die CLI-QA)
-npx playwright install chromium     # Browser für die CLI-QA
-npm start                           # Workbench öffnet sich unter http://127.0.0.1:4317
+git init; git add .; git commit -m "TAKT Design Workbench – Übernahme"   # optional, empfohlen
+npm install; npx playwright install chromium                            # nur für Tests
+npm start                       # Workbench → http://127.0.0.1:4317 · Launcher → /launcher.html
+npm run check; npm test; npm run qa                                     # erzeugt Baselines für diesen Rechner
 ```
-Danach **Claude Code im selben Ordner starten** (`claude`). Es lädt `CLAUDE.md` automatisch, außerdem die Slash-Commands
-(`.claude/commands/`) und die Agenten (`.claude/agents/`). Als Erstes **`/takt-start`** aufrufen, dann **`/takt-phase1`**.
+Danach **Claude Code im selben Ordner starten** (`claude`) und **`/takt-start`** aufrufen.
+Handy: `npm run lan`, im Launcher „Aufs Handy“ → QR-Code (gleiches WLAN, Windows-Firewall für Node erlauben).
 
-Erster QA-Lauf auf dem neuen Rechner: `npm run qa`. Er erzeugt die Referenzbilder (Baselines) für diesen Rechner. Baselines
-sind wegen der Schriftdarstellung maschinenspezifisch und deshalb nicht im Transport enthalten.
+## 3. Empfohlener Ablauf zuhause
+1. **`/takt-phase1`** – echtes TAKT-Projekt nur lesend abgleichen, Seed/Persona/Theme-Farben angleichen, Annahmen-Register
+   pflegen, „Seed abgleichen …“.
+2. **Demo-Launcher** öffnen, die drei Versionen am Laptop und am Handy bedienen und bewerten (Sterne + Kriterien).
+3. **`/takt-round-prep app`** – Claude bereitet die erste Runde mit Belegen vor. Dann **Workbench › Entscheidungsrunden ›
+   Neue Runde (App-Ebene)**: App-Richtung, Grundsatzfragen, wichtigste Muster in ~20 Minuten.
+4. **Arbeitsauftrag** der Runde exportieren → **`/takt-work-order`**.
+5. Modul für Modul (Fahrplan: Ausbaustufen in der Übersicht): Modul-Richtung, Startseite, Tier-1-Features mit Scorecard,
+   QA, Freigabe; Gerätetest bei Tier 1 (`docs/GERAETETEST.md`).
 
-## 3. Abdeckung des Auftrags (docs/MISSION.md)
-| Auftrag | Stand | Wo / Nachweis |
+## 4. Abdeckung des Auftrags
+| Auftrag | Stand | Nachweis |
 |---|---|---|
-| §3 Bestand untersuchen, Git-Sicherheit | **Offen** (kein Zugriff auf G:\) | `docs/PHASE1_BESTANDSAUFNAHME.md`, `/takt-phase1`, Git-Sperren in `.claude/settings.json` |
-| §4 Worker/Sub-Agents (Sonnet) | Umgesetzt mit 4 Sub-Agenten (A/B/C: Module & Komponenten, G: Architekturprüfung), Sonnet, normaler Effort | WORK_LOG.md; für zuhause `.claude/agents/*` mit `model: sonnet`, `effort: high` |
-| §5 Navigation A–G | Umgesetzt (Übersicht, Module/Cockpit, Features, Design Studio, Komponenten, Versionen & Entscheidungen, Quality Center, plus Daten & Backup) | E2E „Navigation“ |
-| §6 Module/Features flexibel | Anlegen, Umbenennen, Sortieren (Drag & Drop), Archivieren, Löschen, Duplizieren, Verschieben, Gruppieren, Status, Verknüpfen, Aufteilen, Zusammenführen | E2E-Tests für Modul, Feature, Löschen/Undo |
-| §7 Feature-Workspace (11 Punkte) | 9 Tabs decken alle 11 Punkte ab (Viewports und Preview liegen in „Design“ und „Übersicht“) | README |
-| §8 Varianten & Vergleich | Bis zu 3 bedienbare Varianten nebeneinander, gemeinsamer Viewport, Theme und Zustand, Strukturunterschiede, Bevorzugen mit Begründung | E2E „Vergleich“, calendar.week A/B/C |
-| §9 Designsystem | Tokens (eine Quelle), 3 Themes mit Kontrast-Audit, 45 Komponenten, App-Shell | DESIGN_SYSTEM.md, Komponenten-Bereich |
-| §10 Freigabe & Einfrieren | 7 Status, Checkliste, Snapshot (inkl. QA, Entscheidungen, Komponentenversionen), Sperre, neue Arbeitsversion, Historie, Diff, Wiederherstellen | E2E „Freigabe“, „Sperrregeln“ |
-| §11 Flexibilität ohne Chaos | Regeln technisch durchgesetzt (Sperre, zentrale Komponenten, selektive Tests, Drift-Erkennung) | ARCHITECTURE.md §8–9 |
-| §12 QA | Sonde mit 7 Prüfungen, Viewports 1440/1280/1024/768/390 plus 360, E2E, Screenshots, Pixel-Regression, selektiv (`--changed`, Abhängigkeitsanalyse), Gerätetest-Meilensteine | QA_REPORT.md |
-| §13 Persistenz, Backup, Export | Datei plus Browser-Speicher, Revisionen und Konflikterkennung, automatische Backups, Export/Import, Seed-Abgleich | E2E „Persistenz“, „Export/Import“ |
-| §14 Architektur | Modular und schlank, geprüft und nachgebessert | ARCHITECTURE.md §11 |
-| §18 Dateien A–H | Alle vorhanden | Ordnerübersicht unten |
+| Mission §3 Bestand untersuchen | **Offen** (kein Zugriff auf G:\) | `/takt-phase1`, Annahmen-Register |
+| Mission §4–§18 (Workbench, Varianten, Vergleich, Themes, Komponenten, Freigabe, QA, Persistenz, Doku) | Umgesetzt (Session 1), in Session 2 erweitert | README, ARCHITECTURE, QA_REPORT |
+| Folgewunsch: alles Notwendige ergänzen, beste Basis | Bauplan aus 7 Perspektiven + 2 Kritiken, umgesetzt in 5 Workflows | `docs/BAUPLAN.md`, WORK_LOG |
+| Demo-Launcher, mobil, Versionen am Laptop vergleichen, entscheiden | Umgesetzt (Rahmen je Version, Bewertung, Übernehmen, Handy, QR) | E2E Launcher-Tests |
+| Ebene für Ebene, Modul für Modul | Ebenenmodell, App-Ebene, Runden, Gates, Ausbaustufen, Meine Auswahl | Workbench › App-Ebene, Runden |
+| Finanzen, Trading, Sparpläne, Wetter, Ernährung, Fitness | Vollwertige Module mit 3 Richtungen, Leitlinien, getesteter Mathematik | Prüfurteile „gut“ bis „erstklassig“ |
+| Alles am Ende | 16 Module in einer Datenwelt, Suche/Mitteilungen/Erfassen modulübergreifend | Invarianten-Tests |
 
-## 4. Ehrliche Einschränkungen
-- **Phase 1 fehlt.** Module und Features sind Annahmen aus dem Auftrag. Theme-Farben sind ein eigener Entwurf und nicht
-  mit Flutter abgeglichen. Fitness und Finanzen sind nur als Referenz-Platzhalter angelegt; die echten Konzepte liegen auf G:\.
-- **Effort der Sub-Agenten:** Sonnet mit normalem Effort. Getrennte Worker-Sessions mit Effort „High“ wurden in dieser Umgebung
-  nicht gestartet (siehe WORK_LOG).
-- **Neue Komponenten entstehen im Code**, nicht in der Oberfläche. Varianten, Layouts, Props, Daten, Anforderungen und alles
-  übrige lassen sich in der Oberfläche bearbeiten.
-- **Grenzen des deklarativen Modells:** keine verschachtelten Container, keine Props je Breakpoint, Interaktionen nur beschreibend
-  (siehe TASKS.md §3).
-- **Skalierung:** Der gesamte Zustand liegt in einer JSON-Datei (Seed ca. 0,9 MB). Bei sehr vielen Versionen sollten Snapshots
-  ausgelagert werden (TASKS.md §3).
-- **Flutter-Export:** bisher nur ein Roh-Token-JSON. Komponenten-Mapping und Feature-Spezifikation sind offen (TASKS.md §4).
-- **Echte Smartphones:** nicht getestet (kein Gerät). Vorgesehen sind Meilenstein-Tests über `npm run lan`.
-
-## 5. Nächste konkrete Schritte
-1. Übernahme und Start nach §1 und §2, dann `npm run qa` auf dem eigenen Rechner.
-2. **`/takt-phase1`**: das TAKT-Projekt nur lesend analysieren, Seed und Theme-Farben angleichen, „Neue Seed-Inhalte übernehmen“.
-3. Erstes Modul (Vorschlag: Kalender) durchziehen: Varianten der Wochenansicht vergleichen und entscheiden, QA, Freigabe,
-   danach der Gerätetest-Meilenstein.
-4. Danach die P2-Aufgaben aus TASKS.md (Skalierung, Library-Vereinheitlichung, Flutter-Mapping) nach Bedarf.
+## 5. Ehrliche Einschränkungen
+- **Phase 1 fehlt** (siehe oben). Persona, Module, Theme-Farben sind Annahmen. Gesundheits-, Finanz- und Steuertexte sind
+  fachlich nicht geprüft (Grundsatzfrage „Rechtsprüfung“).
+- **Echtes Smartphone nicht getestet** (kein Gerät in der Cloud). Über LAN-HTTP gibt es keinen Service Worker (ADR-001).
+- **Simulationen:** Radar, Barcode-Scan, Texterkennung, Kurse, Orders sind simuliert; Datenquellen sind eine offene
+  Grundsatzfrage.
+- **Workbench-Zustand** liegt in einer JSON-Datei; Skalierungsmaßnahmen (Snapshots auslagern, Undo als Patches) stehen in TASKS.md.
+- Restpunkte aus den Prüfungen und der Vollständigkeitsprüfung: **TASKS.md**.
 
 ## 6. Ordnerübersicht
 ```
 TAKT_DESIGN_WORKBENCH/
-  CLAUDE.md  HANDOFF.md  TASKS.md  WORK_LOG.md  README.md  ARCHITECTURE.md  DESIGN_SYSTEM.md  QA_REPORT.md
-  package.json  server.mjs  .gitignore
-  app/ (index.html, preview.html, vendor/, src/)      qa/ (run-qa.mjs, baselines/, results/)      tools/check.mjs
-  data/ (workbench.json entsteht beim Start)          docs/ (MISSION.md, PHASE1_BESTANDSAUFNAHME.md, examples/)
-  .claude/ (settings.json, commands/, agents/)
+  CLAUDE.md HANDOFF.md TASKS.md WORK_LOG.md README.md ARCHITECTURE.md DESIGN_SYSTEM.md QA_REPORT.md
+  package.json server.mjs
+  app/ index.html launcher.html preview.html manifest.webmanifest sw.js vendor/ src/
+  tests/ (Node-Tests)   qa/ (run-qa.mjs, results/)   tools/ (check, verify, register, work-order, feature-ids, component-catalog)
+  data/ (workbench.json, backups/, feedback.jsonl – entstehen beim Start)
+  docs/ BAUPLAN FEATURE_IDS KOMPONENTEN DATENWELT PERSONA HEALTH_GUIDELINES FINANCE_GUIDELINES TEXT_STIL ADR-001 ADR-002
+        GERAETETEST WORKER_BRIEF MISSION PHASE1_BESTANDSAUFNAHME brainstorm/ work-orders/
+  .claude/ settings.json commands/ agents/
 ```

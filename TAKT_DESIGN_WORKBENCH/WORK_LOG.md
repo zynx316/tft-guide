@@ -79,3 +79,49 @@ Zeiten in UTC. Neue Einträge unten anhängen (Datum, Phase, Entscheidung/Änder
 - **Finaler Gesamtlauf (01:34):** Vertrag 0/0 · E2E 24/24 · Visuell 185 ✓, 10 erwartete Änderungen (genau die Features mit
   `calendar-week`, Arbeitsstände), 0 Fehler. `--changed` danach: „nichts zu tun“. E2E nach letzter Store-Änderung erneut 24/24.
 - QA_REPORT.md geschrieben. Übergabe über Branch `ccr-95570849-lkvyto` im Repo `zynx316/tft-guide` (Ordner `TAKT_DESIGN_WORKBENCH/`).
+
+---
+
+## Session 2 – 24.11.2026, 01:40–07:30: V2 „Beste Basis“ (Auftrag: alles Notwendige ergänzen, Demo-Launcher, Ebene für Ebene)
+
+### 01:40–02:05 – Workbench V2 (Commit d0ed375)
+- Ebenenmodell (App · Modul · Feature · Komponente), drei Richtungen (Kompakt, Visuell, Fokus) als durchgängige Versionen,
+  App-Player in der Vorschau (Module, Navigation `interaction.to`, Zurück, Skizzen), **Demo-Launcher** (Versionen nebeneinander,
+  gekoppelte Navigation, Bewertung, Übernehmen, Handy-Vollbild, QR, PWA), gemeinsame Datenwelt (Persona Jonas Keller),
+  Finanzmathematik mit Referenztests, Flutter-Brücke (Dart-Tokens, Spezifikation).
+
+### 02:05–02:50 – Brainstorming-Workflow + Prozess (Commits 408ddb4, e882da9)
+- Workflow: 7 Perspektiven (Produkt, Prozess, Launcher, Finanzen, Körper, Alltag, Technik) → 2 Kritiker → Synthese
+  `docs/BAUPLAN.md` (27 Arbeitspakete, Verträge, Abnahme „Basis v1“, 14 Nutzer-Entscheidungen).
+- Entscheidungsrunden (Zeitbox, Agenda nach Blockierwirkung, Rundenlimit 2), App-Ebene (Leitbild, Grundsatzfragen, Muster,
+  Gates, Annahmen), Scorecard, Anmerkungen, Akzeptanzkriterien, Arbeitsauftrag (`/takt-work-order`).
+- Szenarien (Alltag, Erster Start, Stress-Tag), Umgebung (Offline, Schrift bis 200 %), „Meine Auswahl“, „In App ansehen“,
+  Seed-Patch, Grundsatzfragen aus dem Bauplan in die Inbox. Store: Tab-Synchronisation übernimmt Server-Revision.
+
+### 02:30–03:15 – Fundament-Workflow (3 Pakete, je Bau → Prüfung; Commits 29ab637, 533f470)
+- `lib/format.js`, `lib/date.js`, `core/recurrence.js`, `core/health.js`, Node-Testinfrastruktur (`tools/register.mjs`, `npm test`).
+- Leitlinien: Gesundheit, Finanzen, Datenwelt, Textstil, Persona, ADR Launcher/Datenhaltung, Gerätetest.
+- Querschnitt-Komponenten: offline-banner, sync-status, permission-card, recurrence-picker, undo-toast, link-chips, firstrun-card.
+- App-Rahmen je Version (Tab-Leiste · Launchpad mit Live-Kennzahlen · Fokus mit Erfassen-Knopf), Konflikt-Rebase im Store
+  (Workbench + Launcher gleichzeitig), Feedback-Schema v2 (Kriterien, Dubletten, Ratenbegrenzung).
+
+### 01:50–06:05 – Modul-Wellen (2 Workflows, 10 Pakete, je Bau → unabhängige Prüfung)
+- Welle 1: Ernährung (erstklassig), Fitness (erstklassig), Sparpläne (gut), Finanzen (gut), Trading (gut).
+- Welle 2: Wetter (gut), Start/Gewohnheiten (gut), Kalender/Aufgaben (gut), Inhalte/Sales (gut), Kern/Einstellungen (gut).
+- Laufend in der Hauptsession umgesetzte Kern-Wünsche der Worker: `ctx.fmt/now/live/world/newId/mode/blockWidth`, Navigation
+  über `detail.to`/`module:<id>` und je Variante (`variant.nav`), Demo-Einstellungen wirken auf die App (Favoriten, aktive
+  Module, Theme, Schrift, Beträge), Primitive NumberStepper/Ring, Switch mit 44-px-Trefferfläche, Layout-Optionen
+  `stretch`/`asideSticky`, große Schrift (Buttons/Eingaben umbrechen), Prüfregeln (Navigationsgraph, Begriffslisten,
+  CSS-Kollisionen), QA-Sonde (Namen von Bedienelementen, Privatsphäre-Lecks, Nachmessen unter Last).
+- Fehler in der Hauptsession (ehrlich): Die Nachmess-Änderung an der QA-Sonde rief `runProbe` ohne `await` auf –
+  `__taktQA.run()` lieferte ~20 Min. kein Ergebnis (gefunden vom Trading-Prüfer, behoben in ca2a1d4).
+
+### 06:05–07:05 – Integrations-Workflow (3 Pakete, je „gut“; Commit 903d412)
+- Datenwelt für alle 16 Module (knowledge, scans, sales, habits, trading, savings, settings, system, home), Aggregate
+  `allKpis`, `allHints`, `searchIndex`, `allNotifications`; Befunde B2/B3/B8/B10/B11/B12 behoben (u. a. Trainingstage
+  Mo/Mi/Fr 18:30 FitX überall, Privatentnahme als Umbuchung → Sparquote 33 %); 31 Invarianten-Tests.
+- Einheitliche Formatierung (money/percent → lib/format.js), Registry bereinigt; Finanzmathematik: Konvention effektiv/nominal
+  wählbar (Referenz 150.436,50 € nominal), Börsenfeiertage, Beleg → Buchung vorbelegt.
+- Danach: kaufmännische Rundung, Privatsphäre in Kern-Tabellen, Vertragsprüfung erkennt konfigurierbare Events (123 → 7).
+
+### ab 07:10 – Abschluss-QA-Workflow (4 Modulgruppen: Sichtprüfung → Korrektur → Nachprüfung, dann Vollständigkeitsprüfung)
