@@ -1,6 +1,13 @@
 // Generiert aus lucide-static v0.460.0 (ISC, siehe app/vendor/LICENSE-lucide.txt).
 // Verfuegbare Namen: Object.keys(ICONS). Weitere Icons von lucide.dev als inneres SVG ergaenzen.
 export const ICONS = {
+"contact-round":"<path d=\"M16 2v2\" /><path d=\"M17.915 22a6 6 0 0 0-12 0\" /><path d=\"M8 2v2\" /><circle cx=\"12\" cy=\"12\" r=\"4\" /><rect x=\"3\" y=\"4\" width=\"18\" height=\"18\" rx=\"2\" />",
+"camera-off":"<line x1=\"2\" x2=\"22\" y1=\"2\" y2=\"22\" /><path d=\"M7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16\" /><path d=\"M9.5 4h5L17 7h3a2 2 0 0 1 2 2v7.5\" /><path d=\"M14.121 15.121A3 3 0 1 1 9.88 10.88\" />",
+"file-down":"<path d=\"M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z\" /><path d=\"M14 2v4a2 2 0 0 0 2 2h4\" /><path d=\"M12 18v-6\" /><path d=\"m9 15 3 3 3-3\" />",
+"crop":"<path d=\"M6 2v14a2 2 0 0 0 2 2h14\" /><path d=\"M18 22V8a2 2 0 0 0-2-2H2\" />",
+"rotate-cw":"<path d=\"M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8\" /><path d=\"M21 3v5h-5\" />",
+"user-plus":"<path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2\" /><circle cx=\"9\" cy=\"7\" r=\"4\" /><line x1=\"19\" x2=\"19\" y1=\"8\" y2=\"14\" /><line x1=\"22\" x2=\"16\" y1=\"11\" y2=\"11\" />",
+"phone":"<path d=\"M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z\" />",
 "activity":"<path d=\"M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2\" />",
 "alarm-clock":"<circle cx=\"12\" cy=\"13\" r=\"8\" /><path d=\"M12 9v4l2 2\" /><path d=\"M5 3 2 6\" /><path d=\"m22 6-3-3\" /><path d=\"M6.38 18.7 4 21\" /><path d=\"M17.64 18.67 20 21\" />",
 "alarm-clock-check":"<circle cx=\"12\" cy=\"13\" r=\"8\" /><path d=\"M5 3 2 6\" /><path d=\"m22 6-3-3\" /><path d=\"M6.38 18.7 4 21\" /><path d=\"M17.64 18.67 20 21\" /><path d=\"m9 13 2 2 4-4\" />",
