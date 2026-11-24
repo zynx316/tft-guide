@@ -132,6 +132,29 @@ for (const m of state.modules.filter((x) => !x.archived)) {
   if (orphan.length > 2) warnings.push(`Modul ${m.id}: ${orphan.length} Features nur über das Bereichsmenü erreichbar (${orphan.slice(0, 4).join(', ')}${orphan.length > 4 ? ' …' : ''}) – Navigationsregeln (interaction.to) ergänzen`);
 }
 
+// 3d) Pflichthinweise: Modulfeld `legal` = Liste bekannter Hinweisarten (legal-notice); jede Variante solcher Module zeigt einen
+//     legal-notice. Umgekehrt: Module mit Beratungs-/Gesundheitshinweisen in den Varianten sollten `legal` pflegen (Spezifikation, Sonde).
+{
+  const ln = fs.readFileSync(path.join(SRC, 'library/components/crosscut/legal-notice.js'), 'utf8');
+  const kinds = new Set([...(ln.match(/const PRESETS = \{([\s\S]*?)\n\};/)?.[1] || '').matchAll(/^\s*'?([a-z-]+)'?\s*:/gm)].map((m) => m[1]));
+  const MUST = new Set(['keine-beratung', 'simulation', 'modellrechnung', 'steuer', 'kursdaten', 'krypto', 'gesundheit', 'dokumente', 'steuer-ordner', 'gewaehrleistung']);
+  for (const m of state.modules.filter((x) => !x.archived)) {
+    const vs = state.features.filter((f) => f.moduleId === m.id && !f.archived).flatMap((f) => f.variants.map((v) => ({ f, v })));
+    const notices = vs.flatMap(({ v }) => v.blocks.filter((b) => b.component === 'legal-notice').map((b) => b.props?.kind || 'finanzen'));
+    if (m.legal != null && !Array.isArray(m.legal)) { warnings.push(`Modul ${m.id}: Feld legal muss eine Liste von Hinweisarten sein (${[...kinds].slice(0, 6).join(', ')} …)`); continue; }
+    const legal = m.legal || [];
+    for (const k of legal) if (!kinds.has(k)) warnings.push(`Modul ${m.id}: unbekannte Hinweisart „${k}“ in legal (bekannt: ${[...kinds].join(', ')})`);
+    if (legal.length) {
+      const without = vs.filter(({ v }) => !v.blocks.some((b) => b.component === 'legal-notice')).map(({ f, v }) => `${f.id}/${v.id}`);
+      if (without.length) warnings.push(`Modul ${m.id} (legal: ${legal.join(', ')}): ${without.length} Varianten ohne legal-notice (${without.slice(0, 4).join(', ')}${without.length > 4 ? ' …' : ''})`);
+    } else {
+      // nur wenn jede Variante einen Pflichthinweis zeigt – einzelne Gesundheitskacheln auf „Start“ machen „Start“ nicht zum Gesundheitsmodul
+      const withMust = vs.filter(({ v }) => v.blocks.some((b) => b.component === 'legal-notice' && MUST.has(b.props?.kind || 'finanzen'))).length;
+      if (vs.length && withMust === vs.length) warnings.push(`Modul ${m.id}: ${withMust} von ${vs.length} Varianten zeigen Pflichthinweise (${[...new Set(notices.filter((k) => MUST.has(k)))].join(', ')}), das Modulfeld legal fehlt`);
+    }
+  }
+}
+
 // 3c) Begriffslisten der Leitlinien: Gesundheit (verboten/warnen), Finanzen (verboten). Zitate in „…“ sind erlaubt.
 const termBlock = (file, name) => {
   const f = path.join(ROOT, 'docs', file); if (!fs.existsSync(f)) return [];

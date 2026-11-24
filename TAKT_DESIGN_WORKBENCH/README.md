@@ -60,7 +60,8 @@ npm run qa -- --only visual --scenario erststart --env privacy,offline --scale 2
 npm run verify         # check → test (→ qa:changed mit --full)
 ```
 Die QA-Sonde prüft je Viewport/Theme/Zustand: Render-Fehler, fehlende Blöcke, Überlauf, Abschneiden, Touch-Ziele, Kontrast,
-Bilder, **Namen von Bedienelementen** und **Beträge im Privatsphäre-Modus**. Echte Smartphones nur an Meilensteinen
+Bilder, **Namen von Bedienelementen**, **Beträge im Privatsphäre-Modus**, **Pflichthinweis des Moduls** (Feld `legal`) und
+**Geldformat** (Beträge nur über `money()`). `npm run check` prüft das Feld `legal` zusätzlich statisch. Echte Smartphones nur an Meilensteinen
 (`docs/GERAETETEST.md`, Pflicht für Tier-1-Freigaben).
 
 ## Mit Claude Code arbeiten

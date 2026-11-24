@@ -355,7 +355,7 @@ export default {
   module: {
     id: 'documents', name: 'Dokumente & Verträge', icon: 'folder', status: 'active', area: 'Wissen & Inhalte', theme: 'graphite', designVersion: '0.1', stage: 4, assumption: true, homeFeatureId: 'documents.home',
     dataSource: 'lokal (Dokumente auf dem Gerät); Verträge aus Finanzen abgeleitet; Belege aus Picture to Text', offline: 'lokal', lockRecommended: true,
-    legal: 'Keine Steuerberatung (Steuerordner) und keine Rechtsberatung (Kündigungsvorlage, Gewährleistung)',
+    legal: ['dokumente', 'steuer-ordner', 'gewaehrleistung'], // keine Rechtsberatung (Kündigungsvorlage, Gewährleistung), keine Steuerberatung (Steuerordner)
     description: 'Verträge mit Fristen im Griff, wichtige Dokumente sofort finden, Garantien nicht verpassen, Steuerbelege gesammelt – ruhig, vertrauenswürdig, ohne Rechtsberatung.',
     source: 'Auftrag 2026-11 (Bauplan 5.12, 5.13, Modulkatalog „documents“) – Annahme, in Phase 1 mit dem Modulregister abzugleichen',
     infoArchitecture: 'Einstieg „Übersicht“ (Fristen, Ordner, zuletzt hinzugefügt, Suche). Von dort: Frist → Vertrag, Garantie, Dokument oder Steuerordner; Ordner → Dokumentliste → Dokument; „Verträge“ → Vertrag → Kosten in Finanzen; „Scannen“ → Dokument ablegen → Scanner (Picture to Text). Einstellungen: Modulsperre, Speicherort, Aufbewahrung.',

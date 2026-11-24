@@ -5,15 +5,16 @@ Die Workbench ist eine **vollständige Entscheidungs- und Designumgebung** für 
 - **Demo-Launcher:** die ganze App bedienbar in **drei Versionen** (Kompakt mit Tab-Leiste · Visuell mit Launchpad · Fokus mit
   Erfassen-Knopf) plus „Meine Auswahl“, auf dem Laptop nebeneinander (gekoppelte Navigation) oder auf dem Handy im Vollbild.
   Szenarien (Alltag, Erster Start, Stress-Tag), Offline, Schrift bis 200 %, Beträge ausblenden, Bewertung mit fünf Kriterien.
-- **16 Module** mit Startseite in drei Richtungen und echten Navigationswegen, gemeinsame **Datenwelt** (eine Persona, ein Tag,
-  alle Zahlen konsistent und getestet): Start, Kalender, Aufgaben, Gewohnheiten, Notizen, Wissensdatenbank, Picture to Text,
-  Sales, **Finanzen, Sparpläne, Trading, Fitness, Ernährung, Wetter**, TAKT Kern (Suche, Mitteilungen, Erfassen), Einstellungen.
+- **19 Module** mit Startseite in drei Richtungen und echten Navigationswegen, gemeinsame **Datenwelt** (eine Persona, ein Tag,
+  alle Zahlen konsistent und getestet): Start, Kalender, Aufgaben, Gewohnheiten, **Ziele**, **Einkauf & Haushalt**, Notizen,
+  Wissensdatenbank, Picture to Text, **Dokumente & Verträge**, Sales, **Finanzen, Sparpläne, Trading, Fitness, Ernährung, Wetter**,
+  TAKT Kern (Suche, Mitteilungen, Erfassen), Einstellungen.
   Zahlen: `docs/FEATURE_IDS.md` und `docs/KOMPONENTEN.md` (automatisch erzeugt).
 - **Entscheiden ohne Endlosschleifen:** App-Ebene (Leitbild, 11 Grundsatzfragen, 20 Muster – jeweils mit begründeter
   Empfehlung), Entscheidungs-Inbox nach Blockierwirkung, **Entscheidungsrunden** mit Zeitbox und Rundenlimit 2, Gates
   (bereit/fertig), Scorecard, Arbeitsauftrag für Claude Code.
 - **Qualität:** `npm run check` (< 1 s), `npm test` (~275 Node-Tests), `npm run qa` (Vertrag, 32 E2E-Tests, Screenshot-Matrix,
-  Regression), QA-Sonde mit 9 Prüfungen inkl. Barrierefreiheit und Privatsphäre. Leitlinien für Gesundheit, Finanzen und Text.
+  Regression), QA-Sonde mit 11 Prüfungen inkl. Barrierefreiheit, Privatsphäre, Pflichthinweis und Geldformat. Leitlinien für Gesundheit, Finanzen und Text.
 
 **Nicht erledigt, weil technisch unmöglich:** Phase 1 (Abgleich mit dem echten TAKT-Projekt auf `G:\`) – die Cloud-Umgebung hat
 keinen Zugriff. Module/Features sind Annahmen (Annahmen-Register in der Workbench). Erste Aufgabe zuhause: `/takt-phase1`.
@@ -65,7 +66,7 @@ eine WLAN-PIN (neu bei jedem Start, in der Konsole angezeigt); andere Geräte im
 | Demo-Launcher, mobil, Versionen am Laptop vergleichen, entscheiden | Umgesetzt (Rahmen je Version, Bewertung, Übernehmen, Handy, QR) | E2E Launcher-Tests |
 | Ebene für Ebene, Modul für Modul | Ebenenmodell, App-Ebene, Runden, Gates, Ausbaustufen, Meine Auswahl | Workbench › App-Ebene, Runden |
 | Finanzen, Trading, Sparpläne, Wetter, Ernährung, Fitness | Vollwertige Module mit 3 Richtungen, Leitlinien, getesteter Mathematik | Prüfurteile „gut“ bis „erstklassig“ |
-| Alles am Ende | 16 Module in einer Datenwelt, Suche/Mitteilungen/Erfassen modulübergreifend | Invarianten-Tests |
+| Alles am Ende | 19 Module (alle des Bauplans) in einer Datenwelt, Suche/Mitteilungen/Erfassen modulübergreifend | Invarianten-Tests |
 
 ## 5. Ehrliche Einschränkungen
 - **Phase 1 fehlt** (siehe oben). Persona, Module, Theme-Farben sind Annahmen. Gesundheits-, Finanz- und Steuertexte sind

@@ -12,6 +12,9 @@ export function worldFor(state, demoData, scenario = 'alltag') {
   for (const v of Object.values(demoData || {})) if (isWorldRef(v)) { const k = worldKey(v); if (k in world) out[k] = world[k]; }
   return out;
 }
+/** Pflichthinweise eines Moduls als Liste (Feld `legal`; ältere Stände: Text oder fehlend). */
+export const legalOf = (m) => (Array.isArray(m?.legal) ? m.legal.filter(Boolean) : m?.legal ? [String(m.legal)] : []);
+
 /** Umgebung der Vorschau: offline, veraltet, Schriftskalierung (1 | 1.3 | 2). */
 const envOf = (opts) => ({ offline: !!opts.env?.offline, stale: !!opts.env?.stale, scale: Number(opts.env?.scale) || 1 });
 
@@ -29,7 +32,7 @@ export function buildFeaturePayload(state, featureId, variantId, opts = {}) {
     state: opts.state || 'default',
     chrome: opts.chrome ?? true,
     today: opts.today || DEFAULT_TODAY,
-    module: module ? { id: module.id, name: module.name, icon: module.icon } : null,
+    module: module ? { id: module.id, name: module.name, icon: module.icon, legal: legalOf(module) } : null,
     modules: state.modules.filter((m) => !m.archived).sort((a, b) => a.order - b.order).map((m) => ({ id: m.id, name: m.name, icon: m.icon })),
     feature: { id: feature.id, name: feature.name },
     variant: variant ? { id: variant.id, name: variant.name, layout: variant.layout, blocks: variant.blocks } : null,
@@ -87,7 +90,7 @@ export function buildAppPayload(state, versionId = 'arbeitsstand', opts = {}) {
     mode: 'app', versionId: version.id, versionName: version.name,
     theme: opts.theme || version.theme || state.settings?.previewTheme || 'graphite',
     state: opts.state || 'default', chrome: opts.chrome ?? true, today: opts.today || DEFAULT_TODAY,
-    modules: modules.map((m) => ({ id: m.id, name: m.name, icon: m.icon, home: moduleHome(state, m.id), area: areaOf(m) })),
+    modules: modules.map((m) => ({ id: m.id, name: m.name, icon: m.icon, home: moduleHome(state, m.id), area: areaOf(m), legal: legalOf(m) })),
     favorites: (state.app?.favorites || []).filter((id) => modules.some((m) => m.id === id)),
     features: sortedFeatures, startFeatureId: startId, route: opts.route || (version.kind === 'pin' ? version.featureId : null),
     coverage: { own, total }, revision: opts.revision || state.meta?.rev || 0,

@@ -327,7 +327,8 @@ function AppPlayer({ payload }) {
   const ov = useOverlays(emit);
 
   useEffect(() => {
-    probePayload = f ? { mode: 'feature', theme: payload.theme, state: payload.state, feature: { id: f.id, name: f.name }, variant: f.variant } : null;
+    probePayload = f ? { mode: 'feature', theme: payload.theme, state: payload.state, privacy: !!payload.privacy, feature: { id: f.id, name: f.name }, variant: f.variant,
+      module: (payload.modules || []).find((m) => m.id === f.moduleId) || null } : null;
     post({ type: 'route', featureId: fid, moduleId: f?.moduleId, depth: stack.length, title: fid === LAUNCHPAD ? 'Übersicht' : f?.name, sketch: fid !== LAUNCHPAD && !f?.variant, initial: !routed.current, shellPage: fid === LAUNCHPAD, external: externalNav.current });
     routed.current = true; externalNav.current = false;
     document.querySelector('.tk-app__content')?.scrollTo?.(0, 0); window.scrollTo(0, 0);

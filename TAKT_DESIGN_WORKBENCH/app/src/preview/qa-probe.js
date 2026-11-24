@@ -16,6 +16,8 @@ export const CHECKS = [
   { id: 'images', name: 'Bilder geladen & beschriftet' },
   { id: 'a11y-names', name: 'Bedienelemente haben einen Namen (Screenreader)' },
   { id: 'privacy', name: 'Privatsphäre-Modus: keine Beträge sichtbar' },
+  { id: 'legal-present', name: 'Pflichthinweis des Moduls sichtbar' },
+  { id: 'money-format', name: 'Beträge im Standardformat (money())' },
 ];
 
 const visible = (el) => {
@@ -166,6 +168,31 @@ export async function runProbe({ payload, errors = [] } = {}) {
     for (let n = walker.nextNode(); n; n = walker.nextNode()) { const t = n.textContent; if (money.test(t) && n.parentElement && visible(n.parentElement) && !n.parentElement.closest('script,style')) leaks.push(`${describe(n.parentElement)} „${t.trim().slice(0, 40)}“`); }
     add('privacy', leaks.length ? 'warn' : 'pass', leaks.length ? `${leaks.length} Beträge trotz Privatsphäre-Modus sichtbar` : 'Keine Beträge sichtbar', leaks.slice(0, 20));
   } else add('privacy', 'pass', 'nicht aktiv');
+
+  // 10) Pflichthinweis: Module mit `legal` (Finanzen, Gesundheit, Dokumente …) zeigen in jedem Screen einen legal-notice
+  const legal = Array.isArray(payload?.module?.legal) ? payload.module.legal : [];
+  if (legal.length && payload?.variant) {
+    const has = !!document.querySelector('[data-component="legal-notice"]');
+    add('legal-present', has ? 'pass' : 'warn', has ? `Hinweis vorhanden (${legal.join(', ')})` : `Modul verlangt einen Hinweis (${legal.join(', ')}), der Screen zeigt keinen`);
+  } else add('legal-present', 'pass', 'kein Pflichthinweis nötig');
+
+  // 11) Geldformat: Beträge kommen aus money() – „1.234,56 €“ mit geschütztem Leerzeichen, Minus als „−“
+  {
+    const amount = /(^|[^\d.,])([−-]?)(\d[\d.,]*)([ \u00a0\u202f]?)€/g;
+    const bad = [];
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+      const t = n.textContent; if (!t.includes('€') || !n.parentElement || n.parentElement.closest('script,style') || !visible(n.parentElement)) continue;
+      for (const m of t.matchAll(amount)) {
+        const [, , sign, num, sep] = m; const why = [];
+        if (sep === ' ') why.push('normales Leerzeichen vor €'); else if (!sep) why.push('kein Leerzeichen vor €');
+        if (!/^\d{1,3}(\.\d{3})*(,\d{1,2})?$/.test(num)) why.push(`Zahl „${num}“ nicht im deutschen Format`);
+        if (sign === '-') why.push('Bindestrich statt Minus „−“');
+        if (why.length) bad.push(`${describe(n.parentElement)} „${m[0].trim().slice(0, 24)}“: ${why.join(', ')}`);
+      }
+    }
+    add('money-format', bad.length ? 'warn' : 'pass', bad.length ? `${bad.length} Beträge nicht im Standardformat` : 'Alle Beträge im Standardformat', bad.slice(0, 20));
+  }
 
   const worst = checks.some((c) => c.status === 'fail') ? 'fail' : checks.some((c) => c.status === 'warn') ? 'warn' : 'pass';
   return { status: worst, bp, width: W, height: H, theme: payload?.theme, state: payload?.state || 'default', checks, ts: new Date().toISOString() };

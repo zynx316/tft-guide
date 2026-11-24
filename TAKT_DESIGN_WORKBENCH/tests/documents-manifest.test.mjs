@@ -15,7 +15,7 @@ const dok = COMPONENTS.filter((c) => c.id.startsWith('dok-'));
 test('Modulfelder: Startseite, Bereich, Ausbaustufe, lokal, Rechtshinweis, Annahme', () => {
   const m = man.module;
   assert.equal(m.name, 'Dokumente & Verträge'); assert.equal(m.homeFeatureId, 'documents.home'); assert.equal(m.area, 'Wissen & Inhalte'); assert.equal(m.stage, 4);
-  assert.equal(m.offline, 'lokal'); assert.equal(m.assumption, true); assert.match(m.legal, /Steuerberatung/); assert.ok(m.dataSource && m.docs.includes('## Leitidee') && m.docs.includes('## Offene Fragen'));
+  assert.equal(m.offline, 'lokal'); assert.equal(m.assumption, true); assert.deepEqual(m.legal, ['dokumente', 'steuer-ordner', 'gewaehrleistung']); assert.ok(m.dataSource && m.docs.includes('## Leitidee') && m.docs.includes('## Offene Fragen'));
   assert.deepEqual(MODULES.find((x) => x.id === 'documents'), { id: 'documents', name: 'Dokumente & Verträge', icon: 'folder', area: 'Wissen & Inhalte', home: 'documents.home', desc: 'Verträge, Fristen, Belege' });
 });
 

@@ -32,8 +32,13 @@
 ## 3. Inhalte und Module (P2)
 - [ ] Skelett-Features (Status „Nicht untersucht“) je Modul mit Varianten füllen – erst nach der Richtungswahl, damit nur die
       gewählte Richtung gebaut wird
-- [ ] Einkaufsliste: Eigentum von Ernährung (`nutShopping`) zu „Einkauf & Haushalt“ verlagern (Bauplan 5.13); Ernährung liefert
-      dann nur Zutaten per Verknüpfung
+- [ ] Einkaufsliste: nach der Entscheidung `shopping.list` („Wem gehört die Lebensmittel-Liste?“) Eigentum von Ernährung
+      (`nutShopping`) zu „Einkauf & Haushalt“ (`shoppingLists`) verlagern (Bauplan 5.13, DATENWELT B5); `nutrition.shopping` wird
+      dann Verknüpfung; `nutShopping.spentMonth` aus `finance.transactions` ableiten (Budget-Rest folgt „Einkauf fertig“ sofort)
+- [ ] Neue Module (24.11.): Ziele bearbeiten/archivieren wiederherstellen, `goals.settings` gestalten; Einkauf: Laden anlegen,
+      Gänge umbenennen, Wartung anlegen/bearbeiten (recurrence-picker); Dokumente: Erinnerungsstufen frei wählbar (Entscheidung),
+      Entsperr-Abfrage für sensible Module (`prefs.privacy.sensitive`), Hinweis „Vorlage in Dokumente“ aus Finanzen › Abos
+- [ ] Fachliche Prüfung der Aufbewahrungsrichtwerte (Dokumente) und der Gewährleistungstexte
 - [ ] Kredite (Finanzen), Allokation (Trading) als Features ergänzen; Import CSV/CAMT, Entnahmeplan, Widgets, Teilen ausarbeiten
 - [ ] Fachliche Prüfung der Gesundheits-, Finanz- und Steuertexte (Grundsatzfrage „Rechtsprüfung“) vor jeder Veröffentlichung
 - [ ] Börsenfeiertage gegen den offiziellen Xetra-Kalender abgleichen (Annahme, Stand 24.11.2026)
@@ -43,8 +48,8 @@
       erledigt: Welt nicht mehr im Zustand, Rückgängig mit strukturellem Teilen (0,3 MB statt ~180 MB für 60 Schritte)
 - [ ] **Migrationskette** (`migrations[n]`, Backup vor Migration, Snapshots mitmigrieren) – erst nötig, wenn sich Felder
       inkompatibel ändern (bisher alles additiv in Schema 2)
-- [ ] QA-Sonde: Prüfungen `legal-present` (Hinweis in Modulen mit `legal`), `money-format` (Beträge nur über `money()`),
-      DOM-Knotenbudget; E2E-Suite in `qa/e2e/` aufteilen
+- [ ] QA-Sonde: DOM-Knotenbudget; E2E-Suite in `qa/e2e/` aufteilen (erledigt: `legal-present`, `money-format`, Privatsphäre im
+      App-Modus, statische `legal`-Prüfung in `npm run check`)
 - [ ] Hinweise aus `npm run check` abbauen (`Math.random`/`Date.now`/`Intl` in älteren Komponenten → `ctx.newId/now/fmt`)
 - [ ] Launcher: Tageszeit-Stationen (07:30/12:30/18:30) für kontextabhängige Startseiten
 - [ ] Deklaratives Modell erweitern: Container-/Gruppen-Block, Props je Breakpoint, Feldmapping in `bind`
