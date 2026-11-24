@@ -348,7 +348,7 @@ async function e2eStage(browser, base, log) {
     await lp.waitForFunction(() => document.querySelectorAll('[data-launcher-version] iframe').length >= 1, null, { timeout: 8000 });
     await lp.locator('[data-qa="ln-scenario"]').selectOption('erststart'); await lp.locator('[data-qa="ln-offline"]').click(); await lp.locator('[data-qa="ln-scale"]').selectOption('2'); await lp.waitForTimeout(1500);
     const f0 = lp.frameLocator('[data-launcher-version] iframe').first();
-    await f0.locator('[data-qa="envbar"]').first().waitFor({ timeout: 5000 });
+    await f0.locator('[data-qa="envbar"]').first().waitFor({ timeout: 15000 }); // drei Rahmen bauen neu auf – unter Last mehrere Sekunden
     const scale = await f0.locator('html').evaluate((el) => getComputedStyle(el).getPropertyValue('--tk-text-scale').trim());
     if (scale !== '2') throw new Error(`Schriftskalierung nicht aktiv (${scale})`);
     await lp.locator('[data-version="mix"]').click(); await lp.waitForTimeout(800);
