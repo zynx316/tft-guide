@@ -23,8 +23,9 @@ export const muscleBalance = {
   name: 'Muskelgruppen-Balance',
   category: 'Fitness',
   description: 'Sätze pro Woche je Muskelgruppe (indirekte Sätze zählen halb) gegen einen Orientierungskorridor – als Balken oder Netz. Zeigt freundlich, was etwas zu kurz kommt, ohne Wertung. Antippen öffnet die Übungen dieser Gruppe.',
-  version: '1.1',
+  version: '1.2',
   props: [
+    { name: 'quietEmpty', label: 'Ohne Daten nichts anzeigen (Erststart)', type: 'boolean', default: false },
     { name: 'view', label: 'Darstellung', type: 'select', options: ['bars', 'radar'], default: 'bars' },
     { name: 'title', label: 'Titel', type: 'text', default: 'Balance pro Woche' },
     { name: 'source', label: 'Startquelle', type: 'select', options: ['Letzte 4 Wochen', 'Plan'], default: 'Letzte 4 Wochen' },
@@ -43,13 +44,17 @@ export const muscleBalance = {
   .tk-bal__val { text-align:right; font-variant-numeric:tabular-nums; font-weight:var(--tk-fw-semibold); } .tk-bal__val small { display:block; font-weight:var(--tk-fw-regular); color:var(--tk-c-text-subtle); font-size:var(--tk-fs-xs); }
   .tk-bal__radar { width:100%; max-width:320px; margin:0 auto; display:block; } .tk-bal__tip { display:flex; gap:10px; padding:var(--tk-space-3); border-radius:var(--tk-radius-md); background:var(--tk-c-surface2); font-size:var(--tk-fs-sm); color:var(--tk-c-text-muted); } .tk-bal__tip .icon { color:var(--tk-c-accent); margin-top:2px; }
   .tk-bal__chips { display:flex; flex-wrap:wrap; gap:6px; justify-content:center; } .tk-bal__chip { display:inline-flex; align-items:center; gap:6px; min-height:44px; padding:0 12px; border-radius:var(--tk-radius-pill, 999px); border:1px solid var(--tk-c-border); background:var(--tk-c-surface2); color:var(--tk-c-text); cursor:pointer; font-size:var(--tk-fs-sm); } .tk-bal__chip i { width:8px; height:8px; border-radius:50%; display:block; } .tk-bal__chip strong { font-variant-numeric:tabular-nums; color:var(--tk-c-text-muted); font-weight:var(--tk-fw-semibold); } .tk-bal__chip:hover { border-color:var(--tk-c-accent); }
-  .bp-mobile .tk-bal__row { grid-template-columns:78px minmax(0,1fr) 70px; gap:var(--tk-space-2); }`,
+  .bp-mobile .tk-bal__row { grid-template-columns:78px minmax(0,1fr) 70px; gap:var(--tk-space-2); }
+  [data-tk-large-text] .tk-bal__row { grid-template-columns:minmax(0,1fr) auto; row-gap:4px; } [data-tk-large-text] .tk-bal__row > :nth-child(1) { grid-column:1; grid-row:1; hyphens:manual; overflow-wrap:normal; } [data-tk-large-text] .tk-bal__row > :nth-child(2) { grid-column:1 / -1; grid-row:2; } [data-tk-large-text] .tk-bal__row > :nth-child(3) { grid-column:2; grid-row:1; hyphens:manual; overflow-wrap:normal; white-space:nowrap; }`,
   example: { data: { history: [{ id: 'h', date: '2026-11-18', exercises: [{ exerciseId: 'bankdruecken', sets: [{ type: 'work', kg: 60, reps: 10 }, { type: 'work', kg: 60, reps: 10 }, { type: 'work', kg: 60, reps: 10 }] }, { exerciseId: 'latziehen', sets: [{ type: 'work', kg: 50, reps: 10 }, { type: 'work', kg: 50, reps: 10 }] }] }],
     library: [{ id: 'bankdruecken', name: 'Bankdrücken', muscle: 'Brust', secondary: ['Trizeps'], equipment: 'Langhantel', type: 'Verbund' }, { id: 'latziehen', name: 'Latziehen', muscle: 'Rücken', secondary: ['Bizeps'], equipment: 'Kabel', type: 'Verbund' }, { id: 'kabel-fliegende', name: 'Kabelzug-Fliegende', muscle: 'Brust', secondary: [], equipment: 'Kabel', type: 'Isolation' }], program: { days: [] } } },
   render: function MuscleBalance({ props, data, ctx }) {
     const [src, setSrc] = useState(props.source || 'Letzte 4 Wochen');
     const lib = data.library || [], hist = data.history || [];
-    if (!lib.length || !hist.length) return html`<${Card} title=${props.title}><${EmptyState} icon="chart-pie" title="Noch keine Daten" text="Nach ein paar Einheiten siehst du hier, wie sich dein Training auf die Muskelgruppen verteilt." /><//>`;
+    const noPlan = !(data.program?.days || []).length;
+    const empty = !lib.length || (!hist.length && (src !== 'Plan' || noPlan));
+    if (empty && props.quietEmpty) return null;
+    if (empty) return html`<${Card} title=${props.title}><${EmptyState} icon="chart-pie" title="Noch keine Daten" text="Nach ein paar Einheiten siehst du hier, wie sich dein Training auf die Muskelgruppen verteilt." /><//>`;
     const from = isoDay(addDays(ctx.today, -28)); const sets = src === 'Plan' ? plannedSets(data.program, lib) : Object.fromEntries(Object.entries(setsByMuscle(hist.filter((h) => h.date > from), lib)).map(([k, v]) => [k, v / 4]));
     const rows = MUSCLES.map((m) => ({ m, v: Math.round(sets[m] * 10) / 10, lo: SET_CORRIDOR[m][0], hi: SET_CORRIDOR[m][1] }));
     const lowest = [...rows].filter((r) => r.v < r.lo).sort((a, b) => a.v / a.lo - b.v / b.lo)[0];

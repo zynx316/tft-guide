@@ -74,6 +74,12 @@ export function Stepper({ value, onChange, step = 1, min = 0, max = 1e9, unit = 
     <button type="button" aria-label=${`${label} erhöhen`} onClick=${() => bump(1)} disabled=${value >= max}><${Icon} name="plus" size=${18} /></button></div>`;
 }
 
+/** Planname mit Zusatz in Klammern: der Zusatz bleibt beim Umbruch zusammen („Notgroschen“ / „(Dauerauftrag)“ statt einsamer Klammer). */
+export const PlanName = ({ name }) => {
+  const m = /^(.*\S)\s+(\([^()]+\))$/.exec(String(name ?? ''));
+  return m ? html`${m[1]} <span class="tk-sv-nx">${m[2]}</span>` : name;
+};
+
 /** Pflichtsatz „Plan-Tracker“ (docs/FINANCE_GUIDELINES.md, Abschnitt 8) – nicht umformulieren. */
 export const TRACKER_TEXT = 'Dieser Sparplan wird nicht von TAKT ausgeführt. Du trägst ihn bei deinem Broker ein, TAKT erinnert dich und gleicht ab.';
 export const TrackerNote = ({ plural: pl }) => html`<p class="tk-sv-note" role="note"><${Icon} name="info" size=${14} /><span>${pl ? TRACKER_TEXT.replace('Dieser Sparplan wird', 'Diese Sparpläne werden').replace('Du trägst ihn bei deinem Broker ein', 'Du trägst sie bei deinem Broker ein') : TRACKER_TEXT}</span></p>`;
@@ -126,6 +132,7 @@ export const SV_CSS = `
   [data-tk-large-text] .tk-sve__it strong, [data-tk-large-text] .tk-sve__it small, [data-tk-large-text] .tk-svgl__row strong, [data-tk-large-text] .tk-svpl__cmp strong, [data-tk-large-text] .tk-svpl__card .tk-truncate, [data-tk-large-text] .tk-sv-row .tk-truncate, [data-tk-large-text] .tk-sx__r strong { white-space:normal; overflow:visible; text-overflow:clip; overflow-wrap:break-word; }
   [data-tk-large-text] .tk-sve__it, [data-tk-large-text] .tk-sv-row { flex-wrap:wrap; } [data-tk-large-text] .tk-sve__it > button.m { flex:1 1 100%; flex-wrap:wrap; } [data-tk-large-text] .tk-sve__it > button.m > .tk-grow { flex:1 1 calc(100% - 3em); } [data-tk-large-text] .tk-svpl__cmp { flex-wrap:wrap; } [data-tk-large-text] .tk-svpl__cmp > div { flex:1 1 calc(100% - 3em); }
   [data-tk-large-text] .tk-svsum__grid, .bp-mobile[data-tk-large-text] .tk-svsum__grid { grid-template-columns:minmax(0,1fr); }
+  .tk-sv-nx { display:inline-block; max-width:100%; overflow-wrap:anywhere; vertical-align:bottom; }
   .tk-sv-sr { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
   .tk-sv-foot { display:flex; flex-direction:column; gap:var(--tk-space-2); }
   .tk-sv-lead { font-size:var(--tk-fs-lg); font-weight:var(--tk-fw-semibold); line-height:var(--tk-lh-snug); }

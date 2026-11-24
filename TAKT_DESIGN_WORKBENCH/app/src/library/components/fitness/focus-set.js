@@ -13,8 +13,8 @@ export const focusSet = {
   name: 'Fokus-Satz',
   category: 'Fitness',
   description: 'Ein Satz im Fokus: große kg- und Wiederholungs-Stepper, ein großer „Satz geschafft“-Knopf, Pause als Ring, Vor/Zurück zwischen Übungen. Für Training mit nassen Fingern.',
-  version: '1.0',
-  props: [{ name: 'showUpcoming', label: 'Folgende Übungen zeigen', type: 'boolean', default: true }],
+  version: '1.1',
+  props: [{ name: 'showUpcoming', label: 'Folgende Übungen zeigen', type: 'boolean', default: true }, { name: 'quietEmpty', label: 'Ohne Einheit nichts anzeigen (Erststart)', type: 'boolean', default: false }],
   data: [
     { slot: 'session', label: 'Live-Einheit', default: 'session', shape: 'Live-Einheit (siehe set-logger)', required: true },
     { slot: 'library', label: 'Übungsbibliothek', default: 'library', shape: 'Übungen[]' },
@@ -40,6 +40,7 @@ export const focusSet = {
     const s = data.session; const setS = (v) => setData('session', v);
     const ops = useOps(s || {}, setS, ctx, data);
     const [sel, setSel] = useState(null);
+    if ((!s || !(s.exercises || []).length) && props.quietEmpty) return null;
     if (!s || !(s.exercises || []).length) return html`<${Card}><${EmptyState} icon="dumbbell" title="Kein Training geplant" text="Wähle im Plan einen Trainingstag." /><//>`;
     const live = liveExercises(s); const nx = nextSet(s);
     const exIdx = sel ? live.findIndex((e) => e.id === sel) : nx ? nx.exIdx : -1;

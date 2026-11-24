@@ -8,8 +8,9 @@ export const streakCard = {
   name: 'Serie & Wochenziel',
   category: 'Fitness',
   description: 'Wochenserie (Wochen mit erreichtem Wochenziel) mit Pausenjoker und Urlaubs-/Krank-Modus, dazu das Wochenziel dieser Woche. Wohlwollende Sprache: eine unterbrochene Serie ist ein Neustart, der Verlauf bleibt.',
-  version: '1.0',
+  version: '1.1',
   props: [
+    { name: 'quietEmpty', label: 'Ohne Daten nichts anzeigen (Erststart)', type: 'boolean', default: false },
     { name: 'layout', label: 'Darstellung', type: 'select', options: ['card', 'compact'], default: 'card' },
     { name: 'title', label: 'Titel', type: 'text', default: 'Deine Serie' },
   ],
@@ -24,6 +25,7 @@ export const streakCard = {
   example: { data: { streak: { weeks: 12, best: 12, jokersLeft: 1, jokersPerQuarter: 2, paused: false, history: Array.from({ length: 12 }, (_, i) => ({ week: `w${i}`, label: `KW ${36 + i}`, state: i === 10 ? 'joker' : 'done' })), current: { sessions: 1, goal: 3 } } } },
   render: function StreakCard({ props, data, setData, ctx }) {
     const s = data.streak;
+    if (props.quietEmpty && !(s?.weeks > 0) && !(s?.current?.sessions > 0)) return null;
     if (!s || !s.history) return html`<${Card} title=${props.title}><${EmptyState} icon="flame" title="Noch keine Serie" text="Erreiche dein Wochenziel – die erste Woche startet die Serie." /><//>`;
     const cur = s.current || { sessions: 0, goal: 3 }; const reached = cur.sessions >= cur.goal; const broken = s.weeks === 0 && s.best > 0;
     const useJoker = () => { setData('streak', (x) => ({ ...x, jokersLeft: Math.max(0, x.jokersLeft - 1), current: { ...x.current, joker: true } })); ctx.emit('joker.use', {}); ctx.toast('Joker eingesetzt – deine Serie bleibt bestehen'); };

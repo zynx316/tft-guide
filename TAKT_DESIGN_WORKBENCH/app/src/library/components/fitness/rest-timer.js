@@ -26,8 +26,9 @@ export const restTimer = {
   name: 'Pausen-Timer',
   category: 'Fitness',
   description: 'Pausen-Timer der Live-Einheit: startet automatisch nach jedem Satz mit der Übungsvorgabe, ±15 Sekunden, Überspringen. Als Leiste, Ring oder schwebende Leiste. Zählt nur im Launcher herunter.',
-  version: '1.0',
+  version: '1.1',
   props: [
+    { name: 'quietEmpty', label: 'Ohne Einheit nichts anzeigen (Erststart)', type: 'boolean', default: false },
     { name: 'mode', label: 'Darstellung', type: 'select', options: ['bar', 'ring', 'floating'], default: 'bar' },
     { name: 'title', label: 'Titel', type: 'text', default: 'Pause' },
   ],
@@ -45,6 +46,7 @@ export const restTimer = {
   render: function RestTimer({ props, data, setData, ctx }) {
     const s = data.session; const setS = (fn) => setData('session', fn);
     useSessionTicker(s, setS, ctx);
+    if ((!s || !(s.exercises || []).length) && props.quietEmpty) return null;
     if (!s || !(s.exercises || []).length) return html`<${Card} title=${props.title} icon="timer"><div class="tk-muted" style="font-size:var(--tk-fs-sm)">Der Timer startet nach dem ersten Satz.</div><//>`;
     return html`<${Card} title=${props.mode === 'floating' ? undefined : props.title} icon=${props.mode === 'floating' ? undefined : 'timer'} class=${props.mode === 'floating' ? 'tk-rest-float-card' : ''}><${RestBody} s=${s} setS=${setS} ctx=${ctx} mode=${props.mode} /><//>`;
   },

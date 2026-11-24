@@ -14,8 +14,9 @@ export const sessionHeader = {
   name: 'Session-Kopf',
   category: 'Fitness',
   description: 'Kopf der Live-Einheit: Titel, Dauer, Satzfortschritt und Volumen mit Start, Pause und Beenden. Wählt bei Bedarf den Trainingstag und zählt die Zeit (nur im Launcher, nicht in QA-Screenshots).',
-  version: '1.1',
+  version: '1.2',
   props: [
+    { name: 'quietEmpty', label: 'Ohne Einheit nichts anzeigen (Erststart)', type: 'boolean', default: false },
     { name: 'layout', label: 'Darstellung', type: 'select', options: ['compact', 'hero', 'minimal'], default: 'compact' },
     { name: 'showDayPicker', label: 'Trainingstag wählbar (vor dem Start)', type: 'boolean', default: true },
   ],
@@ -36,7 +37,8 @@ export const sessionHeader = {
   .tk-sess--hero { align-items:center; text-align:center; } .tk-sess--hero .tk-sess__actions { justify-content:center; }
   .tk-sess--minimal { gap:var(--tk-space-2); }
   .tk-sess__pain { margin:0; display:flex; gap:6px; align-items:flex-start; font-size:var(--tk-fs-xs); line-height:var(--tk-lh-snug); color:var(--tk-c-text-subtle); } .tk-sess__pain svg { flex:none; margin-top:2px; } .tk-sess--hero .tk-sess__pain { text-align:left; }
-  .bp-mobile .tk-sess__actions .tk-btn--primary { flex:1 1 140px; min-height:44px; }`,
+  .bp-mobile .tk-sess__actions .tk-btn--primary { flex:1 1 140px; min-height:44px; }
+  [data-tk-large-text] .tk-sess__stats { grid-template-columns:repeat(2, minmax(0,1fr)); } [data-tk-large-text] .tk-fit-stat span { overflow-wrap:normal; hyphens:manual; letter-spacing:0; }`,
   example: { data: { session: { id: 's', dayId: 'upperA', title: 'Oberkörper A', subtitle: 'Mi, 25.11. · 18:30 · ca. 55 Min.', status: 'running', elapsed: 1260, rest: null, exercises: [
     { id: 'x1', name: 'Bankdrücken', sets: [{ id: 'a', type: 'work', kg: 62.5, reps: 8, done: true }, { id: 'b', type: 'work', kg: 62.5, reps: 8, done: false }] }] } } },
   render: function SessionHeader({ props, data, setData, ctx }) {
@@ -49,6 +51,7 @@ export const sessionHeader = {
       if (built) { setData('session', built); ctx.emit('session.day', { id }); }
     };
     useEffect(() => { const id = ctx.ui.selectedId; if (id && s && id !== s.dayId && s.status !== 'running' && days.some((d) => d.id === id)) load(id); }, [ctx.ui.selectedId]);
+    if ((!s || !(s.exercises || []).length) && props.quietEmpty) return null;
     if (!s || !(s.exercises || []).length) return html`<${Card}><${EmptyState} icon="dumbbell" title="Kein Training geplant" text="Wähle im Plan einen Trainingstag oder starte ein freies Training." /><//>`;
     const done = doneCount(s), total = totalCount(s), vol = volumeNow(s);
     const ratio = total ? done / total : 0;

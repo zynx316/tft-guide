@@ -46,7 +46,7 @@ export const foodForm = {
       setErr(e);
       if (Object.keys(e).length) { ctx.emit('form.invalid', { fields: Object.keys(e) }); return; }
       const g = toNum(f.portionG) || 100;
-      const food = { id: `f-own-${Date.now().toString(36)}`, name: f.name.trim(), brand: f.brand.trim() || null, category: f.category, kcal: Math.round(kcal), protein: r1(p), carbs: r1(c), fat: r1(fa), fiber: toNum(f.fiber) || 0, sugar: toNum(f.sugar) || 0, satFat: 0, salt: toNum(f.salt) || 0, unit: 'g', portions: [{ label: f.portion.trim() ? `${f.portion.trim()} (${num(g)} g)` : `Portion (${num(g)} g)`, g }, { label: '100 g', g: 100 }], allergens: [], tags: [], fav: false, custom: true, piece: null, eur100: 0.5, barcode: null, source: 'Eigene Angabe' };
+      const food = { id: ctx.newId('f-own'), name: f.name.trim(), brand: f.brand.trim() || null, category: f.category, kcal: Math.round(kcal), protein: r1(p), carbs: r1(c), fat: r1(fa), fiber: toNum(f.fiber) || 0, sugar: toNum(f.sugar) || 0, satFat: 0, salt: toNum(f.salt) || 0, unit: 'g', portions: [{ label: f.portion.trim() ? `${f.portion.trim()} (${num(g)} g)` : `Portion (${num(g)} g)`, g }, { label: '100 g', g: 100 }], allergens: [], tags: [], fav: false, custom: true, piece: null, eur100: 0.5, barcode: null, source: 'Eigene Angabe' };
       setData('foods', (l) => [...arr(l), food]); ctx.emit('food.create', { id: food.id }); ctx.toast(`„${food.name}“ gespeichert`); ctx.setUi('selectedId', food.id);
       setF((x) => ({ ...x, name: '', brand: '', kcal: '', protein: '', carbs: '', fat: '', fiber: '', sugar: '', salt: '', portion: '', portionG: '' }));
     };

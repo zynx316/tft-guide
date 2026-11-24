@@ -4,7 +4,7 @@ import { useState } from 'preact/hooks';
 import { Card, Button, Badge, Icon, EmptyState } from '../../ui.js';
 import { fmtDate, fmtRelativeDay } from '../../../lib/format.js';
 import { addMonths, addDays, dayDiff, daysInMonth, isoWeekday, toIsoDay, toDate, MONTHS_LONG, WEEKDAYS_SHORT } from '../../../lib/date.js';
-import { arr, todayOf, eur, eur2, Tile, TrackerNote, SV_CSS, plural, whenLabel, QuietNote, QUIET_PROP } from './_savings.js';
+import { arr, todayOf, eur, eur2, Tile, PlanName, TrackerNote, SV_CSS, plural, whenLabel, QuietNote, QUIET_PROP } from './_savings.js';
 import { allExecutions, confirmedSet, confirmExecution, planTarget, isTradingDay, holidayName } from './_plans.js';
 import { coverageCheck, DEFAULT_BUFFER, COVER_TONE, COVER_LABEL, COVER_ICON } from './_coverage.js';
 
@@ -15,7 +15,7 @@ export const executionCalendar = {
   name: 'Ausführungskalender',
   category: 'Sparpläne',
   description: 'Wann wird welcher Sparplan ausgeführt? Liste nach Tagen, Monatsraster mit Markern oder „Als Nächstes“. Wochenenden und Feiertage verschieben auf den nächsten Handelstag (mit Hinweis), Deckung des Girokontos je Tag, Ausführung manuell bestätigen (erzeugt eine Umbuchung), mit Rückgängig.',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Ausführungen' },
     QUIET_PROP,
@@ -72,7 +72,7 @@ export const executionCalendar = {
     const confirm = (list) => { const undos = list.map((ex) => confirmExecution({ ex, positions: data.positions, accounts: data.accounts, setData, today, ctx })); list.forEach((ex) => ctx.emit('execution.confirm', { id: ex.planId, date: ex.iso })); setLast({ text: list.length === 1 ? `${list[0].plan.name} als ausgeführt vermerkt: ${eur2(ctx, list[0].amount)} umgebucht.` : `${list.length} Ausführungen vermerkt, ${eur2(ctx, list.reduce((s, e) => s + e.amount, 0))} umgebucht.`, undo: () => undos.reverse().forEach((u) => u()) }); };
     const undo = html`${last && html`<div class="tk-sv-undo" role="status"><span>${last.text}</span><${Button} size="sm" variant="ghost" icon="undo-2" onClick=${() => { last.undo(); ctx.emit('execution.undo'); setLast(null); }}>Rückgängig<//></div>`}`;
     const item = (e) => html`<div class="tk-sve__it"><button type="button" class="m" onClick=${() => { ctx.emit('execution.open', { id: e.planId }); ctx.setUi('selectedId', e.planId); }} aria-label=${`${e.plan.name} öffnen`}>
-        <${Tile} tone=${e.plan.tone || 1} icon=${planTarget(e.plan, data.positions, data.accounts).icon} size=${16} /><div class="tk-grow" style="min-width:0"><strong>${e.plan.name}</strong><small>${e.shifted ? `Verschoben vom ${fmtDate(e.nominal, { style: 'short' })} (${e.why || 'kein Handelstag'})` : planTarget(e.plan, data.positions, data.accounts).label}</small></div><span class="tk-sve__amt">${eur2(ctx, e.amount)}</span></button>
+        <${Tile} tone=${e.plan.tone || 1} icon=${planTarget(e.plan, data.positions, data.accounts).icon} size=${16} /><div class="tk-grow" style="min-width:0"><strong><${PlanName} name=${e.plan.name} /></strong><small>${e.shifted ? `Verschoben vom ${fmtDate(e.nominal, { style: 'short' })} (${e.why || 'kein Handelstag'})` : planTarget(e.plan, data.positions, data.accounts).label}</small></div><span class="tk-sve__amt">${eur2(ctx, e.amount)}</span></button>
       <${Button} size="sm" variant="ghost" icon="check" aria-label=${`${e.plan.name} als ausgeführt bestätigen`} title="Als ausgeführt bestätigen" onClick=${() => confirm([e])} /></div>`;
     const covBadge = (iso) => { const c = cov.get(iso); return props.showCoverage && c ? html`<${Badge} tone=${COVER_TONE[c.status]} icon=${COVER_ICON[c.status]}>${c.status === 'fehlt' ? `Fehlt ${eur(ctx, c.short)}` : COVER_LABEL[c.status]}<//>` : null; };
     const dayBlock = (iso, list) => html`<section class="tk-sve__day" aria-label=${dayHead(ctx, list[0].date, today)}><div class="tk-sve__dh"><strong class="tk-grow">${dayHead(ctx, list[0].date, today)}</strong><span class="tk-sve__amt">${eur(ctx, list.reduce((s, e) => s + e.amount, 0))}</span>${covBadge(iso)}${list.length > 1 ? html`<${Button} size="sm" onClick=${() => confirm(list)}>Alle bestätigen<//>` : ''}</div>${list.map(item)}</section>`;

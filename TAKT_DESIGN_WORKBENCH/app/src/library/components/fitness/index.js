@@ -23,6 +23,8 @@ import goalList from './goal-list.js';
 import milestoneList from './milestone-list.js';
 import weeklyRecap from './weekly-recap.js';
 import kpiRow from './kpi-row.js';
+import programPicker from './program-picker.js';
+import volumeChart from './volume-chart.js';
 
 export default [...sessionHeader, ...setLogger, ...focusSet, ...restTimer, ...workoutSummary, ...exerciseList, ...exerciseDetail, ...exerciseAlternatives, ...trainingWeek, ...programCard, ...nextWorkout,
-  ...recordsList, ...muscleBalance, ...weightTrend, ...weightEntry, ...bodyMeasures, ...stepsChart, ...sleepChart, ...readinessCard, ...streakCard, ...goalList, ...milestoneList, ...weeklyRecap, ...kpiRow];
+  ...recordsList, ...muscleBalance, ...weightTrend, ...weightEntry, ...bodyMeasures, ...stepsChart, ...sleepChart, ...readinessCard, ...streakCard, ...goalList, ...milestoneList, ...weeklyRecap, ...kpiRow, ...programPicker, ...volumeChart];

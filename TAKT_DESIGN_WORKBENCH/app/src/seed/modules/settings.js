@@ -343,6 +343,16 @@ export default {
             { id: 'mods', component: 'module-toggle-list', region: 'main', props: { style: 'tiles', maxFavorites: 4, showPreview: true } },
           ],
         },
+        {
+          id: 'C', name: 'Plätze der Leiste', direction: 'fokus',
+          concept: 'Nur die Leiste: vier nummerierte Plätze mit je einer großen Aktion („Ändern“ bzw. „Wählen“). Die Wahl öffnet eine Auswahl, ein Modul von einem anderen Platz tauscht die beiden. Module ein- und ausschalten bleibt hinter einem einzigen Knopf verborgen.',
+          description: '+ Eine Entscheidung pro Platz, wenig Ablenkung, Tausch statt Pfeile  − Ausschalten von Modulen erst nach einem Extra-Tipp',
+          layout: { type: 'stack', narrow: true },
+          blocks: [
+            { id: 'hdr', component: 'page-header', region: 'header', props: { eyebrow: 'Einstellungen', title: 'Deine Leiste', subtitle: 'Welche vier Module sind immer griffbereit?', primaryLabel: '' } },
+            { id: 'mods', component: 'module-toggle-list', region: 'main', props: { style: 'slots', maxFavorites: 4, showPreview: true } },
+          ],
+        },
       ],
       selectedVariantId: 'A',
       links: ['settings.home', 'system.onboarding'],
@@ -540,5 +550,6 @@ export default {
     { featureId: 'settings.appearance', title: 'Theme gilt für die ganze App', decision: 'Das Theme ist global und ändert nur Farben, nie Anordnung oder Größen. Es gibt keine Themes je Modul.', rationale: 'Einheitliche Wirkung, weniger Wartung, weniger Verwirrung. Regel aus dem Designsystem.', tradeoffs: 'Kein Modul kann sich farblich absetzen. Akzentfarben je Modul bleiben als Icon-Farbe möglich.', status: 'decided' },
     { featureId: 'settings.notifications', title: 'Regeln je Modul oder je Mitteilungsart?', decision: '', rationale: 'Je Modul (heute) ist einfach, je Art (Fälligkeit, Vorlauf, Kursalarm, Frist) wäre präziser, ist aber länger. Android-Kanäle sprechen für Arten.', tradeoffs: 'Je Modul: wenige Schalter, grob. Je Art: genau, aber 20+ Zeilen.', status: 'open' },
     { featureId: 'settings.data', title: 'Sicherung nur lokal oder optional im Konto?', decision: '', rationale: 'Lokal bleibt alles auf dem Gerät und ist einfach, geht aber mit dem Gerät verloren. Ein verschlüsseltes Konto-Backup sichert besser, braucht aber ein Konto und Vertrauen.', tradeoffs: 'Lokal: privat, Risiko Geräteverlust. Konto: sicher, mehr Aufwand und Datenschutzfragen.', status: 'open' },
+    { featureId: 'settings.modules', title: 'Leiste als vier Plätze mit Auswahl statt Stern und Pfeilen?', decision: '', rationale: 'C zeigt nur die vier Plätze der Leiste; „Ändern“ öffnet eine Auswahl, ein Modul von einem anderen Platz tauscht beide. Empfehlung: für die Fokus-Version übernehmen und das Ein- und Ausschalten hinter einem Knopf lassen, weil es selten gebraucht wird.', tradeoffs: 'C: eine Entscheidung pro Platz, weniger Ablenkung, aber ein Tipp mehr zum Ausschalten. A: alles auf einmal, lang bei 19 Modulen.', status: 'open' },
   ],
 };

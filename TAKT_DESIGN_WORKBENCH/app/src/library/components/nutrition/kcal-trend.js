@@ -10,8 +10,9 @@ export const kcalTrend = {
   name: 'Kalorien-Verlauf',
   category: 'Ernährung',
   description: 'Balken je Tag für Woche oder Monat mit gestrichelter Zielmarke. Nicht erfasste Tage bleiben leer und zählen nicht in den Durchschnitt; unter drei erfassten Tagen gibt es bewusst keine Statistik. Ohne Rot, ohne Bewertung.',
-  version: '1.0',
+  version: '1.1',
   props: [
+    { name: 'quietEmpty', label: 'Im Erststart (noch nichts erfasst) nichts anzeigen', type: 'boolean', default: false },
     { name: 'title', label: 'Titel', type: 'text', default: 'Verlauf' },
     { name: 'range', label: 'Zeitraum', type: 'select', options: ['week', 'month'], default: 'week' },
     { name: 'switcher', label: 'Umschalter Woche/Monat', type: 'boolean', default: false },
@@ -47,6 +48,7 @@ export const kcalTrend = {
     const [range, setRange] = useState(props.range);
     const [sel, setSel] = useState(null);
     const goals = obj(data.goals), goal = goals.kcal || 2400;
+    if (props.quietEmpty && !arr(data.history).length) return null;
     const n = range === 'month' ? 28 : 7;
     let rows = arr(data.history).slice(-n);
     const weekly = range === 'month' && ctx.bp === 'mobile'; // schmale Displays: Wochen-Durchschnitte statt 28 Mini-Balken

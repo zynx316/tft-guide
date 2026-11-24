@@ -8,8 +8,9 @@ export const fitKpis = {
   name: 'Körper-Kennzahlen',
   category: 'Fitness',
   description: 'Kennzahlen-Kacheln für Training und Körperwerte. Veränderungen stehen als ruhiger Text (kein Grün/Rot, kein Pfeil), Gewichtswerte lassen sich app-weit ausblenden (prefs.health.hideWeight). Nutzt das Raster der Kennzahlen-Reihe.',
-  version: '1.0',
+  version: '1.1',
   props: [
+    { name: 'quietEmpty', label: 'Ohne Daten nichts anzeigen (Erststart)', type: 'boolean', default: false },
     { name: 'columns', label: 'Spalten (Desktop)', type: 'number', default: 4 },
     { name: 'showSpark', label: 'Sparklines', type: 'boolean', default: true },
   ],
@@ -26,6 +27,7 @@ export const fitKpis = {
   ] } },
   render: function FitKpis({ props, data, ctx }) {
     const ms = Array.isArray(data.metrics) ? data.metrics : [];
+    if (!ms.length && props.quietEmpty) return null;
     if (!ms.length) return html`<${Card}><${EmptyState} icon="activity" title="Keine Kennzahlen" text="Sobald Daten vorliegen, erscheinen hier die wichtigsten Werte." /><//>`;
     const hide = weightHidden(ctx);
     return html`<div class="tk-metric-row tk-fk" style=${`--cols:${props.columns}`} data-qa="fit-kpis">

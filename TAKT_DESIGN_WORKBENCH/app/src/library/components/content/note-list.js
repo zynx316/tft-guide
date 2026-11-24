@@ -21,7 +21,7 @@ export const noteList = {
   name: 'Notizliste',
   category: 'Inhalte',
   description: 'Notizen als Liste, einzeilige Kompaktliste oder Karten-Raster: angeheftete zuerst, Auszug, Tags, Checklisten-Fortschritt, relatives Datum. Beachtet Suche/Filter („Angeheftet“, „Eingang“, „Archiv“, Tags). Auswahl über ctx.ui.selectedId – oder Bearbeiten im Dialog.',
-  version: '1.3',
+  version: '1.4',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Notizen' },
     { name: 'layout', label: 'Darstellung', type: 'select', options: ['list', 'compact', 'grid'], default: 'list' },
@@ -32,6 +32,7 @@ export const noteList = {
     { name: 'showProgress', label: 'Checklisten-Fortschritt', type: 'boolean', default: true },
     { name: 'autoSelect', label: 'Erste Notiz markieren (Master-Detail)', type: 'boolean', default: true },
     { name: 'showCreate', label: 'Neue-Notiz-Button', type: 'boolean', default: true },
+    { name: 'quietEmpty', label: 'Ohne Notizen nichts anzeigen (Erststart)', type: 'boolean', default: false },
     { name: 'showArchive', label: 'Archivieren-Knopf (Wiederherstellen im Archiv)', type: 'boolean', default: false },
     { name: 'groupPinned', label: 'Angeheftete abgrenzen', type: 'boolean', default: true },
     { name: 'cardSize', label: 'Kartengröße (Raster)', type: 'select', options: ['normal', 'large'], default: 'normal' },
@@ -88,6 +89,7 @@ export const noteList = {
   ] } },
   render: ({ props, data, setData, ctx }) => {
     const all = data.notes || [];
+    if (props.quietEmpty && !all.length) return null;
     const f = ctx.ui.filter; const q = String(ctx.ui.query || '').trim();
     const special = ['Angeheftet', 'Archiv', 'Eingang'].includes(f);
     let items = applyUiFilter(all, special ? { ...ctx.ui, filter: undefined } : ctx.ui, { searchFields: ['title', 'body'] });
@@ -109,8 +111,8 @@ export const noteList = {
       setData('notes', (a) => [n, ...a]); ctx.setUi('selectedId', id); const nav = ctx.emit('note.create', { id, ui: { newNote: n } });
       if (props.openIn === 'dialog' && !nav) open(n); else if (!nav) ctx.toast('Neue Notiz angelegt');
     };
-    const addBtn = props.showCreate && html`<${Button} size="sm" variant="primary" icon="plus" aria-label="Neue Notiz" onClick=${create}>${ctx.bp === 'mobile' ? null : 'Neu'}<//>`;
-    const empty = html`<${EmptyState} icon=${f === 'Archiv' ? 'archive' : f === 'Eingang' ? 'inbox' : 'sticky-note'} title=${f === 'Archiv' ? 'Archiv ist leer' : f === 'Eingang' ? 'Eingang ist leer' : 'Keine Notizen gefunden'}
+    const addBtn = props.showCreate && all.length > 0 && html`<${Button} size="sm" variant="primary" icon="plus" aria-label="Neue Notiz" onClick=${create}>${ctx.bp === 'mobile' ? null : 'Neu'}<//>`;
+    const empty = html`<${EmptyState} icon=${f === 'Archiv' ? 'archive' : f === 'Eingang' ? 'inbox' : 'sticky-note'} title=${f === 'Archiv' ? 'Archiv ist leer' : f === 'Eingang' ? 'Eingang ist leer' : !all.length ? 'Noch keine Notizen' : 'Keine Notizen gefunden'}
       text=${q ? `Keine Treffer für „${q}“.` : 'Halte Gedanken, Listen und Ideen fest.'} action=${props.showCreate && html`<${Button} variant="primary" icon="plus" onClick=${create}>Neue Notiz<//>`} />`;
     const archive = (e, n) => { e.stopPropagation(); setData('notes', (a) => a.map((x) => (x.id === n.id ? { ...x, archived: !x.archived, inbox: false } : x))); ctx.emit('note.archive', { id: n.id, archived: !n.archived }); ctx.toast(n.archived ? 'Notiz wiederhergestellt' : 'Notiz archiviert'); };
     const pinBtn = (n) => html`<div class="tk-note-row__btns">${props.showArchive && html`<button type="button" class="tk-note-row__pin" aria-label=${n.archived ? 'Notiz wiederherstellen' : 'Notiz archivieren'} title=${n.archived ? 'Wiederherstellen' : 'Archivieren'} onClick=${(e) => archive(e, n)}><${Icon} name=${n.archived ? 'archive-restore' : 'archive'} size=${16} /></button>`}<button type="button" class="tk-note-row__pin" aria-label=${n.pinned ? 'Anheften aufheben' : 'Anheften'} aria-pressed=${n.pinned ? 'true' : 'false'} onClick=${(e) => pin(e, n)}><${Icon} name="pin" size=${16} /></button></div>`;
@@ -148,7 +150,7 @@ export const noteChecklists = {
   name: 'Checklisten-Übersicht',
   category: 'Inhalte',
   description: 'Alle Checklisten der Notizen an einem Ort: offene Punkte direkt abhaken (wirkt in der Notiz) oder der Fortschritt je Liste als Karte. Ein Tipp auf den Listennamen öffnet die Notiz.',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Checklisten' },
     { name: 'mode', label: 'Darstellung', type: 'select', options: ['list', 'progress'], default: 'list' },
@@ -156,6 +158,7 @@ export const noteChecklists = {
     { name: 'showDone', label: 'Erledigte Punkte zeigen', type: 'boolean', default: false },
     { name: 'minWidth', label: 'Min. Kartenbreite (px, Fortschritt)', type: 'number', default: 200 },
     { name: 'link', label: 'Link-Beschriftung (leer = ohne)', type: 'text', default: '' },
+    { name: 'quietEmpty', label: 'Ohne Notizen nichts anzeigen', type: 'boolean', default: false },
   ],
   data: [{ slot: 'notes', label: 'Notizen', default: 'notes', shape: '{id,title,body,archived?,updated}[]', required: true }],
   events: ['note.checklist.toggle', 'note.open', 'note.checklists.open'],
@@ -185,6 +188,7 @@ export const noteChecklists = {
     if (props.limit > 0) lists = lists.slice(0, props.limit);
     const openNote = (n) => { ctx.setUi('selectedId', n.id); ctx.emit('note.open', { id: n.id }); };
     const toggle = (n, it) => { setData('notes', (all) => all.map((x) => (x.id === n.id ? { ...x, body: toggleTaskLine(x.body, it.idx), updated: isoLocal(ctx.today) } : x))); ctx.emit('note.checklist.toggle', { id: n.id }); };
+    if (!lists.length && props.quietEmpty && !(data.notes || []).length) return null;
     if (!lists.length) return html`<${Card} title=${props.title} icon="list-checks"><${EmptyState} icon="list-checks" title="Keine offenen Punkte" text="Schreibe „- [ ]“ in eine Notiz, um eine Checkliste anzulegen." /><//>`;
     const linkBtn = props.link && html`<${Button} size="sm" variant="ghost" iconRight="chevron-right" onClick=${() => ctx.emit('note.checklists.open')}>${props.link}<//>`;
     if (props.mode === 'progress') {
@@ -208,7 +212,7 @@ export const noteInbox = {
   name: 'Notiz-Eingang',
   category: 'Inhalte',
   description: 'Schnellnotiz ohne Umweg und Eingang zum Einsortieren: Tag vergeben, als Aufgabe übernehmen, behalten oder archivieren. Als Liste mit Aktionen in der Zeile oder als Sortier-Assistent (eine Notiz nach der anderen).',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Eingang' },
     { name: 'mode', label: 'Darstellung', type: 'select', options: ['list', 'triage'], default: 'list' },
@@ -216,6 +220,7 @@ export const noteInbox = {
     { name: 'limit', label: 'Max. Einträge (0 = alle)', type: 'number', default: 0 },
     { name: 'tags', label: 'Tags zum Einsortieren', type: 'list', default: ['Arbeit', 'Privat', 'Projekt', 'Ideen'] },
     { name: 'link', label: 'Link-Beschriftung (leer = ohne)', type: 'text', default: '' },
+    { name: 'quietEmpty', label: 'Ohne Notizen nichts anzeigen (Erststart)', type: 'boolean', default: false },
   ],
   data: [
     { slot: 'notes', label: 'Notizen', default: 'notes', shape: '{id,title,body,tags?,inbox?,archived?,updated}[]', required: true },
@@ -246,6 +251,7 @@ export const noteInbox = {
   ] } },
   render: ({ props, data, setData, ctx }) => {
     const [text, setText] = useState('');
+    if (props.quietEmpty && !(data.notes || []).length) return null;   // Erststart: nur eine Anlege-Aktion (die Notizliste)
     let inbox = (data.notes || []).filter((n) => n.inbox && !n.archived).sort((a, b) => String(b.updated).localeCompare(String(a.updated)));
     const inboxTotal = inbox.length;   // Badge zeigt den ganzen Eingang, auch wenn nur ein Ausschnitt sichtbar ist
     if (props.limit > 0) inbox = inbox.slice(0, props.limit);

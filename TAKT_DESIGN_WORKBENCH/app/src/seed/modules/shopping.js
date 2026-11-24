@@ -357,6 +357,17 @@ export default {
   features: [home, list, store, pantry, household, planImport, settings],
   decisions: [
     {
+      featureId: 'shopping.store', title: 'Laden-Modus: welche Ansicht als Standard?', status: 'open',
+      question: 'Welche der drei Ansichten soll im Laden zuerst erscheinen?',
+      options: [
+        { id: 'aisles', label: 'Alle Gänge (kompakt)', description: 'Eine lange Liste in Laufweg-Reihenfolge; viel Überblick, viel Scrollen.' },
+        { id: 'walk', label: 'Gang für Gang (Fokus)', description: 'Ein Gang, „Nächster Gang“ als große Fläche; ruhig und einhändig.' },
+        { id: 'route', label: 'Laufweg (visuell)', description: 'Ring und eine Karte je Gang mit großen Kacheln; Fortschritt sichtbar, weniger Artikel pro Bildschirm.' },
+      ],
+      recommendation: { optionId: 'walk', reasons: ['Im Laden zählt ein Gang im Blick und eine Hand', '„Laufweg“ bleibt als visuelle Version erhalten', 'Der Ring im Laufweg motiviert, kostet aber Platz'], confidence: 'mittel', by: 'Claude (Vorschlag)' },
+      rationale: 'Empfehlung: „Gang für Gang“ als Standard, „Laufweg“ als visuelle Version.',
+    },
+    {
       featureId: 'shopping.list', title: 'Wem gehört die Lebensmittel-Liste?', status: 'open',
       question: 'Bleibt die Lebensmittel-Liste in Ernährung (abgeleitet aus Plan und Rezepten) oder wird sie Eigentum von Einkauf?',
       options: [

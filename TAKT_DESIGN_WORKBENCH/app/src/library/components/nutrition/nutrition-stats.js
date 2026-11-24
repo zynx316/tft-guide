@@ -10,7 +10,7 @@ export const nutritionStats = {
   name: 'Auswertungs-Bausteine',
   category: 'Ernährung',
   description: 'Vier ruhige Auswertungen in einer Komponente: Makro-Verteilung, Top-5-Lebensmittel nach Kalorien oder Eiweiß, Ballaststoffe/Zucker/Salz gegen Orientierungswerte und Gewichtstrend neben der Ernährung. Nur erfasste Tage zählen; unter drei Tagen gibt es keine Statistik.',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'mode', label: 'Inhalt', type: 'select', options: ['macros', 'top', 'micro', 'weight'], default: 'macros' },
     { name: 'title', label: 'Titel (leer = automatisch)', type: 'text', default: '' },
@@ -30,6 +30,7 @@ export const nutritionStats = {
   .tk-ns__leg { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; } .tk-ns__leg div { padding:8px 10px; border-radius:var(--tk-radius-md); background:var(--tk-c-surface2); border:1px solid var(--tk-c-border); min-width:0; } .tk-ns__leg strong { display:block; font-variant-numeric:tabular-nums; } .tk-ns__leg span { font-size:var(--tk-nfs-xs); color:var(--tk-c-text-muted); }
   .tk-ns__row { display:grid; grid-template-columns:minmax(0,1.2fr) minmax(0,1fr) 84px; align-items:center; gap:10px; min-height:40px; } .tk-ns__row strong { text-align:right; white-space:nowrap; } .tk-ns__row .n { min-width:0; } .tk-ns__bar { height:8px; border-radius:4px; background:var(--tk-c-surface3); overflow:hidden; } .tk-ns__bar i { display:block; height:100%; background:var(--tk-c-accent); opacity:.7; }
   .tk-ns__row strong { font-variant-numeric:tabular-nums; }
+  [data-tk-large-text] .tk-ns__row { grid-template-columns:minmax(0,1fr) auto; row-gap:4px; padding:6px 0; } [data-tk-large-text] .tk-ns__row .n { grid-column:1 / -1; white-space:normal; overflow:visible; text-overflow:clip; }
   .bp-mobile .tk-ns__row { grid-template-columns:minmax(0,1fr) auto; row-gap:4px; padding:6px 0; } .bp-mobile .tk-ns__row .n { grid-column:1 / -1; white-space:normal; overflow:visible; text-overflow:clip; }
   .tk-ns__w { display:flex; align-items:center; gap:16px; flex-wrap:wrap; } .tk-ns__w .tk-nu-big { font-size:var(--tk-nfs-2xl); }`,
   example: { data: {

@@ -375,6 +375,7 @@ export default {
         { text: 'Erfassen in einem Satz direkt im Eingang (Datum, Priorität und Projekt werden erkannt)', type: 'action', priority: 'must' },
         { text: 'Eintrag löschen mit Rückmeldung', type: 'action', priority: 'should' },
         { text: 'Variante Fokus: ein Eintrag nach dem anderen mit großen Tasten und Fortschritt „noch n übrig“', type: 'info', priority: 'should' },
+        { text: 'Variante Visuell: Fortschrittsring „n von m sortiert“, vier Fächer mit Füllstand (Aufgaben und Zeitbedarf), die aktuelle Karte groß, wartende Karten als Reihe', type: 'info', priority: 'should' },
         { text: 'Leerzustand „Eingang leer“ als Erfolgserlebnis; der Zähler auf der Startseite stimmt mit dem Eingang überein', type: 'state', priority: 'must' },
       ],
       interactions: [
@@ -383,6 +384,7 @@ export default {
         I('Papierkorb', 'Eintrag gelöscht', 'inbox.delete'),
         I('Satz eingeben + Enter', 'Neuer Eintrag oben im Eingang', 'inbox.add'),
         I('Aufgabe in „Heute“ antippen', 'Aufgaben-Detail öffnet sich', 'task.open', 'tasks.detail'),
+        I('Karte unter „Wartet noch“ antippen (Variante Fächer)', 'Karte wird zur aktuellen und steht vorn', 'inbox.select'),
       ],
       acceptance: [
         'Der Eingang zeigt mindestens fünf Einträge mit Quelle und Alter; nach einem Tipp auf „Heute“ verschwindet der Eintrag und erscheint als Aufgabe mit heutigem Datum.',
@@ -606,5 +608,6 @@ export default {
     { featureId: 'tasks.kanban', title: 'Kanban-Spalten fest oder frei konfigurierbar?', decision: '', rationale: 'Die Library-Komponente unterstützt beliebige Spalten (Prop „columns“). Offen ist, ob TAKT V2.0 eigene Status zulässt.', tradeoffs: 'Fest: einfach, konsistent mit Filter und Statistik. Frei: flexibel, aber komplexere Datenmodelle und Berichte.', status: 'open' },
     { featureId: 'tasks.inbox', title: 'Erfassen ohne Datum landet im Eingang', decision: 'Alles, was schnell per Sprache, Notiz, Teilen oder Scan erfasst wird, landet zunächst im Eingang. Erst das Sortieren (Heute, Morgen, Diese Woche, Irgendwann) macht daraus eine Aufgabe.', rationale: 'Erfassen darf keine Entscheidungen verlangen, sonst wird weniger erfasst. Ein Eingang trennt „festhalten“ von „einplanen“ und hält die Liste sauber.', tradeoffs: 'Ein zusätzlicher Schritt; ohne Erinnerung wächst der Eingang. Gegenmittel: Zähler auf der Startseite und Hinweis ab fünf Einträgen.', status: 'decided' },
     { featureId: 'tasks.focus', title: 'Fokus-Timer: Rhythmus und Verhalten im Hintergrund', decision: '', rationale: 'Die Demo kennt 25/5 (Standard), 50/10 und 15/3 sowie eine lange Pause nach vier Blöcken. Offen ist, ob der Timer im Hintergrund weiterläuft (Benachrichtigung, Vordergrunddienst) und ob die Länge je Aufgabe aus der Zeitschätzung vorgeschlagen wird.', tradeoffs: 'Hintergrund: nützlich, aber Berechtigungen und Akku. Nur im Vordergrund: einfach, bricht bei App-Wechsel ab.', status: 'open' },
+    { featureId: 'tasks.inbox', title: 'Eingang visuell: Fach antippen oder Tasten in der Zeile?', decision: '', rationale: 'Empfehlung: Fächer (Variante C) für Einsteiger und für den Überblick über volle Tage, Liste mit Tasten (A) für Vielnutzer mit langem Eingang. Beides kann parallel bleiben, die Version im Launcher entscheidet. Ohne Nutzungsdaten (Anzahl Einträge je Sitzung) bitte nicht festlegen.', tradeoffs: 'C: Füllstand sichtbar, aber je Eintrag ein Tipp auf ein Fach und die Karte vorn. A: schneller bei vielen Einträgen, ohne Füllstand.', status: 'open' },
   ],
 };

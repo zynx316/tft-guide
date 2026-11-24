@@ -49,6 +49,39 @@ export const trainingProgram = {
   ],
 };
 
+// Startprogramme (Nachschlage-Katalog, bleibt im „Ersten Start“ erhalten): Auswahl, wenn noch kein Programm gewählt ist.
+const PROG_RULES = {
+  progression: 'Doppelte Progression: Erreichst du bei allen Sätzen die obere Wiederholungszahl, steigt das Gewicht beim nächsten Mal um einen Schritt, die Wiederholungen beginnen wieder unten.',
+  deload: 'Alle 6 Wochen eine Entlastungswoche mit etwa 60 % Volumen – du entscheidest, wann.',
+};
+const week3 = (a, b, c) => [{ dow: 0, kind: 'strength', dayId: a }, { dow: 1, kind: 'rest' }, { dow: 2, kind: 'strength', dayId: b }, { dow: 3, kind: 'rest' }, { dow: 4, kind: 'strength', dayId: c }, { dow: 5, kind: 'rest' }, { dow: 6, kind: 'rest' }];
+const gkProgram = {
+  id: 'prog-gk', name: 'Ganzkörper 3×', short: 'Ganzkörper', level: 'Einsteiger', startDate: null,
+  description: 'Drei Einheiten pro Woche, jede trainiert den ganzen Körper. Zwei abwechselnde Einheiten, überschaubar und gut mit vollem Kalender vereinbar.', ...PROG_RULES,
+  rhythm: week3('gkA', 'gkB', 'gkA'),
+  days: [
+    { id: 'gkA', name: 'Ganzkörper A', short: 'GA', dow: 0, weekdayLabel: 'Mo', time: '18:30', durationMin: 45, focus: 'Beine, Brust, Rücken', exercises: [pe('beinpresse', 3, 10, 12, 120), pe('brustpresse', 3, 10, 12, 90), pe('latziehen', 3, 10, 12, 90), pe('schulterdruecken-kh', 2, 10, 12, 90), pe('plank', 2, 30, 45, 60)] },
+    { id: 'gkB', name: 'Ganzkörper B', short: 'GB', dow: 2, weekdayLabel: 'Mi', time: '18:30', durationMin: 45, focus: 'Beine, Brust, Rücken', exercises: [pe('ausfallschritte', 3, 10, 12, 90), pe('kurzhantel-bankdruecken', 3, 10, 12, 90), pe('rudern-kabel', 3, 10, 12, 90), pe('seitheben', 2, 12, 15, 60), pe('cable-crunch', 2, 12, 15, 60)] },
+  ],
+  alternatives: [],
+};
+const pplProgram = {
+  id: 'prog-ppl', name: 'Push/Pull/Beine', short: 'PPL', level: 'Fortgeschritten', startDate: null,
+  description: 'Drei Tage mit klarer Trennung: Drücken (Brust, Schulter, Trizeps), Ziehen (Rücken, Bizeps) und Beine. Mehr Volumen je Muskelgruppe, etwas längere Einheiten.', ...PROG_RULES,
+  rhythm: week3('push', 'pull', 'legs'),
+  days: [
+    { id: 'push', name: 'Push', short: 'PU', dow: 0, weekdayLabel: 'Mo', time: '18:30', durationMin: 60, focus: 'Brust, Schulter, Trizeps', exercises: [pe('bankdruecken', 3, 8, 10, 120, true), pe('schulterdruecken-kh', 3, 10, 12, 90), pe('schraegbankdruecken-kh', 3, 8, 10, 90), pe('seitheben', 3, 12, 15, 60), pe('trizepsdruecken-kabel', 3, 10, 12, 60)] },
+    { id: 'pull', name: 'Pull', short: 'PL', dow: 2, weekdayLabel: 'Mi', time: '18:30', durationMin: 60, focus: 'Rücken, Bizeps', exercises: [pe('langhantelrudern', 3, 8, 10, 120, true), pe('latziehen', 3, 10, 12, 90), pe('kh-rudern', 3, 10, 12, 90), pe('face-pulls', 3, 12, 15, 60), pe('hammercurls', 3, 10, 12, 60)] },
+    { id: 'legs', name: 'Beine', short: 'BE', dow: 4, weekdayLabel: 'Fr', time: '18:30', durationMin: 65, focus: 'Beine & Gesäß', exercises: [pe('kniebeuge', 3, 6, 8, 150, true), pe('rumaenisches-kreuzheben', 3, 8, 10, 120), pe('beinpresse', 3, 10, 12, 120), pe('beinbeuger', 3, 10, 12, 75), pe('wadenheben', 3, 12, 15, 60)] },
+  ],
+  alternatives: [],
+};
+export const programCatalog = [
+  { id: 'prog-gk', name: gkProgram.name, level: gkProgram.level, daysPerWeek: 3, minutes: 45, text: 'Einfacher Einstieg: zwei abwechselnde Ganzkörper-Einheiten, Maschinen und Kurzhanteln.', fit: 'Wenn du neu startest oder wenig Zeit hast.', recommended: true, program: gkProgram },
+  { id: 'prog-uog', name: trainingProgram.name, level: trainingProgram.level, daysPerWeek: 3, minutes: 60, text: 'Beine am Montag, Oberkörper am Mittwoch, Ganzkörper am Freitag – Wochenende bleibt frei oder für Läufe.', fit: 'Wenn du schon Erfahrung mit Grundübungen hast.', recommended: false, program: { ...trainingProgram, startDate: null, alternatives: [] } },
+  { id: 'prog-ppl', name: pplProgram.name, level: pplProgram.level, daysPerWeek: 3, minutes: 60, text: 'Drücken, Ziehen, Beine im Wechsel. Mehr Volumen je Muskelgruppe, etwas längere Einheiten.', fit: 'Wenn du länger trainierst und mehr Volumen willst.', recommended: false, program: pplProgram },
+];
+
 // Startgewicht, Sprung, Wochen je Stufe, Versatz – daraus entsteht die Progression über die 8 Wochen
 const LOAD = {
   kniebeuge: [67.5, 2.5, 3, 1], 'rumaenisches-kreuzheben': [62.5, 2.5, 3, 0], beinpresse: [140, 5, 3, 2], beinbeuger: [35, 2.5, 3, 0], wadenheben: [60, 5, 4, 1], plank: [0, 0, 4, 0],
@@ -279,9 +312,13 @@ export const scenarios = {
   erststart: {
     fitnessStreak: { weeks: 0, best: 0, since: null, jokersPerQuarter: 2, jokersLeft: 2, paused: false, history: [], current: { week: weekStartNow, sessions: 0, goal: fitnessProfile.weeklyGoal } },
     weeklyRecap: { week: '', range: '', done: [], learned: '', next: '' },
-    fitnessToday: { ...fitnessToday, kind: 'rest', headline: 'Noch kein Plan', text: 'Wähle ein Programm – dann erscheint hier deine nächste Einheit.', nextDayId: null, nextExercises: [], weekSessions: 0 },
-    fitnessSummary: { ...fitnessSummary, sessionsTotal: 0, sessions8w: 0, volume8w: 0, avgSleep7: 0, avgSteps7: 0, kpis: fitnessKpis('Plan wählen', 0, fitnessProfile.weeklyGoal, 0) },
-    fitnessMetrics: [{ ...fitnessMetrics[0], value: '0' }, { ...fitnessMetrics[1], value: 0 }],
+    // Entscheidung fitness.home/open: Im Erststart gibt es noch KEIN Programm (kein vorbelegter Plan, keine „ausgelassenen“ Tage).
+    trainingProgram: { id: null, name: '', short: '', level: '', startDate: null, description: '', progression: '', deload: '', rhythm: [], days: [], alternatives: [] },
+    activeWorkout: { id: null, dayId: null, title: '', subtitle: '', status: 'ready', elapsed: 0, rest: null, rating: null, saved: false, prs: [], exercises: [] },
+    fitnessToday: { ...fitnessToday, kind: 'rest', headline: 'Noch kein Programm', text: 'Wähle ein Programm – dann erscheint hier deine nächste Einheit.', nextDayId: null, nextDate: null, nextWhen: '', nextName: '', nextMinutes: 0, nextSets: 0, nextExercises: [], lastTitle: '', lastDate: null, lastVolume: 0, weekSessions: 0 },
+    fitnessSummary: { ...fitnessSummary, sessionsTotal: 0, sessions8w: 0, volume8w: 0, avgSleep7: 0, avgSteps7: 0, kpis: fitnessKpis('Programm wählen', 0, fitnessProfile.weeklyGoal, 0), plannedSets: plannedSets(null, library), workoutDays: [], runDays: [], nextWorkoutDay: '–', todayKind: 'rest' },
+    fitnessMetrics: [],
+    fitnessRings: fitnessRings.map((r) => ({ ...r, value: 0 })),
     fitnessHints: [], fitnessNotifications: [],
   },
   stress: {

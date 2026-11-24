@@ -1,6 +1,7 @@
 // Fitness: reine Rechen- und Datumshelfer (kein DOM, auch von Node nutzbar).
 // Genutzt von den Fitness-Komponenten und von seed/world/fitness.js.
 import { isoDay } from '../../../lib/util.js';
+import { fmtNumber } from '../../../lib/format.js';
 
 export const MUSCLES = ['Brust', 'Rücken', 'Schulter', 'Bizeps', 'Trizeps', 'Beine', 'Gesäß', 'Core'];
 export const EQUIPMENT = ['Langhantel', 'Kurzhantel', 'Kabel', 'Maschine', 'Körpergewicht'];
@@ -31,7 +32,7 @@ export function isoWeekNo(iso) {
 export const relDay = (iso, today) => { const n = diffDays(iso, today); return n === 0 ? 'Heute' : n === -1 ? 'Gestern' : n === 1 ? 'Morgen' : n < 0 && n > -7 ? `vor ${-n} Tagen` : dayShort(iso); };
 
 // ------------------------------------------------------------- Formatierung
-export const num = (n, d = 0) => new Intl.NumberFormat('de-DE', { minimumFractionDigits: d, maximumFractionDigits: d }).format(n);
+export const num = (n, d = 0) => fmtNumber(n, { digits: d });
 export const numAuto = (n, d = 1) => (Number.isInteger(n) ? num(n) : num(n, d));
 export const fmtKg = (n, withUnit = true) => `${numAuto(n, 1)}${withUnit ? ' kg' : ''}`;
 export const fmtClock = (sec) => `${Math.floor(Math.max(0, sec) / 60)}:${pad(Math.max(0, Math.round(sec)) % 60)}`;
@@ -122,7 +123,7 @@ export function weekOverview(program, history, runs, todayIso) {
     const day = slot.dayId ? (program.days || []).find((d) => d.id === slot.dayId) : null;
     let kind = slot.kind;
     if (done.length) kind = 'done'; else if (run) kind = 'run-done';
-    else if (date < todayIso && (kind === 'strength' || kind === 'run')) kind = 'missed';
+    else if (date < todayIso && (kind === 'strength' || kind === 'run')) kind = date < (program?.startDate || '0000-00-00') ? 'prestart' : 'missed';
     const shortDay = (done[0] && (program.days || []).find((d) => d.id === done[0].dayId)?.short) || day?.short || (run || slot.kind === 'run' ? 'Lauf' : 'Frei');
     return { date, label, short: shortDay, dow: i, kind, planned: slot.kind, dayId: slot.dayId || null, title: done[0]?.title || (run ? `Lauf ${num(run.km, 1)} km` : day?.name || (slot.kind === 'run' ? slot.title || 'Lauf' : 'Erholung')), detail: done[0] ? `${done[0].durationMin} Min.` : run ? `${num(run.km, 1)} km` : day ? `${day.durationMin} Min.` : '', isToday: date === todayIso, sessionId: done[0]?.id || null };
   });
@@ -176,4 +177,23 @@ export function recoveryAdvice(factors, { restDay = false, nextName = 'dein näc
   if (lows.length >= 2) return { level: 'rest', tone: 'warning', title: restDay ? 'Gut, dass heute Pause ist' : 'Heute eher leicht oder pausieren', because, text: restDay ? `Morgen lieber locker starten und nach Gefühl entscheiden – ${because}.` : `Ein lockeres Training oder ein freier Tag passt besser – ${because}.` };
   if (lows.length === 1) return { level: 'ease', tone: 'info', title: restDay ? 'Erholung läuft' : 'Mit etwas Rücksicht trainieren', because, text: restDay ? `${nextName} ist wie geplant möglich – ${because}, also gut aufwärmen.` : `Das Training ist möglich, ein Satz weniger oder etwas weniger Gewicht wäre in Ordnung – ${because}.` };
   return { level: 'go', tone: 'success', title: restDay ? 'Gut erholt' : 'Bereit fürs Training', because, text: restDay ? `${nextName} kann wie geplant stattfinden – ${because}.` : `Plan wie vorgesehen – ${because}.` };
+}
+
+/** „Heute“-Zusammenfassung aus einem Programm: nächster Krafttag ab heute (Welt-Schlüssel fitnessToday). Rein, ohne Zufall. */
+export function nextTraining(program, library, todayIso, { weekSessions = 0, weekGoal = 3 } = {}) {
+  const days = program?.days || [];
+  for (let i = 0; i < 8; i++) {
+    const date = addDaysIso(todayIso, i); const slot = (program?.rhythm || []).find((r) => r.dow === dowOf(date));
+    const day = slot?.kind === 'strength' ? days.find((d) => d.id === slot.dayId) : null;
+    if (!day) continue;
+    const today = i === 0;
+    return {
+      date: todayIso, kind: today ? 'strength' : 'rest', headline: today ? 'Trainingstag' : 'Erholungstag',
+      text: today ? `Heute steht ${day.name} an.` : `Heute ist Erholung eingeplant – ${i === 1 ? 'morgen' : WD[dowOf(date)]} steht ${day.name} an.`,
+      nextDayId: day.id, nextDate: date, nextWhen: `${today ? 'Heute' : i === 1 ? 'Morgen' : WD[dowOf(date)]}, ${day.time}`, nextName: day.name, nextMinutes: day.durationMin,
+      nextSets: day.exercises.reduce((n, e) => n + e.sets, 0), nextExercises: day.exercises.map((e) => (library || []).find((l) => l.id === e.exerciseId)?.name || e.exerciseId),
+      lastTitle: '', lastDate: null, lastVolume: 0, weekSessions, weekGoal,
+    };
+  }
+  return null;
 }

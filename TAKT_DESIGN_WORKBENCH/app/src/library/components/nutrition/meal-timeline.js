@@ -6,15 +6,16 @@ import { MEALS, mealInfo, dayView, num, hhmm, eid, shiftDay, totals, dayLabel } 
 import { Stepper, NU_CSS, arr, tintBox } from './_ui.js';
 
 const SCALE = ['kcal', 'protein', 'carbs', 'fat', 'fiber', 'sugar', 'salt'];
-const fromPlan = (p, date, time) => ({ id: eid(), date, meal: p.meal, time, foodId: p.foodId || null, recipeId: p.recipeId || null, name: p.label || 'Geplante Mahlzeit', amount: p.recipeId ? `${num(p.servings || 1, 1)} Portion` : p.grams ? `${num(p.grams)} g` : 'Schätzung', grams: p.grams || null, kcal: p.kcal || 0, protein: p.protein || 0, carbs: p.carbs || 0, fat: p.fat || 0, fiber: 0, sugar: 0, salt: 0, source: 'plan', planId: p.id });
+const fromPlan = (p, date, time, ctx) => ({ id: eid('e', ctx), date, meal: p.meal, time, foodId: p.foodId || null, recipeId: p.recipeId || null, name: p.label || 'Geplante Mahlzeit', amount: p.recipeId ? `${num(p.servings || 1, 1)} Portion` : p.grams ? `${num(p.grams)} g` : 'Schätzung', grams: p.grams || null, kcal: p.kcal || 0, protein: p.protein || 0, carbs: p.carbs || 0, fat: p.fat || 0, fiber: 0, sugar: 0, salt: 0, source: 'plan', planId: p.id });
 
 export const mealTimeline = {
   id: 'meal-timeline',
   name: 'Mahlzeiten-Timeline',
   category: 'Ernährung',
   description: 'Das Tagebuch des Tages nach Mahlzeiten (oder Uhrzeit) mit Summen, „+“ je Gruppe, Bearbeiten, Kopieren und Löschen mit Rückgängig. Geplante Mahlzeiten stehen gedämpft dabei und lassen sich mit einem Tap als gegessen übernehmen.',
-  version: '1.0',
+  version: '1.1',
   props: [
+    { name: 'quietEmpty', label: 'Im Erststart (noch nichts erfasst) nichts anzeigen', type: 'boolean', default: false },
     { name: 'title', label: 'Titel', type: 'text', default: 'Mahlzeiten' },
     { name: 'grouping', label: 'Gruppierung', type: 'select', options: ['meal', 'time'], default: 'meal' },
     { name: 'density', label: 'Dichte', type: 'select', options: ['comfortable', 'compact'], default: 'comfortable' },
@@ -58,6 +59,7 @@ export const mealTimeline = {
     const [all, setAll] = useState(false);
     const v = dayView(ctx, { goals: { kcal: 1 }, diary: arr(data.diary), plan: arr(data.plan) });
     const diary = arr(data.diary), plan = props.showPlanned ? v.plannedItems : [];
+    if (props.quietEmpty && !diary.length && !arr(data.plan).length) return null;
     const allEmpty = !v.entries.length && !plan.length;
     const now = hhmm(ctx.today);
     const wrap = (b) => (props.framed ? html`<${Card} title=${props.title} icon="utensils" actions=${!v.isToday && html`<span class="tk-nu-meta">${dayLabel(v.iso)}</span>`}>${b}<//>` : b);
@@ -65,10 +67,10 @@ export const mealTimeline = {
     const add = (meal) => ctx.emit('meal.add', { meal });
     const del = (e) => { setData('diary', (d) => arr(d).filter((x) => x.id !== e.id)); setUndo(e); ctx.emit('entry.delete', { id: e.id }); };
     const restore = () => { if (!undo) return; setData('diary', (d) => [...arr(d), undo]); ctx.emit('entry.undo', { id: undo.id }); setUndo(null); };
-    const copy = (e, meal = e.meal) => { setData('diary', (d) => [...arr(d), { ...e, id: eid(), meal, time: now, prelogged: false }]); ctx.emit('entry.copy', { id: e.id }); ctx.toast(`${e.name} kopiert`); };
+    const copy = (e, meal = e.meal) => { setData('diary', (d) => [...arr(d), { ...e, id: eid('e', ctx), meal, time: now, prelogged: false }]); ctx.emit('entry.copy', { id: e.id }); ctx.toast(`${e.name} kopiert`); };
     const update = (e, patch) => setData('diary', (d) => arr(d).map((x) => (x.id === e.id ? { ...x, ...patch } : x)));
-    const eatPlan = (p) => { setData('diary', (d) => [...arr(d), fromPlan(p, v.iso, now)]); setData('plan', (pl) => arr(pl).map((x) => (x.id === p.id ? { ...x, status: 'done' } : x))); ctx.emit('plan.eat', { id: p.id }); ctx.toast(`${p.label} als gegessen übernommen`); };
-    const yesterday = () => { const y = arr(diary).filter((e) => e.date === shiftDay(v.iso, -1) && !e.prelogged); if (!y.length) { ctx.toast('Gestern war nichts erfasst'); return; } setData('diary', (d) => [...arr(d), ...y.map((e) => ({ ...e, id: eid(), date: v.iso, time: now }))]); ctx.emit('copy.yesterday', { count: y.length }); ctx.toast(`${y.length} Einträge von gestern übernommen`); };
+    const eatPlan = (p) => { setData('diary', (d) => [...arr(d), fromPlan(p, v.iso, now, ctx)]); setData('plan', (pl) => arr(pl).map((x) => (x.id === p.id ? { ...x, status: 'done' } : x))); ctx.emit('plan.eat', { id: p.id }); ctx.toast(`${p.label} als gegessen übernommen`); };
+    const yesterday = () => { const y = arr(diary).filter((e) => e.date === shiftDay(v.iso, -1) && !e.prelogged); if (!y.length) { ctx.toast('Gestern war nichts erfasst'); return; } setData('diary', (d) => [...arr(d), ...y.map((e) => ({ ...e, id: eid('e', ctx), date: v.iso, time: now }))]); ctx.emit('copy.yesterday', { count: y.length }); ctx.toast(`${y.length} Einträge von gestern übernommen`); };
     const lastFor = (meal) => [...diary].filter((e) => e.date < v.iso && e.meal === meal && e.foodId).sort((a, b) => (a.date < b.date ? 1 : -1))[0];
 
     const openEntry = (e) => {

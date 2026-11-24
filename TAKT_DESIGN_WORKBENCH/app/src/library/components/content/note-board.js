@@ -9,7 +9,7 @@ export const noteBoard = {
   name: 'Notiz-Pinnwand',
   category: 'Inhalte',
   description: 'Eingang als Pinnwand: große Schnellnotiz-Zeile, Notizen als Karten im Raster. Eine Karte antippen öffnet die Ablagen als Kacheln (Tags mit Farbpunkt, Aufgabe, Behalten, Archiv); „Rückgängig“ holt die letzte Ablage zurück.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Pinnwand' },
     { name: 'showCapture', label: 'Schnellnotiz-Feld', type: 'boolean', default: true },
@@ -68,7 +68,7 @@ export const noteBoard = {
               ${n.body && n.body !== n.title && html`<span class="tk-note-board__text">${stripMd(n.body)}</span>`}
               <span class="tk-note-board__meta"><span>${relDay(n.updated, ctx.today)}</span><span>${isOpen ? 'Ablegen in …' : 'Antippen zum Ablegen'}</span></span></button>
             ${isOpen && html`<div class="tk-note-board__tiles" role="group" aria-label="Ablegen in">
-              ${tags.map((t) => html`<button type="button" class="tk-note-board__tile" style=${`--tone:${toneColor(tagTone(t))}`} onClick=${() => filed(n, t, () => ops.sort(n, t))}><span class="tk-note-board__dot"></span>${t}</button>`)}
+              ${tags.map((t, ti) => html`<button type="button" class="tk-note-board__tile" style=${`--tone:${toneColor(1 + (ti % 6))}`} onClick=${() => filed(n, t, () => ops.sort(n, t))}><span class="tk-note-board__dot"></span>${t}</button>`)}
               <button type="button" class="tk-note-board__tile tk-note-board__tile--act" onClick=${() => filed(n, 'Aufgabe', () => ops.task(n))}><${Icon} name="list-todo" size=${16} />Als Aufgabe für heute</button>
               <button type="button" class="tk-note-board__tile" onClick=${() => filed(n, 'Behalten', () => ops.keep(n))}><${Icon} name="check" size=${16} />Behalten</button>
               <button type="button" class="tk-note-board__tile" onClick=${() => filed(n, 'Archiv', () => ops.archive(n))}><${Icon} name="archive" size=${16} />Archivieren</button>

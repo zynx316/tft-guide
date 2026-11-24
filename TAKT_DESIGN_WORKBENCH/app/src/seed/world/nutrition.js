@@ -251,6 +251,8 @@ export const scenarios = {
     nutWater: { goal: nutGoals.water, vessels: nutWater.vessels, entries: [], week: [] },
     nutShopping: { ...nutShopping, pantry: [], checked: {}, manual: [], recipeAdds: [], spentMonth: 0 },
     nutHistory: [],
+    // Noch kein Trainingsprogramm (siehe Fitness-Erststart): keine Trainingstage, damit kein Hinweis „Morgen ist Trainingstag“ erscheint.
+    nutGoals: { ...nutGoals, trainingDays: [] },
     nutSummary: { ...summaryFor([], 0, 0), foodBudgetLeft: nutShopping.budgetMonth },
     nutritionSummary: { kpis: [{ label: 'Tagesziel', value: num(nutGoals.kcal), unit: 'kcal', icon: 'flame', tone: 'accent', to: 'nutrition.goals' }] },
     nutritionHints: [], nutritionSearch: [], nutritionNotifications: [],

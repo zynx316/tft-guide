@@ -3,14 +3,14 @@ import { html } from '../../../lib/html.js';
 import { useState } from 'preact/hooks';
 import { Card, Badge, Icon, EmptyState, Progress, toneColor } from '../../ui.js';
 import { applyUiFilter, groupBy } from '../../helpers.js';
-import { relDay } from './content-util.js';
+import { relDay, ArticleCreateButton } from './content-util.js';
 
 export const kbAreas = {
   id: 'kb-areas',
   name: 'Wissensbereiche',
   category: 'Inhalte',
   description: 'Bereiche der Wissensbasis als Karten (oder Zeilen) mit Artikelzahl, Kategorien, letzter Änderung und Lesefortschritt. Antippen meldet den Bereich als Filter für die Navigation.',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Bereiche' },
     { name: 'layout', label: 'Darstellung', type: 'select', options: ['cards', 'rows'], default: 'cards' },
@@ -21,7 +21,7 @@ export const kbAreas = {
     { slot: 'articles', label: 'Artikel', default: 'articles', shape: '{id,title,area,category,updated,lastRead?}[]', required: true },
     { slot: 'areas', label: 'Bereiche (Icon/Ton)', default: 'areas', shape: '{id,name,icon?,tone?}[]', required: false },
   ],
-  events: ['kb.area'],
+  events: ['kb.area', 'kb.create'],
   states: ['empty'],
   css: `
   [data-tk-large-text] .tk-kb-tree .tk-truncate, [data-tk-large-text] .tk-kb-areas .tk-truncate, [data-tk-large-text] .tk-kb-next .tk-truncate { white-space:normal; overflow:visible; text-overflow:clip; overflow-wrap:anywhere; }
@@ -41,12 +41,12 @@ export const kbAreas = {
     { id: 'a2', title: 'Backup-Strategie', area: 'Technik', category: 'Betrieb', updated: '2026-11-12T10:00:00' },
     { id: 'a3', title: 'Wochenplanung (GTD)', area: 'Persönlich', category: 'Produktivität', updated: '2026-11-05T10:00:00', lastRead: '2026-11-24T08:00:00' },
   ] } },
-  render: ({ props, data, ctx }) => {
+  render: ({ props, data, setData, ctx }) => {
     const arts = (data.articles || []).filter((a) => a.status !== 'draft');
     const meta = Object.fromEntries((data.areas || []).map((a) => [a.id, a]));
     const names = [...new Set(arts.map((a) => a.area))];
     if (!names.length && props.quietEmpty) return null;
-    if (!names.length) return html`<${Card} title=${props.title}><${EmptyState} icon="library" title="Noch keine Bereiche" text="Lege den ersten Artikel an, Bereiche entstehen daraus." /><//>`;
+    if (!names.length) return html`<${Card} title=${props.title}><${EmptyState} icon="library" title="Noch keine Artikel" text="Lege den ersten Artikel an, Bereiche entstehen daraus." action=${html`<${ArticleCreateButton} ctx=${ctx} setData=${setData} />`} /><//>`;
     const rows = props.layout === 'rows';
     const open = (n) => { ctx.setUi('filter', n); ctx.emit('kb.area', { id: n, ui: { filter: n } }); };
     const grid = html`<div class=${`tk-kb-areas ${rows ? 'tk-kb-areas--rows' : ''}`} style=${`--minw:${props.minWidth}px`}>${names.map((n) => {
@@ -68,7 +68,7 @@ export const kbTree = {
   name: 'Wissensbaum',
   category: 'Inhalte',
   description: 'Hierarchische Navigation (Bereiche › Kategorien › Artikel), auf-/zuklappbar. Aktiver Artikel = ctx.ui.selectedId. Beachtet Suche und Bereichsfilter (klappt Treffer auf).',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Wissensbasis' },
     { name: 'showCounts', label: 'Artikelanzahl', type: 'boolean', default: true },
@@ -79,7 +79,7 @@ export const kbTree = {
     { slot: 'articles', label: 'Artikel', default: 'articles', shape: '{id,title,area,category,tags?,body,updated}[]', required: true },
     { slot: 'areas', label: 'Bereiche (Icon/Ton)', default: 'areas', shape: '{id,name,icon?,tone?}[]', required: false },
   ],
-  events: ['kb.open', 'kb.toggle'],
+  events: ['kb.open', 'kb.toggle', 'kb.create'],
   states: ['empty'],
   css: `
   .tk-kb-tree { display:flex; flex-direction:column; gap:2px; padding:var(--tk-space-2); min-width:0; }
@@ -100,7 +100,7 @@ export const kbTree = {
     { id: 'a2', title: 'Backup-Strategie', area: 'Technik', category: 'Betrieb', body: '', updated: '2026-11-12T10:00:00' },
     { id: 'a3', title: 'Wochenplanung (GTD)', area: 'Persönlich', category: 'Produktivität', body: '', updated: '2026-11-05T10:00:00' },
   ] } },
-  render: ({ props, data, ctx }) => {
+  render: ({ props, data, setData, ctx }) => {
     const arts = (data.articles || []).filter((a) => a.status !== 'draft');
     const areaMeta = Object.fromEntries((data.areas || []).map((a) => [a.id, a]));
     const q = (ctx.ui.query || '').trim();
@@ -112,7 +112,7 @@ export const kbTree = {
     const isOpen = (k) => q || byArea || open.has(k);
     const toggle = (k, label) => { setOpen((s) => { const n = new Set(s); n.has(k) ? n.delete(k) : n.add(k); return n; }); ctx.emit('kb.toggle', { node: label }); };
     const body = !shown.length
-      ? html`<${EmptyState} icon="library" title=${q ? 'Keine Treffer' : 'Noch keine Artikel'} text=${q ? `Zu „${q}“ gibt es keine Artikel.` : 'Lege den ersten Artikel an.'} />`
+      ? html`<${EmptyState} icon="library" title=${q ? 'Keine Treffer' : 'Noch keine Artikel'} text=${q ? `Zu „${q}“ gibt es keine Artikel.` : 'Dein Wissen wächst Artikel für Artikel. Der erste Artikel legt auch den ersten Bereich an.'} action=${!q && !arts.length && html`<${ArticleCreateButton} ctx=${ctx} setData=${setData} />`} />`
       : html`<nav class="tk-kb-tree" aria-label="Wissensbaum">${groupBy(shown, (a) => a.area).map(([area, inArea]) => {
         const meta = areaMeta[area] || {}; const ak = `a:${area}`;
         return html`<div>

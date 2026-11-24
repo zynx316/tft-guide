@@ -9,13 +9,14 @@ export const calorieBudget = {
   name: 'Kalorien-Bilanz',
   category: 'Ernährung',
   description: 'Tagesbilanz aus Ziel, Gegessen und Übrig als Ring, Balken oder Formel. Geplante Mahlzeiten werden heller ergänzt. Über dem Ziel bleibt die Darstellung neutral, ohne Rot und ohne Wertung.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Kalorien' },
     { name: 'style', label: 'Darstellung', type: 'select', options: ['ring', 'bar', 'formula'], default: 'ring' },
     { name: 'size', label: 'Ring-Durchmesser (px)', type: 'number', default: 180 },
     { name: 'showPlanned', label: 'Geplantes anzeigen', type: 'boolean', default: true },
     { name: 'framed', label: 'In Karte', type: 'boolean', default: true },
+    { name: 'quietEmpty', label: 'Ohne eigenen Leerhinweis (wenn eine Einladung daneben steht)', type: 'boolean', default: false },
   ],
   data: [
     { slot: 'goals', label: 'Ziele', default: 'goals', shape: '{kcal,protein,carbs,fat,fiber,water,showNumbers?}', required: true },
@@ -50,7 +51,7 @@ export const calorieBudget = {
     const hide = goals.showNumbers === false;
     const g = v.goal.kcal, eaten = v.t.kcal, left = v.left, planned = props.showPlanned ? v.planned.kcal : 0;
     const open = () => ctx.emit('budget.open', { day: v.iso });
-    const msg = hide ? 'Zahlen sind ausgeblendet. Mahlzeiten zählen trotzdem mit.' : v.over ? 'Heute etwas über dem Ziel – der Wochenschnitt zählt.' : v.reached ? 'Ziel erreicht. Schön, dass es passt.' : planned ? `Mit dem Plan: etwa ${num(eaten + planned)} kcal.` : v.entries.length ? null : 'Noch nichts erfasst. Tippe auf Erfassen, wenn du magst.';
+    const msg = hide ? 'Zahlen sind ausgeblendet. Mahlzeiten zählen trotzdem mit.' : v.over ? 'Heute etwas über dem Ziel – der Wochenschnitt zählt.' : v.reached ? 'Ziel erreicht. Schön, dass es passt.' : planned ? `Mit dem Plan: etwa ${num(eaten + planned)} kcal.` : v.entries.length || props.quietEmpty ? null : 'Noch nichts erfasst. Tippe auf Erfassen, wenn du magst.';
     const alt = `${num(eaten)} von ${num(g)} Kilokalorien gegessen${left >= 0 ? `, ${num(left)} übrig` : `, ${num(-left)} darüber`}`;
     const word = left >= 0 ? 'übrig' : 'darüber';
     let body;

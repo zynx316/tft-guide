@@ -1,9 +1,9 @@
 # Feature-Katalog (verbindliche IDs)
 
-> Automatisch erzeugt aus dem Seed 2026-11-24.6 mit `node tools/feature-ids.mjs` – nicht von Hand bearbeiten.
+> Automatisch erzeugt aus dem Seed 2026-11-24.7 mit `node tools/feature-ids.mjs` – nicht von Hand bearbeiten.
 > Feature-IDs werden nie umbenannt (Querverweise, Entscheidungen, Versionen hängen daran). Neue IDs nach dem Muster `<modul>.<name>`.
 
-**19 Module · 197 Features · 154 mit Design · 336 Varianten**
+**19 Module · 197 Features · 154 mit Design · 348 Varianten**
 
 Legende: Tier 1 = täglich/kritisch, 2 = regelmäßig, 3 = selten · Richtungen K/V/F = Kompakt/Visuell/Fokus (● eigene Variante, ○ fehlt) · ⌂ = Modul-Startseite
 
@@ -51,7 +51,7 @@ Aufgaben erfassen, sortieren und abarbeiten: Übersicht, Eingang, Liste, Kanban,
 | `tasks.kanban` | Kanban | 2 | ● ● ● | Design in Arbeit | `tasks.detail` |
 | `tasks.list` | Listenansicht | 2 | ● ● ○ | Design in Arbeit | `tasks.detail` |
 | `tasks.detail` | Detailansicht | 1 | ● ● ● | In Prüfung | `tasks.focus` |
-| `tasks.inbox` | Eingang | 1 | ● ○ ● | Design in Arbeit | `tasks.detail` |
+| `tasks.inbox` | Eingang | 1 | ● ● ● | Design in Arbeit | `tasks.detail` |
 | `tasks.focus` | Fokus-Timer | 2 | ● ● ● | Design in Arbeit | `tasks.detail` |
 | `tasks.priority` | Prioritäten | 2 | – | Analysiert | – |
 | `tasks.due` | Fälligkeit | 2 | ○ ○ ● | Design in Arbeit | `tasks.list`, `tasks.detail` |
@@ -97,7 +97,7 @@ Einkaufslisten schnell abarbeiten (im Laden einhändig, nach Gang), Vorräte im 
 |---|---|---|---|---|---|
 | `shopping.home` ⌂ | Übersicht | 1 | ● ● ● | Design in Arbeit | `shopping.list`, `shopping.store`, `shopping.household`, `shopping.pantry`, `finance.budgets`, `tasks.detail` |
 | `shopping.list` | Einkaufsliste | 1 | ● ● ● | In Prüfung | `shopping.store`, `shopping.plan-import` |
-| `shopping.store` | Laden-Modus | 1 | ● ○ ● | Design in Arbeit | `finance.quickadd`, `shopping.list` |
+| `shopping.store` | Laden-Modus | 1 | ● ● ● | Design in Arbeit | `finance.quickadd`, `shopping.list` |
 | `shopping.pantry` | Vorräte | 3 | ● ○ ○ | Design in Arbeit | `shopping.list` |
 | `shopping.household` | Haushalt & Wartung | 2 | ● ● ○ | Design in Arbeit | `tasks.detail`, `shopping.list` |
 | `shopping.plan-import` | Zutaten aus dem Plan | 3 | ● ○ ○ | Design in Arbeit | `shopping.list`, `nutrition.plan` |
@@ -130,7 +130,7 @@ ETF- und Konto-Sparpläne planen, überblicken und mit Zielen verbinden: Rate, R
 | Feature-ID | Name | Tier | K V F | Status | führt zu |
 |---|---|---|---|---|---|
 | `savings.home` ⌂ | Übersicht | 1 | ● ● ● | In Prüfung | `savings.plan`, `savings.create`, `savings.calculator`, `savings.plans`, `savings.calendar`, `savings.goals`, `savings.tax` |
-| `savings.plans` | Alle Sparpläne | 1 | ● ● ○ | Design in Arbeit | `savings.plan`, `savings.create` |
+| `savings.plans` | Alle Sparpläne | 1 | ● ● ● | Design in Arbeit | `savings.plan`, `savings.create` |
 | `savings.plan` | Sparplan-Detail | 2 | ● ● ● | Design in Arbeit | `savings.calculator`, `trading.detail`, `savings.create` |
 | `savings.create` | Sparplan anlegen | 2 | ● ○ ● | Design in Arbeit | `savings.plan` |
 | `savings.calculator` | Rechner & Szenarien | 1 | ● ● ● | In Prüfung | `savings.compare`, `savings.create` |
@@ -148,7 +148,7 @@ Depot, Watchlist, Wertpapiere, simulierte Orders, Kursalarme, Dividenden und Aus
 | Feature-ID | Name | Tier | K V F | Status | führt zu |
 |---|---|---|---|---|---|
 | `trading.home` ⌂ | Übersicht | 1 | ● ● ● | In Prüfung | `trading.portfolio`, `trading.detail`, `trading.watchlist`, `trading.order`, `trading.alerts`, `trading.dividends`, `savings.plan` |
-| `trading.portfolio` | Depot | 1 | ● ● ○ | In Prüfung | `trading.detail`, `trading.order` |
+| `trading.portfolio` | Depot | 1 | ● ● ● | In Prüfung | `trading.detail`, `trading.order` |
 | `trading.watchlist` | Watchlist | 2 | ● ● ○ | Design in Arbeit | `trading.detail`, `trading.alerts` |
 | `trading.detail` | Wertpapier | 2 | ● ● ○ | In Prüfung | `trading.order`, `trading.alerts`, `savings.plan` |
 | `trading.order` | Order (Simulation) | 1 | ● ● ● | In Prüfung | `trading.detail` |
@@ -165,11 +165,11 @@ Training, Aktivität, Körperwerte, Erholung und Ziele: Einheiten im Studio mit 
 | Feature-ID | Name | Tier | K V F | Status | führt zu |
 |---|---|---|---|---|---|
 | `fitness.home` ⌂ | Übersicht | 1 | ● ● ● | Design in Arbeit | `fitness.session`, `fitness.plan`, `fitness.exercise`, `fitness.progress`, `fitness.goals`, `fitness.body`, `fitness.activity`, `fitness.recovery` |
-| `fitness.session` | Workout | 1 | ● ● ● | In Prüfung | `fitness.exercise`, `fitness.progress` |
+| `fitness.session` | Workout | 1 | ● ● ● | In Prüfung | `fitness.exercise`, `fitness.progress`, `fitness.plan` |
 | `fitness.plan` | Trainingsplan | 2 | ● ● ● | Design in Arbeit | `fitness.session`, `fitness.exercise`, `fitness.exercises` |
 | `fitness.exercises` | Übungen | 2 | ● ● ● | Design in Arbeit | `fitness.exercise` |
 | `fitness.exercise` | Übungs-Detail | 2 | ○ ● ○ | Design in Arbeit | `fitness.plan` |
-| `fitness.progress` | Fortschritt & Rekorde | 2 | ● ● ● | Design in Arbeit | `fitness.exercise`, `fitness.exercises` |
+| `fitness.progress` | Fortschritt & Rekorde | 2 | ● ● ● | Design in Arbeit | `fitness.exercise`, `fitness.exercises`, `fitness.plan` |
 | `fitness.body` | Körperwerte | 1 | ● ● ● | Design in Arbeit | – |
 | `fitness.activity` | Aktivität | 2 | ● ● ○ | Design in Arbeit | – |
 | `fitness.recovery` | Erholung | 2 | ● ○ ● | Design in Arbeit | – |
@@ -206,7 +206,7 @@ Gedanken, Listen und Ideen in Sekunden festhalten, im Eingang einsortieren und j
 | `notes.home` ⌂ | Übersicht | 1 | ● ● ● | Design in Arbeit | `notes.editor`, `notes.overview`, `notes.inbox`, `notes.checklists` |
 | `notes.overview` | Notizübersicht | 1 | ● ● ● | Design in Arbeit | – |
 | `notes.editor` | Notiz-Editor | 1 | ● ● ● | In Prüfung | – |
-| `notes.inbox` | Schnellnotiz & Eingang | 1 | ● ○ ● | Design in Arbeit | `notes.editor` |
+| `notes.inbox` | Schnellnotiz & Eingang | 1 | ● ● ● | Design in Arbeit | `notes.editor` |
 | `notes.search` | Suche & Tags | 2 | ● ● ○ | Design in Arbeit | `notes.editor` |
 | `notes.checklists` | Checklisten | 2 | ● ● ○ | Design in Arbeit | `notes.editor` |
 | `notes.pin-archive` | Anheften & Archiv | 3 | ● ○ ○ | Design in Arbeit | – |
@@ -223,7 +223,7 @@ Dauerhaftes Wissen in Bereichen, Kategorien und Artikeln – gut auffindbar, les
 |---|---|---|---|---|---|
 | `knowledge.home` ⌂ | Übersicht | 2 | ● ● ● | Design in Arbeit | `knowledge.article`, `knowledge.browse` |
 | `knowledge.browse` | Wissensbaum & Navigation | 2 | ● ● ○ | Design in Arbeit | – |
-| `knowledge.article` | Artikelansicht & Bearbeiten | 1 | ● ○ ● | In Prüfung | `knowledge.article` |
+| `knowledge.article` | Artikelansicht & Bearbeiten | 1 | ● ● ● | In Prüfung | `knowledge.article` |
 | `knowledge.search` | Suche | 2 | ● ● ○ | Design in Arbeit | `knowledge.article` |
 | `knowledge.review` | Aktualität prüfen | 2 | ● ○ ○ | Design in Arbeit | `knowledge.article` |
 | `knowledge.links` | Verknüpfungen | 3 | – | Analysiert | – |
@@ -240,7 +240,7 @@ Text, Belege, Visitenkarten und Dokumente aus Fotos erkennen, prüfen und weiter
 | `picture-to-text.home` ⌂ | Übersicht | 2 | ● ● ● | Design in Arbeit | `picture-to-text.scanner`, `picture-to-text.receipt`, `picture-to-text.card`, `picture-to-text.capture`, `picture-to-text.result`, `picture-to-text.history` |
 | `picture-to-text.capture` | Bild erfassen | 2 | ● ● ● | Design in Arbeit | – |
 | `picture-to-text.scanner` | Dokumenten-Scanner | 2 | ● ● ● | Design in Arbeit | – |
-| `picture-to-text.receipt` | Beleg erkennen | 1 | ● ○ ● | Design in Arbeit | `finance.quickadd` |
+| `picture-to-text.receipt` | Beleg erkennen | 1 | ● ● ● | Design in Arbeit | `finance.quickadd`, `picture-to-text.capture` |
 | `picture-to-text.card` | Visitenkarte | 3 | ○ ○ ● | Design in Arbeit | – |
 | `picture-to-text.result` | Texterkennung & Ergebnis | 1 | ● ● ● | In Prüfung | `picture-to-text.receipt`, `picture-to-text.card` |
 | `picture-to-text.history` | Verlauf | 2 | ● ● ○ | Design in Arbeit | – |
@@ -274,10 +274,10 @@ Wetter, das Entscheidungen trägt: Jetzt, Regen in den nächsten Minuten, Stunde
 |---|---|---|---|---|---|
 | `weather.home` ⌂ | Übersicht | 1 | ● ● ● | In Prüfung | `weather.radar`, `weather.alerts`, `weather.hourly`, `weather.daily`, `weather.advice`, `weather.environment`, `weather.locations`, `weather.settings` |
 | `weather.current` | Aktuelles Wetter | 2* | ○ ● ● | Freigegeben 🔒 | – |
-| `weather.radar` | Regenradar | 1 | ○ ● ● | Design in Arbeit | `weather.alerts`, `weather.advice` |
+| `weather.radar` | Regenradar | 1 | ● ● ● | Design in Arbeit | `weather.alerts`, `weather.advice` |
 | `weather.hourly` | Stündlich | 2 | ● ● ○ | Design in Arbeit | – |
 | `weather.daily` | 10 Tage | 2 | ● ● ○ | In Prüfung | `weather.hourly`, `weather.alerts` |
-| `weather.alerts` | Warnungen | 1 | ● ○ ● | Design in Arbeit | – |
+| `weather.alerts` | Warnungen | 1 | ● ● ● | Design in Arbeit | – |
 | `weather.advice` | Kleidung & Aktivität | 2 | ● ● ● | Design in Arbeit | `weather.alerts`, `weather.radar`, `weather.environment` |
 | `weather.environment` | Pollen, UV & Luft | 3 | ● ● ○ | Design in Arbeit | – |
 | `weather.locations` | Orte | 3 | ● ○ ○ | Design in Arbeit | `weather.home`, `weather.settings` |
@@ -292,8 +292,8 @@ Verkaufskanäle zentral verwalten: Shopify, Etsy, Amazon, eBay und eigener Shop 
 |---|---|---|---|---|---|
 | `sales.overview` ⌂ | Übersicht | 1 | ● ● ● | Design in Arbeit | `sales.channel`, `sales.order`, `sales.connect`, `sales.revenue`, `sales.orders` |
 | `sales.orders` | Bestellungen | 1 | ● ● ● | Design in Arbeit | `sales.order` |
-| `sales.order` | Bestellung | 1 | ● ○ ● | Design in Arbeit | `sales.channel`, `sales.orders` |
-| `sales.channel` | Kanal | 1 | ● ○ ● | Design in Arbeit | `sales.order`, `sales.sync-log` |
+| `sales.order` | Bestellung | 1 | ● ● ● | Design in Arbeit | `sales.channel`, `sales.orders` |
+| `sales.channel` | Kanal | 1 | ● ● ● | Design in Arbeit | `sales.order`, `sales.sync-log` |
 | `sales.sync-log` | Sync-Protokoll | 2 | ● ○ ○ | Design in Arbeit | `sales.channel` |
 | `sales.listings` | Produkte & Listings | 2 | – | Analysiert | – |
 | `sales.connect` | Kanal verbinden | 2 | ● ○ ○ | In Prüfung | `sales.channel` |
@@ -330,7 +330,7 @@ Alle Einstellungen in Gruppen: Darstellung und Theme, Module und Navigation, Ben
 |---|---|---|---|---|---|
 | `settings.home` ⌂ | Einstellungen | 1 | ● ● ● | In Prüfung | `settings.appearance`, `settings.region`, `settings.modules`, `settings.notifications`, `system.lock`, `settings.data`, `system.trash`, `settings.accounts`, `system.help`, `system.onboarding`, `settings.about` |
 | `settings.appearance` | Darstellung & Theme | 2 | ● ● ○ | Design in Arbeit | – |
-| `settings.modules` | Module & Navigation | 1 | ● ● ○ | In Prüfung | – |
+| `settings.modules` | Module & Navigation | 1 | ● ● ● | In Prüfung | – |
 | `settings.notifications` | Benachrichtigungen | 2 | ● ○ ● | Design in Arbeit | `system.notifications` |
 | `settings.data` | Daten, Export & Backup | 2 | ● ● ○ | Design in Arbeit | `system.trash` |
 | `settings.accounts` | Konten & Sync | 2 | ● ○ ○ | Design in Arbeit | `sales.connect` |

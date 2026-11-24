@@ -24,7 +24,7 @@ export const exerciseList = {
   name: 'Übungsliste',
   category: 'Fitness',
   description: 'Übungsbibliothek mit Suche und Filtern (Muskelgruppe, Equipment, Favoriten) als dichte Liste oder Kartenraster. Antippen öffnet die Übung (exercise.open), der Stern markiert Favoriten.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'view', label: 'Darstellung', type: 'select', options: ['list', 'grid'], default: 'list' },
     { name: 'title', label: 'Titel', type: 'text', default: 'Übungen' },
@@ -45,7 +45,8 @@ export const exerciseList = {
   .tk-exl__grid { display:grid; gap:var(--tk-space-3); grid-template-columns:repeat(auto-fill, minmax(min(100%, 210px), 1fr)); }
   .tk-exl__card { display:flex; flex-direction:column; background:var(--tk-c-surface); border:1px solid var(--tk-c-border); border-radius:var(--tk-radius-lg); overflow:hidden; cursor:pointer; min-width:0; } .tk-exl__card:hover { border-color:var(--tk-c-border-strong); }
   .tk-exl__cover { height:84px; display:grid; place-items:center; position:relative; } .tk-exl__cover .tk-exl__star { position:absolute; top:4px; right:4px; } .tk-exl__body { padding:var(--tk-space-3); display:flex; flex-direction:column; gap:8px; min-width:0; }
-  .bp-mobile .tk-exl__grid { grid-template-columns:repeat(2, minmax(0,1fr)); gap:var(--tk-space-2); }`,
+  .bp-mobile .tk-exl__grid { grid-template-columns:repeat(2, minmax(0,1fr)); gap:var(--tk-space-2); }
+  [data-tk-large-text] .tk-exl__grid { grid-template-columns:minmax(0,1fr); } [data-tk-large-text] .tk-exl__body .tk-fit-chips { flex-wrap:wrap; } [data-tk-large-text] .tk-exl__body .tk-badge { max-width:100%; white-space:normal; overflow-wrap:anywhere; }`,
   example: { props: { title: 'Übungen' }, data: { items: [
     { id: 'bankdruecken', name: 'Bankdrücken', muscle: 'Brust', secondary: ['Trizeps'], equipment: 'Langhantel', type: 'Verbund', level: 'Mittel', unit: 'kg', favorite: true },
     { id: 'latziehen', name: 'Latziehen', muscle: 'Rücken', secondary: ['Bizeps'], equipment: 'Kabel', type: 'Verbund', level: 'Anfänger', unit: 'kg', favorite: false },

@@ -3,7 +3,7 @@ import { html } from '../../../lib/html.js';
 import { useState } from 'preact/hooks';
 import { Card, Button, Badge, Icon, EmptyState } from '../../ui.js';
 import { fmtDate } from '../../../lib/format.js';
-import { arr, todayOf, eur, eur2, Tile, TrackerNote, Gain, SV_CSS, sum, whenLabel, QuietNote, QUIET_PROP } from './_savings.js';
+import { arr, todayOf, eur, eur2, Tile, PlanName, TrackerNote, Gain, SV_CSS, sum, whenLabel, QuietNote, QUIET_PROP } from './_savings.js';
 import { CHART_CSS } from './_chart.js';
 import { planTarget, planStatus, rhythmLabel, planExecutions, planStats, confirmedSet, monthlyTotal, setPlanActive, pauseUntil, perExecution } from './_plans.js';
 
@@ -14,7 +14,7 @@ export const savingsPlanList = {
   name: 'Sparplan-Liste',
   category: 'Sparpläne',
   description: 'Alle Sparpläne mit Rate, Rhythmus, nächster Ausführung, Wert und Status. Tabelle (dicht), Karten (mit Anteilsbalken) oder kompakte Zeilen; Pausieren und Fortsetzen direkt in der Zeile, mit Rückgängig.',
-  version: '1.1',
+  version: '1.3',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Sparpläne' },
     QUIET_PROP,
@@ -60,6 +60,12 @@ export const savingsPlanList = {
   .bp-mobile .tk-svpl__main > :nth-child(4) { grid-area:y; display:flex; align-items:baseline; justify-content:flex-end; gap:4px 8px; flex-wrap:wrap; white-space:nowrap; }
   .bp-mobile .tk-svpl__main > :nth-child(4) strong { display:inline; } .bp-mobile .tk-svpl__main > :nth-child(4) > span { display:inline-flex; }
   .bp-mobile .tk-svpl__acts { align-self:start; }
+  [data-tk-large-text] .tk-svpl__head { display:none; } [data-tk-large-text] .tk-svpl__row { grid-template-columns:minmax(0,1fr) 44px; align-items:start; }
+  [data-tk-large-text] .tk-svpl__main { grid-column:1; grid-template-columns:minmax(0,1fr); gap:6px; } [data-tk-large-text] .tk-svpl__cell--r { text-align:left; }
+  [data-tk-large-text] .tk-svpl__main { grid-template-areas:none; } [data-tk-large-text] .tk-svpl__main > :nth-child(n) { grid-area:auto; text-align:left; white-space:normal; padding-left:0; } [data-tk-large-text] .tk-svpl__main > :nth-child(4) { justify-content:flex-start; white-space:normal; }
+  [data-tk-large-text] .tk-svpl__main > :nth-child(2) > span, [data-tk-large-text] .tk-svpl__main > :nth-child(3) > span { display:block; }
+  .bp-mobile .tk-svpl__name > :first-child { display:none; }
+  [data-tk-large-text] .tk-svpl__name strong, [data-tk-large-text] .tk-svpl__name > div > span, [data-tk-large-text] .tk-svpl__cell strong, [data-tk-large-text] .tk-svpl__cell > span { white-space:normal; overflow:visible; text-overflow:clip; overflow-wrap:break-word; }
   .tk-svpl__cards { display:grid; grid-template-columns:repeat(auto-fill, minmax(min(100%,250px),1fr)); gap:var(--tk-space-4); }
   .tk-svpl__card { all:unset; box-sizing:border-box; display:flex; flex-direction:column; gap:10px; padding:var(--tk-space-4); border-radius:var(--tk-radius-lg); border:1px solid var(--tk-c-border); background:var(--tk-c-surface); cursor:pointer; min-width:0; }
   .tk-svpl__card:hover { border-color:var(--tk-c-border-strong); } .tk-svpl__card:focus-visible { outline:2px solid var(--tk-c-focus); } .tk-svpl__card[aria-selected="true"] { border-color:var(--tk-c-accent); }
@@ -110,7 +116,7 @@ export const savingsPlanList = {
         <${Card} title=${props.title} icon="piggy-bank" actions=${action}><div class="tk-svpl__share"><div class="tk-sv-bar" role="img" aria-label="Anteil der Raten am Monatsbetrag">${rows.filter((r) => r.p.active).map((r) => html`<i title=${r.p.name} style=${`flex:${r.p.monthly};background:var(--tk-chart-${r.p.tone || 1})`}></i>`)}</div>
           <span class="tk-sv-meta">Verteilung der ${eur(ctx, total)} pro Monat auf ${rows.filter((r) => r.p.active).length} aktive Pläne</span></div>
           <div class="tk-svpl__cards">${rows.map((r) => html`<button type="button" class="tk-svpl__card" aria-selected=${props.selectable && selId === r.p.id ? 'true' : 'false'} onClick=${() => open(r.p)}>
-            <div class="tk-sv-row"><${Tile} tone=${r.p.tone || 1} icon=${r.tgt.icon} /><div class="tk-grow"><strong class="tk-truncate" style="display:block">${r.p.name}</strong><span class="tk-sv-meta tk-truncate" style="display:block">${r.tgt.label}</span></div></div>
+            <div class="tk-sv-row"><${Tile} tone=${r.p.tone || 1} icon=${r.tgt.icon} /><div class="tk-grow"><strong class="tk-truncate" style="display:block"><${PlanName} name=${r.p.name} /></strong><span class="tk-sv-meta tk-truncate" style="display:block">${r.tgt.label}</span></div></div>
             <div><div class="tk-svpl__big">${eur(ctx, r.p.monthly)}</div><span class="tk-sv-meta">pro Monat · ${rhythmLabel(r.p)}</span></div>
             <div class="tk-sv-row" style="justify-content:space-between;flex-wrap:wrap;gap:6px"><${Badge} tone=${r.st.tone} icon=${r.st.icon}>${r.st.label}<//><span class="tk-sv-meta tk-num">${r.next ? `Nächste: ${fmtDate(r.next.date, { style: 'weekday' })}` : ''}</span></div>
             <div class="tk-sv-row" style="justify-content:space-between;border-top:1px solid var(--tk-c-border);padding-top:10px;flex-wrap:wrap"><span class="tk-sv-meta">Wert</span><span class="tk-num" style="font-weight:600">${eur(ctx, r.stats.value)}</span><${Gain} ctx=${ctx} value=${r.stats.gain} ratio=${r.stats.ratio} showAmount=${false} /></div></button>`)}</div>
@@ -118,14 +124,14 @@ export const savingsPlanList = {
     }
     if (props.style === 'compact') {
       return html`<${Card} title=${props.title} icon="piggy-bank" actions=${action}><div class="tk-col" style="gap:2px">${rows.map((r) => html`<button type="button" class="tk-svpl__cmp" aria-selected=${props.selectable && selId === r.p.id ? 'true' : 'false'} onClick=${() => open(r.p)}>
-        <${Tile} tone=${r.p.tone || 1} icon=${r.tgt.icon} size=${16} /><div><strong>${r.p.name}</strong><span class="tk-sv-meta tk-truncate" style="display:block">${r.st.id === 'aktiv' ? nextText(r) : r.st.label}</span></div><strong class="tk-num">${eur(ctx, r.p.monthly)}</strong></button>`)}</div>${foot}<//>`;
+        <${Tile} tone=${r.p.tone || 1} icon=${r.tgt.icon} size=${16} /><div><strong><${PlanName} name=${r.p.name} /></strong><span class="tk-sv-meta tk-truncate" style="display:block">${r.st.id === 'aktiv' ? nextText(r) : r.st.label}</span></div><strong class="tk-num">${eur(ctx, r.p.monthly)}</strong></button>`)}</div>${foot}<//>`;
     }
     const totals = { monthly: monthlyTotal(plans), value: sum(rows.filter((r) => r.stats), (r) => r.stats.value), gain: sum(rows, (r) => r.stats.gain) };
     return html`<${Card} flush title=${props.title} icon="piggy-bank" actions=${action}>
       <div class="tk-svpl__head" aria-hidden="true"><span>Plan</span><span>Rate</span><span>Nächster Termin</span><span style="text-align:right">Wert</span><span></span></div>
       ${rows.map((r) => html`<div class="tk-svpl__row" aria-selected=${props.selectable && selId === r.p.id ? 'true' : 'false'}>
         <button type="button" class="tk-svpl__main" onClick=${() => open(r.p)} aria-label=${`${r.p.name} öffnen`}>
-          <div class="tk-svpl__name"><${Tile} tone=${r.p.tone || 1} icon=${r.tgt.icon} size=${17} /><div><strong>${r.p.name}</strong><span>${r.tgt.label}${r.st.id !== 'aktiv' ? ` · ${r.st.label}` : ''}</span></div></div>
+          <div class="tk-svpl__name"><${Tile} tone=${r.p.tone || 1} icon=${r.tgt.icon} size=${17} /><div><strong><${PlanName} name=${r.p.name} /></strong><span>${r.tgt.label}${r.st.id !== 'aktiv' ? ` · ${r.st.label}` : ''}</span></div></div>
           <div class="tk-svpl__cell"><strong>${eur(ctx, r.p.monthly)}</strong><span>${rhythmLabel(r.p)}</span></div>
           <div class="tk-svpl__cell"><strong data-next=${r.next ? '1' : '0'}>${r.next ? fmtDate(r.next.date, { style: 'weekday' }) : nextText(r)}</strong><span>${r.next ? `${eur2(ctx, perExecution(r.p))}${r.next.shifted ? ' · verschoben' : ''}` : r.st.label}</span></div>
           <div class="tk-svpl__cell tk-svpl__cell--r"><strong>${eur(ctx, r.stats.value)}</strong><span><${Gain} ctx=${ctx} value=${r.stats.gain} ratio=${r.stats.ratio} showAmount=${false} /></span></div></button>

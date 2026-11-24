@@ -23,5 +23,6 @@ import weekPlanner from './week-planner.js';
 import shoppingList from './shopping-list.js';
 import goalWizard from './goal-wizard.js';
 import nutritionStats from './nutrition-stats.js';
+import startInvite from './start-invite.js';
 
-export default [...calorieBudget, ...macroSummary, ...mealTimeline, ...waterTracker, ...nextMealCard, ...nutritionHints, ...dayStrip, ...foodSearch, ...portionPicker, ...scanSim, ...quickKcal, ...kcalTrend, ...logBar, ...foodList, ...nutritionTable, ...foodForm, ...recipeList, ...recipeDetail, ...cookMode, ...weekPlanner, ...shoppingList, ...goalWizard, ...nutritionStats];
+export default [...calorieBudget, ...macroSummary, ...mealTimeline, ...waterTracker, ...nextMealCard, ...nutritionHints, ...dayStrip, ...foodSearch, ...portionPicker, ...scanSim, ...quickKcal, ...kcalTrend, ...logBar, ...foodList, ...nutritionTable, ...foodForm, ...recipeList, ...recipeDetail, ...cookMode, ...weekPlanner, ...shoppingList, ...goalWizard, ...nutritionStats, ...startInvite];

@@ -8,7 +8,7 @@ import { FIT_CSS } from './_ui.js';
 const KIND = {
   done: { icon: 'check', tone: 'success', label: 'Erledigt' }, 'run-done': { icon: 'check', tone: 'success', label: 'Gelaufen' },
   strength: { icon: 'dumbbell', tone: 'accent', label: 'Geplant', badge: 'neutral' }, run: { icon: 'footprints', tone: 'info', label: 'Lauf' },
-  rest: { icon: 'moon', tone: 'neutral', label: 'Erholung' }, missed: { icon: 'minus', tone: 'neutral', label: 'Ausgelassen' },
+  rest: { icon: 'moon', tone: 'neutral', label: 'Erholung' }, missed: { icon: 'minus', tone: 'neutral', label: 'Ausgelassen' }, prestart: { icon: 'minus', tone: 'neutral', label: 'Vor dem Start' },
 };
 
 export const trainingWeek = {
@@ -16,8 +16,9 @@ export const trainingWeek = {
   name: 'Trainingswoche',
   category: 'Fitness',
   description: 'Wochenrhythmus Mo–So mit erledigten, geplanten und Erholungstagen sowie Läufen. Als Streifen oder Liste. Antippen eines Tages wählt ihn (ctx.ui.selectedDay) und meldet day.open.',
-  version: '1.0',
+  version: '1.1',
   props: [
+    { name: 'quietEmpty', label: 'Ohne Daten nichts anzeigen (Erststart)', type: 'boolean', default: false },
     { name: 'title', label: 'Titel', type: 'text', default: 'Diese Woche' },
     { name: 'layout', label: 'Darstellung', type: 'select', options: ['strip', 'list'], default: 'strip' },
     { name: 'event', label: 'Event beim Antippen', type: 'text', default: 'day.open' },
@@ -42,6 +43,7 @@ export const trainingWeek = {
     history: [{ id: 'h1', date: '2026-11-23', title: 'Unterkörper', durationMin: 58 }], runs: [] } },
   render: function TrainingWeek({ props, data, ctx }) {
     const today = isoDay(ctx.today);
+    if (!(data.program?.rhythm || []).length && props.quietEmpty) return null;
     if (!(data.program?.rhythm || []).length) return html`<${Card} title=${props.title}><${EmptyState} icon="calendar-days" title="Noch kein Plan" text="Wähle ein Programm, dann erscheint hier deine Woche." /><//>`;
     const week = weekOverview(data.program, data.history || [], data.runs || [], today);
     const upcoming = week.find((d) => d.date >= today && d.dayId); const selected = ctx.ui.selectedDay || (week.some((d) => d.dayId === ctx.ui.selectedId) ? ctx.ui.selectedId : upcoming?.dayId);

@@ -16,5 +16,6 @@ import executionList from './execution-list.js';
 import savingsCompare from './savings-compare.js';
 import taxAllowance from './tax-allowance.js';
 import savingsHints from './savings-hints.js';
+import planActions from './plan-actions.js';
 
-export default [...savingsSummary, ...savingsPlanList, ...growthChart, ...savingsSliders, ...savingsResult, ...savingsTable, ...goalCalculator, ...savingsGoalCard, ...savingsWizard, ...executionCalendar, ...coverageCheck, ...savingsPlanDetail, ...executionList, ...savingsCompare, ...taxAllowance, ...savingsHints];
+export default [...savingsSummary, ...savingsPlanList, ...growthChart, ...savingsSliders, ...savingsResult, ...savingsTable, ...goalCalculator, ...savingsGoalCard, ...savingsWizard, ...executionCalendar, ...coverageCheck, ...savingsPlanDetail, ...executionList, ...savingsCompare, ...taxAllowance, ...savingsHints, ...planActions];

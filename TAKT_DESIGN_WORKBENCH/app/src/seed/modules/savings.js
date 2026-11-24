@@ -132,6 +132,7 @@ const plans = {
     { trigger: '„Neu“ antippen', result: 'Assistent „Sparplan anlegen“', event: 'plan.create', to: 'savings.create' },
     { trigger: 'Filterchip wählen', result: 'Liste zeigt nur diesen Status', event: 'filter.change' },
     { trigger: 'Pause-Symbol', result: 'Dauer wählen, Plan pausiert', event: 'plan.toggle' },
+    { trigger: '„Ausführung bestätigen“ auf der Plan-Karte', result: 'Umbuchung entsteht, der Plan rutscht zu „Danach“, Rückgängig erscheint', event: 'execution.confirm' },
   ],
   acceptance: ['Der Filter „Pausiert“ zeigt nur den E-Bike-Plan mit Datum der Wiederaufnahme.', 'Die Summenzeile passt zu den sichtbaren Zeilen.', 'Ohne Treffer erscheint „Kein Sparplan passt zum Filter“.'],
   viewports: ALL_VP, demoData: { ...WORLD },
@@ -157,6 +158,18 @@ const plans = {
         hdr({ title: 'Deine Sparpläne', subtitle: 'So verteilt sich dein Monatsbetrag', primaryLabel: 'Neuer Plan', primaryEvent: 'plan.create' }),
         { id: 'filter', component: 'search-filter', region: 'main', props: { filters: ['Alle', 'Aktiv', 'Pausiert'], showSearch: false } },
         { id: 'list', component: 'savings-plan-list', region: 'main', props: { style: 'cards', title: 'Sparpläne', respectFilter: true, showActions: false } },
+        FOOT,
+      ],
+    },
+    {
+      id: 'C', name: 'Was jetzt dran ist', direction: 'fokus',
+      concept: 'Keine Tabelle, sondern eine Reihenfolge nach Dringlichkeit: oben die Aussage, was in den nächsten Tagen ansteht, dann je Plan eine Karte mit Termin, Betrag und genau einer Aktion (bestätigen, pausieren oder fortsetzen). Deckung des Girokontos als eine Zeile direkt an der fälligen Ausführung.',
+      description: '+ Das Nächste zuerst, eine klare Aktion je Plan, Bestätigen ohne Umweg  − Kein Vergleich von Rate und Wert über alle Pläne, Filter und Suche nur über die Tabelle',
+      layout: { type: 'stack', narrow: true },
+      nav: [{ event: 'plan.open', to: 'savings.plan' }, { event: 'plan.create', to: 'savings.create' }],
+      blocks: [
+        hdr({ title: 'Sparpläne', subtitle: 'Di, 24.11.', primaryLabel: '' }),
+        { id: 'act', component: 'plan-actions', region: 'main', props: { title: 'Was jetzt dran ist', dueDays: 7, showCoverage: true, showTracker: true, quietEmpty: false } },
         FOOT,
       ],
     },
@@ -671,5 +684,6 @@ export default {
     { featureId: 'savings.create', title: 'Sparpläne als Plan-Tracker statt Ausführung', decision: 'TAKT führt keine Sparpläne aus. Es erinnert, gleicht ab und rechnet; der Plan wird beim Broker oder der Bank eingetragen.', rationale: 'Eine Broker-Anbindung wäre ein eigenes Projekt mit Lizenz und Haftung. Der Plan-Tracker liefert den Nutzen (Überblick, Erinnerung, Deckung) ohne dieses Risiko.', tradeoffs: 'Mehr manuelle Schritte für Nutzer; dafür keine regulatorische Last und volle Kontrolle beim Anbieter.', status: 'decided' },
     { featureId: 'savings.calendar', title: 'Deckung mit Puffer statt Prognose aller Ausgaben', decision: 'Der Deckungs-Check rechnet Kontostand, Fixkosten, Sparraten und erwartetes Einkommen und zieht einen wählbaren Puffer für variable Ausgaben ab.', rationale: 'Variable Ausgaben lassen sich nicht seriös vorhersagen. Ein sichtbarer Puffer ist ehrlicher und leicht erklärbar („Wie berechnet?“).', tradeoffs: 'Weniger präzise als eine Ausgabenprognose, dafür nachvollziehbar und ruhig formuliert.', status: 'decided' },
     { featureId: 'savings.tax', title: 'Steuerparameter fest im Kern oder einstellbar?', decision: '', rationale: 'Parameter stehen mit Stand im Rechenkern. Offen ist, ob Nutzer Kirchensteuer und Freibetrag selbst einstellen dürfen oder nur per App-Update ändern.', tradeoffs: 'Fest: eine geprüfte Quelle. Einstellbar: passt zu mehr Fällen, aber Fehlerrisiko und Prüfaufwand.', status: 'open' },
+    { featureId: 'savings.plans', title: 'Alle Sparpläne: Tabelle, Karten oder „Was jetzt dran ist“?', decision: '', rationale: 'A ist eine Tabelle mit Filter und Summe, B zeigt Karten mit Anteilen, C ordnet nach Dringlichkeit und bietet je Plan genau eine Aktion (bestätigen, pausieren, fortsetzen). Empfehlung: C als Fokus-Version, A für den Laptop. Offen ist, ob „Ausführung bestätigen“ schon vor dem Termin möglich sein soll oder erst am Ausführungstag.', tradeoffs: 'C: klare Handlung, wenig Ablenkung, aber kein Vergleich von Rate und Wert. A: Überblick, dafür mehr Zahlen auf einmal.', status: 'open' },
   ],
 };

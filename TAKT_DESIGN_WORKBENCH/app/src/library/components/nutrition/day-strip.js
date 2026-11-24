@@ -9,8 +9,9 @@ export const dayStrip = {
   name: 'Tagesleiste',
   category: 'Ernährung',
   description: 'Sieben Tage als Streifen mit Vor/Zurück. Ein Tap wählt den Tag für alle Ernährungs-Blöcke der Seite (ctx.ui.day). Die Füllung zeigt die Kalorien ohne Wertung; nicht erfasste Tage bleiben leer.',
-  version: '1.0',
+  version: '1.1',
   props: [
+    { name: 'quietEmpty', label: 'Im Erststart (noch nichts erfasst) nichts anzeigen', type: 'boolean', default: false },
     { name: 'days', label: 'Anzahl Tage', type: 'number', default: 7 },
     { name: 'showKcal', label: 'Kalorien-Füllung', type: 'boolean', default: true },
     { name: 'framed', label: 'In Karte', type: 'boolean', default: false },
@@ -33,6 +34,7 @@ export const dayStrip = {
   example: { data: { history: [-6, -5, -4, -3, -2, -1, 0].map((n, i) => ({ date: `2026-11-${24 + n}`, kcal: [2444, 0, 2466, 2089, 2701, 2273, 1490][i], logged: i !== 1 })), goals: { kcal: 2400 } } },
   render: function DayStrip({ props, data, ctx }) {
     const hist = arr(data.history), today = todayIso(ctx), sel = viewDay(ctx), goal = obj(data.goals).kcal || 2400;
+    if (props.quietEmpty && !hist.length) return null;
     const n = Math.max(3, Math.min(10, props.days));
     const days = Array.from({ length: n }, (_, i) => shiftDay(today, i - (n - 1)));
     if (!hist.length) return html`<${EmptyState} icon="calendar-days" title="Noch kein Verlauf" text="Sobald du Mahlzeiten erfasst, erscheint hier die Woche." />`;

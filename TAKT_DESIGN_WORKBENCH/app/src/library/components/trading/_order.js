@@ -47,9 +47,13 @@ export function check({ inst, side, type, qtyText, limitText, stopText, data, ct
   return { qty, limit, stop, pv, errors, warnings, notes, ok: !Object.keys(errors).length };
 }
 
+let orderSeq = 0;
+/** Order-ID: ctx.newId (deterministisch je Sitzung); ohne Kontext ein Modulzähler – nie Uhrzeit oder Zufall. */
+const newOrderId = (ctx) => (ctx && ctx.newId ? ctx.newId('o') : `o-${++orderSeq}`);
+
 /** Neue simulierte Order (Markt gilt sofort als simuliert zum Kurs, Limit und Stop bleiben offen). */
 export function makeOrder({ ctx, inst, side, type, chk, validity }) {
   const { pv, qty, limit, stop } = chk, done = type === 'markt' || (type === 'limit' && ((side === 'buy' && limit >= inst.price) || (side === 'sell' && limit <= inst.price)));
-  return { id: ctx.newId ? ctx.newId('o') : `o-${Date.now()}`, securityId: inst.id, side, type, qty, ...(type === 'limit' ? { limit } : {}), ...(type === 'stop' ? { stop } : {}), price: done && type !== 'limit' ? inst.price : pv.price, fee: pv.fee, total: pv.total,
+  return { id: newOrderId(ctx), securityId: inst.id, side, type, qty, ...(type === 'limit' ? { limit } : {}), ...(type === 'stop' ? { stop } : {}), price: done && type !== 'limit' ? inst.price : pv.price, fee: pv.fee, total: pv.total,
     status: done ? 'simuliert' : 'offen', validity: type === 'markt' ? 'Tag' : validity, created: isoLocalOf(ctx.now ? ctx.now() : ctx.today), user: true };
 }

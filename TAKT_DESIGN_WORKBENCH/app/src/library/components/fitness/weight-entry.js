@@ -11,8 +11,9 @@ export const weightEntry = {
   name: 'Gewicht erfassen',
   category: 'Fitness',
   description: 'Gewicht in 0,1-kg-Schritten erfassen (Vorbelegung: letzter Wert), speichern mit einem Tap. Bei einem Sprung über 3 kg folgt eine freundliche Rückfrage. Ein vorhandener Wert des Tages wird ersetzt.',
-  version: '1.2',
+  version: '1.3',
   props: [
+    { name: 'quietEmpty', label: 'Ohne Verlauf nichts anzeigen (Erststart)', type: 'boolean', default: false },
     { name: 'title', label: 'Titel', type: 'text', default: 'Heute wiegen' },
     { name: 'openEvent', label: 'Event für „Verlauf“ (leer = kein Knopf)', type: 'text', default: '' },
     { name: 'layout', label: 'Darstellung', type: 'select', options: ['card', 'inline'], default: 'card' },
@@ -27,6 +28,7 @@ export const weightEntry = {
   render: function WeightEntry({ props, data, setData, ctx }) {
     const log = [...(data.log || [])].sort((a, b) => (a.date < b.date ? -1 : 1)); const last = log.at(-1); const today = isoDay(ctx.today);
     const [kg, setKg] = useState(null); const value = kg ?? last?.kg ?? 75; const has = last && last.date === today;
+    if (props.quietEmpty && !log.length) return null;
     const commit = () => { setData('log', (all) => [...(Array.isArray(all) ? all.filter((x) => x.date !== today) : []), { date: today, kg: value }].sort((a, b) => (a.date < b.date ? -1 : 1))); ctx.emit('body.add', { kg: value, date: today }); ctx.toast(`${fmtKg(value)} gespeichert`); setKg(null); };
     const save = () => {
       if (last && Math.abs(value - last.kg) > 3) return ctx.openDialog({ title: 'Stimmt der Wert?', body: () => html`<p>${fmtKg(value)} liegt ${fmtKg(r1(Math.abs(value - last.kg)))} ${value > last.kg ? 'über' : 'unter'} deinem letzten Wert (${fmtKg(last.kg)}). Magst du kurz prüfen, ob die Eingabe passt?</p>`,

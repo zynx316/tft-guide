@@ -13,8 +13,9 @@ export const nextWorkout = {
   name: 'Nächstes Training',
   category: 'Fitness',
   description: 'Was steht an: heute trainieren oder Erholungstag mit Blick auf die nächste Einheit. Zeigt Übungen, Dauer, Termine davor aus dem Kalender und startet das Training.',
-  version: '1.2',
+  version: '1.3',
   props: [
+    { name: 'quietEmpty', label: 'Ohne Daten nichts anzeigen (Erststart)', type: 'boolean', default: false },
     { name: 'style', label: 'Darstellung', type: 'select', options: ['hero', 'plain'], default: 'hero' },
     { name: 'showExercises', label: 'Übungen zeigen', type: 'boolean', default: true },
     { name: 'contextNote', label: 'Zusatzhinweis (überschreibt den Wetter-Hinweis aus der Welt)', type: 'text', default: '' },
@@ -39,6 +40,7 @@ export const nextWorkout = {
   render: function NextWorkout({ props, data, ctx }) {
     const t = data.today;
     const noPlan = data.program && !(data.program.days || []).length;
+    if ((!t || !t.nextDayId || noPlan) && props.quietEmpty) return null;
     if (!t || !t.nextDayId || noPlan) return html`<${Card} title="Training"><${EmptyState} icon="dumbbell" title="Kein Training geplant" text="Wähle im Plan einen Rhythmus, dann erscheint hier dein nächstes Training." action=${html`<${Button} size="sm" icon="calendar-days" onClick=${() => ctx.emit('plan.open')}>Plan wählen<//>`} /><//>`;
     const isToday = t.kind === 'strength'; const evs = props.showContext ? dayEvents(data.events, t.nextDate) : [];
     const before = evs.filter((e) => clockOf(e.end) <= '18:30').pop();

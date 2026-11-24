@@ -3,6 +3,7 @@ import { html } from '../../../lib/html.js';
 import { useState } from 'preact/hooks';
 import { Card, Button, Badge, Icon, Segmented, EmptyState, Input, Field, Progress, Switch, Select } from '../../ui.js';
 import { isoLocal, wordCount } from './content-util.js';
+import { useReceiptForm, findDupe, CATS, ACCOUNTS } from './receipt-parts.js';
 import { money } from '../../helpers.js';
 import { fmt } from '../../../lib/util.js';
 import { maskMoney } from '../../../lib/format.js';
@@ -128,27 +129,10 @@ export const ocrResult = {
 };
 
 // ------------------------------------------------------------------------------------------------ Beleg erkennen ---
-const CATS = ['Lebensmittel', 'Haushalt', 'Mobilität', 'Freizeit', 'Gesundheit', 'Business'];
-const ACCOUNTS = { Girokonto: 'acc-giro', Kreditkarte: 'acc-kreditkarte', Geschäftskonto: 'acc-business' };
-const toNum = (v) => parseFloat(String(v).replace(/\./g, '').replace(',', '.'));
 const Conf = ({ c }) => (c != null && c < 0.85 ? html`<${Badge} tone="warning" icon="alert-triangle">Bitte prüfen<//>` : null);
 
 function ReceiptForm({ rc, props, setData, ctx, dupe }) {
-  const [f, setF] = useState({ merchant: rc.merchant, date: rc.date, total: rc.total.toFixed(2).replace('.', ','), cat: rc.category, acc: rc.account || 'Girokonto' });
-  const set = (k) => (v) => setF((x) => ({ ...x, [k]: v }));
-  const total = toNum(f.total); const today = isoLocal(ctx.today).slice(0, 10);
-  const err = { total: !(total > 0) ? 'Diese Angabe passt nicht. Prüfe den Betrag.' : '', date: !f.date || f.date > today ? 'Das Datum liegt in der Zukunft oder fehlt.' : '', merchant: !f.merchant.trim() ? 'Händler fehlt.' : '' };
-  const booked = rc.status === 'gebucht'; const valid = !err.total && !err.date && !err.merchant;
-  const vat = total > 0 ? Math.round((total / (1 + rc.vatRate / 100)) * (rc.vatRate / 100) * 100) / 100 : 0;
-  // Vorbelegung für „Schnell erfassen“ (Finanzen): Betrag positiv, Konto als ID, Uhrzeit vom Beleg.
-  const prefill = { kind: 'expense', title: f.merchant.trim(), amount: total > 0 ? total : 0, date: f.date, time: rc.time, category: f.cat, account: ACCOUNTS[f.acc] || 'acc-giro', receiptId: rc.id };
-  const book = () => {
-    // App: Schnell erfassen öffnet mit den Angaben, gebucht wird dort nach „Speichern“. Einzel-Screen (kein Ziel erreichbar): direkt buchen.
-    if (ctx.emit('receipt.book', { id: rc.id, to: 'finance.quickadd', ui: { prefill } })) return;
-    setData('transactions', (a) => [{ id: `t-${rc.id}`, date: `${f.date}T${rc.time || '12:00'}:00`, title: f.merchant.trim(), category: f.cat, amount: -total, account: ACCOUNTS[f.acc] || 'acc-giro', type: 'expense', icon: 'receipt', receiptId: rc.id }, ...(Array.isArray(a) ? a : [])]);
-    setData('receipts', (a) => a.map((x) => (x.id === rc.id ? { ...x, status: 'gebucht', merchant: f.merchant, date: f.date, total, category: f.cat, account: f.acc } : x)));
-    ctx.toast(`Gebucht: ${money(ctx, -total)} · ${f.merchant.trim()}`);
-  };
+  const { f, set, err, booked, valid, vat, book, toFinance } = useReceiptForm({ rc, setData, ctx });
   const lines = rc.lines || [];
   return html`<div class=${`tk-rcpt ${props.showImage ? 'tk-rcpt--img' : ''}`}>
     ${props.showImage && html`<div class="tk-ocr__img" role="img" aria-label=${`Vorschau des Belegs ${rc.merchant}`}><span class="tk-ocr__corner tk-ocr__corner--tl"></span><span class="tk-ocr__corner tk-ocr__corner--tr"></span><span class="tk-ocr__corner tk-ocr__corner--bl"></span><span class="tk-ocr__corner tk-ocr__corner--br"></span>
@@ -165,7 +149,7 @@ function ReceiptForm({ rc, props, setData, ctx, dupe }) {
         <div class="tk-rcpt__vat"><span class="tk-subtle">Darin MwSt ${rc.vatRate} %</span><strong class="tk-num">${money(ctx, vat)}</strong></div></div>
       ${props.showItems && lines.length > 0 && html`<div class="tk-rcpt__lines"><div class="tk-label">Positionen</div>${lines.map((l) => html`<div class="tk-rcpt__line"><span class="tk-truncate">${l.qty} × ${l.name}</span><span class="tk-num">${money(ctx, l.total)}</span></div>`)}</div>`}
       <div class="tk-ocr__actions"><${Button} variant="primary" icon=${booked ? 'check' : 'wallet'} disabled=${booked || !valid} onClick=${book}>${booked ? 'Gebucht' : 'Als Ausgabe buchen'}<//>
-        <${Button} icon="arrow-up-right" onClick=${() => ctx.emit('receipt.finance', { id: rc.id, ui: { prefill } })}>In Finanzen prüfen<//></div>
+        <${Button} icon="arrow-up-right" onClick=${toFinance}>In Finanzen prüfen<//></div>
       <div class="tk-subtle" style="font-size:var(--tk-fs-xs)">${ctx.mode === 'app' ? 'Die Buchung wird in Finanzen vorgeschlagen und erst nach „Speichern“ dort angelegt.' : 'Die Buchung wird nur vorgeschlagen und erst nach „Als Ausgabe buchen“ angelegt.'} Beträge stammen aus der Erkennung, bitte vergleiche sie mit dem Beleg.</div>
     </div></div>`;
 }
@@ -175,20 +159,20 @@ export const receiptReview = {
   name: 'Beleg erkennen',
   category: 'Inhalte',
   description: 'Erkannter Beleg als prüfbares Formular (Händler, Datum, Betrag, MwSt, Kategorie, Konto) mit Konfidenz-Hinweisen, Dublettenprüfung gegen vorhandene Buchungen und „Als Ausgabe buchen“: in der App öffnet Schnell erfassen (Finanzen) mit den Angaben als Vorbelegung, im Einzel-Screen schreibt es direkt in die Buchungen der Datenwelt. Auch als Belegliste und als „Nächster Beleg“-Karte.',
-  version: '1.2',
+  version: '1.4',
   props: [
     { name: 'mode', label: 'Darstellung', type: 'select', options: ['review', 'list', 'next'], default: 'review' },
     { name: 'title', label: 'Titel', type: 'text', default: 'Beleg prüfen' },
     { name: 'showImage', label: 'Belegvorschau', type: 'boolean', default: true },
     { name: 'showItems', label: 'Positionen', type: 'boolean', default: true },
     { name: 'limit', label: 'Max. Einträge (Liste)', type: 'number', default: 0 },
-    { name: 'quietEmpty', label: 'Ohne Belege nichts anzeigen (Darstellung „next“)', type: 'boolean', default: false },
+    { name: 'quietEmpty', label: 'Ohne Belege nichts anzeigen (Listen und „next“)', type: 'boolean', default: false },
   ],
   data: [
     { slot: 'receipts', label: 'Belege', default: 'receipts', shape: '{id,merchant,date,total,vatRate,category,account?,payment,status:offen|gebucht,lines?,conf?}[]', required: true },
     { slot: 'transactions', label: 'Buchungen (Datenwelt)', default: 'transactions', shape: '{id,date,title,amount,type}[]', required: false },
   ],
-  events: ['receipt.open', 'receipt.book', 'receipt.finance'],
+  events: ['receipt.open', 'receipt.book', 'receipt.finance', 'receipt.capture', 'form.invalid'],
   states: ['empty'],
   css: `
   [data-tk-large-text] .tk-rcpt__row .tk-truncate, [data-tk-large-text] .tk-ocr .tk-truncate { white-space:normal; overflow:visible; text-overflow:clip; overflow-wrap:anywhere; }
@@ -197,6 +181,7 @@ export const receiptReview = {
   .bp-desktop .tk-rcpt--img { grid-template-columns:220px minmax(0,1fr); }
   .tk-rcpt__grid { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:var(--tk-space-3); align-items:start; }
   .bp-mobile .tk-rcpt__grid { grid-template-columns:minmax(0,1fr); }
+  [data-tk-large-text] .tk-rcpt__grid { grid-template-columns:minmax(0,1fr); }
   .tk-rcpt__vat { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:0 4px; min-height:var(--tk-size-control); font-size:var(--tk-fs-sm); }
   .tk-rcpt__lines { display:flex; flex-direction:column; border:1px solid var(--tk-c-border); border-radius:var(--tk-radius-md); padding:var(--tk-space-3) var(--tk-space-4); gap:6px; }
   .tk-rcpt__line { display:flex; justify-content:space-between; gap:12px; font-size:var(--tk-fs-sm); color:var(--tk-c-text-muted); }
@@ -214,8 +199,8 @@ export const receiptReview = {
     const all = (data.receipts || []).slice().sort((a, b) => String(b.date).localeCompare(String(a.date)));
     const sel = all.find((r) => r.id === ctx.ui.selectedId) || all.find((r) => r.status === 'offen') || all[0];
     const open = (r) => { ctx.setUi('selectedId', r.id); ctx.emit('receipt.open', { id: r.id }); };
-    if (!all.length && props.quietEmpty && props.mode === 'next') return null;   // Startseite ohne Daten: nur eine Aktion (die Wege oben), keine leere Karte
-    if (!all.length) return html`<${Card} title=${props.title} icon="receipt"><${EmptyState} icon="receipt" title="Noch kein Beleg" text="Fotografiere einen Kassenbon oder eine Rechnung, TAKT liest Händler, Datum und Betrag aus." /><//>`;
+    if (!all.length && props.quietEmpty && props.mode !== 'review') return null;   // Startseite ohne Daten: nur eine Aktion (die Wege oben), keine leere Karte
+    if (!all.length) return html`<${Card} title=${props.title} icon="receipt"><${EmptyState} icon="receipt" title="Noch kein Beleg" text="Fotografiere einen Kassenbon oder eine Rechnung, TAKT liest Händler, Datum und Betrag aus." action=${html`<${Button} variant="primary" icon="camera" onClick=${() => { if (!ctx.emit('receipt.capture', { to: 'picture-to-text.capture' })) ctx.toast('Erfassen öffnet in „Bild erfassen“'); }}>Beleg fotografieren<//>`} /><//>`;
     if (props.mode === 'list') {
       const list = props.limit > 0 ? all.slice(0, props.limit) : all;
       return html`<${Card} flush title=${props.title} icon="receipt" actions=${html`<${Badge} tone="warning">${all.filter((r) => r.status === 'offen').length} offen<//>`}>${list.map((r) => html`<button type="button" class="tk-rcpt__row" aria-current=${r.id === sel.id && ctx.ui.selectedId ? 'true' : 'false'} onClick=${() => open(r)}>
@@ -229,7 +214,7 @@ export const receiptReview = {
       return html`<div class="tk-rcpt__next"><span class="tk-label">Beleg wartet</span><div class="tk-rcpt__big">${money(ctx, r.total)}</div><div><strong>${r.merchant}</strong><div class="tk-muted" style="font-size:var(--tk-fs-sm)">${fmt.date(r.date)} · Vorschlag: ${r.category}${n.length > 1 ? ` · ${n.length - 1} weitere offen` : ''}</div></div>
         <div><${Button} variant="primary" icon="wallet" onClick=${() => open(r)}>Prüfen und buchen<//></div></div>`;
     }
-    const dupe = (data.transactions || []).find((t) => Math.abs(Math.abs(t.amount) - sel.total) < 0.005 && Math.abs(new Date(t.date) - new Date(sel.date)) < 4 * 864e5 && t.id !== `t-${sel.id}`);
+    const dupe = findDupe(data.transactions, sel);
     return html`<${Card} title=${props.title} icon="receipt" actions=${html`<${Badge}>${sel.merchant}<//>`}><${ReceiptForm} key=${sel.id} rc=${sel} props=${props} setData=${setData} ctx=${ctx} dupe=${dupe} /><//>`;
   },
 };
@@ -265,6 +250,7 @@ export const businessCard = {
   .tk-card-bc { display:flex; flex-direction:column; gap:var(--tk-space-4); min-width:0; }
   .tk-card-bc__card { display:flex; align-items:center; gap:14px; padding:var(--tk-space-5); border-radius:var(--tk-radius-lg); background:var(--tk-c-accent-soft); border:1px solid color-mix(in srgb, var(--tk-c-accent) 30%, transparent); min-width:0; }
   .tk-card-bc .tk-input, .tk-rcpt .tk-input { text-overflow:ellipsis; }
+  [data-tk-large-text] .tk-card-bc .tk-input, [data-tk-large-text] .tk-rcpt .tk-input { text-overflow:clip; }
   .tk-card-bc__av { width:56px; height:56px; border-radius:50%; flex:none; display:grid; place-items:center; background:var(--tk-c-accent); color:var(--tk-c-on-accent, var(--tk-c-bg)); font-weight:var(--tk-fw-bold); font-size:var(--tk-fs-lg); }
   .tk-card-bc__name { font-size:var(--tk-fs-xl); font-weight:var(--tk-fw-bold); letter-spacing:var(--tk-ls-tight); overflow-wrap:anywhere; }`,
   example: { data: { cards: [{ id: 'k1', name: 'Dr. Anna Müller', title: 'Steuerberaterin', company: 'Müller & Partner mbB', phone: '+49 521 555 0142', email: 'anna.mueller@mueller-partner.example', web: 'mueller-partner.example', address: 'Marktstraße 4, 33602 Bielefeld', conf: { name: 0.61 } }] } },

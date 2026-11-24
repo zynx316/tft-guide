@@ -1,7 +1,7 @@
 // Fitness: Rekorde – persönliche Bestwerte je Übung (geschätzte 1RM, Wiederholungen, Haltezeit), ohne Rangliste oder Vergleich.
 import { html } from '../../../lib/html.js';
 import { useState } from 'preact/hooks';
-import { Card, Badge, Icon, Segmented, EmptyState } from '../../ui.js';
+import { Card, Badge, Button, Icon, Segmented, EmptyState } from '../../ui.js';
 import { isoDay } from '../../../lib/util.js';
 import { exerciseSeries, fmtKg, numAuto, dayShort, diffDays, num } from './_calc.js';
 import { muscleColor, FIT_CSS } from './_ui.js';
@@ -27,8 +27,10 @@ export const recordsList = {
   name: 'Rekordliste',
   category: 'Fitness',
   description: 'Persönliche Bestwerte je Übung aus dem Verlauf (geschätztes 1RM nach Epley bis 10 Wiederholungen, bei Körpergewichtsübungen Wiederholungen oder Haltezeit) – mit Datum und Zuwachs. Bewusst ohne Rangliste und Vergleich. Antippen öffnet die Übung.',
-  version: '1.0',
+  version: '1.2',
   props: [
+    { name: 'emptyActionLabel', label: 'Aktion im Leerzustand (leer = keine; führt zum Trainingsplan)', type: 'text', default: '' },
+    { name: 'quietEmpty', label: 'Ohne Daten nichts anzeigen (Erststart)', type: 'boolean', default: false },
     { name: 'title', label: 'Titel', type: 'text', default: 'Rekorde' },
     { name: 'view', label: 'Darstellung', type: 'select', options: ['list', 'highlights'], default: 'list' },
     { name: 'limit', label: 'Max. Einträge (0 = alle)', type: 'number', default: 0 },
@@ -38,7 +40,7 @@ export const recordsList = {
     { slot: 'history', label: 'Verlauf', default: 'history', shape: 'Einheiten[]', required: true },
     { slot: 'library', label: 'Übungen', default: 'library', shape: 'Übungen[]', required: true },
   ],
-  events: ['record.open', 'range.change'],
+  events: ['record.open', 'range.change', 'plan.open'],
   states: ['empty'],
   css: `
   .tk-rec__row { display:flex; align-items:center; gap:var(--tk-space-3); padding:8px var(--tk-space-4); min-height:60px; border:0; border-bottom:1px solid var(--tk-c-border); width:100%; background:none; color:inherit; cursor:pointer; text-align:left; min-width:0; } .tk-rec__row:last-child { border-bottom:0; } .tk-rec__row:hover { background:var(--tk-c-surface2); }
@@ -56,7 +58,8 @@ export const recordsList = {
     const head = props.showRange && html`<${Segmented} label="Zeitraum" value=${range} onChange=${(v) => { setRange(v); ctx.emit('range.change', { range: v }); }} options=${['4 Wochen', '8 Wochen'].map((v) => ({ value: v, label: v }))} />`;
     const open = (r) => { ctx.setUi('selectedId', r.id); ctx.emit('record.open', { id: r.id }); };
     const fresh = (r) => diffDays(today, r.date) <= 14;
-    if (!shown.length) return html`<${Card} title=${props.title} actions=${head}><${EmptyState} icon="trophy" title=${all.length ? 'Keine neuen Bestwerte' : 'Noch keine Rekorde'} text=${all.length ? 'In diesem Zeitraum gab es keinen neuen Bestwert – Konstanz zählt genauso.' : 'Nach den ersten Einheiten erscheinen hier deine Bestwerte.'} /><//>`;
+    if (!shown.length && !all.length && props.quietEmpty) return null;
+    if (!shown.length) return html`<${Card} title=${props.title} actions=${all.length ? head : null}><${EmptyState} icon="trophy" title=${all.length ? 'Keine neuen Bestwerte' : 'Noch keine Rekorde'} text=${all.length ? 'In diesem Zeitraum gab es keinen neuen Bestwert – Konstanz zählt genauso.' : 'Nach den ersten Einheiten erscheinen hier deine Bestwerte.'} action=${!all.length && props.emptyActionLabel && html`<${Button} variant="primary" icon="arrow-right" onClick=${() => ctx.emit('plan.open', { to: 'fitness.plan' })}>${props.emptyActionLabel}<//>`} /><//>`;
     if (props.view === 'highlights') return html`<div class="tk-col" style="gap:var(--tk-space-3)"><div class="tk-row"><h3 class="tk-h3 tk-grow">${props.title}</h3>${head}</div><div class="tk-rec__grid">${shown.map((r) => html`<button type="button" class="tk-rec__card" onClick=${() => open(r)} aria-label=${`${r.name}: ${valueText(r)} – öffnen`}>
       <span class="tk-rec__ico" style=${icoStyle(r, fresh(r))}><${Icon} name=${fresh(r) ? 'trophy' : 'medal'} size=${18} /></span>
       <span class="tk-truncate" style="font-weight:600;max-width:100%">${r.name}</span><span class="tk-fit-big" style="font-size:var(--tk-fs-2xl)">${valueText(r)}</span><span class="tk-subtle" style="font-size:var(--tk-fs-sm)">${setText(r)} · ${dayShort(r.date)}</span>${fresh(r) && html`<${Badge} tone="success">${deltaText(r)}<//>`}</button>`)}</div></div>`;

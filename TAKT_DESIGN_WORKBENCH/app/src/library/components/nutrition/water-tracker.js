@@ -12,8 +12,9 @@ export const waterTracker = {
   name: 'Wasser-Tracker',
   category: 'Ernährung',
   description: 'Trinken mit einem Tap erfassen: Schnelltasten (+150/+250/+500 ml), eigene Gefäße, Glas-Raster oder Fortschrittsbalken, Rückgängig und Wochenbalken. Ziel erreicht wird dezent gezeigt, ohne Animation.',
-  version: '1.1',
+  version: '1.2',
   props: [
+    { name: 'quietEmpty', label: 'Im Erststart (noch nichts erfasst) nichts anzeigen', type: 'boolean', default: false },
     { name: 'title', label: 'Titel', type: 'text', default: 'Wasser' },
     { name: 'style', label: 'Darstellung', type: 'select', options: ['glasses', 'bar', 'compact', 'timeline'], default: 'bar' },
     { name: 'quick', label: 'Schnelltasten (ml)', type: 'list', default: ['150', '250', '500'] },
@@ -52,16 +53,17 @@ export const waterTracker = {
   render: function WaterTracker({ props, data, setData, ctx }) {
     const [last, setLast] = useState(null);
     const w = obj(data.water), goals = obj(data.goals);
+    if (props.quietEmpty && !arr(w.entries).length && !arr(w.week).length) return null;
     const iso = viewDay(ctx), isToday = iso === todayIso(ctx);
     const goal = goals.water || w.goal || 0;
     const entries = arr(w.entries).filter((e) => e.date === iso);
     const total = isToday || entries.length ? entries.reduce((a, e) => a + e.ml, 0) : arr(w.week).find((x) => x.date === iso)?.ml || 0;
     const wrap = (b) => (props.framed ? html`<${Card} title=${props.title} icon="droplets" actions=${props.openable && html`<${Button} size="sm" variant="ghost" iconRight="chevron-right" onClick=${() => ctx.emit('water.open')}>Details<//>`}>${b}<//>` : b);
     if (!goal) return wrap(html`<${EmptyState} icon="droplets" title="Kein Wasserziel" text="Lege im Ziele-Assistenten ein Tagesziel fest, zum Beispiel 2.500 ml." />`);
-    const add = (ml, vessel = 'Wasser') => { const e = { id: eid('w'), date: iso, time: hhmm(ctx.today), ml, vessel }; setData('water', (x) => ({ ...obj(x), entries: [...arr(obj(x).entries), e] })); setLast(e); ctx.emit('water.add', { ml, vessel }); };
+    const add = (ml, vessel = 'Wasser') => { const e = { id: eid('w', ctx), date: iso, time: hhmm(ctx.today), ml, vessel }; setData('water', (x) => ({ ...obj(x), entries: [...arr(obj(x).entries), e] })); setLast(e); ctx.emit('water.add', { ml, vessel }); };
     const undo = () => { if (!last) return; setData('water', (x) => ({ ...obj(x), entries: arr(obj(x).entries).filter((e) => e.id !== last.id) })); ctx.emit('water.undo', { id: last.id }); setLast(null); };
     const remove = (e) => { setData('water', (x) => ({ ...obj(x), entries: arr(obj(x).entries).filter((y) => y.id !== e.id) })); ctx.emit('water.remove', { id: e.id }); };
-    const newVessel = () => ctx.openDialog({ title: 'Eigenes Gefäß', body: (close) => html`<${VesselForm} onSave=${(v) => { setData('water', (x) => ({ ...obj(x), vessels: [...arr(obj(x).vessels), v] })); ctx.emit('water.vessel', { label: v.label }); close(); }} />` });
+    const newVessel = () => ctx.openDialog({ title: 'Eigenes Gefäß', body: (close) => html`<${VesselForm} ctx=${ctx} onSave=${(v) => { setData('water', (x) => ({ ...obj(x), vessels: [...arr(obj(x).vessels), v] })); ctx.emit('water.vessel', { label: v.label }); close(); }} />` });
     const p = total / goal, done = total >= goal;
     const quick = (Array.isArray(props.quick) ? props.quick : String(props.quick).split(',')).map((q) => Number(q)).filter(Boolean);
     const alt = `${num(total)} von ${num(goal)} Millilitern getrunken`;
@@ -90,10 +92,10 @@ export const waterTracker = {
   },
 };
 
-function VesselForm({ onSave }) {
+function VesselForm({ onSave, ctx }) {
   const [label, setLabel] = useState('Große Tasse');
   const [ml, setMl] = useState(400);
   return html`<div style="display:flex;flex-direction:column;gap:14px"><${Field} label="Name"><${Input} value=${label} onInput=${setLabel} /><//><${Stepper} value=${ml} onChange=${setMl} step=${50} min=${50} max=${2000} unit="ml" label="Inhalt" />
-    <${Button} variant="primary" icon="check" onClick=${() => onSave({ id: eid('v'), label: label.trim() || 'Gefäß', ml, icon: 'cup-soda' })}>Gefäß speichern<//></div>`;
+    <${Button} variant="primary" icon="check" onClick=${() => onSave({ id: eid('v', ctx), label: label.trim() || 'Gefäß', ml, icon: 'cup-soda' })}>Gefäß speichern<//></div>`;
 }
 export default [waterTracker];

@@ -20,7 +20,7 @@ export const foodSearch = {
   name: 'Lebensmittelsuche',
   category: 'Ernährung',
   description: 'Erfassen in höchstens drei Taps: Suchfeld mit Sofortergebnissen, Reiter Zuletzt, Favoriten, Vorlagen und Alle. Das „+“ trägt die zuletzt genutzte Portion ein, ein Tap auf die Zeile öffnet den Portions-Picker. Auch als Kachelraster.',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Lebensmittel' },
     { name: 'style', label: 'Darstellung', type: 'select', options: ['list', 'tiles'], default: 'list' },
@@ -70,11 +70,14 @@ export const foodSearch = {
     else if (active === 'Zuletzt') rows = recentFoods(data.diary, foods, props.limit);
     else if (active === 'Favoriten') rows = foods.filter((f) => f.fav).map((food) => ({ food, grams: food.portions?.[Math.min(1, food.portions.length - 1)]?.g || 100 }));
     else rows = [...foods].sort((a, b) => a.name.localeCompare(b.name, 'de')).map((food) => ({ food, grams: food.portions?.[0]?.g || 100 }));
+    // Erststart: Noch nichts gegessen – statt einer leeren „Zuletzt“-Liste eine Auswahl zum Start zeigen (kein Sackgassen-Zustand).
+    const startPick = !q && active === 'Zuletzt' && !rows.length;
+    if (startPick) rows = [...foods].sort((a, b) => a.name.localeCompare(b.name, 'de')).map((food) => ({ food, grams: food.portions?.[0]?.g || 100 }));
     rows = rows.slice(0, active === 'Alle' || q ? 40 : props.limit);
     const tpls = !q && active === 'Vorlagen' ? arr(data.templates) : null;
     const quickAdd = (food, grams) => logFood(ctx, setData, food, grams, meal);
     const toggleFav = (f) => { setData('foods', (list) => arr(list).map((x) => (x.id === f.id ? { ...x, fav: !x.fav } : x))); ctx.emit('food.favorite', { id: f.id, fav: !f.fav }); };
-    const logTemplate = (t) => { const fm = new Map(foods.map((f) => [f.id, f])); for (const it of t.items) { const f = fm.get(it.foodId); if (f) logEntry(ctx, setData, entryFromFood(f, it.g, { meal: t.meal || meal, date: viewDay(ctx), time: hhmm(ctx.today), source: 'template' }), { silent: true }); } ctx.emit('template.log', { id: t.id }); ctx.toast(`${t.name} · ${num(t.kcal)} kcal erfasst`); };
+    const logTemplate = (t) => { const fm = new Map(foods.map((f) => [f.id, f])); for (const it of t.items) { const f = fm.get(it.foodId); if (f) logEntry(ctx, setData, entryFromFood(f, it.g, { meal: t.meal || meal, date: viewDay(ctx), time: hhmm(ctx.today), source: 'template', ctx }), { silent: true }); } ctx.emit('template.log', { id: t.id }); ctx.toast(`${t.name} · ${num(t.kcal)} kcal erfasst`); };
     const onSearch = (v) => { ctx.setUi('query', v); ctx.emit('food.search', { q: v }); };
 
     const head = html`<${Search} value=${ctx.ui?.query || ''} onInput=${onSearch} placeholder="Lebensmittel oder Marke suchen …" />
@@ -91,7 +94,7 @@ export const foodSearch = {
         <span class="tk-grow" style="min-width:0"><span class="tk-nfs__name tk-truncate" style="display:block">${food.name}</span><span class="tk-nfs__sub tk-truncate" style="display:block">${food.brand ? `${food.brand} · ` : ''}${num(grams)} ${food.unit === 'ml' ? 'ml' : 'g'} · ${num(n.kcal)} kcal · E ${num(n.protein)} g</span></span></button>
       <${Button} variant="ghost" size="sm" icon="star" class="tk-nfs__fav" aria-pressed=${String(!!food.fav)} aria-label=${`${food.name} ${food.fav ? 'aus Favoriten entfernen' : 'als Favorit markieren'}`} onClick=${() => toggleFav(food)} />
       <${Button} variant="primary" size="sm" icon="plus" aria-label=${`${food.name} ${num(grams)} ${food.unit === 'ml' ? 'ml' : 'g'} hinzufügen`} onClick=${() => quickAdd(food, grams)} /></div>`; })}</div>`;
-    return wrap(html`<div class="tk-nfs">${head}${list}${labelNote()}</div>`);
+    return wrap(html`<div class="tk-nfs">${head}${startPick && rows.length ? html`<p class="tk-nu-meta" style="margin:0">Noch nichts gegessen. Hier eine Auswahl zum Start.</p>` : null}${list}${labelNote()}</div>`);
   },
 };
 export default [foodSearch];

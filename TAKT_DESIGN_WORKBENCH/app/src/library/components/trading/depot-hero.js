@@ -27,7 +27,7 @@ export const trdDepotHero = {
   name: 'Depot-Kopf',
   category: 'Trading',
   description: 'Depotwert mit Tagesveränderung, Gesamtgewinn und Verrechnungskonto. Als dichter Streifen (Zahlen exakt), als großer Held mit Verlaufsfläche oder als schlanke Fokus-Zeile. Tippen öffnet das Depot. Ausdrücklich Anzeige und Simulation.',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Depot' },
     { name: 'style', label: 'Darstellung', type: 'select', options: ['strip', 'hero', 'focus'], default: 'strip' },
@@ -45,6 +45,7 @@ export const trdDepotHero = {
   .tk-trd-lines__x { display:flex; justify-content:space-between; color:var(--tk-c-text-subtle); font-size:var(--tk-fs-xs); margin-top:2px; }
   .tk-trd-lines__leg { display:flex; gap:6px 16px; flex-wrap:wrap; color:var(--tk-c-text-muted); font-size:var(--tk-fs-xs); margin-top:6px; }
   .tk-trd-lines__leg i { display:inline-block; width:10px; height:3px; border-radius:2px; margin-right:6px; vertical-align:middle; }
+  .tk-trd-hero__side { text-align:right; display:flex; flex-direction:column; gap:4px; } .bp-mobile .tk-trd-hero__side { text-align:left; }
   .tk-trd-hero__focus { display:flex; align-items:center; gap:var(--tk-space-4); flex-wrap:wrap; justify-content:space-between; }`,
   example: { data: ex('positions', 'cash', 'history') },
   render: function TrdDepotHero({ props, data, ctx }) {
@@ -56,7 +57,7 @@ export const trdDepotHero = {
     const sim = props.showSim && html`<${Badge} tone="info" icon="info">Simulation<//>`;
     const dayRow = html`<span><${Gain} ctx=${ctx} v=${hd.day} pct=${hd.dayPct} /> <span class="tk-trd-meta">heute</span></span>`;
     if (props.style === 'focus') return html`<${Card}>${wrap(html`<div class="tk-trd-hero__focus"><div><div class="tk-trd-cap">${props.title}</div><div class="tk-trd-big" data-qa="depot-total">${money(ctx, hd.total)}</div></div>
-      <div style="text-align:right">${dayRow}<div class="tk-trd-meta"><${Gain} ctx=${ctx} v=${hd.gain} pct=${hd.gainPct} /> gesamt</div></div></div>`)}<//>`;
+      <div class="tk-trd-hero__side">${dayRow}<div class="tk-trd-meta"><${Gain} ctx=${ctx} v=${hd.gain} pct=${hd.gainPct} /> gesamt</div></div></div>`)}<//>`;
     if (props.style === 'hero') return html`<${Card}>${wrap(html`<div class="tk-trd-hero"><div class="tk-trd-hero__top"><div><div class="tk-row" style="gap:8px"><span class="tk-trd-cap">${props.title}</span>${sim}</div>
       <div class="tk-trd-big tk-trd-big--xl" data-qa="depot-total">${money(ctx, hd.total)}</div>
       <div class="tk-trd-hero__chg">${dayRow}<span><${Gain} ctx=${ctx} v=${hd.gain} pct=${hd.gainPct} /> <span class="tk-trd-meta">seit Kauf</span></span></div></div></div>

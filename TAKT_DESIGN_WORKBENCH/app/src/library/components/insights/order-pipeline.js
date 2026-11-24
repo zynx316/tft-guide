@@ -1,9 +1,11 @@
 // Vertrieb: Bestellungen nach Status (neu → bezahlt → versendet → zugestellt)
 import { html } from '../../../lib/html.js';
 import { useState } from 'preact/hooks';
-import { Card, Button, Badge, Icon, EmptyState, Tabs, Field, Input, Select } from '../../ui.js';
+import { Card, Button, Badge, Icon, EmptyState, Tabs } from '../../ui.js';
 import { rel, filterItems, ORDER_STAGES } from './shared.js';
 import { toList, money } from '../../helpers.js';
+import { STEPS, sumLines, ShipForm } from './_orders.js';
+import orderJourney from './order-journey.js';
 
 const STAGES = ORDER_STAGES;
 const CHIPS = Object.fromEntries(Object.entries(STAGES).map(([k, s]) => [s.label.toLowerCase(), (o) => o.status === k]));
@@ -121,16 +123,6 @@ export const orderPipeline = {
 
 
 // ------------------------------------------------------------------------------------------------ Bestelldetail ---
-const STEPS = ['new', 'paid', 'shipped', 'delivered'];
-const CARRIERS = ['DHL', 'DPD', 'Hermes'];
-const sumLines = (o) => Math.round(((o.lines || []).reduce((s, l) => s + l.qty * l.price, 0)) * 100) / 100;
-
-function ShipForm({ o, onSave, close }) {
-  const [carrier, setCarrier] = useState(o.carrier || 'DHL'); const [track, setTrack] = useState(o.tracking || `0034043412${String(o.number).replace(/\D/g, '')}`);
-  return html`<div class="tk-col" style="gap:12px"><${Field} label="Paketdienst"><${Select} value=${carrier} options=${CARRIERS} onChange=${setCarrier} /><//><${Field} label="Sendungsnummer" error=${track.trim() ? '' : 'Sendungsnummer fehlt.'}><${Input} value=${track} onInput=${setTrack} invalid=${!track.trim()} /><//>
-    <div class="tk-row" style="justify-content:flex-end"><${Button} onClick=${close}>Abbrechen<//><${Button} variant="primary" icon="truck" disabled=${!track.trim()} onClick=${() => { onSave(carrier, track.trim()); close(); }}>Als versendet markieren<//></div></div>`;
-}
-
 const orderDetail = {
   id: 'order-detail',
   name: 'Bestelldetail',
@@ -194,4 +186,4 @@ const orderDetail = {
   },
 };
 
-export default [orderPipeline, orderDetail];
+export default [orderPipeline, orderDetail, ...orderJourney];

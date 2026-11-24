@@ -69,8 +69,8 @@ export default {
             hdr({ eyebrow: 'Notizen', title: 'Übersicht', subtitle: 'Festhalten, einsortieren, wiederfinden', primaryLabel: '', secondaryLabel: 'Alle Notizen', secondaryIcon: 'layout-list' }),
             { id: 'flt', component: 'search-filter', region: 'main', props: { placeholder: 'Notizen durchsuchen …', filters: FILTERS } },
             { id: 'list', component: 'note-list', region: 'main', props: { title: 'Notizen', layout: 'compact', openIn: 'select', autoSelect: false, showCreate: true } },
-            { id: 'inbox', component: 'note-inbox', region: 'aside', bind: { notes: 'notes', tasks: 'tasks' }, props: { title: 'Eingang', limit: 3, link: 'Einsortieren' } },
-            { id: 'checks', component: 'note-checklists', region: 'aside', props: { title: 'Offene Punkte', limit: 2, link: 'Alle' } },
+            { id: 'inbox', component: 'note-inbox', region: 'aside', bind: { notes: 'notes', tasks: 'tasks' }, props: { title: 'Eingang', limit: 3, link: 'Einsortieren', quietEmpty: true } },
+            { id: 'checks', component: 'note-checklists', region: 'aside', props: { title: 'Offene Punkte', limit: 2, link: 'Alle', quietEmpty: true } },
           ],
         },
         {
@@ -80,9 +80,9 @@ export default {
           blocks: [
             hdr({ eyebrow: 'Notizen', title: 'Übersicht', subtitle: 'Dein Denkraum auf einen Blick', primaryLabel: '', secondaryLabel: 'Alle Notizen', secondaryIcon: 'layout-list' }),
             { id: 'kpi', component: 'kpi-tiles', region: 'main', span: 12, bind: { metrics: 'metrics' }, props: { showSpark: false } },
-            { id: 'pinned', component: 'note-list', region: 'main', span: 7, spanTablet: 12, props: { title: 'Angeheftet', layout: 'grid', scope: 'angeheftet', cardSize: 'large', autoSelect: false, showCreate: false, minWidth: 220 } },
-            { id: 'tags', component: 'chart', region: 'main', span: 5, spanTablet: 12, bind: { series: 'tagChart' }, props: { title: 'Notizen nach Tag', type: 'donut' } },
-            { id: 'checks', component: 'note-checklists', region: 'main', span: 12, props: { title: 'Listen im Fortschritt', mode: 'progress', limit: 4, link: 'Alle Listen' } },
+            { id: 'pinned', component: 'note-list', region: 'main', span: 7, spanTablet: 12, props: { title: 'Angeheftet', layout: 'grid', scope: 'angeheftet', cardSize: 'large', autoSelect: false, showCreate: false, minWidth: 220, quietEmpty: true } },
+            { id: 'tags', component: 'note-share', region: 'main', span: 5, spanTablet: 12, props: { title: 'Notizen nach Tag' } },
+            { id: 'checks', component: 'note-checklists', region: 'main', span: 12, props: { title: 'Listen im Fortschritt', mode: 'progress', limit: 4, link: 'Alle Listen', quietEmpty: true } },
             { id: 'recent', component: 'note-list', region: 'main', span: 12, props: { title: 'Zuletzt bearbeitet', layout: 'grid', scope: 'zuletzt', limit: 6, autoSelect: false, showCreate: true } },
           ],
         },
@@ -93,8 +93,8 @@ export default {
           blocks: [
             hdr({ title: 'Notizen', subtitle: 'Di, 24. November', primaryLabel: '', secondaryLabel: 'Alle Notizen', secondaryIcon: 'layout-list' }),
             { id: 'focus', component: 'note-focus', region: 'main', bind: { notes: 'notes', events: 'events' } },
-            { id: 'inbox', component: 'note-inbox', region: 'main', bind: { notes: 'notes', tasks: 'tasks' }, props: { title: 'Eingang', mode: 'triage' } },
-            { id: 'checks', component: 'note-checklists', region: 'main', props: { title: 'Als Nächstes abhaken', limit: 2, link: 'Alle' } },
+            { id: 'inbox', component: 'note-inbox', region: 'main', bind: { notes: 'notes', tasks: 'tasks' }, props: { title: 'Eingang', mode: 'triage', quietEmpty: true } },
+            { id: 'checks', component: 'note-checklists', region: 'main', props: { title: 'Als Nächstes abhaken', limit: 2, link: 'Alle', quietEmpty: true } },
           ],
         },
       ],
@@ -272,7 +272,7 @@ export default {
           blocks: [
             hdr({ eyebrow: 'Notizen', title: 'Eingang', subtitle: 'Erst festhalten, später ordnen', primaryLabel: '' }),
             { id: 'inbox', component: 'note-inbox', region: 'main', bind: { notes: 'notes', tasks: 'tasks' }, props: { title: 'Im Eingang' } },
-            { id: 'tags', component: 'chart', region: 'aside', bind: { series: 'tagChart' }, props: { title: 'Bereits abgelegt', type: 'donut' } },
+            { id: 'tags', component: 'note-share', region: 'aside', props: { title: 'Bereits abgelegt' } },
           ],
         },
         {
@@ -429,5 +429,6 @@ export default {
       rationale: 'Erfassen darf nichts kosten. Ein Zustand lässt sich in jeder Ansicht zählen und leeren, ohne dass eine zweite Ordnerstruktur entsteht.', tradeoffs: 'Notizen im Eingang tauchen nicht in der normalen Liste auf (nur in der Suche), damit der Eingang nicht doppelt erscheint.', status: 'decided' },
     { featureId: 'notes.home', title: 'Welche Richtung für die Notizen-Startseite?', decision: '', rationale: 'Kompakt (A) ist am schnellsten für Vielschreiber, Visuell (B) am einladendsten, Fokus (C) führt direkt zum nächsten Schritt. Entscheidung nach Test mit echtem Eingang (10+ Notizen) und auf Mobile.', tradeoffs: 'A: viel Information. B: mehr Scrollen. C: weniger Überblick, dafür kaum Entscheidungslast.', status: 'open' },
     { featureId: 'notes.checklists', title: 'Checklisten mit Aufgaben verknüpfen?', decision: '', rationale: 'Punkte könnten als Aufgaben mit Fälligkeit erscheinen. Klären, ob das Aufgaben-Modul das erwartet und ob Änderungen in beide Richtungen gelten.', status: 'open' },
+    { featureId: 'notes.inbox', title: 'Eingang visuell: Pinnwand mit zwei Schritten (antippen, ablegen)?', decision: '', rationale: 'Empfehlung: Pinnwand (Variante C) als visuelle Version behalten, weil Ablagen als farbige Kacheln erklären, wohin eine Notiz geht, und „Rückgängig“ Fehlgriffe abfängt. Wer viele Notizen hat, bleibt bei Liste (A) oder Assistent (B).', tradeoffs: 'Zwei Tipps je Notiz statt einem; dafür kein Verwechseln von Tag und Aktion.', status: 'open' },
   ],
 };

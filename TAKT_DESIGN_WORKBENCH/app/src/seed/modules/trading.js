@@ -207,6 +207,7 @@ const portfolio = {
     { trigger: '„Order (Simulation)“ im Kopf', result: 'Order-Ticket öffnet sich', event: 'order.new', to: 'trading.order' },
     { trigger: 'Spaltenkopf antippen', result: 'Sortierung wechselt', event: 'positions.sort' },
     { trigger: 'Aufteilung umschalten', result: 'Baustein, Klasse, Region oder Sektor', event: 'alloc.view' },
+    { trigger: 'Zurück, Weiter oder Chip', result: 'Die Karte zeigt die gewählte Position', event: 'position.focus' },
   ],
   acceptance: [
     'Der Depotwert (30.097,70 €) ist die Summe aus Positionen (28.847,70 €) und Verrechnungskonto (1.250,00 €) und stimmt mit dem Depot-Konto in Finanzen überein.',
@@ -241,6 +242,19 @@ const portfolio = {
         SIM(), blk('hero', 'trd-depot-hero', 'main', { style: 'hero', interactive: false }),
         blk('al', 'trd-allocation', 'main', { style: 'bars', by: 'class', title: 'Aufteilung nach Klasse' }),
         blk('pos', 'trd-positions', 'main', { style: 'cards' }),
+        KURS(), FOOT,
+      ],
+    },
+    {
+      id: 'C', name: 'Position für Position', direction: 'fokus',
+      concept: 'Eine schlanke Depot-Zeile (Wert, Tag, gesamt), darunter eine große Karte für eine einzelne Position mit zwei klaren Aktionen (Wertpapier ansehen, Order simulieren). Blättern über Zurück/Weiter oder Chips, die größte Tagesbewegung steht zuerst. Dazu höchstens zwei Hinweise.',
+      description: '+ Eine Position nach der anderen, wenig Ablenkung, Aktionen direkt erreichbar  − Kein Vergleich aller Positionen und keine Aufteilung auf einen Blick',
+      layout: { type: 'stack', narrow: true },
+      blocks: [
+        hdr({ title: 'Depot', subtitle: 'Simulation · Kurse fiktiv' }),
+        SIM(), blk('hero', 'trd-depot-hero', 'main', { style: 'focus', interactive: false }),
+        blk('pf', 'trd-position-focus', 'main', { title: 'Positionen' }),
+        blk('hints', 'trd-hints', 'main', { title: 'Wichtig', limit: 2 }),
         KURS(), FOOT,
       ],
     },
@@ -594,5 +608,6 @@ export default {
     { featureId: 'trading.order', title: 'Soll eine simulierte Order ein Übungsdepot verändern?', decision: '', rationale: 'Heute bleibt das Depot unverändert. Ein getrenntes Übungsdepot (Papierhandel) würde Orders spürbar machen, bräuchte aber eine zweite Welt mit eigenem Bestand und Verlauf.', tradeoffs: 'Mit Übungsdepot: lehrreicher, mehr Aufwand und Verwechslungsgefahr mit dem echten Depot. Ohne: einfach und eindeutig.', status: 'open' },
     { featureId: 'trading.portfolio', title: 'Welche Depot-Variante?', decision: '', rationale: 'A (Cockpit) für Analyse am Laptop, B (Wert und Aufteilung) für das Handy. Möglicherweise nach Richtung automatisch.', tradeoffs: 'Eine Variante ist einfacher zu pflegen, zwei passen besser zu den Geräten.', status: 'open' },
     { featureId: 'trading.alerts', title: 'Wie werden Alarme zugestellt?', decision: '', rationale: 'Push, Eintrag im TAKT-Verlauf oder beides. Push braucht Berechtigung und eine Kursquelle im Hintergrund.', tradeoffs: 'Push ist unmittelbar, aber akkuhungrig und datenschutzrelevant; Verlauf ist ruhiger.', status: 'open' },
+    { featureId: 'trading.portfolio', title: 'Depot Position für Position (Fokus) oder als Gesamtbild?', decision: '', rationale: 'C zeigt eine einzelne Position groß mit zwei Aktionen und blättert durch das Depot, geordnet nach der größten Tagesbewegung. Empfehlung: für die Fokus-Version beibehalten, aber die Aufteilung als eine Zeile ergänzen, damit das Gesamtbild nicht ganz fehlt. Die Reihenfolge nach Tagesbewegung ist eine reine Information, keine Empfehlung.', tradeoffs: 'C: ruhig, aktionsnah, aber kein Vergleich. A und B zeigen das Ganze. Je nach Test mit mehr als fünf Positionen kann das Blättern lästig werden.', status: 'open' },
   ],
 };

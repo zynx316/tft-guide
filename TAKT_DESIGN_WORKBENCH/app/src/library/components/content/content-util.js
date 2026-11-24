@@ -1,7 +1,7 @@
 // Gemeinsame Helfer der Inhalts-Komponenten (Notizen, Wissensdatenbank, OCR): Datum, Markdown-Mini-Renderer.
 // Keine Komponente – wird nur von den Dateien in diesem Ordner importiert.
 import { html } from '../../../lib/html.js';
-import { Check, Icon } from '../../ui.js';
+import { Check, Icon, Button } from '../../ui.js';
 import { fmt, slug } from '../../../lib/util.js';
 
 const pad = (n) => String(n).padStart(2, '0');
@@ -152,3 +152,17 @@ export function inboxOps({ setData, ctx }) {
     open: (n) => { ctx.setUi('selectedId', n.id); ctx.emit('note.open', { id: n.id }); },
   };
 }
+
+/** Neuer Artikel (Erststart): legt einen Entwurf im geteilten Artikelbestand an und öffnet ihn im Editor der Artikelansicht (Ziel `knowledge.article`). */
+export function createArticle(ctx, setData, here = false) {
+  const id = ctx.newId('kb');
+  const a = { id, title: 'Neuer Artikel', area: 'Persönlich', category: 'Allgemein', body: '# Neuer Artikel\n\nSchreibe hier deinen Text.\n', tags: [], author: 'Ich', updated: isoLocal(ctx.today), fresh: true };
+  setData('articles', (all) => [a, ...(Array.isArray(all) ? all : [])]);
+  ctx.setUi('selectedId', id);
+  if (!ctx.emit('kb.create', { id, to: 'knowledge.article' }) && !here) ctx.toast('Neuer Artikel angelegt. Der Editor öffnet in der Artikelansicht.');
+}
+/** Die eine Aktion der Leerzustände der Wissensdatenbank. */
+export const ArticleCreateButton = ({ ctx, setData, here }) => html`<${Button} variant="primary" icon="plus" onClick=${() => createArticle(ctx, setData, here)}>Artikel anlegen<//>`;
+
+/** Kürzt an einer Wortgrenze und setzt „…“, statt mitten im Wort abzuschneiden. */
+export const shorten = (t = '', n = 90) => { if (t.length <= n) return t; const cut = t.slice(0, n), sp = cut.lastIndexOf(' '); return (sp > n * 0.5 ? cut.slice(0, sp) : cut).replace(/[\s·,;–-]+$/, '') + '…'; };

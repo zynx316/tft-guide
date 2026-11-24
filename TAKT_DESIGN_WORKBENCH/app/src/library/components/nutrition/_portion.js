@@ -13,9 +13,9 @@ export function logEntry(ctx, setData, entry, { silent = false } = {}) {
   return entry;
 }
 export function logFood(ctx, setData, food, grams, meal, extra) {
-  return logEntry(ctx, setData, entryFromFood(food, grams, { meal, date: viewDay(ctx), time: hhmm(ctx.today), ...extra }));
+  return logEntry(ctx, setData, entryFromFood(food, grams, { meal, date: viewDay(ctx), time: hhmm(ctx.today), ctx, ...extra }));
 }
-export const logQuick = (ctx, setData, q) => logEntry(ctx, setData, entryQuick({ ...q, date: viewDay(ctx), time: hhmm(ctx.today) }));
+export const logQuick = (ctx, setData, q) => logEntry(ctx, setData, entryQuick({ ...q, date: viewDay(ctx), time: hhmm(ctx.today), ctx }));
 
 const QUICK_G = [50, 100, 150, 200];
 

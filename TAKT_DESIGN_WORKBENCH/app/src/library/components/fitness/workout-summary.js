@@ -14,8 +14,8 @@ export const workoutSummary = {
   name: 'Workout-Zusammenfassung',
   category: 'Fitness',
   description: 'Abschluss einer Einheit: Dauer, Sätze, Volumen, Bestwerte und Befinden (1–5). „Speichern“ schreibt die Einheit in den Verlauf. Erscheint erst, wenn die Einheit beendet ist.',
-  version: '1.0',
-  props: [{ name: 'title', label: 'Titel', type: 'text', default: 'Training geschafft' }],
+  version: '1.1',
+  props: [{ name: 'title', label: 'Titel', type: 'text', default: 'Training geschafft' }, { name: 'quietEmpty', label: 'Ohne Einheit nichts anzeigen (Erststart)', type: 'boolean', default: false }],
   data: [
     { slot: 'session', label: 'Live-Einheit', default: 'session', shape: 'Live-Einheit (status: done)', required: true },
     { slot: 'history', label: 'Verlauf', default: 'history', shape: 'Einheiten[]' },
@@ -32,6 +32,7 @@ export const workoutSummary = {
     { id: 'x1', exerciseId: 'bankdruecken', name: 'Bankdrücken', sets: [{ id: 'a', type: 'work', kg: 62.5, reps: 8, done: true }, { id: 'b', type: 'work', kg: 62.5, reps: 8, done: true }, { id: 'c', type: 'work', kg: 62.5, reps: 7, done: true }] }] }, history: [] } },
   render: function WorkoutSummary({ props, data, setData, ctx }) {
     const s = data.session;
+    if ((!s || !(s.exercises || []).length) && props.quietEmpty) return null;
     if (!s || !(s.exercises || []).length) return html`<${Card}><${EmptyState} icon="trophy" title="Noch keine Einheit" text="Nach dem Training siehst du hier deine Zusammenfassung." /><//>`;
     if (s.status !== 'done') return null;
     const done = doneCount(s), total = totalCount(s), vol = volumeNow(s);

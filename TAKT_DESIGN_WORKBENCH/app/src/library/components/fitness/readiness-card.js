@@ -13,8 +13,9 @@ export const readinessCard = {
   name: 'Erholung & Check-in',
   category: 'Fitness',
   description: 'Tagesempfehlung mit sichtbaren Faktoren statt undurchsichtiger Zahl: Schlaf, Ruhepuls, Muskelkater, Energie, Stress und Belastung. Check-in in 3 Taps; die Empfehlung nennt immer ihre Gründe. Orientierung, keine medizinische Diagnose.',
-  version: '1.1',
+  version: '1.2',
   props: [
+    { name: 'quietEmpty', label: 'Ohne Daten nichts anzeigen (Erststart)', type: 'boolean', default: false },
     { name: 'layout', label: 'Darstellung', type: 'select', options: ['card', 'decision'], default: 'card' },
     { name: 'openEvent', label: 'Event für „Details“ (leer = kein Knopf)', type: 'text', default: '' },
     { name: 'showFactors', label: 'Faktoren zeigen', type: 'boolean', default: true },
@@ -36,10 +37,12 @@ export const readinessCard = {
   .tk-rd__t { font-size:var(--tk-fs-xl); font-weight:var(--tk-fw-bold); letter-spacing:var(--tk-ls-tight); line-height:1.2; } .tk-rd__fac { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:var(--tk-space-2); } .bp-mobile .tk-rd__fac { grid-template-columns:minmax(0,1fr); }
   .tk-rd__f { display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:var(--tk-radius-md); border:1px solid var(--tk-c-border); min-width:0; } .tk-rd__f strong { display:block; font-size:var(--tk-fs-md); } .tk-rd__f small { color:var(--tk-c-text-subtle); font-size:var(--tk-fs-xs); }
   .tk-rd__ci { display:flex; flex-direction:column; gap:6px; } .tk-rd__scale { display:grid; grid-template-columns:repeat(5, minmax(0,1fr)); gap:6px; } .tk-rd__scale button { min-height:44px; border-radius:var(--tk-radius-md); border:1px solid var(--tk-c-border); background:var(--tk-c-surface2); color:var(--tk-c-text-muted); cursor:pointer; font-size:var(--tk-fs-xs); padding:0 2px; }
-  .tk-rd__scale button[aria-checked="true"] { background:var(--tk-c-accent-soft); border-color:var(--tk-c-accent); color:var(--tk-c-accent); font-weight:var(--tk-fw-semibold); }`,
+  .tk-rd__scale button[aria-checked="true"] { background:var(--tk-c-accent-soft); border-color:var(--tk-c-accent); color:var(--tk-c-accent); font-weight:var(--tk-fw-semibold); }
+  [data-tk-large-text] .tk-rd__scale { grid-template-columns:repeat(3, minmax(0,1fr)); } [data-tk-large-text] .tk-rd__scale button { hyphens:manual; overflow-wrap:normal; }`,
   example: { data: { sleep: [{ date: '2026-11-22', hours: 8.3, restingHr: 56, quality: 5 }, { date: '2026-11-23', hours: 7.2, restingHr: 57, quality: 4 }, { date: '2026-11-24', hours: 6.9, restingHr: 58, quality: 3 }], checkins: [{ date: '2026-11-23', energy: 4, soreness: 3, stress: 3 }], history: [{ id: 'h', date: '2026-11-23', volume: 12053 }], today: { kind: 'rest', nextName: 'Oberkörper A' } } },
   render: function ReadinessCard({ props, data, setData, ctx }) {
     const sleep = data.sleep || []; const today = isoDay(ctx.today);
+    if (!sleep.length && props.quietEmpty) return null;
     if (!sleep.length) return html`<${Card} title=${props.title}><${EmptyState} icon="bed" title="Noch keine Schlafdaten" text="Trage deinen Schlaf ein oder verbinde eine Quelle – dann erscheinen hier deine Faktoren." /><//>`;
     const { factors, checkedIn } = recoveryFactors({ sleep, checkins: data.checkins || [], history: data.history || [], todayIso: today });
     const adv = recoveryAdvice(factors, { restDay: data.today?.kind !== 'strength', nextName: data.today?.nextName || 'Dein nächstes Training' });

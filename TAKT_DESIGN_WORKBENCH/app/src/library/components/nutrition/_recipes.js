@@ -50,14 +50,14 @@ export function planDayTotals(plan, iso, recipes, foods) {
   return totals(planDay(plan, iso).filter((p) => p.status !== 'skipped').map((p) => planNutrition(p, recipes, foods)));
 }
 /** Planpunkt → Tagebucheintrag („wie geplant gegessen“). */
-export function planToEntry(item, recipes, foods, { date, time } = {}) {
+export function planToEntry(item, recipes, foods, { date, time, ctx } = {}) {
   const n = planNutrition(item, recipes, foods);
   const amount = item.recipeId ? `${num(item.servings || 1, 1)} Portion${(item.servings || 1) === 1 ? '' : 'en'}` : item.foodId ? `${num(item.grams || 100)} g` : 'Schätzung';
-  return { id: eid(), date: date || item.date, meal: item.meal, time: time || null, foodId: item.foodId || null, recipeId: item.recipeId || null, name: planLabel(item, recipes, foods), amount, grams: item.grams || null, ...n, source: 'plan', planId: item.id };
+  return { id: eid('e', ctx), date: date || item.date, meal: item.meal, time: time || null, foodId: item.foodId || null, recipeId: item.recipeId || null, name: planLabel(item, recipes, foods), amount, grams: item.grams || null, ...n, source: 'plan', planId: item.id };
 }
-export const recipeToEntry = (recipe, foods, servings, { meal, date, time }) => {
+export const recipeToEntry = (recipe, foods, servings, { meal, date, time, ctx }) => {
   const p = recipePerServing(recipe, foods);
-  return { id: eid(), date, meal, time: time || null, foodId: null, recipeId: recipe.id, name: recipe.title, amount: `${num(servings, 1)} Portion${servings === 1 ? '' : 'en'}`, grams: null, kcal: Math.round(p.kcal * servings), protein: r1(p.protein * servings), carbs: r1(p.carbs * servings), fat: r1(p.fat * servings), fiber: r1(p.fiber * servings), sugar: r1(p.sugar * servings), salt: Math.round(p.salt * servings * 100) / 100, source: 'recipe' };
+  return { id: eid('e', ctx), date, meal, time: time || null, foodId: null, recipeId: recipe.id, name: recipe.title, amount: `${num(servings, 1)} Portion${servings === 1 ? '' : 'en'}`, grams: null, kcal: Math.round(p.kcal * servings), protein: r1(p.protein * servings), carbs: r1(p.carbs * servings), fat: r1(p.fat * servings), fiber: r1(p.fiber * servings), sugar: r1(p.sugar * servings), salt: Math.round(p.salt * servings * 100) / 100, source: 'recipe' };
 };
 
 // ------------------------------------------------------------ Einkaufsliste

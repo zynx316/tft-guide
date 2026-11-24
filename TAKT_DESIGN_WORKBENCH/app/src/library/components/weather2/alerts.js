@@ -12,7 +12,8 @@ export const status = (a, today) => {
   const now = stamp(today);
   if (a.to <= now) return { label: 'Abgelaufen', tone: 'neutral' };
   if (a.from <= now) return { label: `Gilt seit ${durText(diffMin(now, a.from))}`, tone: LV[a.level].tone };
-  return { label: `Beginnt in ${durText(diffMin(a.from, now))}`, tone: 'warning' };
+  const d = diffMin(a.from, now);
+  return { label: d >= 1440 ? `Beginnt ${dayName(a.from, today)} ${hm(a.from)} Uhr` : `Beginnt in ${durText(d)}`, tone: 'warning' };
 };
 export const Meter = ({ level }) => html`<span class="tk-wxa__meter" role="img" aria-label=${`Warnstufe ${level} von 4`}>${[1, 2, 3, 4].map((i) => html`<i style=${i <= level ? `background:${LV[level].color}` : ''}></i>`)}</span>`;
 function Track({ a, today }) {
@@ -30,7 +31,7 @@ export const wxAlerts = {
   name: 'Warnungen (DWD-Stufen)',
   category: 'Wetter',
   description: 'Amtliche Warnungen mit Stufe 1–4, Zeitraum und Zeitleiste, Status („beginnt in …“), Verhaltenstipps, betroffenen Terminen und Quelle. Modi: voll, kompakt (Zeilen) oder Banner (wichtigste Warnung). Optional Warnungen aller gemerkten Orte.',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'mode', label: 'Modus', type: 'select', options: ['full', 'compact', 'banner'], default: 'full' },
     { name: 'title', label: 'Titel', type: 'text', default: 'Warnungen' },

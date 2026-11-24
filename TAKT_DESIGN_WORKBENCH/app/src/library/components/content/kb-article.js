@@ -2,14 +2,14 @@
 import { html } from '../../../lib/html.js';
 import { useState, useRef, useEffect } from 'preact/hooks';
 import { Card, Button, Badge, Icon, EmptyState, Textarea, Progress, toneColor } from '../../ui.js';
-import { renderMarkdown, mdToc, relDay, wordCount, isoLocal, nextEvent, untilLabel, readMinutes } from './content-util.js';
+import { renderMarkdown, mdToc, relDay, wordCount, isoLocal, nextEvent, untilLabel, readMinutes, ArticleCreateButton } from './content-util.js';
 
 export const kbArticle = {
   id: 'kb-article',
   name: 'Wissensartikel',
   category: 'Inhalte',
   description: 'Zeigt den gewählten Artikel (ctx.ui.selectedId) mit Markdown-Darstellung, Inhaltsverzeichnis (Desktop), Metadaten und verwandten Artikeln. Optional direkt bearbeitbar, auch als ruhige Leseansicht mit großer Schrift.',
-  version: '1.1',
+  version: '1.4',
   props: [
     { name: 'showToc', label: 'Inhaltsverzeichnis (Desktop)', type: 'boolean', default: true },
     { name: 'showRelated', label: 'Verwandte Artikel', type: 'boolean', default: true },
@@ -73,11 +73,12 @@ export const kbArticle = {
     const root = useRef(null); const first = useRef(true);
     useEffect(() => { if (first.current) { first.current = false; return; } if (props.scrollOnSelect && root.current) root.current.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, [ctx.ui.selectedId]);
     const art = arts.find((a) => a.id === ctx.ui.selectedId) || (props.autoSelectFirst ? arts[0] : null);
-    if (!art) return html`<${Card}><${EmptyState} icon="book-open" title=${arts.length ? 'Kein Artikel gewählt' : 'Noch keine Artikel'} text=${arts.length ? props.placeholder : 'Lege den ersten Wissensartikel an.'} /><//>`;
+    useEffect(() => { if (art && art.fresh) setEditing({ id: art.id, body: art.body }); }, [art && art.id]);   // neuer Artikel: direkt im Editor
+    if (!art) return html`<${Card}><${EmptyState} icon="book-open" title=${arts.length ? 'Kein Artikel gewählt' : 'Noch keine Artikel'} text=${arts.length ? props.placeholder : 'Lege den ersten Wissensartikel an.'} action=${!arts.length && html`<${ArticleCreateButton} ctx=${ctx} setData=${setData} here />`} /><//>`;
     const toc = props.showToc && ctx.bp === 'desktop' ? mdToc(art.body).filter((h) => h.level >= 2) : [];
     const related = props.showRelated ? (art.related || []).map((id) => arts.find((a) => a.id === id)).filter(Boolean) : [];
     const isEdit = editing && editing.id === art.id;
-    const save = () => { setData('articles', (all) => all.map((a) => (a.id === art.id ? { ...a, body: editing.body, updated: isoLocal(ctx.today) } : a))); ctx.emit('kb.save', { id: art.id }); ctx.toast('Artikel gespeichert'); setEditing(null); };
+    const save = () => { const h1 = /^#\s+(.+)$/m.exec(editing.body); setData('articles', (all) => all.map((a) => (a.id === art.id ? { ...a, body: editing.body, updated: isoLocal(ctx.today), ...(a.fresh ? { fresh: false, title: h1 ? h1[1].trim() : a.title } : {}) } : a))); ctx.emit('kb.save', { id: art.id }); ctx.toast('Artikel gespeichert'); setEditing(null); };
     const mins = readMinutes(art.body);
     return html`<${Card}><div class=${`tk-kb-article ${toc.length ? 'tk-kb-article--toc' : ''} ${props.reading ? 'tk-kb-article--reading' : ''}`}>
       <article ref=${root} style="min-width:0;scroll-margin-top:72px">
@@ -122,7 +123,7 @@ export const kbNext = {
   name: 'Wissens-Impulse',
   category: 'Inhalte',
   description: 'Handlungsorientierte Karten für die Wissensbasis: „Weiterlesen“ (zuletzt gelesener Artikel mit Fortschritt), „Passend zu heute“ (Artikel zum nächsten Termin) und „Aktualität prüfen“ (lange nicht geänderte Artikel, mit „Als aktuell markieren“).',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'mode', label: 'Art', type: 'select', options: ['resume', 'context', 'review'], default: 'resume' },
     { name: 'title', label: 'Titel (leer = Standard)', type: 'text', default: '' },
@@ -134,7 +135,7 @@ export const kbNext = {
     { slot: 'articles', label: 'Artikel', default: 'articles', shape: '{id,title,area,category,body,updated,lastRead?,readProgress?,tags?}[]', required: true },
     { slot: 'events', label: 'Termine (Kalender)', default: 'events', shape: '{id,title,start,category,allDay?}[]', required: false },
   ],
-  events: ['kb.open', 'kb.review.done'],
+  events: ['kb.open', 'kb.review.done', 'kb.create'],
   states: ['empty'],
   css: `
   .tk-kb-next { display:flex; flex-direction:column; gap:10px; padding:var(--tk-space-5); border-radius:var(--tk-radius-lg); background:var(--tk-c-surface); border:1px solid var(--tk-c-border); border-left:4px solid var(--tone, var(--tk-c-accent)); min-width:0; }
@@ -155,8 +156,8 @@ export const kbNext = {
     const open = (a) => { ctx.setUi('selectedId', a.id); ctx.emit('kb.open', { id: a.id }); };
     // Ohne Artikel gibt es nichts zu prüfen oder zuzuordnen: ehrliche Aussage statt „Alles aktuell“, und mit `quietEmpty` nur eine Karte je Seite
     const none = arts.length === 0;
-    const empty = (txt) => (none && props.quietEmpty && props.mode !== 'resume' ? null
-      : none ? html`<${Card} title=${label}><${EmptyState} icon="book-open" title="Noch keine Artikel" text=${props.mode === 'resume' ? 'Lege den ersten Wissensartikel an, dann kannst du hier weiterlesen.' : 'Sobald Artikel vorliegen, erscheinen hier passende Hinweise.'} /><//>`
+    const empty = (txt) => (none && props.quietEmpty ? null
+      : none ? html`<${Card} title=${label}><${EmptyState} icon="book-open" title="Noch keine Artikel" text=${props.mode === 'resume' ? 'Lege den ersten Wissensartikel an, dann kannst du hier weiterlesen.' : 'Sobald Artikel vorliegen, erscheinen hier passende Hinweise.'} action=${props.mode === 'resume' && html`<${ArticleCreateButton} ctx=${ctx} setData=${setData} />`} /><//>`
       : html`<${Card} title=${label}><${EmptyState} icon="book-open" title=${props.mode === 'review' ? 'Alles aktuell' : 'Noch nichts hier'} text=${txt} /><//>`);
     if (props.mode === 'resume') {
       const a = arts.filter((x) => x.lastRead).sort((x, y) => (Number(x.readProgress >= 1) - Number(y.readProgress >= 1)) || String(y.lastRead).localeCompare(String(x.lastRead)))[0];

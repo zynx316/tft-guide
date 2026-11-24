@@ -21,8 +21,9 @@ export const programCard = {
   name: 'Trainingsprogramm',
   category: 'Fitness',
   description: 'Das aktive Programm: Trainingstage mit Übungen, Sätzen × Wiederholungsbereich, letztem Gewicht und der Progressionsregel. Als Reiter (ein Tag im Detail) oder als Karten aller Tage. „Starten“ öffnet die Einheit des Tages.',
-  version: '1.0',
+  version: '1.2',
   props: [
+    { name: 'quietEmpty', label: 'Ohne Daten nichts anzeigen (Erststart)', type: 'boolean', default: false },
     { name: 'layout', label: 'Darstellung', type: 'select', options: ['tabs', 'cards'], default: 'tabs' },
     { name: 'showProgression', label: 'Progressionsregel zeigen', type: 'boolean', default: true },
     { name: 'startEvent', label: 'Event für „Starten“', type: 'text', default: 'plan.start' },
@@ -45,13 +46,14 @@ export const programCard = {
     library: [{ id: 'bankdruecken', name: 'Bankdrücken', muscle: 'Brust', unit: 'kg' }, { id: 'rudern-kabel', name: 'Rudern am Kabel', muscle: 'Rücken', unit: 'kg' }], history: [] } },
   render: function ProgramCard({ props, data, ctx }) {
     const p = data.program; const days = p?.days || [];
+    if (!days.length && props.quietEmpty) return null;
     if (!days.length) return html`<${Card} title="Programm"><${EmptyState} icon="clipboard-check" title="Noch kein Programm" text="Wähle eine Vorlage, zum Beispiel Ganzkörper oder Push/Pull/Beine." /><//>`;
     const lib = data.library || [], history = data.history || [];
     const sel = days.find((d) => d.id === (ctx.ui.selectedDay || ctx.ui.selectedId)) || days.find((d) => d.id === 'upperA') || days[0];
     const rule = props.showProgression && html`<div class="tk-pc__rule"><${Icon} name="trending-up" size=${16} /><div><strong style="color:var(--tk-c-text)">Progression.</strong> ${p.progression}${p.deload ? html`<div style="margin-top:4px">${p.deload}</div>` : ''}</div></div>`;
     const bodyProps = { lib, history, ctx, props, event: props.startEvent || 'plan.start' };
     if (props.layout === 'cards') return html`<div class="tk-col" style="gap:var(--tk-space-4)"><div class="tk-pc__grid">${days.map((d) => html`<${Card}><${DayBody} day=${d} ...${bodyProps} /><//>`)}</div>${rule}</div>`;
-    return html`<${Card} title=${p.name} icon="clipboard-check"><div class="tk-pc" style="gap:var(--tk-space-4)"><${Segmented} label="Trainingstag" value=${sel.id} onChange=${(v) => { ctx.setUi('selectedDay', v); ctx.emit('day.open', { id: v }); }} options=${days.map((d) => ({ value: d.id, label: d.name }))} />
+    return html`<${Card} title=${p.name.replace(/\//g, '/\u200b')} icon="clipboard-check"><div class="tk-pc" style="gap:var(--tk-space-4)"><${Segmented} label="Trainingstag" value=${sel.id} onChange=${(v) => { ctx.setUi('selectedDay', v); ctx.emit('day.open', { id: v }); }} options=${days.map((d) => ({ value: d.id, label: d.name }))} />
       <${DayBody} day=${sel} ...${bodyProps} />${rule}</div><//>`;
   },
 };

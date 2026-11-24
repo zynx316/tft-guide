@@ -46,8 +46,9 @@ export const setLogger = {
   name: 'Satz-Logger',
   category: 'Fitness',
   description: 'Alle Übungen der Einheit mit Sätzen: Vorgabe aus dem letzten Training, „Vorher“-Werte, kg- und Wiederholungs-Stepper (Dezimalkomma), 1-Tap-Haken, Übung tauschen oder auslassen, Bestwert-Hinweis. Modus „rows“ (dicht) oder „cards“ (Karte je Übung mit Fortschrittspunkten).',
-  version: '1.1',
+  version: '1.2',
   props: [
+    { name: 'quietEmpty', label: 'Ohne Einheit nichts anzeigen (Erststart)', type: 'boolean', default: false },
     { name: 'mode', label: 'Darstellung', type: 'select', options: ['rows', 'cards'], default: 'rows' },
     { name: 'showHints', label: 'Vorschläge zeigen', type: 'boolean', default: true },
     { name: 'prHints', label: 'Bestwert-Hinweis', type: 'boolean', default: true },
@@ -86,6 +87,7 @@ export const setLogger = {
   render: function SetLogger({ props, data, setData, ctx }) {
     const s = data.session;
     const ops = useOps(s || {}, (v) => setData('session', v), ctx, data, props.prHints);
+    if ((!s || !(s.exercises || []).length) && props.quietEmpty) return null;
     if (!s || !(s.exercises || []).length) return html`<${Card} title="Übungen" icon="dumbbell"><${EmptyState} icon="dumbbell" title="Keine Übungen" text="Wähle einen Trainingstag im Plan oder füge eine Übung hinzu." /><//>`;
     const live = liveExercises(s); const cur = live.find((e) => e.sets.some((x) => !x.done));
     return html`<div class="tk-sl" data-qa="set-logger">${s.exercises.map((ex) => html`<${ExerciseBlock} key=${ex.id} ex=${ex} cur=${!ops.locked && cur && cur.id === ex.id} ops=${ops} props=${props} />`)}</div>`;

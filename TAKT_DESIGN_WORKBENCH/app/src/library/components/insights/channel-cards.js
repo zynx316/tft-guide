@@ -5,6 +5,8 @@ import { Card, Button, Badge, Icon, EmptyState, Switch, Sparkline, toneColor } f
 import { money, percent } from '../../helpers.js';
 import { fmt, isoDay } from '../../../lib/util.js';
 import { rel, filterItems, SPIN_CSS, patchChannel, reconnectDialog, ORDER_STAGES } from './shared.js';
+import channelCockpit from './channel-cockpit.js';
+import channelTableParts from './channel-table.js';
 
 const STATUS = { connected: { label: 'Verbunden', tone: 'success' }, error: { label: 'Fehler', tone: 'danger' }, paused: { label: 'Pausiert', tone: 'neutral' } };
 const CHIPS = { verbunden: (c) => c.status === 'connected', fehler: (c) => c.status === 'error', pausiert: (c) => c.status === 'paused' };
@@ -132,12 +134,13 @@ export const channelDetail = {
   name: 'Kanal-Detail',
   category: 'Vertrieb',
   description: 'Der gewählte Kanal (ctx.ui.selectedId) im Detail: Status, Synchronisation (jetzt, nächster Lauf, Fehler und Neu verbinden), Kennzahlen mit Verlauf, letzte Bestellungen, Protokoll und Einstellungen. Layouts: voll, fokussiert (nur das Nötige) und kompakt (für Seitenspalten).',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'layout', label: 'Layout', type: 'select', options: ['full', 'focus', 'compact'], default: 'full' },
     { name: 'showOrders', label: 'Letzte Bestellungen', type: 'boolean', default: true },
     { name: 'showLog', label: 'Protokoll', type: 'boolean', default: true },
     { name: 'showSettings', label: 'Einstellungen', type: 'boolean', default: true },
+    { name: 'quietEmpty', label: 'Ohne Kanäle nichts anzeigen', type: 'boolean', default: false },
   ],
   data: [
     { slot: 'channels', label: 'Kanäle', default: 'channels', shape: '{id,name,status,lastSync,revenue,orders,delta?,pending?,error?,needsAuth?,url?,trend?,log?,autoSync?,notify?}[]', required: true },
@@ -177,6 +180,7 @@ export const channelDetail = {
     const alive = useRef(true); useEffect(() => () => { alive.current = false; }, []);
     const list = data.channels || [];
     const ch = list.find((c) => c.id === ctx.ui.selectedId) || list[0];
+    if (!ch && props.quietEmpty) return null;
     if (!ch) return html`<${Card}><${EmptyState} icon="store" title="Kein Kanal gewählt" text="Verbinde einen Kanal, um Bestellungen und Umsatz zu sehen." /><//>`;
     const idx = Math.max(0, list.indexOf(ch)); const col = `var(--tk-chart-${(idx % 6) + 1})`; const st = STATUS[ch.status] || STATUS.paused;
     const orders = (data.orders || []).filter((o) => o.channelId === ch.id).sort((a, b) => String(b.date).localeCompare(String(a.date)));
@@ -267,4 +271,4 @@ export const salesAttention = {
   },
 };
 
-export default [channelCards, channelDetail, salesAttention];
+export default [channelCards, channelDetail, salesAttention, ...channelCockpit, ...channelTableParts];

@@ -10,8 +10,9 @@ export const nutritionHints = {
   name: 'Ernährungs-Hinweise',
   category: 'Ernährung',
   description: 'Berechnet aus Tagebuch, Plan und Wasser kurze, freundliche Hinweise („Eiweiß: noch 38 g – Skyr passt“) mit Ein-Tap-Aktion. Keine Bewertung, keine Alarmfarben.',
-  version: '1.0',
+  version: '1.1',
   props: [
+    { name: 'quietEmpty', label: 'Im Erststart (noch nichts erfasst) nichts anzeigen', type: 'boolean', default: false },
     { name: 'title', label: 'Titel', type: 'text', default: 'Was fehlt noch?' },
     { name: 'limit', label: 'Max. Hinweise', type: 'number', default: 3 },
     { name: 'style', label: 'Darstellung', type: 'select', options: ['list', 'cards'], default: 'list' },
@@ -42,6 +43,7 @@ export const nutritionHints = {
   } },
   render: function NutritionHints({ props, data, setData, ctx }) {
     const goals = obj(data.goals), v = dayView(ctx, { goals, diary: arr(data.diary), plan: arr(data.plan) });
+    if (props.quietEmpty && !arr(data.diary).length) return null;
     const iso = viewDay(ctx), waterMl = arr(obj(data.water).entries).filter((e) => e.date === iso).reduce((a, e) => a + e.ml, 0);
     const hour = ctx.today.getHours() + ctx.today.getMinutes() / 60;
     const hints = buildHints({ goals, entries: v.entries, plannedToday: v.plannedItems, waterMl, foods: arr(data.foods), hour, viewIsToday: v.isToday, trainingTomorrow: !!goals.trainingDays?.includes(wdOf(shiftDay(todayIso(ctx), 1))) && v.isToday }).slice(0, props.limit);
@@ -49,7 +51,7 @@ export const nutritionHints = {
       const a = h.action; if (!a) return;
       ctx.emit(a.event, { id: h.id });
       if (a.event === 'hint.log') { const f = arr(data.foods).find((x) => x.id === a.foodId); if (f) logFood(ctx, setData, f, a.grams, suggestMeal(ctx)); }
-      if (a.event === 'hint.water') { setData('water', (x) => ({ ...obj(x), entries: [...arr(obj(x).entries), { id: eid('w'), date: iso, time: hhmm(ctx.today), ml: a.ml, vessel: 'Glas' }] })); ctx.toast(`+${a.ml} ml Wasser`); }
+      if (a.event === 'hint.water') { setData('water', (x) => ({ ...obj(x), entries: [...arr(obj(x).entries), { id: eid('w', ctx), date: iso, time: hhmm(ctx.today), ml: a.ml, vessel: 'Glas' }] })); ctx.toast(`+${a.ml} ml Wasser`); }
     };
     const body = !hints.length ? html`<${EmptyState} icon="sparkles" title="Alles im Fluss" text="Gerade gibt es nichts Besonderes. Weiter so, wie es sich gut anfühlt." />`
       : html`<div class=${`tk-nh ${props.style === 'cards' ? 'tk-nh--cards' : ''}`}>${hints.map((h) => html`<div class="tk-nh__item">${tintBox(h.tone === 'neutral' ? 'neutral' : h.tone, h.icon)}<div class="tk-grow" style="min-width:0"><strong>${h.title}</strong><p>${h.text}</p></div>

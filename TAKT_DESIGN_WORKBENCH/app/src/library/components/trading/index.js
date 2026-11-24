@@ -16,5 +16,6 @@ import upcoming from './upcoming.js';
 import hints from './hints.js';
 import marketStatus from './market-status.js';
 import orderList from './order-list.js';
+import positionFocus from './position-focus.js';
 
-export default [...depotHero, ...movers, ...watchlist, ...positions, ...alerts, ...dividends, ...history, ...allocation, ...performance, ...securityHead, ...securityInfo, ...upcoming, ...hints, ...marketStatus, ...orderList];
+export default [...depotHero, ...movers, ...watchlist, ...positions, ...alerts, ...dividends, ...history, ...allocation, ...performance, ...securityHead, ...securityInfo, ...upcoming, ...hints, ...marketStatus, ...orderList, ...positionFocus];

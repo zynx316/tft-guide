@@ -11,8 +11,9 @@ export const goalList = {
   name: 'Zielliste',
   category: 'Fitness',
   description: 'Wochenziele und Langzeitziele mit Fortschrittsbalken in ruhigen Farben (kein Rot bei Überschreitung). Ziel antippen öffnet das Detail, „Ziel hinzufügen“ bietet Vorschläge.',
-  version: '1.0',
+  version: '1.1',
   props: [
+    { name: 'quietEmpty', label: 'Ohne Daten nichts anzeigen (Erststart)', type: 'boolean', default: false },
     { name: 'title', label: 'Titel', type: 'text', default: 'Ziele' },
     { name: 'showAdd', label: 'Ziel hinzufügen', type: 'boolean', default: true },
   ],
@@ -26,6 +27,7 @@ export const goalList = {
   render: function GoalList({ props, data, setData, ctx }) {
     const items = data.items || [];
     const add = () => ctx.openDialog({ title: 'Ziel hinzufügen', body: (close) => html`<div class="tk-col" style="gap:8px"><p class="tk-muted" style="font-size:var(--tk-fs-sm)">Kleine, gut erreichbare Ziele halten dich eher dabei als große.</p>${SUGGEST.filter((s) => !items.some((i) => i.id === s.id)).map((s) => html`<button type="button" class="tk-sl-alt" onClick=${() => { setData('items', (a) => [...a, { ...s, value: 0 }]); ctx.emit('goal.add', { id: s.id }); ctx.toast(`Ziel „${s.label}“ hinzugefügt`); close(); }}><${Icon} name=${s.icon} size=${18} /><span class="tk-grow" style="text-align:left;font-weight:600">${s.label}</span><span class="tk-subtle">${s.target} ${s.unit}</span></button>`)}</div>`, footer: (close) => html`<${Button} onClick=${close}>Schließen<//>` });
+    if (!items.length && props.quietEmpty) return null;
     return html`<${Card} title=${props.title} icon="target" actions=${props.showAdd && html`<${Button} size="sm" icon="plus" onClick=${add}>Ziel<//>`}>
       ${!items.length ? html`<${EmptyState} icon="target" title="Noch keine Ziele" text="Starte mit einem Wochenziel, zum Beispiel drei Trainingseinheiten." action=${html`<${Button} size="sm" onClick=${add}>Vorschläge ansehen<//>`} />`
         : html`<div class="tk-gl">${items.map((g) => { const r = g.target ? g.value / g.target : 0; const done = r >= 1; return html`<button type="button" class="tk-gl__row" data-done=${String(done)} onClick=${() => { ctx.setUi('selectedId', g.id); ctx.emit('goal.open', { id: g.id }); }} aria-label=${`${g.label}: ${num(g.value, g.decimals || 0)} von ${num(g.target, g.decimals || 0)} ${g.unit}`}>

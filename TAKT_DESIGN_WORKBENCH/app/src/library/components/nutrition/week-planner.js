@@ -36,7 +36,7 @@ export const weekPlanner = {
   name: 'Wochenplaner',
   category: 'Ernährung',
   description: 'Mahlzeiten vorausplanen: Raster Mo bis So × Mahlzeiten (Desktop) oder Tagesliste mit Tagesleiste (Mobil). Tagessummen gegen das Ziel, Slots aus Rezepten, Zuletzt, Resten oder Auswärts füllen, verschieben, „wie geplant gegessen“ und Woche kopieren.',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Wochenplan' },
     { name: 'view', label: 'Ansicht', type: 'select', options: ['auto', 'grid', 'day'], default: 'auto' },
@@ -75,25 +75,26 @@ export const weekPlanner = {
     const today = todayIso(ctx), plan = arr(data.plan), recipes = arr(data.recipes), foods = arr(data.foods), goals = obj(data.goals);
     const days = Array.from({ length: 7 }, (_, i) => shiftDay(monday(today), i));
     const [sel, setSel] = useState(today);
-    const grid = props.view === 'grid' || (props.view === 'auto' && ctx.bp === 'desktop');
+    const big = (ctx.env?.scale || 1) >= 1.5; // große Schrift: sieben Spalten sind nicht lesbar, Tagesliste zeigen
+    const grid = !big && (props.view === 'grid' || (props.view === 'auto' && ctx.bp === 'desktop'));
     const wrap = (b) => (props.framed ? html`<${Card} title=${props.title} icon="calendar-days" actions=${html`<${Button} size="sm" variant="ghost" icon="copy" onClick=${copyWeek}>Woche kopieren<//>`}>${b}<//>` : b);
     const inDay = (d, m) => plan.filter((p) => p.date === d && (!m || p.meal === m));
     const sum = (d) => totals(inDay(d).filter((p) => p.status !== 'skipped').map((p) => ({ kcal: p.kcal, protein: p.protein })));
     const goalK = (d) => goalForDay(goals, d)?.kcal || 0;
     const set = (fn) => setData('plan', (l) => fn(arr(l)));
-    function copyWeek() { const next = days.map((d) => shiftDay(d, 7)); if (plan.some((p) => next.includes(p.date))) { ctx.toast('Die nächste Woche hat schon Einträge'); return; } set((l) => [...l, ...l.filter((p) => days.includes(p.date)).map((p) => ({ ...p, id: eid('p'), date: shiftDay(p.date, 7), status: 'planned' }))]); ctx.emit('plan.copyweek'); ctx.toast('Woche in die nächste Woche kopiert'); }
+    function copyWeek() { const next = days.map((d) => shiftDay(d, 7)); if (plan.some((p) => next.includes(p.date))) { ctx.toast('Die nächste Woche hat schon Einträge'); return; } set((l) => [...l, ...l.filter((p) => days.includes(p.date)).map((p) => ({ ...p, id: eid('p', ctx), date: shiftDay(p.date, 7), status: 'planned' }))]); ctx.emit('plan.copyweek'); ctx.toast('Woche in die nächste Woche kopiert'); }
     if (!plan.length) return wrap(html`<${EmptyState} icon="calendar-days" title="Noch kein Plan" text="Plane Mahlzeiten vor, dann wird Erfassen zum Abhaken und die Einkaufsliste entsteht von selbst." action=${html`<${Button} size="sm" variant="primary" icon="plus" onClick=${() => openAdd(today, 'dinner')}>Erste Mahlzeit planen<//>`} />`);
 
     function openAdd(date, meal) {
       ctx.emit('plan.slot', { date, meal });
-      ctx.openDialog({ title: `${wdOf(date)} ${dayShort(date)} · ${mealInfo(meal).label}`, body: (close) => html`<${AddSheet} date=${date} meal=${meal} recipes=${recipes} foods=${foods} diary=${data.diary} plan=${plan} onAdd=${(it) => { set((l) => [...l, { id: eid('p'), date, meal, status: 'planned', ...it }]); ctx.emit('plan.set', { date, meal, kind: it.kind }); close(); }} />` });
+      ctx.openDialog({ title: `${wdOf(date)} ${dayShort(date)} · ${mealInfo(meal).label}`, body: (close) => html`<${AddSheet} date=${date} meal=${meal} recipes=${recipes} foods=${foods} diary=${data.diary} plan=${plan} onAdd=${(it) => { set((l) => [...l, { id: eid('p', ctx), date, meal, status: 'planned', ...it }]); ctx.emit('plan.set', { date, meal, kind: it.kind }); close(); }} />` });
     }
     function openItem(p) {
       const canEat = p.status === 'planned' && p.date <= today;
       ctx.openDialog({ title: p.label, body: (close) => html`<div style="display:flex;flex-direction:column;gap:14px"><div class="tk-nu-meta">${wdOf(p.date)} ${dayShort(p.date)} · ${mealInfo(p.meal).label}${p.note ? ` · ${p.note}` : ''}</div>
         <div class="tk-row" style="gap:10px"><span class="tk-nu-big">${num(p.kcal)}</span><span class="tk-muted">kcal · E ${num(p.protein)} g · ${p.status === 'done' ? 'gegessen' : 'geplant'}</span></div>
         <div class="tk-nu-btnrow">${p.recipeId && html`<${Button} icon="chef-hat" onClick=${() => { close(); ctx.emit('recipe.open', { id: p.recipeId }); }}>Rezept öffnen<//>`}
-          ${canEat && html`<${Button} variant="primary" icon="check" onClick=${() => { setData('diary', (d) => [...arr(d), planEntry(p, p.date, hhmm(ctx.today))]); set((l) => l.map((x) => (x.id === p.id ? { ...x, status: 'done' } : x))); ctx.emit('plan.eat', { id: p.id }); ctx.toast(`${p.label} als gegessen übernommen`); close(); }}>Wie geplant gegessen<//>`}
+          ${canEat && html`<${Button} variant="primary" icon="check" onClick=${() => { setData('diary', (d) => [...arr(d), planEntry(p, p.date, hhmm(ctx.today), ctx)]); set((l) => l.map((x) => (x.id === p.id ? { ...x, status: 'done' } : x))); ctx.emit('plan.eat', { id: p.id }); ctx.toast(`${p.label} als gegessen übernommen`); close(); }}>Wie geplant gegessen<//>`}
           <${Button} icon="arrow-left-right" onClick=${() => { close(); ctx.openDialog({ title: 'Verschieben', body: (c2) => html`<${MoveSheet} item=${p} today=${today} onSave=${(day, meal) => { set((l) => l.map((x) => (x.id === p.id ? { ...x, date: day, meal } : x))); ctx.emit('plan.move', { id: p.id, date: day, meal }); c2(); }} />` }); }}>Verschieben<//>
           <${Button} variant="danger" icon="trash-2" onClick=${() => { set((l) => l.filter((x) => x.id !== p.id)); ctx.emit('plan.remove', { id: p.id }); ctx.toast(`${p.label} aus dem Plan entfernt`); close(); }}>Entfernen<//></div></div>` });
     }

@@ -42,6 +42,7 @@ export default {
         { trigger: 'Bereich antippen', result: 'Wissensbaum zeigt nur diesen Bereich', event: 'kb.area', to: 'knowledge.browse' },
         { trigger: '„Alle Artikel“', result: 'Navigation mit Baum und Suche', event: 'header.secondary', to: 'knowledge.browse' },
         { trigger: 'Kennzahl antippen', result: 'Navigation', event: 'metric.open', to: 'knowledge.browse' },
+        { trigger: '„Artikel anlegen“ (Erststart)', result: 'Neuer Artikel öffnet im Editor der Artikelansicht; der erste Titel (#) wird zum Artikelnamen', event: 'kb.create', to: 'knowledge.article' },
         { trigger: '„Als aktuell markieren“', result: 'Änderungsdatum wird heute, Eintrag verschwindet aus „Zu prüfen“', event: 'kb.review.done' },
         { trigger: 'Suchbegriff eingeben', result: 'Listen filtern live', event: 'search.input' },
       ],
@@ -64,8 +65,9 @@ export default {
           layout: { type: 'split' },
           blocks: [
             hdr({ eyebrow: 'Wissensdatenbank', title: 'Übersicht', subtitle: 'Artikel, Entwürfe und Lesezeichen', primaryLabel: '', secondaryLabel: 'Alle Artikel', secondaryIcon: 'library' }),
+            { id: 'kpi', component: 'kpi-tiles', region: 'main', bind: { metrics: 'metrics' }, props: { columns: 4, showSpark: false } },
             { id: 'flt', component: 'search-filter', region: 'main', props: { placeholder: 'Wissen durchsuchen …', filters: AREA_CHIPS } },
-            { id: 'recent', component: 'count-list', region: 'main', bind: { items: 'recent' }, props: { title: 'Zuletzt gelesen', dense: true, limit: 5, emptyTitle: 'Noch nichts gelesen', emptyText: 'Gelesene Artikel erscheinen hier.' } },
+            { id: 'recent', component: 'count-list', region: 'main', bind: { items: 'recent' }, props: { title: 'Zuletzt gelesen', dense: true, limit: 5, quietEmpty: true, emptyTitle: 'Noch nichts gelesen', emptyText: 'Gelesene Artikel erscheinen hier.' } },
             { id: 'marks', component: 'count-list', region: 'main', bind: { items: 'bookmarkItems' }, props: { title: 'Lesezeichen', dense: true, quietEmpty: true, emptyTitle: 'Keine Lesezeichen', emptyText: 'Markiere einen Artikel mit dem Lesezeichen.' } },
             { id: 'drafts', component: 'count-list', region: 'main', bind: { items: 'drafts' }, props: { title: 'Entwürfe', dense: true, quietEmpty: true, emptyTitle: 'Keine Entwürfe', emptyText: 'Angefangene Artikel erscheinen hier.' } },
             { id: 'tree', component: 'kb-tree', region: 'aside', props: { title: 'Wissensbasis' } },
@@ -77,10 +79,10 @@ export default {
           layout: { type: 'grid' },
           blocks: [
             hdr({ eyebrow: 'Wissensdatenbank', title: 'Übersicht', subtitle: 'Was möchtest du nachschlagen?', primaryLabel: '', secondaryLabel: 'Alle Artikel', secondaryIcon: 'library' }),
-            { id: 'areas', component: 'kb-areas', region: 'main', span: 12, props: { title: 'Bereiche', quietEmpty: true } },
-            { id: 'resume', component: 'kb-next', region: 'main', span: 7, spanTablet: 12, props: { mode: 'resume' } },
-            { id: 'ring', component: 'chart', region: 'main', span: 5, spanTablet: 12, bind: { series: 'areaChart' }, props: { title: 'Artikel nach Bereich', type: 'donut' } },
-            { id: 'marks', component: 'card-grid', region: 'main', span: 12, bind: { items: 'bookmarkCards' }, props: { title: 'Lesezeichen', cover: true, minWidth: 220 } },
+            { id: 'areas', component: 'kb-areas', region: 'main', span: 12, props: { title: 'Bereiche' } },
+            { id: 'resume', component: 'kb-next', region: 'main', span: 7, spanTablet: 12, props: { mode: 'resume', quietEmpty: true } },
+            { id: 'ring', component: 'kb-share', region: 'main', span: 5, spanTablet: 12, props: { title: 'Artikel nach Bereich' } },
+            { id: 'marks', component: 'kb-marks', region: 'main', span: 12, props: { title: 'Lesezeichen', minWidth: 220 } },
           ],
         },
         {
@@ -164,6 +166,7 @@ export default {
         { trigger: 'Eintrag im Inhaltsverzeichnis antippen', result: 'Seite scrollt zum Abschnitt', event: 'kb.toc' },
         { trigger: 'Verwandten Artikel antippen', result: 'Artikel wechselt, Zurück führt zurück', event: 'kb.related', to: 'knowledge.article' },
         { trigger: 'Stift antippen', result: 'Textbereich zum Bearbeiten erscheint', event: 'kb.edit' },
+        { trigger: 'Kapitel antippen (Variante Kapitelkarten)', result: 'Kapitel klappt auf, der Lesefortschritt steigt', event: 'kb.chapter' },
         { trigger: 'Speichern antippen', result: 'Änderungen übernommen, Toast „Artikel gespeichert“', event: 'kb.save' },
         { trigger: 'Lesezeichen antippen', result: 'Artikel wird gemerkt', event: 'kb.bookmark' },
       ],
@@ -173,12 +176,11 @@ export default {
       demoData: { articles: '@world:articles', areas: '@world:knowledgeAreas' },
       variants: [
         {
-          id: 'A', name: 'Lesen mit Inhaltsverzeichnis', direction: 'kompakt', concept: 'Der Artikel füllt die Breite, rechts klebt ein Inhaltsverzeichnis (nur Desktop). Ein Hinweisbanner zeigt den Bearbeitungsstatus.',
+          id: 'A', name: 'Lesen mit Inhaltsverzeichnis', direction: 'kompakt', concept: 'Der Artikel füllt die Breite, rechts klebt ein Inhaltsverzeichnis (nur Desktop). Bearbeiten über den Stift direkt im Artikel.',
           description: '+ Lesefluss, schneller Abschnittssprung  − Ohne Baum keine Navigation zwischen Themen (nur verwandte Artikel)',
           layout: { type: 'stack' },
           blocks: [
             hdr({ eyebrow: 'Wissensdatenbank', title: 'Artikel', primaryLabel: '' }),
-            { id: 'note', component: 'notice-banner', region: 'main', props: { tone: 'info', title: 'Dieser Artikel wurde diese Woche aktualisiert', text: 'Änderungen sind direkt im Artikel möglich (Stift-Symbol).', dismissible: true } },
             { id: 'art', component: 'kb-article', region: 'main', props: { showToc: true, showRelated: true, editable: true } },
           ],
         },
@@ -188,6 +190,14 @@ export default {
           layout: { type: 'stack', narrow: true },
           blocks: [
             { id: 'art', component: 'kb-article', region: 'main', props: { reading: true, showToc: false, showRelated: true, editable: false } },
+          ],
+        },
+        {
+          id: 'C', name: 'Kapitelkarten', direction: 'visuell', concept: 'Farbiges Titelbild mit Lesefortschritt als Ring, die Einleitung als Lead, jedes Kapitel als aufklappbare Karte mit Vorschau; unten verwandte Artikel als Karten. Der Fortschritt füllt sich mit jedem geöffneten Kapitel.',
+          description: '+ Lange Artikel werden überschaubar, Fortschritt ist sichtbar, Weiterlesen als Karten  − Ohne Inhaltsverzeichnis, mehr Tippen als beim durchgehenden Text',
+          layout: { type: 'stack', narrow: true },
+          blocks: [
+            { id: 'story', component: 'kb-story', region: 'main', props: { editable: true, showRelated: true } },
           ],
         },
       ],
@@ -292,5 +302,7 @@ export default {
     { featureId: 'knowledge.article', title: 'Bearbeiten im Artikel oder eigener Editor-Bildschirm?', decision: '', rationale: 'Direktes Bearbeiten senkt die Hürde für kleine Korrekturen. Ein eigener Editor bietet Platz für Toolbar und Vorschau, wie im Notizen-Modul.', status: 'open' },
     { featureId: 'knowledge.home', title: 'Startseite: Struktur oder „Weiterlesen“ zuerst?', decision: '', rationale: 'Kompakt (A) zeigt Listen und Baum, Visuell (B) Bereiche, Fokus (C) beginnt mit dem nächsten Nutzen. Entscheidung nach Test mit 30+ Artikeln und echtem Leseverhalten.', tradeoffs: 'A: viel Information. B: Struktur ohne Tiefe. C: wenig Überblick, dafür sofort nützlich.', status: 'open' },
     { featureId: 'knowledge.review', title: 'Aktualität: feste Schwelle von 21 Tagen', decision: 'Artikel erscheinen unter „Zu prüfen“, wenn sie länger als 21 Tage unverändert sind; „Als aktuell markieren“ genügt ohne Änderung des Textes.', rationale: 'Eine einfache Regel ist erklärbar. Der Haken bestätigt „gelesen und weiterhin richtig“, ohne zum Bearbeiten zu zwingen.', tradeoffs: 'Zeitlose Artikel (z. B. Faustregeln) werden unnötig markiert; eine Schwelle je Artikel ist später denkbar.', status: 'decided' },
+    { featureId: 'knowledge.article', title: 'Artikel visuell: Kapitelkarten statt durchgehendem Text?', decision: '', rationale: 'Empfehlung: Kapitelkarten (Variante C) für lange Anleitungen auf dem Handy, durchgehender Text (A, B) für kurze Artikel und zum Suchen im Text. Ein Umschalter im Artikel wäre denkbar, braucht aber echte Lesedaten.', tradeoffs: 'C: Lesefortschritt sichtbar, Kapitel einzeln; aber ohne Inhaltsverzeichnis und mit mehr Tippen.', status: 'open' },
+    { featureId: 'knowledge.home', title: 'Artikel anlegen: Entwurf im Artikel-Editor oder eigener Editor?', decision: '', rationale: 'Empfehlung: im Erststart genügt die eine Aktion „Artikel anlegen“, die einen Entwurf öffnet und direkt im Markdown-Editor der Artikelansicht startet (Titel aus der ersten Überschrift). Ein eigener Editor mit Werkzeugleiste wie bei Notizen folgt mit der Entscheidung zu „Bearbeiten im Artikel oder eigener Editor-Bildschirm“.', tradeoffs: 'Schnell gebaut und für den Start ausreichend; Bereich und Kategorie lassen sich erst später ändern.', status: 'open' },
   ],
 };

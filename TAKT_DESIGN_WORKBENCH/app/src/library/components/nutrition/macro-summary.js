@@ -9,8 +9,9 @@ export const macroSummary = {
   name: 'Makros',
   category: 'Ernährung',
   description: 'Eiweiß, Kohlenhydrate und Fett des Tages gegen das Ziel: als Balkenliste, konzentrische Ringe oder gestapelter Anteilsbalken. Jede Farbe trägt zusätzlich Buchstabe und Gramm.',
-  version: '1.0',
+  version: '1.1',
   props: [
+    { name: 'quietEmpty', label: 'Im Erststart (noch nichts erfasst) nichts anzeigen', type: 'boolean', default: false },
     { name: 'title', label: 'Titel', type: 'text', default: 'Makros' },
     { name: 'mode', label: 'Darstellung', type: 'select', options: ['bars', 'rings', 'stacked'], default: 'bars' },
     { name: 'showFiber', label: 'Ballaststoffe zeigen', type: 'boolean', default: true },
@@ -45,6 +46,7 @@ export const macroSummary = {
   } },
   render: function MacroSummary({ props, data, ctx }) {
     const goals = obj(data.goals), v = dayView(ctx, { goals, diary: arr(data.diary) });
+    if (props.quietEmpty && !arr(data.diary).length) return null;
     const wrap = (b) => (props.framed ? html`<${Card} title=${props.title} icon="pie-chart">${b}<//>` : b);
     if (!hasGoal(goals)) return wrap(html`<${EmptyState} icon="pie-chart" title="Keine Makro-Ziele" text="Sobald ein Ziel gesetzt ist, siehst du hier Eiweiß, Kohlenhydrate und Fett." />`);
     const hide = goals.showNumbers === false;

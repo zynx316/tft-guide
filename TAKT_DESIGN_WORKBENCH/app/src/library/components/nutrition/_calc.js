@@ -1,6 +1,7 @@
 // Ernährung – reine Berechnungen (ohne UI, auch von Node und der Welt-Datei nutzbar).
 // Nährwerte, Tages-/Wochensummen, Bedarfsrechner mit Sicherheits-Stopps, Hinweise.
 import { isoDay } from '../../../lib/util.js';
+import { fmtNumber } from '../../../lib/format.js';
 
 export const MEALS = [
   { id: 'breakfast', label: 'Frühstück', icon: 'coffee', short: 'Früh' },
@@ -20,7 +21,7 @@ export const MACROS = [
 export const r1 = (n) => Math.round((Number(n) || 0) * 10) / 10;
 export const r2 = (n) => Math.round((Number(n) || 0) * 100) / 100;
 /** Deutsche Zahl: num(1234.5, 1) → „1.234,5“ */
-export const num = (n, d = 0) => new Intl.NumberFormat('de-DE', { maximumFractionDigits: d, minimumFractionDigits: d }).format(Number(n) || 0);
+export const num = (n, d = 0) => fmtNumber(Number(n) || 0, { digits: d });
 export const kcalStr = (n) => `${num(Math.round(n))} kcal`;
 export const gStr = (n, d = 0) => `${num(n, d)} g`;
 
@@ -61,13 +62,15 @@ export function plausibility({ kcal, protein, carbs, fat, fiber = 0 }) {
   return Math.abs(calc - kcal) / Math.max(kcal, calc, 1);
 }
 
-export const eid = (p = 'e') => `${p}${Date.now().toString(36)}${Math.random().toString(36).slice(2, 5)}`;
+let eidSeq = 0;
+/** Neue ID: bevorzugt ctx.newId (deterministisch je Vorschau-Sitzung), sonst ein eigener Zähler – nie Zufall oder Uhrzeit. */
+export const eid = (p = 'e', ctx) => (ctx && typeof ctx.newId === 'function' ? ctx.newId(p) : `${p}~${(++eidSeq).toString(36)}`);
 
-export function entryFromFood(food, grams, { meal, date, time, source = 'search', amount } = {}) {
-  return { id: eid(), date, meal, time: time || null, foodId: food.id, name: food.name, amount: amount || `${num(grams)} ${food.unit === 'ml' ? 'ml' : 'g'}`, grams, unit: food.unit === 'ml' ? 'ml' : 'g', ...per(food, grams), source };
+export function entryFromFood(food, grams, { meal, date, time, source = 'search', amount, ctx } = {}) {
+  return { id: eid('e', ctx), date, meal, time: time || null, foodId: food.id, name: food.name, amount: amount || `${num(grams)} ${food.unit === 'ml' ? 'ml' : 'g'}`, grams, unit: food.unit === 'ml' ? 'ml' : 'g', ...per(food, grams), source };
 }
-export function entryQuick({ name, kcal, protein = 0, carbs = 0, fat = 0, meal, date, time }) {
-  return { id: eid(), date, meal, time: time || null, foodId: null, name: name || 'Schnell erfasst', amount: 'Schätzung', grams: null, kcal: Math.round(kcal), protein: r1(protein), carbs: r1(carbs), fat: r1(fat), fiber: 0, sugar: 0, salt: 0, source: 'quick' };
+export function entryQuick({ name, kcal, protein = 0, carbs = 0, fat = 0, meal, date, time, ctx }) {
+  return { id: eid('e', ctx), date, meal, time: time || null, foodId: null, name: name || 'Schnell erfasst', amount: 'Schätzung', grams: null, kcal: Math.round(kcal), protein: r1(protein), carbs: r1(carbs), fat: r1(fat), fiber: 0, sugar: 0, salt: 0, source: 'quick' };
 }
 
 export const dayEntries = (diary, iso) => (Array.isArray(diary) ? diary : []).filter((e) => e.date === iso);
