@@ -111,6 +111,17 @@ export async function runProbe({ payload, errors = [] } = {}) {
     if (!visible(el) || !(el.textContent || '').trim()) continue;
     if (el.getBoundingClientRect().width < 48) clipped.push(`${describe(el)} (Titel auf ${Math.round(el.getBoundingClientRect().width)} px gequetscht)`);
   }
+  // Zu schmale Spalten: Text steht bei großer Schrift Buchstabe für Buchstabe untereinander (kollabiertes Raster)
+  if (largeText) {
+    let n = 0;
+    for (const el of document.querySelectorAll('.tk-app__content *, .tk-bare *')) {
+      if (n > 6) break;
+      const txt = [...el.childNodes].filter((c) => c.nodeType === 3).map((c) => c.textContent).join('').trim();
+      if (txt.length < 6 || !visible(el)) continue;
+      const r = el.getBoundingClientRect(), fs = parseFloat(getComputedStyle(el).fontSize) || 16;
+      if (r.width < fs * 2.6 && r.height > fs * 3.6) { clipped.push(`${describe(el)} (Spalte ${Math.round(r.width)} px – Text bricht zeichenweise um)`); n++; }
+    }
+  }
   add('clipped', clipped.length ? 'warn' : 'pass', clipped.length ? `${clipped.length} Elemente schneiden Inhalt ab` : 'Keine abgeschnittenen Inhalte', clipped);
 
   // 5) Touch-Ziele (nur Mobile relevant)
