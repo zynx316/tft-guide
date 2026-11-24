@@ -24,6 +24,7 @@ import { LibraryView } from './views/library.js';
 import { VersionsView } from './views/versions.js';
 import { QualityView } from './views/quality.js';
 import { DataView } from './views/data.js';
+import { DecideView } from './views/decide.js';
 
 // ---------------------------------------------------------------- Router ---
 import { navigate, featureHref, moduleHref } from './router.js';
@@ -40,7 +41,7 @@ function CommandPalette({ close, state }) {
   const [q, setQ] = useState(''); const [i, setI] = useState(0);
   const items = useMemo(() => {
     const base = [
-      { label: 'Übersicht', icon: 'layout-dashboard', href: '#/' }, { label: 'Module', icon: 'boxes', href: '#/modules' },
+      { label: 'Übersicht', icon: 'layout-dashboard', href: '#/' }, { label: 'Demo & Entscheidung', icon: 'smartphone', href: '#/decide' }, { label: 'Demo-Launcher öffnen', icon: 'external-link', href: '#/decide', open: './launcher.html' }, { label: 'Module', icon: 'boxes', href: '#/modules' },
       { label: 'Features', icon: 'list-checks', href: '#/features' }, { label: 'Design Studio', icon: 'palette', href: '#/studio' },
       { label: 'Komponenten', icon: 'component', href: '#/library' }, { label: 'Versionen & Entscheidungen', icon: 'git-branch', href: '#/versions' },
       { label: 'Quality Center', icon: 'shield-check', href: '#/quality' }, { label: 'Daten & Backup', icon: 'save', href: '#/data' },
@@ -52,7 +53,7 @@ function CommandPalette({ close, state }) {
     const n = q.trim().toLowerCase();
     return (n ? all.filter((x) => `${x.label} ${x.sub || ''}`.toLowerCase().includes(n)) : all).slice(0, 40);
   }, [q]);
-  const go = (it) => { close(); navigate(it.href); };
+  const go = (it) => { close(); if (it.open) window.open(it.open, '_blank'); else navigate(it.href); };
   return html`<div class="wb-col" style="gap:0;margin:-18px">
     <div class="wb-search" style="padding:12px;border-bottom:1px solid var(--wb-border)"><${Icon} name="search" size=${16} />
       <input class="wb-input" autofocus placeholder="Modul, Feature, Komponente oder Bereich suchen …" value=${q} style="padding-left:34px;height:38px;font-size:14px"
@@ -95,6 +96,7 @@ function Shell({ state, route, children, crumbs }) {
       <div class="wb-brand"><span class="wb-brand__logo">T</span><div><div class="wb-brand__name">TAKT Design Workbench</div><div class="wb-brand__sub">${state.meta.project}</div></div></div>
       <nav class="wb-nav">
         <${NavItem} href="#/" icon="layout-dashboard" label="Übersicht" active=${sec === ''} />
+        <${NavItem} href="#/decide" icon="smartphone" label="Demo & Entscheidung" active=${sec === 'decide'} count=${state.feedback.filter((e) => !e.status || e.status === 'neu').length || null} />
         <${NavItem} href="#/modules" icon="boxes" label="Module" active=${sec === 'modules' && !route[1]} count=${mods.length} />
         <${NavItem} href="#/features" icon="list-checks" label="Features" active=${sec === 'features'} count=${activeFeatures.length} />
         <${NavItem} href=${state.settings.lastFeatureId ? `#/studio/${encodeURIComponent(state.settings.lastFeatureId)}` : '#/studio'} icon="palette" label="Design Studio" active=${sec === 'studio'} count=${inWork || null} />
@@ -169,6 +171,7 @@ export function App() {
     case 'versions': crumbs.push({ label: 'Versionen & Entscheidungen' }); view = html`<${VersionsView} state=${state} tab=${a || 'releases'} />`; break;
     case 'quality': crumbs.push({ label: 'Quality Center' }); view = html`<${QualityView} state=${state} tab=${a || 'overview'} />`; break;
     case 'data': crumbs.push({ label: 'Daten & Backup' }); view = html`<${DataView} state=${state} />`; break;
+    case 'decide': crumbs.push({ label: 'Demo & Entscheidung' }); view = html`<${DecideView} state=${state} tab=${a || 'levels'} />`; break;
     default: crumbs.push({ label: 'Nicht gefunden' }); view = html`<div class="wb-page"><div class="wb-empty"><div class="wb-empty__title">Seite nicht gefunden</div><a href="#/">Zur Übersicht</a></div></div>`;
   }
   return html`<${Shell} state=${state} route=${route} crumbs=${crumbs}>${view}<//><${OverlayHost} />`;

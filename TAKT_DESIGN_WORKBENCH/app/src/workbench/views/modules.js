@@ -3,7 +3,7 @@ import { html } from '../../lib/html.js';
 import { useState } from 'preact/hooks';
 import { Icon } from '../../lib/icons.js';
 import { Card, Btn, IconBtn, Badge, StatusBadge, QaCell, Empty, Seg, TextInput, Select, openMenu, confirmDialog, toast, useSortable, Tabs } from '../ui/kit.js';
-import { StatusPipeline, moduleProgress, moduleDialog, newFeatureDialog, featureMenu, decisionDialog, act, qaRunDialog } from './common.js';
+import { StatusPipeline, moduleProgress, moduleDialog, newFeatureDialog, featureMenu, decisionDialog, act, qaRunDialog, exportModuleSpec } from './common.js';
 import { actions } from '../store.js';
 import { moduleStatusInfo, MODULE_STATUSES, statusInfo } from '../../core/schema.js';
 import { themes, THEME_IDS } from '../../design-system/tokens.js';
@@ -15,6 +15,7 @@ function moduleMenu(e, m) {
     { label: 'Cockpit öffnen', icon: 'arrow-right', onClick: () => navigate(moduleHref(m.id)) },
     { label: 'Bearbeiten …', icon: 'pencil', onClick: () => moduleDialog(m) },
     { label: 'Feature hinzufügen …', icon: 'plus', onClick: () => newFeatureDialog(m.id) },
+    { label: 'Modul-Spezifikation (.md)', icon: 'file-text', onClick: () => exportModuleSpec(m.id) },
     { sep: true },
     m.archived ? { label: 'Wiederherstellen', icon: 'archive-restore', onClick: () => act(() => actions.archiveModule(m.id, false)) }
       : { label: 'Archivieren', icon: 'archive', onClick: () => { act(() => actions.archiveModule(m.id, true)); toast(`„${m.name}“ archiviert`, null, { label: 'Rückgängig', onClick: () => actions.archiveModule(m.id, false) }); } },

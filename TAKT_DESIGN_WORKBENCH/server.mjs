@@ -8,6 +8,9 @@
 // * GET  /api/backups          -> Liste;  GET /api/backups/<datei> -> Inhalt
 // * POST /api/backups          -> sofortiges Backup
 // * GET  /api/qa/latest        -> qa/results/latest.json (CLI-QA-Ergebnis)
+// * GET  /api/network          -> LAN-Adressen (QR-Code "Auf dem Handy öffnen" im Launcher)
+// * GET/POST /api/feedback     -> Bewertungen/Kommentare aus dem Demo-Launcher (nur anhängen,
+//                                 auch vom Handy im LAN erlaubt, Same-Origin, max. 20 KB je Eintrag)
 // * /qa/...                    -> Screenshots/Baselines fuer das Quality Center
 // Ohne Server laeuft die Workbench auch rein im Browser-Speicher (Fallback).
 // ============================================================================
@@ -17,12 +20,14 @@ import fsp from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { exec } from 'node:child_process';
+import os from 'node:os';
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
 const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8', '.png': 'image/png', '.svg': 'image/svg+xml', '.ico': 'image/x-icon', '.md': 'text/markdown; charset=utf-8', '.txt': 'text/plain; charset=utf-8', '.webp': 'image/webp' };
 
 export function createServer({ dataDir = path.join(ROOT, 'data'), quiet = false } = {}) {
   const STATE = path.join(dataDir, 'workbench.json');
+  const FEEDBACK = path.join(dataDir, 'feedback.jsonl');
   const BACKUPS = path.join(dataDir, 'backups');
   const APP = path.join(ROOT, 'app');
   const QA = path.join(ROOT, 'qa');
@@ -54,6 +59,31 @@ export function createServer({ dataDir = path.join(ROOT, 'data'), quiet = false 
     try {
       const url = new URL(req.url, 'http://localhost');
       const p = decodeURIComponent(url.pathname);
+      // Feedback aus dem Demo-Launcher: einzige Schreib-Ausnahme für das LAN (append-only, Same-Origin, klein)
+      if (p === '/api/feedback' && req.method === 'POST') {
+        const origin = req.headers.origin; const host = req.headers.host || '';
+        if (origin && origin !== `http://${host}` && origin !== `https://${host}`) return send(res, 403, { error: 'Fremder Origin' });
+        if (!/^application\/json/.test(req.headers['content-type'] || '')) return send(res, 415, { error: 'Nur application/json' });
+        const body = await readBody(req);
+        if (body.length > 20000) return send(res, 413, { error: 'Eintrag zu groß' });
+        const entry = JSON.parse(body);
+        const clean = { id: String(entry.id || Date.now().toString(36)).slice(0, 40), ts: new Date().toISOString(), device: String(entry.device || '').slice(0, 80),
+          version: String(entry.version || '').slice(0, 60), level: String(entry.level || '').slice(0, 20), target: String(entry.target || '').slice(0, 120),
+          rating: Number.isFinite(entry.rating) ? Math.max(0, Math.min(5, entry.rating)) : null, favorite: !!entry.favorite,
+          choose: !!entry.choose, comment: String(entry.comment || '').slice(0, 2000) };
+        await fsp.appendFile(FEEDBACK, JSON.stringify(clean) + '\n', 'utf8');
+        return send(res, 200, { ok: true, id: clean.id });
+      }
+      if (p === '/api/feedback' && req.method === 'GET') {
+        if (!fs.existsSync(FEEDBACK)) return send(res, 200, []);
+        const lines = (await fsp.readFile(FEEDBACK, 'utf8')).split('\n').filter(Boolean);
+        return send(res, 200, lines.map((l) => { try { return JSON.parse(l); } catch { return null; } }).filter(Boolean));
+      }
+      if (p === '/api/network') {
+        const addrs = Object.values(os.networkInterfaces()).flat().filter((a) => a && a.family === 'IPv4' && !a.internal).map((a) => a.address);
+        const port = req.socket.localPort;
+        return send(res, 200, { port, lan: addrs.map((a) => `http://${a}:${port}`), boundTo: req.socket.localAddress });
+      }
       // Schreibschutz: nur JSON, nur vom eigenen Rechner, kein fremder Origin (CSRF/DNS-Rebinding)
       if (req.method !== 'GET' && req.method !== 'HEAD') {
         const remote = req.socket.remoteAddress || '';

@@ -10,7 +10,9 @@ import { THEME_IDS, themes } from '../../design-system/tokens.js';
 import { DEVICES } from '../../core/devices.js';
 import { runQa } from '../qa-runner.js';
 import { navigate, featureHref, moduleHref, studioHref } from '../router.js';
-import { fmt } from '../../lib/util.js';
+import { fmt, download } from '../../lib/util.js';
+import { featureSpecMarkdown, moduleSpecMarkdown } from '../../core/spec.js';
+import { getComponent } from '../../library/registry.js';
 
 export const toneVar = (tone) => (tone && tone !== 'neutral' ? `var(--wb-${tone})` : 'var(--wb-subtle)');
 export const act = (fn) => tryAction(fn, (msg, tone, fid) => toast(msg, tone, fid ? { label: 'Neue Arbeitsversion', onClick: () => newWorkingVersionDialog(fid) } : null));
@@ -105,6 +107,8 @@ export function featureMenu(e, f, state) {
   openMenu(e, [
     { label: 'Öffnen', icon: 'arrow-right', onClick: () => navigate(featureHref(f.id)) },
     { label: 'Im Design Studio', icon: 'palette', onClick: () => navigate(studioHref(f.id)) },
+    { label: 'Im Demo-Launcher', icon: 'smartphone', onClick: () => window.open(`./preview.html?app=1&feature=${encodeURIComponent(f.id)}`, '_blank') },
+    { label: 'Spezifikation exportieren (.md)', icon: 'file-text', hint: 'Flutter-Vorlage', onClick: () => exportFeatureSpec(f.id) },
     { sep: true },
     { label: 'Umbenennen', icon: 'pencil', onClick: async () => { const n = await promptDialog({ title: 'Feature umbenennen', label: 'Name', value: f.name }); if (n) act(() => actions.updateFeature(f.id, { name: n }, `Umbenannt in „${n}“`)); } },
     { label: 'Duplizieren', icon: 'copy', onClick: () => { const id = act(() => actions.duplicateFeature(f.id)); if (id) toast('Feature dupliziert', null, { label: 'Öffnen', onClick: () => navigate(featureHref(id)) }); } },
@@ -199,6 +203,9 @@ export function qaRunDialog({ jobs, title = 'QA-Prüflauf', devices, scope }) {
     footer: (close) => html`<${Btn} onClick=${close}>Schließen<//>`,
   });
 }
+
+export const exportFeatureSpec = (id) => { download(`spec-${id}.md`, featureSpecMarkdown(getState(), id, { getComponent }), 'text/markdown'); toast('Spezifikation exportiert'); };
+export const exportModuleSpec = (id) => { download(`spec-modul-${id}.md`, moduleSpecMarkdown(getState(), id, { getComponent }), 'text/markdown'); toast('Modul-Spezifikation exportiert'); };
 
 export const devicesLabel = (ids) => ids.map((id) => DEVICES.find((d) => d.id === id)?.label || id).join(', ');
 export { REQUIREMENT_TYPES, PRIORITIES, statusInfo, fmt };

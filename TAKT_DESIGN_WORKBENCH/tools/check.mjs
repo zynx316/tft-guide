@@ -25,6 +25,9 @@ for (const f of [...jsFiles, path.join(ROOT, 'server.mjs'), path.join(ROOT, 'qa/
   try { execFileSync(process.execPath, ['--check', f], { stdio: 'pipe' }); } catch (e) { errors.push(`Syntax ${rel(f)}: ${String(e.stderr).split('\n').slice(0, 4).join(' ')}`); }
 }
 
+// 1b) Referenztests Finanzmathematik
+try { execFileSync(process.execPath, [path.join(ROOT, 'tools/test-finmath.mjs')], { stdio: 'pipe' }); } catch (e) { errors.push(`Finanzmathematik-Tests: ${String(e.stdout).trim().split('\n').slice(-4).join(' | ')}`); }
+
 // 2) Komponenten-IDs (statisch aus den Quelltexten)
 const compFiles = walk(path.join(SRC, 'library/components')).filter((f) => f.endsWith('.js'));
 const compIds = new Map();

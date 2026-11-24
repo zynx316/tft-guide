@@ -22,9 +22,13 @@ import trading from './modules/trading.js';
 import fitness from './modules/fitness.js';
 import finance from './modules/finance.js';
 import settings from './modules/settings.js';
+import savings from './modules/savings.js';
+import nutrition from './modules/nutrition.js';
+import habits from './modules/habits.js';
+import system from './modules/system.js';
 
-export const SEED_VERSION = '2026-11-24.1';
-export const MANIFESTS = [home, calendar, tasks, notes, weather, knowledge, sales, pictureToText, trading, fitness, finance, settings];
+export const SEED_VERSION = '2026-11-24.2';
+export const MANIFESTS = [home, calendar, tasks, habits, finance, savings, trading, fitness, nutrition, notes, knowledge, pictureToText, weather, sales, system, settings];
 
 function buildModule(manifest, order) {
   const m = createModule({ ...manifest.module, order });

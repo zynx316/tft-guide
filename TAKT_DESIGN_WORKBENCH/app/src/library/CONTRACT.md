@@ -59,3 +59,14 @@ export const taskList = {
 6. Listen/Sammlungen rendern bei leeren Daten `EmptyState` (Zustand "empty" wird von QA geprüft).
 7. Datumswerte relativ zu `ctx.today` interpretieren, nie `new Date()` für "jetzt".
 8. Komponenten-IDs nie umbenennen (Varianten referenzieren sie). Stattdessen neue Komponente + alte als `deprecated: true` markieren.
+
+## Ergänzungen (Schema v2)
+- **Geldbeträge** immer mit `money(ctx, wert, { sign, digits, compact })` und Prozente mit `percent(ctx, wert)` aus
+  `library/helpers.js` formatieren. Beide respektieren den **Privatsphäre-Modus** (`ctx.privacy` → „•••• €“).
+- **Hinweise** (Finanzen, Trading, Sparplan, Steuer, Gesundheit, Daten) über die Komponente `legal-notice`, nicht selbst formulieren.
+- **Gemeinsame Datenwelt:** Datenslots dürfen an Welt-Schlüssel gebunden sein (`demoData: { tasks: '@world:tasks' }`).
+  Für die Komponente ist das transparent. `setData` schreibt dann in den gemeinsamen Weltzustand, sodass im
+  Demo-Launcher alle Screens dieselben Daten sehen.
+- **Navigation im Launcher:** `ctx.emit(event, { id })`. Hat die Interaktion des Features ein Ziel (`to`), öffnet der
+  Launcher das Ziel-Feature, dort ist `ctx.ui.selectedId = id` vorbelegt. Listen sollten daher beim Antippen eines
+  Eintrags `ctx.emit('<bereich>.open', { id })` auslösen.

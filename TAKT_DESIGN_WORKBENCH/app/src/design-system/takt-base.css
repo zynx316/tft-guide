@@ -217,3 +217,34 @@ h1, h2, h3, h4, p { margin: 0; }
 .bp-mobile .tk-switch { width: 48px; height: 30px; border-radius: 15px; }
 .bp-mobile .tk-switch::after { width: 24px; height: 24px; top: 2px; left: 2px; }
 .bp-mobile .tk-switch[aria-checked="true"]::after { transform: translateX(18px); }
+
+/* --- App-Modus (Demo-Launcher): Titel-Schalter, Unternavigation, Sheets --- */
+.tk-app__titlebtn { display: inline-flex; align-items: center; gap: 4px; min-width: 0; max-width: 100%; border: 0; background: none; color: inherit; font: inherit; padding: 6px 8px; margin-left: -8px; border-radius: var(--tk-radius-md); cursor: pointer; }
+.tk-app__titlebtn:hover { background: var(--tk-c-surface2); }
+.tk-app__titlebtn .icon { color: var(--tk-c-text-subtle); }
+.tk-navsub { display: flex; flex-direction: column; gap: 1px; margin: 2px 0 6px 28px; padding-left: 10px; border-left: 1px solid var(--tk-c-border); }
+.tk-navsub__item { border: 0; background: none; text-align: left; color: var(--tk-c-text-muted); font: inherit; font-size: var(--tk-fs-sm); padding: 6px 8px; border-radius: var(--tk-radius-sm); cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tk-navsub__item:hover { background: var(--tk-c-surface2); color: var(--tk-c-text); }
+.tk-navsub__item[aria-current="page"] { color: var(--tk-c-accent); background: var(--tk-c-nav-active); }
+.tk-sheetlist { display: flex; flex-direction: column; gap: 2px; }
+.tk-sheetlist__item { display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 0 12px; border: 0; border-radius: var(--tk-radius-md); background: none; color: var(--tk-c-text); font: inherit; text-align: left; cursor: pointer; }
+.tk-sheetlist__item:hover { background: var(--tk-c-surface2); }
+.tk-sheetlist__item[aria-current="page"] { background: var(--tk-c-accent-soft); color: var(--tk-c-accent); font-weight: var(--tk-fw-semibold); }
+.tk-modgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 8px; }
+.tk-modgrid__item { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 4px; border: 1px solid transparent; border-radius: var(--tk-radius-lg); background: none; color: var(--tk-c-text); font: inherit; font-size: var(--tk-fs-sm); cursor: pointer; min-width: 0; }
+.tk-modgrid__item:hover { background: var(--tk-c-surface2); }
+.tk-modgrid__item[aria-current="page"] { border-color: var(--tk-c-accent); }
+.tk-modgrid__icon { width: 48px; height: 48px; border-radius: 15px; display: grid; place-items: center; background: var(--tk-c-accent-soft); color: var(--tk-c-accent); }
+.bp-mobile .tk-app__top .tk-btn--ghost.tk-btn--icon[data-qa="app-back"] { margin-left: -6px; }
+
+/* --- Screen-Übergang & Skizzen ---------------------------------------- */
+.tk-screen { animation: tk-screen-in var(--tk-motion-base) var(--tk-motion-ease); min-width: 0; }
+@keyframes tk-screen-in { from { opacity: 0; transform: translateY(6px); } }
+@media (prefers-reduced-motion: reduce) { .tk-screen { animation: none; } }
+.tk-sketch { max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: 6px; }
+.tk-sketch__badge { align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: var(--tk-radius-pill); border: 1px dashed var(--tk-c-border-strong); color: var(--tk-c-text-muted); font-size: var(--tk-fs-xs); font-weight: var(--tk-fw-semibold); margin-bottom: 8px; }
+.tk-sketch__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr)); gap: var(--tk-space-3); margin-top: var(--tk-space-4); }
+.tk-sketch__card { display: flex; flex-direction: column; gap: 8px; padding: var(--tk-space-4); border-radius: var(--tk-radius-lg); border: 1.5px dashed var(--tk-c-border-strong); background: var(--tk-c-surface); min-width: 0; }
+.tk-sketch__lines { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
+.tk-sketch__lines i { display: block; height: 8px; border-radius: 4px; background: var(--tk-c-surface3); }
+.tk-sketch__lines i:last-child { width: 60%; }

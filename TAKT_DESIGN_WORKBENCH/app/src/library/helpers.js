@@ -30,3 +30,25 @@ export function groupBy(items, keyFn) {
 }
 
 export const nextId = (items, prefix = 'n') => `${prefix}${Date.now().toString(36)}${(items?.length || 0)}`;
+
+/**
+ * Geldbetrag im deutschen Format – respektiert den Privatsphäre-Modus (ctx.privacy → „•••• €“).
+ * opts: { sign: true (+/−), digits: 2, compact: false (1,2 Tsd. €) }
+ * Alle Finanz-Komponenten nutzen money() statt eigener Formatierung.
+ */
+export function money(ctx, value, { sign = false, digits = 2, compact = false, currency = 'EUR' } = {}) {
+  if (ctx?.privacy) return '•••• €';
+  if (value == null || Number.isNaN(value)) return '–';
+  const abs = Math.abs(value);
+  const str = compact && abs >= 10000
+    ? new Intl.NumberFormat('de-DE', { notation: 'compact', maximumFractionDigits: 1, style: 'currency', currency }).format(abs)
+    : new Intl.NumberFormat('de-DE', { style: 'currency', currency, minimumFractionDigits: digits, maximumFractionDigits: digits }).format(abs);
+  return `${value < 0 ? '−' : sign && value > 0 ? '+' : ''}${str}`;
+}
+/** Prozentwert mit Vorzeichen („+3,2 %“), ebenfalls maskierbar. */
+export function percent(ctx, value, { sign = true, digits = 1 } = {}) {
+  if (ctx?.privacy) return '•• %';
+  if (value == null || Number.isNaN(value)) return '–';
+  const s = new Intl.NumberFormat('de-DE', { style: 'percent', minimumFractionDigits: digits, maximumFractionDigits: digits }).format(Math.abs(value));
+  return `${value < 0 ? '−' : sign && value > 0 ? '+' : ''}${s}`;
+}

@@ -1,0 +1,327 @@
+{
+ "summary": "Die Workbench ist heute ein sehr gutes Feature-Werkzeug (Varianten, Sperre, QA), aber sie kennt nur die Ebene Feature. Es gibt kein App-Objekt, keine Richtung, die über Module läuft, und keine Vererbung. Auch Runden, Bewertung und Anmerkungen fehlen. Das ist an folgenden Stellen belegbar. In schema.js hat createDecision nur Titel, Entscheidung, Begründung, Nachteile, Alternativen und Status (open, decided, superseded), und zwar ohne Ebene, Optionen, Evidenz, Reversibilität, Wiedervorlage oder Runde. Varianten sind rein feature-lokal mit freien Namen: Von 14 Features mit mehreren Varianten hat nur calendar.week das Trio Kompakt/Visuell/Produktiv, und es gibt kein Feld `direction`. releaseChecklist(feature, qaLatest) ist die einzige Definition of Done, und sie ist rein feature-lokal. 'Muss-Anforderungen dokumentiert' prüft nur count>0, es gibt keine Akzeptanzkriterien und keine Eltern-Entscheidung. Die Sperre gilt nur für Features. Die Vorschau kennt nur die Modi feature und component, also keinen Ablauf über mehrere Screens und keine App-Navigation. Der Vergleich zeigt max. 3 Varianten eines Features ohne Bewertung, Pins oder Runden; entschieden wird über preferDialog. Im Seed sind 19 von 29 Entscheidungen offen, unsortiert und teils doppelt („Konzept aus dem TAKT-Projekt übernehmen“ zweimal). Der Server ist im LAN schreibgeschützt. Der neue append-only-Endpunkt /api/feedback im Arbeitsbaum ist der richtige Rückkanal, aber sein Datensatz ist flach (level, target, rating, favorite, choose, comment) und nicht an Runden, Varianten oder Blöcke gebunden. Mein Vorschlag ist ein Entscheidungsmodell in vier Ebenen: App-Richtung, Modul-Steckbrief, Feature-Variante, Komponenten-Abnahme. Entscheidungen werden nach unten vererbt, Ausnahmen sind explizit und mit Grund erfasst, und jede Ebene hat Ready- und Done-Gates. Die Entscheidungstiefe richtet sich nach Nutzungshäufigkeit (Tier 1 bis 3), damit aus 60 Features etwa 20 echte Entscheidungen werden. Entschieden wird in zeitlich begrenzten Runden mit Rundenlimit, Scorecard, Claude-Empfehlung und Abstimmung am Handy. Das Ergebnis ist ein ADR-artiges Protokoll mit Wiedervorlage. Das Fundament ist ein Schema v2 mit Migrationskette, damit alle späteren Daten (Pins, Flows, Runden) sauber strukturiert anfallen. Priorität P0 haben nur das Datenfundament, die Richtungs-/Vererbungslogik samt App-Vorschau, der Ebenen-Fahrplan, die Gates und die Entscheidungsrunde. Alles andere folgt in der Reihenfolge P1, P2.",
+ "ideas": [
+  {
+   "title": "Schema v2 mit Migrationskette und neuen Sammlungen",
+   "level": "technik",
+   "area": "Datenmodell / Persistenz",
+   "description": "SCHEMA_VERSION auf 2 anheben. migrate() in core/schema.js wird zu einer Kette (core/migrations.js mit migrations[1→2] usw.). Vor jeder Migration wird ein Backup angelegt. Neu im Zustand: `app` (Leitbild, aktive und entschiedene Richtung, Gewichte), `directions[]`, `rounds[]`, `pins[]`, `flows[]`, `scorecards`. Features erhalten die Felder `tier`, `variantPolicy` ('inherit'|'pinned'), `directionOverrideReason`. Varianten erhalten `direction`, Anforderungen erhalten `story` und `acceptance[]`, Entscheidungen werden erweitert (Idee 2). Bestehende Versions-Snapshots werden NICHT verändert; die Migration läuft nur auf der Oberfläche. Pins und Flows sind vom Undo ausgenommen (wie qa/settings) oder laufen über eigene Aktionen. inspectImport prüft strukturell: IDs, Referenzen, unbekannte Sammlungen.",
+   "why": "Alles Weitere (Richtungen, Pins, Runden, Flows) braucht stabile Felder. Wenn Entscheidungen und Anmerkungen jetzt unstrukturiert entstehen, ist die spätere Auswertung teuer. TASKS.md §3 führt die Migrationskette bereits als offen. Wer sie jetzt nachzieht, spart die Migration von Daten, die der Nutzer schon gepflegt hat.",
+   "priority": "P0",
+   "effort": "M",
+   "acceptance": "Ein v1-Export (z. B. data/backups/*.json) lässt sich importieren und wird auf schemaVersion 2 migriert, ohne dass Versionen, Entscheidungen oder QA verloren gehen. Der Snapshot-Inhalt einer Freigabe ist byteweise unverändert. `npm run check` enthält einen Migrationstest (v1 → v2 → idempotent erneut v2). Ein Import mit schemaVersion 3 wird abgelehnt, ein defekter Verweis (Pin auf unbekannte Variante) wird als Warnung gemeldet."
+  },
+  {
+   "title": "Entscheidungsmodell v2 (ADR) mit Ebene, Optionen, Evidenz und Reversibilität",
+   "level": "prozess",
+   "area": "Entscheidungsprozess",
+   "description": "createDecision wird erweitert um `scope` ('app'|'modul'|'feature'|'komponente'|'muster'), `scopeId`, `question`, `options[]` (variantId, directionId oder Freitext, jeweils mit `label`), `chosen`, `recommendation {optionId, confidence, reasons[], by}`, `consequences` (was ändert sich für darunterliegende Ebenen), `reversibility` ('leicht'|'aufwendig'|'unumkehrbar'), `evidence[]` (Verweise auf Pins, QA-Läufe, Gerätetest, Scorecard, Screenshot), `roundId`, `revisitAt`, `revisitIf`, `supersedes`/`supersededBy`, `status` um 'parked' und 'blocked' erweitert, `decidedBy` ('ich'|'claude-vorschlag übernommen'). actions.selectVariant erzeugt IMMER einen Entscheidungseintrag (heute nur bei ausgefülltem Begründungsfeld) und verknüpft ihn mit der Variante. Der Entscheidungsdialog in views/common.js (decisionDialog) wird um Optionen-Auswahl, Evidenz-Chips und Reversibilität ergänzt. Der Export wird ein echtes Entscheidungsprotokoll (md), gruppiert nach Ebene.",
+   "why": "Heute ist eine Entscheidung ein Freitext ohne Bezug zu den Kandidaten, ohne Ebene und ohne Ablaufdatum. Damit lässt sich weder vererben noch wiedervorlegen noch auswerten. ADR-Struktur macht „Warum haben wir B genommen?“ in einem Jahr noch beantwortbar.",
+   "priority": "P0",
+   "effort": "M",
+   "acceptance": "Jede über die UI getroffene Variantenwahl erzeugt eine Entscheidung mit options[] und chosen. Eine Entscheidung mit Ebene 'app' erscheint nicht mehr unter einem Feature. Der Entscheidungsdialog speichert und zeigt alle neuen Felder. Das Markdown-Protokoll enthält Ebene, Optionen, Evidenz und Reversibilität. Ein E2E-Test wählt eine Variante im Vergleich und prüft den erzeugten Entscheidungseintrag."
+  },
+  {
+   "title": "Design-Richtungen auf App-Ebene (Kompakt, Visuell, Produktiv) mit Variantenzuordnung",
+   "level": "app",
+   "area": "Designrichtungen",
+   "description": "Neue Entität `directions[]` mit {id, name, These (1 Satz), Prinzipien[], Nicht-Ziele[], Tag-Farbe, `tokenOverrides` (nur Dichte-/Radius-Skala, keine Farben), `componentPresets` {komponentenId: props}, Fallback-Richtung}. Seed: Kompakt, Visuell, Produktiv, abgeleitet aus den Varianten von calendar.week (A/B/C). Jede Variante bekommt das optionale Feld `direction`. Die 14 Features mit mehreren Varianten werden im Seed zugeordnet (z. B. calendar.week A→kompakt, B→visuell, C→produktiv; tasks.overview A→kompakt, B→visuell, C→produktiv; sales.overview A→visuell, B→kompakt, C→produktiv). Fehlt einem Feature eine Variante der Richtung, nutzt die Vorschau die Fallback-Variante plus die componentPresets der Richtung und zeigt „Ersatz“ an. Im Design Studio wird beim Anlegen einer Variante die Richtung abgefragt. Eine Abdeckungsanzeige je Richtung zeigt z. B. 9 von 14 Features eigene Variante, 5 per Preset.",
+   "why": "Der Nutzer will nicht 60-mal einzeln entscheiden, sondern zuerst „wie fühlt sich TAKT insgesamt an?“. Das geht nur, wenn Varianten über Module hinweg derselben Richtung zugeordnet sind. Heute heißen die Varianten frei (Zeitraster + Mini-Monat, Baum + Artikel …) und lassen sich nicht übergreifend vergleichen.",
+   "priority": "P0",
+   "effort": "L",
+   "acceptance": "Im Seed existieren 3 Richtungen und alle 14 Mehrfach-Variantenfeatures haben direction-Tags. Der Richtungs-Dialog erlaubt Anlegen, Bearbeiten und Archivieren einer Richtung. Die Abdeckungsanzeige rechnet korrekt (Test mit Seed). `npm run check` meldet Varianten mit unbekannter direction. Die componentPresets werden in der Vorschau tatsächlich angewendet (Test: calendar-week density ändert sich je Richtung)."
+  },
+  {
+   "title": "Vererbungslogik: Auflösung der wirksamen Variante (App → Modul → Feature, Ausnahmen mit Grund)",
+   "level": "app",
+   "area": "Entscheidungsprozess / Vererbung",
+   "description": "Neues reines Modul core/inherit.js mit resolveDesign(state, featureId) → {variantId, source: 'feature'|'modul'|'app'|'fallback', exceptionReason, stale}. Rangfolge: explizit fixierte Feature-Variante (variantPolicy 'pinned', Pflichtgrund) vor Modul-Richtung (module.directionId) vor App-Richtung (app.directionId) vor der feature-eigenen selectedVariantId. buildFeaturePayload, QA-Runner und releaseChecklist nutzen die aufgelöste Variante. Die Freigabe schreibt die aufgelöste Variante in den Snapshot und merkt sich die Quelle. Jede Ausnahme steht als eigener Eintrag in einer Ausnahmenliste („Wochenansicht bleibt Produktiv, weil …“) und ist im Fahrplan sichtbar. Ändert sich die Richtung, werden betroffene freigegebene Features als 'veraltet (Vererbung geändert)' markiert. Der Freigabe-Snapshot wird dabei nie verändert.",
+   "why": "Ohne definierte Vererbung ist eine Richtungsentscheidung nur ein Etikett. Mit klarer Rangfolge wird eine App-Entscheidung automatisch für alle Features wirksam, und jede Abweichung ist bewusst und dokumentiert. Das erfüllt Regel 10 des Auftrags („keine unkontrollierte globale Neugestaltung“).",
+   "priority": "P0",
+   "effort": "M",
+   "acceptance": "Unit-Tests für core/inherit.js decken ab: nur App-Richtung, Modul überschreibt App, Feature-Pin überschreibt Modul, Fallback ohne Tag, gesperrtes Feature. Ein Richtungswechsel im Seed ändert die Vorschau von calendar.week und tasks.overview. Eine Ausnahme ohne Begründung wird abgelehnt. Ein bereits freigegebenes Feature wird nach Richtungswechsel nur markiert, sein Snapshot bleibt identisch."
+  },
+  {
+   "title": "Richtungs-Vorschau im App-Modus mit Nebeneinander-Vergleich",
+   "level": "workbench",
+   "area": "Vorschau / Vergleich",
+   "description": "Neuer Preview-Modus 'app' (preview/runtime.js, core/preview-payload.js: buildAppPayload). Eine Vorschau zeigt den echten TAKT-Rahmen (Bottom-Navigation <600, Leiste ≤1023, Sidebar ≥1024), und die Navigation wechselt zwischen den Einstiegsfeatures der Module, jeweils in der gewählten Richtung. Ein neuer Bereich 'Richtungen' (#/directions) bietet den Vergleich von 2 bis 3 Richtungen nebeneinander im gleichen Viewport, Theme und Zustand mit gekoppelter Navigation (ein Tipp wechselt das Modul in allen Frames). Marker 'Ersatz' bei Fallback-Screens, Abdeckungsleiste je Richtung, Umschalter Mobil/Desktop. Direktlink `preview.html?app=1&direction=kompakt`, damit dieselbe Ansicht auf dem Handy per QR öffnet.",
+   "why": "Eine Richtung beurteilt man nicht am einzelnen Screen, sondern beim Durchwandern der App. Der Vergleich im App-Modus ist der Kern von „erst App-Ebene entscheiden“ und die direkte Antwort auf „in div. Versionen auf dem Laptop ansehen, dann eins entscheiden“.",
+   "priority": "P0",
+   "effort": "L",
+   "acceptance": "Unter `#/directions` lassen sich 3 Richtungen nebeneinander bedienen. Ein Modulwechsel im ersten Frame wirkt synchron in den anderen. `preview.html?app=1&direction=produktiv` rendert auf 390 px mit Bottom-Navigation und allen 12 Modulen. Die QA-Sonde läuft für den App-Modus (kein horizontaler Überlauf). Ein E2E-Test wechselt Richtung, Viewport und Modul."
+  },
+  {
+   "title": "Ebenen-Fahrplan: Entscheidungskaskade App → Modul → Feature → Komponente",
+   "level": "prozess",
+   "area": "Entscheidungsprozess / Navigation",
+   "description": "Neuer Bereich `#/decide` mit zwei Ansichten. (1) Ebenenleiste ganz oben: vier Stufen (App-Richtung, Modul-Steckbriefe n/12, Feature-Varianten n/60, Komponenten-Abnahme n/45) mit Zustand nicht begonnen/in Entscheidung/entschieden/gesperrt/veraltet. (2) Vererbungsbaum: Zeilen App → Modul → Feature, jeweils mit wirksamer Richtung, Quelle (geerbt, Ausnahme) und Status. Klick öffnet das Entscheidungs-Cockpit der Ebene. Die Übersicht ersetzt die generische StatusPipeline durch diese Leiste. Ein Button „Nächste Entscheidung“ springt zur Entscheidung mit der größten Blockierwirkung (Idee 15). Weicher Reihenfolge-Hinweis: Ein Feature kann zwar bearbeitet werden, wird aber als 'vorläufig' gekennzeichnet, solange die Eltern-Ebene offen ist.",
+   "why": "„Ebene für Ebene“ ist im Prompt der Nutzerwunsch, in der heutigen Navigation aber nicht sichtbar. Der Nutzer sieht Features (60 Einträge) und Module, nicht den Entscheidungsfortschritt über die Ebenen und nicht, was ihn blockiert.",
+   "priority": "P0",
+   "effort": "M",
+   "acceptance": "`#/decide` zeigt vier Stufen mit korrekten Zählern aus dem Seed (12 Module, 60 Features, 45 Komponenten). Der Vererbungsbaum markiert Ausnahmen und Fallbacks. Ein Feature unter einer offenen App-Richtung trägt das Kennzeichen 'vorläufig'. Navigation per Tastatur und auf 390 px bedienbar. Test: Entscheidung der App-Richtung ändert den Status der Stufe 1 und die Kennzeichen darunter."
+  },
+  {
+   "title": "Gates: Definition of Ready und Done je Ebene, konfigurierbar",
+   "level": "prozess",
+   "area": "Qualitätsschranken",
+   "description": "Neues Modul core/gates.js mit gateChecks(state, level, id, 'ready'|'done'). releaseChecklist wird zu releaseChecklist(state, feature) und erhält zusätzliche Punkte. Feature-Ready: Zweck, mindestens 3 Muss-Anforderungen, je Muss mindestens 1 Akzeptanzkriterium, Tier gesetzt, Eltern-Richtung entschieden. Feature-Done: bevorzugte/aufgelöste Variante, QA ohne Fehler und aktuell, alle Ziel-Viewports geprüft, keine offenen Muss-Pins, alle Muss-Akzeptanzkriterien erfüllt, genutzte Komponenten abgenommen, Elternentscheidung nicht 'veraltet', Gerätetest bei Tier 1. Modul-Done: alle Tier-1-Features freigegeben, Steckbrief vollständig, Gerätetest-Meilenstein dokumentiert. App-Done: Richtung gesperrt, Querschnittskatalog entschieden. Alle Gates sind weiche Gates: Ausnahme nur mit dokumentierter Begründung (wie die bestehende QA-Ausnahme). Die Regeln stehen in `settings.gates` und lassen sich im Bereich Daten anpassen.",
+   "why": "Gegen endlose Designrunden hilft nur ein klares Ausstiegskriterium. Die heutige Checkliste hat 6 Punkte, nur auf Feature-Ebene, und 'Anforderungen dokumentiert' bedeutet nur count>0.",
+   "priority": "P0",
+   "effort": "M",
+   "acceptance": "Die Freigabe-Dialog-Checkliste zeigt die neuen Punkte, und store.release verweigert ohne Ausnahmebegründung. Ein Feature mit offenem Muss-Pin ist nicht freigebbar. Für Modul und App existiert eine eigene Done-Prüfung im Fahrplan. Unit-Tests für gates.js (Ready/Done je Ebene). Eine Gate-Konfiguration lässt sich in der UI ändern und überlebt Export/Import."
+  },
+  {
+   "title": "Entscheidungsrunden (Review-Sessions) mit Zeitbox und Rundenlimit",
+   "level": "prozess",
+   "area": "Entscheidungsprozess",
+   "description": "Neue Sammlung `rounds[]` {id, level, scopeId, titel, agenda[] (Entscheidungs-IDs mit Kandidaten), Zeitbox (Standard 20 Min.), Status geplant/läuft/geschlossen, Kandidaten, Teilnehmer (Ich, optional Partner), Ergebnis}. Assistent unter `#/rounds`: Umfang wählen (App oder Modul), Agenda wird aus offenen Entscheidungen und Kandidaten erzeugt, danach pro Frage ein Bildschirm: Kandidaten ansehen → bewerten → entscheiden, parken oder „Änderung nötig“ (erzeugt Pin). Zähler „Runde n von max. 2“ je Entscheidung: In der 3. Runde bietet die Oberfläche nur noch an, jetzt zu entscheiden, Standardempfehlung zu übernehmen oder zu parken (mit Wiedervorlage). Beim Schließen erscheint eine Zusammenfassung („3 entschieden, 1 geparkt, 4 Pins“) mit Auswirkungsvorschau und der automatisch erzeugten Liste der nächsten Schritte.",
+   "why": "Das ist das zentrale Werkzeug gegen endlose Designrunden. Heute gibt es keinen Rahmen: Man kann beliebig oft vergleichen, aber nichts begrenzt, strukturiert oder protokolliert die Sitzung.",
+   "priority": "P0",
+   "effort": "M",
+   "acceptance": "Eine Runde lässt sich für das Modul Kalender starten, durchlaufen und schließen. Im Seed erzeugt sie aus den offenen Entscheidungen die Agenda. Die Zeitbox läuft sichtbar, bei Ablauf kommt ein Hinweis (kein Abbruch). Eine Entscheidung, die schon 2 Runden hatte, bietet in Runde 3 keinen Punkt „nochmal vergleichen“. Das Schließen schreibt Entscheidungen und Verlauf. E2E-Test mit einer vollständigen Runde."
+  },
+  {
+   "title": "Anmerkungen (Pins) an Varianten, Blöcken und Zuständen",
+   "level": "feature",
+   "area": "Feedback",
+   "description": "Sammlung `pins[]` {id, featureId, variantId, blockId, viewport, theme, state, x/y in % relativ zum Block, Art (Mangel|Frage|Idee|Lob|„von B übernehmen“), Schwere, Text, Status offen/erledigt/verworfen/in Entscheidung, Autor (Ich|Handy|Claude), roundId, erledigt in Version}. Die Vorschau erhält einen Pin-Modus. Die vorhandene Alt+Klick-Blockauswahl in runtime.js (postMessage mit blockId) wird um Koordinaten erweitert. Anzeige: Pin-Marker im Frame, Pin-Liste als neuer Tab im Feature-Workspace, Zähler an den VariantChips (z. B. B ⚑2), Filter nach Art/Status. Pins sind auch an gesperrten Features erlaubt (Beobachtung, wie markInteractionSeen) und belegen Entscheidungen als Evidenz. Beim Erledigen wird die Version vermerkt.",
+   "why": "Feedback besteht heute nur aus Entscheidungs- und Notizfeldern. Wer am Handy „der Header ist zu hoch“ sieht, kann das nicht an der konkreten Stelle festhalten. Pins machen Feedback präzise, auswertbar und an Claude übergebbar.",
+   "priority": "P1",
+   "effort": "M",
+   "acceptance": "Im Vergleich und im Design-Tab lassen sich Pins setzen, ansehen, filtern und erledigen. Ein Pin merkt sich Viewport, Theme und Zustand und stellt sie beim Klick wieder her. Ein Pin an einem freigegebenen Feature ändert dessen Snapshot nicht. Offene Muss-Pins erscheinen in der Freigabe-Checkliste. E2E: Pin setzen → Seite neu laden → Pin vorhanden."
+  },
+  {
+   "title": "Abstimmung am Handy: mobile Review-Seite mit Rundenkarte (QR)",
+   "level": "launcher",
+   "area": "Mobile Abstimmung",
+   "description": "Neue Seite app/review.html (mobile-first, ohne Workbench-Shell). Die Workbench zeigt je Runde einen QR-Code (der Vendor-QR-Encoder app/vendor/qrcode.module.js liegt schon im Arbeitsbaum) mit `review.html?round=<id>&code=<6stellig>`. Auf dem Handy sieht man pro Frage die Kandidaten als echte, bedienbare Vorschau in 390 px (Wischen oder Tabs), darunter Ein-Tipp-Aktionen: Favorit, Ablehnen, drei Schnellkriterien (Daumenreichweite, Lesbarkeit, Gefühl), Pin per Tipp auf einen Block, optional Sprachnotiz (Web Speech API, wo verfügbar). Die Antworten werden gesammelt per POST an /api/feedback gesendet, mit lokaler Warteschlange bei fehlendem WLAN. Zusätzlich gibt es einen Entscheid-Button „Mein Favorit ist final“, der die Runde auf dem Laptop vorbereitet, nicht automatisch schließt.",
+   "why": "Der Nutzer will Versionen auf dem Laptop und am Handy ansehen und dann entscheiden. Die endgültige Beurteilung einer mobilen App gehört aufs Handy, in Daumenreichweite und echter Größe. Das spart die Rundreise „Notiz schreiben, zu Hause am PC nacherfassen“.",
+   "priority": "P1",
+   "effort": "L",
+   "acceptance": "`npm run lan` zeigt den Review-QR der Runde. Auf einem Handy (oder Playwright mit Mobile-Emulation) lässt sich die Runde öffnen, durchlaufen und absenden. Die Antworten erscheinen im Laptop-Eingang (Idee 12). Ohne Netz bleibt die Antwort in der lokalen Warteschlange und wird später gesendet. Ein falscher Code wird abgelehnt. Alle Bedienelemente haben ≥44 px Touch-Ziel (QA-Sonde grün)."
+  },
+  {
+   "title": "Rückkanal-Eingang: Handy-Antworten sicher in den Zustand übernehmen",
+   "level": "technik",
+   "area": "Server / Persistenz",
+   "description": "Der vorhandene Endpunkt /api/feedback (append-only, same-origin, 20-KB-Limit) wird um ein striktes Schema erweitert: roundId, kind ('vote'|'pin'|'note'), variantId, blockId, scores{}, device, viewport, plus ein Rundencode (Zufallscode aus dem QR, in data/rounds-tokens abgelegt, mit Ablauf) und ein einfaches Rate-Limit je IP. Der LAN-Modus bleibt für /api/state schreibgeschützt. In der Workbench übernimmt `actions.importInbox()` neue Zeilen idempotent (nach entry.id) als Votes, Pins und Evidenz, und merkt sich den Lesestand. Die UI zeigt „Eingang: 7 neue Rückmeldungen“ mit Vorschau vor der Übernahme. Fallback ohne Server: Export/Import der Antwortdatei.",
+   "why": "Der Haupt-Zustand nutzt Revisionen und 409-Konflikte. Schreibt das Handy direkt in den Zustand, entstehen Konflikte oder Überschreibungen. Eine append-only-Ablage mit gezielter Übernahme umgeht das und lässt das Schreibverbot für /api/state unberührt. Heute ist der Datensatz flach und nicht zuordenbar.",
+   "priority": "P1",
+   "effort": "M",
+   "acceptance": "Ein POST ohne gültigen Rundencode wird mit 403 abgelehnt. Doppelte IDs erzeugen keine doppelten Votes. Ein manipulierter Body (zu groß, falscher Typ) wird abgelehnt. Nach `importInbox()` stehen die Daten in `pins` und `rounds[].responses`. PUT /api/state aus dem LAN bleibt 403. Ein Test spielt 20 Antworten ein und prüft den Zustand."
+  },
+  {
+   "title": "Scorecards: Bewertungskriterien mit automatischen und subjektiven Werten",
+   "level": "qualitaet",
+   "area": "Bewertung",
+   "description": "Kriteriensets je Ebene, Standard in settings.scoring. App: Wiedererkennung, Einhandbedienung, Ruhe/Dichte, Konsistenz, Flutter-Aufwand. Feature: Schritte bis zum Ziel, Lesbarkeit, Informationshierarchie, Mobile-Eignung, Aufwand. Je Kriterium ein Gewicht (1–3), Gewichte kommen aus den App-Prioritäten (Idee 18). Die Werte sind teils automatisch und als solche markiert: Touch-Ziele, Überlauf, Kontrast aus der QA-Sonde, Blockanzahl, Anteil mobil ausgeblendeter Blöcke, Neuheit der Komponenten (Aufwandsproxy), Abdeckung der Muss-Anforderungen (Idee 20). Der Rest sind Ein-Tipp-Bewertungen 1–5. Die Auswertung zeigt eine Heatmap-Matrix Kandidat × Kriterium und eine gewichtete Rangfolge. Sie ist ausdrücklich eine Empfehlung, die Entscheidung bleibt beim Nutzer. Die Scorecard hängt als Evidenz an der Entscheidung. Ersetzt im Vergleichs-Tab die rein strukturelle Statistik.",
+   "why": "Aktuell vergleicht man nach Gefühl und Strukturzahlen (Layout, Blockzahl). Wer drei Varianten bewertet, braucht ein wiederholbares, kurzes Raster, damit die Entscheidung begründbar ist und Runden nicht jedes Mal neu bei Null anfangen.",
+   "priority": "P1",
+   "effort": "M",
+   "acceptance": "Im Vergleichs-Tab erscheint eine Scorecard mit mindestens 5 automatischen Werten aus der Sonde und Struktur. Subjektive Werte lassen sich per Tipp setzen und werden gespeichert. Die Gewichtung ist änderbar und die Rangfolge aktualisiert sich. Die Scorecard wird als Evidenz an die Entscheidung gehängt und im Protokoll exportiert. Test: gleiche Eingaben liefern gleiches Ranking."
+  },
+  {
+   "title": "Claude-Empfehlung und Entscheidungsvorbereitung je Runde",
+   "level": "prozess",
+   "area": "Entscheidungsprozess",
+   "description": "Vor einer Runde bereitet Claude die Agenda vor: Slash-Command `/takt-prepare-round <Ebene> <Id>` (.claude/commands/) liest Anforderungen, Scorecard-Autowerte, Pins und Abdeckung und schreibt je Entscheidung `recommendation {optionId, confidence, reasons[], by:'claude'}` (über actions oder einen kleinen CLI-Helfer tools/decide.mjs mit gestopptem Server). In der Runde erscheint der Vorschlag als vorbelegte Option mit Begründung und der Schaltfläche „Empfehlung übernehmen“ (ein Tipp). Übernommene und überstimmte Empfehlungen werden mitprotokolliert (decidedBy), so lässt sich später sehen, wie oft Claudes Vorschlag passte.",
+   "why": "Entscheidungsmüdigkeit ist das Hauptrisiko bei ~20 Tier-1-Entscheidungen plus Querschnittsfragen. Ein begründeter Standardvorschlag macht aus „bewerte drei Varianten“ ein „bestätige oder widersprich“. Das spart den größten Teil der Zeit.",
+   "priority": "P1",
+   "effort": "S",
+   "acceptance": "Für das Modul Kalender setzt der Befehl Empfehlungen an alle offenen Entscheidungen mit Begründung. In der Runde ist die Empfehlung sichtbar und per Ein-Tipp übernehmbar. decidedBy unterscheidet Übernahme und eigenes Entscheiden. Die Empfehlung ersetzt nie die Entscheidung automatisch (Test: ohne Klick bleibt status offen)."
+  },
+  {
+   "title": "Entscheidungs-Inbox: nächste beste Entscheidung nach Blockierwirkung",
+   "level": "prozess",
+   "area": "Priorisierung",
+   "description": "Die Heuristik nextSteps in views/dashboard.js (feature-zentriert, unsortiert nach Wirkung) wird durch eine Priorisierung ersetzt. Score = Anzahl abhängiger Knoten (App-Richtung blockiert 60 Features, Modul-Steckbrief seine Features) × Reversibilität (unumkehrbar zuerst) × Alter. Die Übersicht zeigt „Entscheidungen, die heute dran sind“, Entscheidungsstau (Anzahl offen, älteste Entscheidung), fällige Wiedervorlagen und die Metrik Runden je Entscheidung. Die 19 offenen Seed-Entscheidungen werden nach Ebene gruppiert, Dubletten („Konzept aus dem TAKT-Projekt übernehmen“ ×2) werden zusammengeführt.",
+   "why": "Der Nutzer soll nicht suchen müssen, was jetzt entschieden werden muss. Heute stehen 19 offene Entscheidungen ungewichtet nebeneinander, und die wichtigste (App-Richtung) existiert gar nicht.",
+   "priority": "P1",
+   "effort": "M",
+   "acceptance": "Die Übersicht listet höchstens 5 Entscheidungen, sortiert nach Blockierwirkung, und die App-Richtung steht im Seed an erster Stelle. Der Score ist nachvollziehbar angezeigt (Tooltip „blockiert 60 Features“). Dubletten sind aufgelöst. Test: Entscheiden der App-Richtung verschiebt die Inbox-Rangfolge."
+  },
+  {
+   "title": "Wiedervorlage und Parken mit Auslösern",
+   "level": "prozess",
+   "area": "Entscheidungsprozess",
+   "description": "Neuer Status 'parked' plus `revisitAt` (Datum) oder `revisitIf` (Auslöser: 'nach Phase 1', 'nach Gerätetest <Feature>', 'nach 1 Woche Nutzung', 'wenn Komponente X abgenommen'). Die Übersicht zeigt „Fällig zur Wiedervorlage“. Ein Auslöser ist erfüllt, wenn der Zustand es hergibt (realDevice gesetzt, Phase-1-Flag auf true). Beim Wiedervorlegen entsteht eine neue Entscheidung mit `supersedes`, die alte wird 'superseded'. In der Runde kann jede Frage mit einem Tipp geparkt werden.",
+   "why": "Viele Seed-Fragen lassen sich heute gar nicht entscheiden (Datenquelle der Kurse, OAuth oder API-Schlüssel, Cloud oder lokal bei OCR), weil Wissen aus Phase 1 oder aus dem Gerätetest fehlt. Parken mit Auslöser verhindert, dass sie die Runden blockieren, und verhindert, dass sie vergessen werden.",
+   "priority": "P1",
+   "effort": "S",
+   "acceptance": "Eine Entscheidung lässt sich mit Datum oder Auslöser parken. Am Stichtag erscheint sie in der Inbox. Der Auslöser „nach Phase 1“ wird mit dem Flag aus Idee 25 erfüllt. Wiedervorlegen erzeugt die Kette supersedes/supersededBy. Test mit simuliertem Datum (ctx.today)."
+  },
+  {
+   "title": "Design-Tiefe je Feature (Tier 1/2/3) nach Nutzung und Risiko",
+   "level": "prozess",
+   "area": "Priorisierung",
+   "description": "Neues Feature-Feld `tier` (1|2|3) mit Zusatzfeldern `usage` (täglich|wöchentlich|selten) und `risk` (z. B. Geld/Daten). Regel: Tier 1 = täglich oder risikoreich: bis zu 3 Varianten, Flow, Gerätetest, Scorecard. Tier 2 = 2 Varianten, Scorecard light. Tier 3 = Standardmuster der Richtung, keine Variantenrunde, Freigabe nach Stichprobe. Der Feature-Browser zeigt Tier und filtert danach. DoR und DoD (Idee 7) richten sich nach dem Tier. Der Seed klassifiziert die 60 Features mit Begründung (z. B. calendar.week, tasks.overview, home.today = Tier 1; Einstellungen, Archiv = Tier 3). Dashboard-Hinweis: „n von 60 Features brauchen eine echte Entscheidung“.",
+   "why": "60 Features mit je 3 Varianten zu entscheiden führt zwangsläufig zu endlosen Runden. Wenn nur ein Drittel eine echte Wahl braucht und der Rest die Richtungs-Standardlösung nimmt, ist das Ziel des Nutzers („ohne endlose Designrunden“) erreichbar.",
+   "priority": "P1",
+   "effort": "M",
+   "acceptance": "Alle 60 Seed-Features haben tier, usage und risk. Der Feature-Browser filtert nach Tier. Ein Tier-3-Feature wird ohne Variantenvergleich freigebbar, ein Tier-1-Feature nicht ohne Gerätetest. Die Übersicht zeigt die Anzahl notwendiger Entscheidungen. Test: Gates reagieren auf den Tier."
+  },
+  {
+   "title": "Flows: Abläufe über mehrere Screens statt Einzelscreens",
+   "level": "feature",
+   "area": "Abläufe",
+   "description": "Sammlung `flows[]` {id, moduleId|übergreifend, Name, Ziel, Schritte[] {id, featureId, variantId|'wirksam', Zustand, Notiz, Übergang {event, Beschriftung, nächsterSchritt}}, Persona/Kontext, verknüpfte Anforderungen}. Preview-Modus 'flow': ein Frame führt durch die Schritte. Übergänge nutzen die schon existierenden Events der Komponenten (events[] in der Registry, z. B. 'task.open'); fehlt das Event, gibt es einen Weiter-Button. Die Demo-Daten sind für den ganzen Ablauf gemeinsam (eine in Schritt 1 angelegte Aufgabe erscheint in Schritt 3). Ablauf-Leiste oben mit Zurück und Neustart, Zähler für Schritte und Tipps. Editor: Schritte als Karten, Übergänge per Auswahl der Events. Statische Prüfung: Wird das Event vom Block der Variante überhaupt ausgelöst? Existiert der Zielzustand? Der Flow läuft in jeder Richtung (wirksame Variante) und ist damit das Prüfobjekt der App-Entscheidung.",
+   "why": "Der Prompt nennt es ausdrücklich: Abläufe statt Einzelscreens. Heute kann die Workbench nur ein Feature in Isolation zeigen. Ob „Termin anlegen“ über Wochenansicht → Formular → Bestätigung → Wochenansicht gut ist, sieht man erst im Ablauf. Auch Richtungsunterschiede zeigen sich dort am deutlichsten.",
+   "priority": "P1",
+   "effort": "L",
+   "acceptance": "Ein Flow „Termin anlegen“ (calendar.week → calendar.create → calendar.week) läuft bedienbar in allen drei Richtungen. Das neu angelegte Ereignis ist im letzten Schritt sichtbar (gemeinsame Daten). Die statische Prüfung meldet einen Schritt, dessen Event in der Variante nicht vorkommt. Flows erscheinen im Workspace, im Fahrplan und in der QA-Sonde (Überlauf je Schritt). E2E-Test für einen vollständigen Durchlauf."
+  },
+  {
+   "title": "Kernabläufe als Seed (Alltagsflows über Module)",
+   "level": "modul",
+   "area": "Abläufe / Inhalte",
+   "description": "Sechs bis acht Flows als Startinhalt, jeweils mit Ziel, Kontext und Akzeptanzkriterien. (1) Termin anlegen. (2) Aufgabe aus Notiz erzeugen. (3) Morgenroutine: Start → Wetter → Aufgaben → Tagesplan. (4) Beleg fotografieren → Text erkennen → als Notiz oder Ausgabe ablegen. (5) Order simulieren: Depot → Order → Bestätigung. (6) Neue Bestellung prüfen im Sales-Modul. (7) Fitness-/Finanz-Platzhalter als Referenzflow. Ein Flow verweist auf Features, auch wenn diese noch keine Richtungsvariante haben (Fallback). Dokumentiert werden die Erwartung an Kontext (unterwegs/einhändig, am Schreibtisch) und die maximal erlaubte Zahl an Tipps.",
+   "why": "Ein Flow-Editor ohne Inhalt ist ungenutzt. Die Kernabläufe sind genau das, wonach die App-Richtung entschieden wird, und sie machen die modulübergreifende Konsistenz (Navigation, Rückweg, Bestätigungsmuster) sichtbar.",
+   "priority": "P1",
+   "effort": "M",
+   "acceptance": "Mindestens 6 Flows im Seed laufen im App-Modus ohne Fehlerzustand. Jeder Flow hat ein Ziel, einen Kontext und eine maximale Tippzahl. `npm run check` meldet Flows mit unbekannten Features oder Events. Die CLI-QA erzeugt für jeden Flow Screenshots je Schritt (Mobil 390)."
+  },
+  {
+   "title": "User Stories und Akzeptanzkriterien (Gegeben/Wenn/Dann) an Anforderungen",
+   "level": "feature",
+   "area": "Anforderungen",
+   "description": "Erweiterung von requirements[] in schema.js: `story {als, moechte, damit}`, `acceptance[] {id, gegeben, wenn, dann, verify:'auto'|'manuell'|'e2e', check?, ergebnis je Variante (offen|erfüllt|abweichend|n. a.), Nachweis}`, `source` ('Phase 1'|'Nutzer'|'Claude-Vorschlag'), `context` (unterwegs|Schreibtisch|…). Auto-prüfbare Typen von check: 'Komponente vorhanden', 'Event wird ausgelöst', 'Zustand vorhanden', 'auf Mobil nicht ausgeblendet'. Im RequirementsTab (ws-tabs.js) wird der Editor um Story und Kriterien erweitert, mit einer Abnahmeübersicht je Variante. Seed: für die 12 wichtigsten Tier-1-Features beispielhaft gepflegt.",
+   "why": "Der Prompt verlangt Anforderungen, Akzeptanzkriterien und User Stories. Heute besteht eine Anforderung aus Text, Typ und Priorität, und die Freigabe prüft nur, dass es welche gibt. Ohne prüfbare Kriterien bleibt „fertig“ Ansichtssache und die Runde endet nicht.",
+   "priority": "P1",
+   "effort": "M",
+   "acceptance": "Im RequirementsTab lassen sich Story und Kriterien anlegen und je Variante abhaken. Auto-Kriterien werden aus der Variante berechnet (z. B. calendar-week vorhanden). Die Freigabe-Checkliste zeigt „Muss-Kriterien erfüllt: 7/8“. Seed enthält ≥12 Features mit Kriterien. Export und Import erhalten die Felder, Migration aus v1 setzt leere Listen."
+  },
+  {
+   "title": "Anforderungs-Abdeckung: Traceability Anforderung ↔ Variante",
+   "level": "qualitaet",
+   "area": "Anforderungen",
+   "description": "Blöcke erhalten das optionale Feld `covers: [requirementId]`. Aus dem Inspektor im Design Studio setzbar. Eine Abdeckungsmatrix zeigt Anforderung × Variante (abgedeckt, teilweise, fehlt, n. a.), dazu automatische Hinweise: Anforderung vom Typ 'state' ↔ feature.states, Typ 'action' ↔ interactions[].event ↔ Events der Komponenten, Typ 'info' ↔ gebundene Daten. Sichtbar im Vergleichs-Tab (Zeile „Muss-Abdeckung 6/8“) und als automatisches Scorecard-Kriterium. Ungedeckte Muss-Anforderungen blockieren das Feature-Done-Gate.",
+   "why": "Varianten unterscheiden sich oft darin, welche Anforderung sie wie erfüllen. Das lässt sich heute nur durch manuelles Durchlesen prüfen. Die Matrix macht den Vergleich objektiver und verhindert, dass beim Entscheiden eine Anforderung übersehen wird.",
+   "priority": "P1",
+   "effort": "M",
+   "acceptance": "Im Studio lässt sich je Block die abgedeckte Anforderung setzen. Die Matrix berechnet Abdeckungsquoten je Variante. Eine fehlende Muss-Anforderung erscheint im Gate. Test: Block entfernen senkt die Quote. Seed: calendar.week A/B/C haben unterschiedliche Quoten."
+  },
+  {
+   "title": "App-Leitbild: Kontexte, Top-Aufgaben, Prinzipien und Prioritäten",
+   "level": "app",
+   "area": "Grundlagen",
+   "description": "Das App-Objekt (Schema v2) erhält einen redaktionellen Teil, im Fahrplan als Ebene 0 bearbeitbar: Vision in einem Satz, Nutzungskontexte (unterwegs einhändig, am Schreibtisch, morgens in 2 Minuten, abends Auswertung), die zehn wichtigsten Aufgaben mit Häufigkeit und Bedeutung, Design-Prinzipien (z. B. „höchstens 2 Tipps zum häufigsten Ziel“), Nicht-Ziele und eine Rangfolge der Bewertungsgewichte (z. B. Schnelligkeit vor Optik). Die Gewichte speisen die Scorecards (Idee 12), die Top-Aufgaben die Tier-Einstufung (Idee 16) und die Flows. Prinzipien lassen sich in Pins und Entscheidungen verlinken („verstößt gegen Prinzip 3“).",
+   "why": "Ohne dokumentierte Kriterien sind Bewertungen willkürlich und ändern sich von Runde zu Runde. Die Prioritäten des Nutzers müssen einmal explizit festgehalten werden, damit sie die Runden steuern. Der Prompt enthält so etwas bisher nicht.",
+   "priority": "P1",
+   "effort": "S",
+   "acceptance": "Das Leitbild ist unter `#/decide` bearbeitbar, wird gespeichert, exportiert und importiert. Die Gewichte beeinflussen die Scorecard-Rangfolge (Test). Die Top-Aufgaben lassen sich Features und Flows zuordnen. Eine Entscheidung kann Prinzipien referenzieren."
+  },
+  {
+   "title": "Modul-Steckbrief: Informationsarchitektur als entscheidbare Felder",
+   "level": "modul",
+   "area": "Modul-Ebene",
+   "description": "Das Freitextfeld module.infoArchitecture wird durch einen strukturierten Steckbrief ergänzt: Einstiegsfeature, Navigationsmuster innerhalb des Moduls (Tabs, Segment, Liste→Detail), Primäraktion, Cockpit-Inhalte, Querverweise zu anderen Modulen, Richtungs-Override mit Begründung, Datenschutz-/Sicherheitsstufe (relevant für Finanzen, Trading). Jedes Feld ist eine Entscheidung (Ebene 'modul') mit Optionen und lässt sich in einer Runde klären. Das Modul-Cockpit (views/modules.js) zeigt den Steckbrief, den Reifegrad (Ready/Done, Idee 7) und die offenen Fragen. module.theme wird in der Vorschau berücksichtigt (heute nur globales Theme, siehe TASKS.md).",
+   "why": "Die Modulebene ist im Prompt als zweite Entscheidungsebene gedacht, im Modell aber nur Name, Status und Textfeld. Ohne entscheidbaren Steckbrief gibt es auf dieser Ebene nichts zu entscheiden, das nach unten vererbt werden könnte (Startansicht, Navigation, Primäraktion).",
+   "priority": "P1",
+   "effort": "M",
+   "acceptance": "Für alle 12 Seed-Module existiert ein Steckbrief mit mindestens Einstiegsfeature und Primäraktion. Jedes Feld lässt sich als Entscheidung dokumentieren. Der App-Modus (Idee 5) nutzt das Einstiegsfeature als Ziel der Navigation. Das Modul-Cockpit zeigt den Ready-/Done-Status. Test: Wechsel des Einstiegsfeatures ändert den App-Modus."
+  },
+  {
+   "title": "Komponenten-Abnahme (Component Sheet) mit Presets",
+   "level": "komponente",
+   "area": "Komponenten-Ebene",
+   "description": "Je Komponente eine Abnahmeseite in der Library: Matrix Zustände (Standard, leer, lädt, Fehler) × 3 Themes × Mobil/Desktop in einer Ansicht. Pro Komponente der Status Entwurf/abgenommen mit `approvedVersion` (state.components[id]) und verknüpfter Entscheidung. Presets (z. B. density kompakt/komfortabel) lassen sich benennen und werden von den Richtungen (Idee 3) genutzt. Features dürfen nur frei gegeben werden, wenn alle genutzten Komponenten abgenommen sind, sonst Ausnahme mit Grund. Änderungen an abgenommenen Komponenten erhöhen die Version und lösen die bestehende Drift-Erkennung aus. Die Auswirkungsanalyse (impact.js) zeigt vor der Abnahme, welche Features betroffen sind.",
+   "why": "Die vierte Ebene des Nutzerwunsches („Komponente“) hat heute nur Notizen und Status. Wer 45 Komponenten einzeln gestaltet, will sie einmal sauber abnehmen und dann auf sie bauen können. Presets machen daraus die Brücke zur Richtungsebene.",
+   "priority": "P1",
+   "effort": "M",
+   "acceptance": "Das Component Sheet rendert eine Komponente in allen Zuständen und Themes nebeneinander. Das Abnehmen speichert approvedVersion, eine spätere Versionserhöhung markiert Drift. Ein Feature mit nicht abgenommener Komponente zeigt eine Warnung in der Freigabe. Presets sind in den Richtungen auswählbar und wirken in der Vorschau."
+  },
+  {
+   "title": "Sperre und Änderungsantrag auf App-, Modul- und Richtungsebene mit Auswirkungsvorschau",
+   "level": "prozess",
+   "area": "Stabilität",
+   "description": "Das bestehende Sperrkonzept (locked, neue Arbeitsversion) wird auf Entscheidungen der Ebenen App, Modul und Richtung ausgedehnt. Eine entschiedene und gesperrte App-Richtung lässt sich nur über einen „Änderungsantrag“ ändern, also eine neue Entscheidung mit Pflichtgrund. Vor dem Bestätigen zeigt eine Auswirkungsvorschau: wie viele Features die wirksame Variante wechseln, wie viele freigegebene Features als 'veraltet (Vererbung geändert)' markiert werden, wie viele Pins und Flows betroffen sind. Der freigegebene Snapshot wird nie verändert. Veraltete Features lassen sich einzeln per „Übernehmen“ oder „Ausnahme beibehalten“ abarbeiten.",
+   "why": "Regel 10 des Auftrags: keine unkontrollierte globale Neugestaltung. Ohne Sperre auf der App-Ebene könnte ein einziger Klick auf die Richtung die Arbeit an 60 Features entwerten. Die Auswirkungsvorschau macht die Kosten einer Meinungsänderung sichtbar, bevor sie entstehen.",
+   "priority": "P1",
+   "effort": "M",
+   "acceptance": "Das Ändern einer gesperrten Richtung ohne Antrag wird abgelehnt. Der Antrag zeigt die Auswirkungsvorschau mit korrekten Zählern (Test mit Seed). Danach sind betroffene freigegebene Features 'veraltet', ihre Snapshots unverändert. Undo/Redo-Verhalten ist definiert und getestet."
+  },
+  {
+   "title": "Querschnitts-Entscheidungskatalog (Pflichtfragen der App-Ebene)",
+   "level": "app",
+   "area": "Grundlagen / Inhalte",
+   "description": "Ein Katalog mit ca. 20 App-weiten Pflichtfragen, im Seed als offene Entscheidungen der Ebene 'muster' mit je 2 bis 4 Optionen, Auswirkungen und Claude-Empfehlung: Navigation (Bottom-Navigation vs. Drawer), Startscreen, Dichte, Primäraktion/Quick-Add global, Eingabemuster (Bottom-Sheet vs. Dialog vs. Vollbild), Löschen (Rückgängig-Hinweis statt Bestätigungsdialog), Leer- und Fehlerzustände (Ton, Hilfe), Anrede (du), Datums- und Zahlenformate (de-DE, €), Offline-Verhalten, Gesten (Wischen), Haptik, Android-Widgets, Benachrichtigungen, Schriftgrößen/Barrierefreiheit, Onboarding, Sicherheit für Finanzen/Trading (PIN, Betragsmaskierung), Hell/Dunkel, Zurück-Verhalten. Die Entscheidungen werden an Features als `appliesPatterns` referenziert und im Review als Checkliste abgefragt.",
+   "why": "Diese Fragen fehlen im Prompt, bestimmen aber jede Seite der App. Sie einmal zu entscheiden, verhindert, dass sie in 60 Features unterschiedlich beantwortet werden, und spart den größten Teil der Konsistenzrunden.",
+   "priority": "P1",
+   "effort": "S",
+   "acceptance": "Der Seed enthält ≥18 Pflichtfragen mit Optionen und Empfehlung. Sie erscheinen in der Entscheidungs-Inbox unter Ebene 'App/Muster'. Eine entschiedene Frage lässt sich an Features verlinken und im Feature-Done-Gate als Checkpunkt anzeigen. Der Protokoll-Export enthält sie."
+  },
+  {
+   "title": "Annahmen-Register für Phase 1 (zu verifizieren)",
+   "level": "prozess",
+   "area": "Risiko",
+   "description": "Entscheidungen, Module und Features erhalten `assumption: true`, `verifyBy` ('Phase 1'|'Nutzer'|'Code') und `verifiedAt`. Der Seed markiert die Module Start und Einstellungen, die in HANDOFF.md als Annahmen genannt sind, sowie alle Modulbeschreibungen mit „source: Auftrag“. Ein Register-Tab unter Versionen & Entscheidungen listet Annahmen mit betroffenen Features. Sobald ein TAKT-Abgleich vorliegt, wird die Annahme als bestätigt/verworfen geschlossen. Gate: Ein Modul wird erst freigegeben, wenn seine Kernannahmen geprüft sind. Entscheidungen auf Basis ungeprüfter Annahmen tragen ein Kennzeichen und werden in der Wiedervorlage nach Phase 1 (Idee 14) erneut gezeigt.",
+   "why": "Phase 1 (Bestandsaufnahme des echten TAKT) fehlt. Wer jetzt Richtungen und Modul-Architekturen entscheidet, baut teilweise auf Annahmen. Ohne Register ist unklar, welche Entscheidungen nach Phase 1 neu bewertet werden müssen.",
+   "priority": "P1",
+   "effort": "S",
+   "acceptance": "Das Register listet Annahmen aus dem Seed mit betroffenen Features. Das Schließen einer Annahme dokumentiert Quelle und Datum. Eine Entscheidung mit ungeprüfter Annahme zeigt ein Kennzeichen. Das Modul-Done-Gate prüft das Register. Die Zahl wird im Fahrplan angezeigt."
+  },
+  {
+   "title": "Arbeitsauftrag an Claude aus Entscheidungen und Pins",
+   "level": "workbench",
+   "area": "Übergabe an Claude Code",
+   "description": "Ein Knopf „Arbeitsauftrag erzeugen“ in Runde, Feature und Modul exportiert eine Markdown-Datei (docs/work-orders/<datum>-<scope>.md) mit: offenen Pins (mit Variante, Block, Viewport), beschlossenen Änderungen, Akzeptanzkriterien, betroffenen Komponenten samt betroffenen Features (impact.js), Hinweis auf gesperrte Features. Ein Slash-Command `/takt-work-order <Datei>` führt Claude durch Umsetzung, `npm run check`, `npm run qa:changed` und das Schließen der Pins mit Verweis auf die Version. Gesperrte Features werden im Auftrag ausdrücklich als „nur über neue Arbeitsversion“ gekennzeichnet.",
+   "why": "Der Kreislauf „Nutzer entscheidet auf dem Handy, Claude setzt um“ ist das eigentliche Arbeitsmodell. Ohne strukturierte Übergabe geht Kontext verloren, und Claude arbeitet Pins nicht systematisch ab.",
+   "priority": "P1",
+   "effort": "S",
+   "acceptance": "Aus einer Runde mit 4 Pins und 2 Entscheidungen entsteht eine vollständige Arbeitsauftrags-Datei. Gesperrte Features sind markiert. Der Slash-Command ist in .claude/commands/ vorhanden und dokumentiert. Nach der Umsetzung lassen sich Pins mit Versionsverweis schließen (Test)."
+  },
+  {
+   "title": "Aufgaben-Test (Task-Trial) mit Zeit- und Tipp-Messung",
+   "level": "qualitaet",
+   "area": "Bewertung",
+   "description": "Am Feature oder Flow wird eine Testaufgabe formuliert („Lege für morgen 14 Uhr ‚Zahnarzt‘ an“). Der Trial-Modus startet Stoppuhr und Zähler. Er nutzt die bereits vorhandenen Interaktionsmeldungen der Vorschau (postMessage 'interaction') und zählt Tipps, Events und Fehlversuche (Rückschritte), bis das Zielereignis (z. B. 'event.save') kommt. Die Messung läuft je Variante und Gerät (Laptop, Handy via Review-Seite). Ergebnis: Median aus mindestens 2 Durchläufen pro Variante, als objektives Scorecard-Kriterium „Schritte bis zum Ziel“.",
+   "why": "Bei Tier-1-Features entscheidet oft die Bedienung im Alltag, nicht der erste Eindruck. Eine einfache Messung liefert ein Argument, das sich nicht von der Tagesform abhängig ist, und beendet Diskussionen „A fühlt sich schneller an“.",
+   "priority": "P2",
+   "effort": "M",
+   "acceptance": "Für calendar.create (A/B) misst der Trial Zeit und Tippzahl und zeigt beide im Vergleichs-Tab. Das Zielereignis stoppt die Messung. Die Ergebnisse gehen in die Scorecard und lassen sich verwerfen. Test mit simulierten Interaktionen (Playwright)."
+  },
+  {
+   "title": "Blind- und Duellmodus für die Abstimmung",
+   "level": "launcher",
+   "area": "Mobile Abstimmung",
+   "description": "In der Review-Seite (Idee 11) lassen sich Kandidaten neutral benennen (X, Y, Z, zufällige Reihenfolge, ohne Namen und Richtung), damit Vorurteile und Namenswirkung entfallen. Bei mehr als zwei Kandidaten läuft ein Duellmodus: Paare werden nacheinander gegeneinander gestellt (Turnierbaum), ein Tipp pro Duell, am Ende steht der Sieger. Danach wird aufgedeckt, dazu die Scorecard und die Empfehlung (Idee 13) im Vergleich zum eigenen Votum.",
+   "why": "Beim Vergleich von drei bis vier Richtungen ist Duellieren schneller und ehrlicher als Punkte vergeben, und der Blindmodus entlarvt Gewohnheitsbias. Es reduziert die Dauer der Runde auf wenige Tipps.",
+   "priority": "P2",
+   "effort": "S",
+   "acceptance": "Der Blindmodus ist in der Review-Seite umschaltbar, Labels und Reihenfolge sind zufällig, das Aufdecken zeigt die echten Namen. Der Duellmodus bestimmt aus 3 Kandidaten den Sieger mit höchstens 2 Duellen. Das Ergebnis wird als Vote mit mode: 'blind'|'duell' gespeichert."
+  },
+  {
+   "title": "Hybridvarianten: Blöcke aus einer anderen Variante übernehmen",
+   "level": "feature",
+   "area": "Varianten",
+   "description": "Im Vergleichs-Tab und im Studio erscheint „Block aus B in A übernehmen“ (Kopie eines Blocks samt Props, Bindung und Region in eine andere Variante des gleichen Features). Pins der Art „von B übernehmen“ bieten die Aktion direkt an. Die neue Variante trägt `origin: hybrid(A+B)` und Herkunftsvermerke je Block, damit sich nachvollziehen lässt, was woher stammt. Die Variantenunterschiede im Vergleich markieren übernommene Blöcke.",
+   "why": "Typisches Ergebnis einer Runde ist „A, aber mit dem Header von B“. Heute geht das nur über Duplizieren und manuelles Neubauen. Hybride schließen Runden schneller, ohne eine vierte Variante von Grund auf zu entwerfen.",
+   "priority": "P2",
+   "effort": "S",
+   "acceptance": "Ein Block lässt sich über die UI in eine andere Variante kopieren, inklusive Bindungen zu vorhandenen Demo-Daten (fehlende werden gemeldet). Die Herkunft ist sichtbar. Gesperrte Ziele werden abgelehnt. Test mit calendar.week."
+  },
+  {
+   "title": "Entscheidungsvorlage und Dossier je Runde (Druck/PDF/Markdown)",
+   "level": "workbench",
+   "area": "Dokumentation",
+   "description": "Aus einer Runde oder Entscheidung entsteht ein Dossier: Frage, Kandidaten mit Screenshots (390 px und Desktop, erzeugt über die vorhandene Playwright-Screenshot-Matrix), Scorecard, Pins, Claude-Empfehlung, Entscheidung samt Begründung und Konsequenzen. Ausgabe als Markdown und druckbare HTML-Seite (Browser druckt als PDF). Auch als Sammelprotokoll je Modul („Entscheidungsbuch“). Optional ein Anhang in Richtung Flutter-Spezifikation (TASKS.md §4).",
+   "why": "Entscheidungen müssen später für die Umsetzung in Flutter und für einen selbst nachvollziehbar sein. Das heutige Markdown-Log enthält nur Text, keine Bilder, keine Bewertung und keine Ebene.",
+   "priority": "P2",
+   "effort": "M",
+   "acceptance": "Das Dossier einer Runde enthält pro Kandidat einen Screenshot, die Scorecard, die Pins und die Entscheidung. Es lässt sich als .md und als druckbare Seite exportieren. Das Entscheidungsbuch eines Moduls listet Entscheidungen chronologisch. Test: Dossier für die Runde Kalender wird erzeugt und enthält ≥3 Bilder."
+  }
+ ],
+ "risks": [
+  "Prozess-Overhead: Runden, Gates, Tiers und Scorecards können für eine Einzelperson zu schwer werden. Gegenmittel: Tier 3 und Standardempfehlung, nur weiche Gates mit Begründungs-Ausnahme, Zeitbox, Rundenlimit. Jede Prozessfunktion muss auch ohne Pflege der Zusatzfelder nutzbar bleiben (sinnvolle Defaults).",
+  "Richtungen sind nur teilweise parametrisch: Kompakt, Visuell und Produktiv unterscheiden sich in Hierarchie und Layout, nicht nur in Dichte. Die Fallback-Logik (Preset statt eigener Variante) kann uneinheitliche Screens erzeugen und die Richtung verfälschen. Daher Abdeckungsanzeige, Marker 'Ersatz' und die Pflicht, für Tier-1-Features echte Richtungsvarianten zu bauen. Das sind geschätzt 10 bis 15 neue Varianten je Richtung, also reale Arbeit von Claude, die einzuplanen ist.",
+  "Phase 1 fehlt: Richtungs- und Modulentscheidungen basieren teilweise auf Annahmen aus dem Auftrag. Entscheidungen können nach dem Abgleich mit dem echten TAKT ungültig werden. Annahmen-Register, Wiedervorlage 'nach Phase 1' und Änderungsantrag mit Auswirkungsvorschau sind die Gegenmaßnahmen.",
+  "Sicherheit im LAN: Das Handy schreibt über /api/feedback. Ohne Rundencode, Größenlimit, Schema und Rate-Limit könnte jedes Gerät im WLAN Daten einspielen. /api/state muss im LAN weiterhin schreibgeschützt bleiben. Zusätzlich Windows-Firewall und QR-Hostname (IP wechselt) als praktische Stolpersteine.",
+  "Datenkonsistenz bei Schema v2: Versions-Snapshots enthalten v1-Strukturen und dürfen nicht migriert werden (sonst Freigaben verändert). Neue Sammlungen (Pins, Flows, Runden) vergrößern die ohnehin schon 0,9 MB große JSON-Datei; die offene Skalierungsaufgabe (Auslagerung, Undo als Patches) wird dringlicher.",
+  "Falsche Objektivität: Scorecards und Claude-Empfehlung können Scheinsicherheit erzeugen. Die Rangfolge ist als Empfehlung zu kennzeichnen, Auto-Werte als solche sichtbar zu machen, und die Gewichte gehören dem Nutzer. Blind- und Duellmodus mindern den Bias, ersetzen aber keinen Gerätetest.",
+  "Vererbung kann Freigaben entwerten: Wenn Richtung oder Modul-Entscheidung wechselt, werden freigegebene Features 'veraltet'. Das widerspricht der Stabilitätszusage, wenn es zu oft passiert. Deshalb Sperre auf App- und Modulebene, Änderungsantrag und Auswirkungsvorschau vor dem Ändern.",
+  "Ein einzelner Nutzer: 'Abstimmung' ist hier meist eine Selbstbewertung zu verschiedenen Zeiten und Geräten (oder mit einer zweiten Person). Das Modell darf daher nicht auf Mehrbenutzerrechte, Anmeldung und Mehrheitsregeln ausgelegt werden. Autor-Kennzeichnung (Ich, Handy, Claude) und Rundencode genügen.",
+  "Umfang und Reihenfolge: Es besteht die Gefahr, zuerst viele Ansichten zu bauen und das Fundament zu vernachlässigen. Verbindliche Reihenfolge: Schema v2 → Entscheidungsmodell → Richtungen und Vererbung → App-Vorschau → Fahrplan und Gates → Runde. Erst danach Pins, mobile Abstimmung, Flows und Scorecards. Zwischen den Schritten laufen npm run check und qa:changed.",
+  "Abgrenzung zum Launcher-Team: Die mobile Review-Seite, der QR-Code und /api/feedback überschneiden sich mit dem geplanten Demo-Launcher. Beide müssen dasselbe Rückkanal-Schema und dieselbe Runden-/Variantenkennung nutzen, sonst entstehen zwei inkompatible Feedback-Formate."
+ ]
+}

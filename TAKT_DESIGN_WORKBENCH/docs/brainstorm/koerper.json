@@ -1,0 +1,318 @@
+{
+ "summary": "Fitness und Ernährung sind die Module, in denen TAKT täglich mehrfach und mit nassen, eiligen Fingern benutzt wird. Entscheidend sind deshalb Erfassungsgeschwindigkeit (Mahlzeit in 2 bis 3 Taps, Satz mit 1 Tap), eine ruhige, druckfreie Tonalität und ein sauberes Datenfundament. Der Ist-Stand ist dünn: Fitness hat nur 4 Platzhalter-Features und 2 Komponenten (activity-rings, workout-card), Ernährung existiert gar nicht. Zudem teilen Features in der Runtime keine Demo-Daten (runtime.js hält Daten je Feature in Screen()), sodass Erfassen, Tagesübersicht und Start sich im Launcher nicht gegenseitig aktualisieren würden. Empfohlen wird ein vertikaler Schnitt als P0: Leitplanken, ein gemeinsames, konsistentes Gesundheits-Fixture, ein modulweiter Demo-Datenraum, das Modul Ernährung mit Heute und Erfassen samt Kernbausteinen sowie die Fitness-Workout-Session mit Satz-Logger und Rest-Timer. Alles weitere (Rezepte, Plan, Einkauf, Wasser, Ziele-Wizard, Übungsbibliothek, Fortschritt, Körperwerte, Aktivität, Erholung, Motivation, Synergien, Launcher-Szenarien) folgt als P1/P2, Ebene für Ebene, jeweils mit Varianten, die sich strukturell unterscheiden und den drei Richtungen Kompakt, Visuell und Fokus zugeordnet sind. Wichtig sind außerdem Sicherheit und Datenschutz (keine Medizinprodukt-Aussagen, Untergrenzen beim Kalorienziel, kein Rot bei Überschreitung, Gewohnheitsmodus ohne Zahlen, Gesundheitsdaten nach Art. 9 DSGVO), weil das jede Variante prägt und nachträglich teuer wird.",
+ "ideas": [
+  {
+   "title": "Gesundheits-Leitplanken: Sicherheit, Tonalität und Datenschutz als verbindliche Designvorgabe",
+   "level": "prozess",
+   "area": "Fitness + Ernährung (übergreifend)",
+   "description": "Neue Datei docs/HEALTH_GUIDELINES.md plus daraus abgeleitete Pflicht-Anforderungen (type 'rule', priority 'must') in jedem nutrition.*- und fitness.*-Feature. Inhalt: (1) Kein Medizinprodukt: einmaliger Hinweis beim Erststart, dauerhaft nachlesbar in den Einstellungen; Bedarfsrechner sind Orientierung. (2) Kalorienziel-Leitplanken: keine Ziele unter dem geschätzten Grundumsatz bzw. einer Untergrenze (Orientierungswerte vor Übernahme gegen DGE/ärztliche Quellen prüfen), Abnahmerate höchstens ca. 0,5 bis 1 % Körpergewicht pro Woche, unter 18 Jahren keine Defizit-Ziele, Hinweis bei Schwangerschaft, Stillzeit und Vorerkrankungen auf ärztlichen Rat. (3) Tonalität: Überschreitung nie rot oder alarmierend (neutrale Farbe, Text wie „Heute etwas über dem Ziel – der Wochenschnitt zählt“), keine Moralwörter („Sünde“, „abtrainieren“, „verbrennen“), Streaks mit Pausenjoker, Wochen- statt Tagesbewertung, Aktivitätskalorien standardmäßig nicht als zusätzliches Essensbudget. (4) Option „Zahlen ausblenden / Gewohnheitsmodus“ (nur Mahlzeiten, Wasser, Training sichtbar) für essstörungssensible Nutzung. (5) Training: Aufwärmsätze, „Bei Schmerz abbrechen“, konservative Progression, Deload-Vorschlag. (6) Allergene: 14 EU-Hauptallergene kennzeichnen, „Angaben ohne Gewähr, Etikett prüfen“. (7) Datenschutz: Gesundheitsdaten sind besondere Kategorie (Art. 9 DSGVO) – lokal speichern, Export und Löschen, Körperfotos privat, optionale App-Sperre, nichts wird geteilt.",
+   "why": "Diese Regeln prägen jede Variante (Farbe, Text, Defaults). Nachträglich einzubauen heißt, alle Entwürfe neu zu prüfen; früh festgelegt kosten sie fast nichts und schaffen Vertrauen bei einer App, die mit Körperdaten arbeitet.",
+   "priority": "P0",
+   "effort": "S",
+   "acceptance": "docs/HEALTH_GUIDELINES.md existiert und ist in CLAUDE.md und HANDOFF.md verlinkt. Jedes Gesundheits-Feature hat mindestens eine 'must'-Regel-Anforderung mit Bezug auf einen Leitplanken-Abschnitt. Keine Komponente im Bereich Gesundheit verwendet --tk-c-danger für Kalorienüberschreitung. Die QA-Prüfung (siehe Idee QA-Erweiterungen) findet keine Verbotsbegriffe in Seed und Komponenten."
+  },
+  {
+   "title": "Gemeinsames Gesundheits-Fixture: konsistente Demo-Daten mit Plausibilitätsprüfung",
+   "level": "technik",
+   "area": "Demo-Daten (Fitness + Ernährung)",
+   "description": "Neue Quelle app/src/seed/shared/health.js (rein, auch Node), aus der die Feature-Seeds ihre demoData per Hilfsfunktion slicen, statt Daten je Feature zu kopieren (hält die Seed-Größe klein). Inhalt: profile {alter, groesseCm, gewichtKg 78,4, zielGewichtKg 77, aktivitaet}, goals {trainingstag 2.550 kcal, ruhetag 2.350 kcal, eiweiss 150 g, kh 260 g, fett 75 g, wasser 2.500 ml}, foods (ca. 60 Einträge je 100 g: id, name, marke?, kcal, protein, carbs, sugar, fat, satFat, fiber, salt, portions[{label,g}], allergens[], tags[], barcode?, source), recipes (12; Zutaten als foodId+Gramm, Nährwerte werden berechnet, nicht hinterlegt), exercises (ca. 40: Muskeln primär/sekundär, Equipment, Typ, Cues, Fehler, Alternativen), plan, workoutLog (8 Wochen), bodyLog (60 Tage mit realistischem Tagesrauschen), mealLog (heute plus 14 Tage), waterLog, activityLog, sleepLog. Anschluss an Bestehendes: 78,4 kg, Ziel 77 kg, 8.400 Schritte, Ruhepuls 58, Serie 12, Workout „Oberkörper A“ 18:30 (home.agenda e5), Termin „Mittag mit Jana“ 12:30 wird zu Mahlzeit „Auswärts“. In tools/check.mjs kommen Konsistenzprüfungen dazu: 4·Eiweiß + 4·KH + 9·Fett weicht höchstens 12 % von kcal ab (Ausnahme Alkohol/Ballaststoffe), Mahlzeitensummen gleich Tagessumme, eindeutige IDs, keine NaN oder negativen Werte, Daten um den Referenztag 24.11.2026, Umlaute. Daten ausdrücklich als Demo kennzeichnen (keine Ernährungsberatung).",
+   "why": "Ohne gemeinsame, rechnerisch stimmige Daten widersprechen sich Tagesübersicht, Erfassen, Plan und Start („Kalorien übrig“ passt nirgends), und Entscheidungen in der Demo beruhen auf unrealistischen Zahlen.",
+   "priority": "P0",
+   "effort": "M",
+   "acceptance": "npm run check grün inklusive neuer Datenprüfung; ein absichtlich verfälschter Eintrag (z. B. kcal 900 bei 10 g Fett) wird gemeldet. Mindestens 60 Lebensmittel (davon 10 mit Barcode), 12 Rezepte, 40 Übungen, 8 Wochen Trainingsverlauf, 60 Tage Körperwerte. Zusätzliche Seed-Größe unter 150 KB. Zahlen decken sich mit den bestehenden Fitness- und Start-Seeds."
+  },
+  {
+   "title": "Modul- und app-weiter Demo-Datenraum (Schlüssel mit Präfix @)",
+   "level": "technik",
+   "area": "Preview-Runtime / Datenmodell",
+   "description": "Heute hält Screen() in preview/runtime.js die Daten je Feature im Cache (cacheKey = featureId); zwei Features sehen keine gemeinsamen Änderungen. Vorschlag: Demo-Daten-Schlüssel mit Präfix '@' (z. B. bind:{items:'@meals'}) liegen in einem app-weiten Laufzeit-Store der Preview (im Launcher je Sitzung, nie in die Workbench-Datei persistiert), initialisiert aus state.app.sharedData bzw. dem Gesundheits-Fixture. Effekt im Launcher: Mahlzeit in „Erfassen“ aktualisiert Tagesübersicht, Start-Kachel und Wochenreport; Satz-Log aktualisiert Fortschritt und Start; Wasser aktualisiert Start. Dazu: „Demo zurücksetzen“ im Launcher und in der Workbench-Vorschau, reine Rechenhelfer library/health/calc.js (Tagessummen, Makro-Anteile, Grundumsatz, 1RM-Schätzung, Trend), die Komponenten und tools/check.mjs gemeinsam nutzen. QA und CLI rendern weiterhin deterministisch (frischer Store je Screenshot). Feature-spezifische Schlüssel ohne '@' bleiben unverändert (Abwärtskompatibilität).",
+   "why": "Der Kern des Wunsches „ganze App als Demo-Launcher“ ist ein durchgängiger Ablauf. Ohne geteilte Daten wirkt Erfassen wie ein Einzelbild und der Entscheidungswert der Demo sinkt stark; das gilt auch für Finanzen, Aufgaben und Kalender.",
+   "priority": "P0",
+   "effort": "L",
+   "acceptance": "E2E-Test im App-Modus: in nutrition.log Lebensmittel hinzufügen, zu nutrition.today wechseln, Kalorien und Makros stimmen; „Demo zurücksetzen“ stellt den Ausgangszustand her. Zwei QA-Läufe liefern identische Screenshots. Bestehende Features ohne '@' verhalten sich unverändert (npm run qa grün)."
+  },
+  {
+   "title": "Flow-Aktionen: Navigation mit Parametern zwischen Features",
+   "level": "technik",
+   "area": "Preview-Runtime / deklaratives Modell",
+   "description": "Deklarative Aktionen statt nur beschreibender Interaktionen: block.props.onPrimary bzw. Komponenten-Events können ctx.navigate(featureId, params) auslösen, z. B. {navigate:'nutrition.log', params:{meal:'dinner', date:'2026-11-24'}}. Parameter landen in ctx.ui.params (meal, date, foodId, exerciseId, planDayId). Rücksprung über Back-Stack (App-Bar-Zurück gibt es bereits), Direktlink preview.html?feature=…&params=… für QA. Einsatz: „+“ je Mahlzeit in der Tagesübersicht öffnet Erfassen mit vorgewählter Mahlzeit; „Rezept ins Tagebuch“; „Plan zur Einkaufsliste“; „Training starten“ führt in die Session und danach zur Zusammenfassung und zum Fortschritt; Start-Kachel führt ins Modul. page-header-Primäraktion wird an Aktionen gekoppelt (offener Punkt aus TASKS.md §3).",
+   "why": "Fitness und Ernährung bestehen aus Abläufen (Heute → Erfassen → Portion → zurück). Ohne Navigation mit Kontext bleiben die Screens isolierte Bilder und die Taps-Anzahl, das wichtigste Qualitätskriterium, lässt sich nicht beurteilen.",
+   "priority": "P1",
+   "effort": "M",
+   "acceptance": "Tippen auf „+ Abendessen“ öffnet nutrition.log mit vorgewählter Mahlzeit „Abendessen“. Zurück führt zur Tagesübersicht mit erhaltenem Zustand. Aktionen sind im Inspector als Prop editierbar. Ein E2E-Test deckt den Ablauf ab."
+  },
+  {
+   "title": "Modul „Ernährung“ anlegen: Informationsarchitektur, Feature-Landkarte, offene Entscheidungen",
+   "level": "modul",
+   "area": "Ernährung",
+   "description": "Neues Seed-Modul seed/modules/nutrition.js (id 'nutrition', Icon 'utensils', Status 'concept', links: fitness, calendar, tasks, finance, weather, picture-to-text, notes, home, settings), Manifest in seed/index.js, SEED_VERSION erhöhen. Informationsarchitektur: Einstieg Heute; Erfassen als zentrale Primäraktion, von jedem Screen erreichbar (FAB bzw. „+“); Modulnavigation Heute · Plan · Rezepte · Einkauf · Auswertung, Rest unter „Mehr“. Feature-Gruppen und IDs: Tagebuch (nutrition.today, nutrition.log, nutrition.water), Wissen (nutrition.foods, nutrition.recipes), Planung (nutrition.plan, nutrition.shopping), Ziele und Auswertung (nutrition.goals, nutrition.reports). Je Feature Zweck, Muss/Soll/Kann-Anforderungen, Interaktionen mit Event-Namen, Viewports (alle vier) und Zustände. Offene Entscheidungen anlegen: (1) Ernährung als eigenes Modul oder Teil von Fitness? Empfehlung: eigenes Modul, aber gemeinsames Körperprofil und Gewicht. (2) Aktivitätskalorien im Budget anrechnen? Empfehlung: Default aus. (3) Lebensmitteldatenquelle (Open Food Facts, BLS, eigene) und Lizenz. (4) Wasser als eigenes Feature oder nur Baustein der Tagesübersicht (Empfehlung: beides). Begriffe: Mahlzeit, Eintrag, Portion, Tagebuch, Vorlage.",
+   "why": "Der Auftrag nennt Ernährung ausdrücklich, im Seed fehlt sie. Eine saubere Feature-Landkarte vor dem Design verhindert Dubletten (Wasser, Gewicht, Ziele) und macht den Fortschritt im Cockpit sichtbar.",
+   "priority": "P0",
+   "effort": "S",
+   "acceptance": "„Neue Seed-Inhalte übernehmen“ legt das Modul mit allen 9 Features an (ohne bestehende Arbeit zu verändern). Jedes Feature hat Zweck und Anforderungen; Heute und Erfassen haben zusätzlich Varianten. Cockpit zeigt Ernährung mit korrektem Status; Modul-IA und die vier offenen Entscheidungen sind im Decision Center sichtbar."
+  },
+  {
+   "title": "nutrition.today – Tagesübersicht mit Kalorien, Makros und Mahlzeiten",
+   "level": "feature",
+   "area": "Ernährung",
+   "description": "Zweck: in unter 5 Sekunden sehen, was heute noch möglich und sinnvoll ist, und mit einem Tap erfassen. Muss: Kalorien Ziel · gegessen · übrig; Eiweiß/Kohlenhydrate/Fett in g mit Ziel; Mahlzeiten-Gruppen Frühstück, Mittag, Abend, Snacks mit Summen und „+“ je Gruppe; Wasserstand mit +250 ml; Datumsnavigation (Wochenstreifen, Tag zurück/vor); „Wie gestern“ und „Mahlzeit kopieren“. Soll: konstruktive Hinweise („Eiweiß: noch 38 g – Skyr passt“), Trainingstag-Ziel (+200 kcal). Kann: Ballaststoffe, Zucker, Salz. Zustände: Standard, leerer Tag (Vorschlag „Wie gestern?“), über Ziel (neutrale Farbe), Ziel erreicht (dezent), kein Ziel gesetzt (führt in den Ziele-Wizard), Zahlen-ausblenden-Modus, lädt, Fehler, Offline-Hinweis. Interaktionen: meal.add, entry.open (Sheet: Portion ändern, kopieren, Favorit, löschen mit Undo), day.prev/next, water.add, copy.yesterday, macro.open. Demo-Daten: @meals, @water, @goals, @activity, @weekKcal. Varianten: A „Bilanz kompakt“ (Richtung kompakt): Bilanzzeile Ziel − gegessen = übrig, Makro-Balken, Mahlzeiten-Timeline als dichte Liste. B „Ringe und Karten“ (visuell, Grid): großer Kalorienring mit Makro-Ringen, Karte je Mahlzeit, Glas-Raster Wasser, Wochenbalken. C „Was fehlt noch?“ (fokus, Stack): Hero mit nächster geplanter Mahlzeit aus dem Plan, Restbudget in Eiweißgramm, Erfassen-Leiste unten fixiert. Komponenten vorhanden: page-header, metric-row, chart, quick-add, notice-banner, progress-list. Neu: calorie-budget, macro-bar, meal-timeline, water-tracker.",
+   "why": "Der meistgeöffnete Screen des Moduls. Hier entscheidet sich, ob die App im Alltag benutzt wird; die drei Varianten klären Dichte gegen Visualität gegen Handlungsorientierung.",
+   "priority": "P0",
+   "effort": "L",
+   "acceptance": "Drei strukturell verschiedene Varianten (Layout-Typen und Informationshierarchie), jeweils mit 'direction'. Bei 390 px zeigt der erste Bildschirm ohne Scrollen „Kalorien übrig“ und die „+“-Aktion. Alle Tap-Ziele mindestens 44 px. QA grün in Standard/Leer/Lädt/Fehler × 3 Themes; Überschreitung ohne rote Farbe."
+  },
+  {
+   "title": "nutrition.log – Mahlzeit erfassen in höchstens 3 Taps (Suche, Zuletzt, Favoriten, Barcode, Foto, Schnell-Kalorien)",
+   "level": "feature",
+   "area": "Ernährung",
+   "description": "Zweck: Erfassen so schnell, dass man es nicht aufschiebt. Muss: Mahlzeit vorgewählt (per Parameter oder Tageszeit); Suche mit Sofortergebnissen (Treffer zeigen kcal pro Portion); Reiter Zuletzt · Häufig · Favoriten · Meine Mahlzeiten · Rezepte (Zuletzt ist ohne Eingabe sofort sichtbar); Portions-Sheet (g, Portion, Stück; Stepper; Live-Nährwerte; Standard gleich letzte Menge); Schnell-Kalorien (nur kcal, optional Makros); Barcode-Scan simuliert (Treffer, nicht gefunden, Kamera verweigert, manuelle EAN); Foto-Eintrag (Foto privat, Name, geschätzte kcal); Mehrfachauswahl mit Sammelleiste „3 hinzufügen · 640 kcal“; Undo. Soll: aktuelle Auswahl als Vorlage speichern; Allergen-Hinweis bei gesetztem Profil; „Wie gestern“. Zustände: Start, keine Treffer (Aktionen „Eigenes Lebensmittel“, „Schnell-Kalorien“), Scan läuft, Berechtigung verweigert, nicht gefunden, offline (nur lokale Datenbank), Fehler. Events: search.input, food.pick, portion.confirm, scan.start, scan.result, quickkcal.submit, photo.capture, cart.commit. Demo: foods (60), recent, favorites, templates, demoBarcodes. Varianten: A „Suche zuerst“ (kompakt): Suchfeld, Chips, Liste, Portions-Bottom-Sheet; Desktop als Split mit Tagessumme rechts. B „Schnellwahl-Kacheln“ (visuell): Raster aus Favoriten und Zuletzt, Tap = Standardportion, Halten = Portion wählen. C „Scan zuerst“ (fokus): Sucher oben, Aktionsleiste Foto/Schnell/Suche, darunter Zuletzt. Komponenten: food-search, portion-picker, scan-sim, number-stepper (neu), capture-panel (vorhanden, für Foto), quick-add.",
+   "why": "Die Erfassungsgeschwindigkeit ist der größte Hebel für dauerhafte Nutzung; gleichzeitig der Bereich mit dem höchsten Entscheidungsbedarf (Suche gegen Kacheln gegen Scan).",
+   "priority": "P0",
+   "effort": "XL",
+   "acceptance": "Messbar im E2E: Zuletzt-Lebensmittel loggen = 2 Taps ab Erfassen-Screen (Eintrag, Hinzufügen); Barcode = 2 Taps nach dem Scan; Schnell-Kalorien höchstens 3 Eingaben. Nach dem Hinzufügen zeigt nutrition.today die neuen Summen (Datenraum). Eingabefelder 16 px, keine Tastatur-Verdeckung der Hinzufügen-Leiste bei 390 × 844. Drei Varianten, alle Zustände vorhanden."
+  },
+  {
+   "title": "Ernährungs-Kernbausteine: Kalorien-Bilanz, Makro-Balken/-Ringe, Mahlzeiten-Timeline, gemeinsames Ring-Primitiv",
+   "level": "komponente",
+   "area": "Komponenten (Ernährung)",
+   "description": "Neuer Ordner library/components/health/ (Kategorien 'Ernährung' und 'Fitness' in CATEGORY_ORDER; passt zu TASKS „insights aufteilen“). (1) calorie-budget: Ziel − gegessen (+ optional Aktivität) = übrig; Darstellung ring | bar | formel; Zustände Ziel erreicht und über Ziel (neutral), Zahlen ausblenden; Slots goal, eaten, activity; Event budget.open. (2) macro-bar: gestapelter Anteilsbalken Eiweiß/Kohlenhydrate/Fett mit g-Werten und Zielmarke; Farbe nie allein (Buchstaben E/KH/F, optional Muster), Farben aus chart-1 bis chart-3. Dazu macro-rings als Konfiguration von activity-rings (Prop centerMode: percent | remaining). (3) meal-timeline: Gruppen oder Zeitachse, Summen je Gruppe, Einträge mit Menge, kcal und Mini-Makros, Aktionen (bearbeiten, kopieren, löschen mit Undo), „+“ je Gruppe (emit meal.add), Leerzustand je Gruppe mit Vorschlag „Zuletzt: Skyr 200 g“. (4) RingChart-Primitiv aus activity-rings in insights/shared.js herausziehen, von activity-rings (v1.1) und calorie-budget gemeinsam genutzt (CONTRACT: keine Mehrfachimplementierung). Alle mit example, states ['empty'], aria-label mit Werten, Berechnungen aus library/health/calc.js.",
+   "why": "Diese vier Bausteine tragen Tagesübersicht, Start-Kachel, Plan und Report. Zentral gepflegt profitieren alle Varianten; die Lücke zur Bibliothek (45 Komponenten, keine mit Ernährungsbezug) ist sonst der Engpass.",
+   "priority": "P0",
+   "effort": "L",
+   "acceptance": "Komponenten im Vertrag (id, version, props, data, events, states, css nur --tk-…, example), in der Library-Galerie unter #/library/<id> prüfbar. npm run check und npm run qa -- --component <id> grün. Makro-Texte bestehen den Kontrast in allen 3 Themes; Überschreitungszustand ohne --tk-c-danger. activity-rings rendert nach dem Refactoring pixelgleich (Version erhöht, Drift-Hinweis erwartet)."
+  },
+  {
+   "title": "Erfassungsbausteine: Zahlen-Stepper, Lebensmittelsuche, Portions-Picker, Barcode-Scan-Simulation",
+   "level": "komponente",
+   "area": "Komponenten (Ernährung + Fitness)",
+   "description": "(1) number-stepper als Primitiv in library/ui.js: − und + mit konfigurierbarem Schritt, Dauerdruck beschleunigt, direkte Zahleneingabe mit Dezimalkomma, min/max, Einheitssuffix, Touch-Ziel 44 px, Tastatur inputmode='decimal'; wird von Portion, Satz-Logger, Wasser, Körperwerten genutzt. (2) food-search: Suchfeld plus Reiter Zuletzt/Häufig/Favoriten/Datenbank, Ergebniszeilen mit kcal pro Portion und Mini-Makros, Stern für Favorit, Allergen-Marker, Leer- und Keine-Treffer-Zustand mit Aktionen; setzt ctx.ui.query (kompatibel zu search-filter); Events food.search, food.pick, food.favorite. (3) portion-picker (Inhalt für ctx.openDialog bzw. Bottom-Sheet): Einheiten-Segmente g · Portion · Stück, Schnellwerte 50/100/150/200, Live-Kalorien und -Makros, Mahlzeit wechseln, „Hinzufügen“. (4) scan-sim: Sucherrahmen mit Scanlinie (bei prefers-reduced-motion statisch), Demo-Codes als antippbare Chips, manuelle EAN-Eingabe mit Prüfziffernvalidierung, Taschenlampen-Umschalter (nur UI), Zustände Treffer, nicht gefunden, Kamera verweigert; Bildquellen-Muster aus capture-panel wiederverwenden. Alle: Mobile zuerst, Bottom-Sheet-tauglich, Events mit Interaktions-Abdeckung.",
+   "why": "Ohne diese Bausteine lässt sich die schnelle Erfassung nicht echt bedienbar prototypisieren. Der Stepper ist zugleich Fundament für Fitness (Gewicht, Wiederholungen) und für Wasser und Körperwerte: einmal gut gebaut, überall wirksam.",
+   "priority": "P0",
+   "effort": "L",
+   "acceptance": "Alle vier mit Galerie-Beispiel und Zuständen. Stepper bei 390 px mindestens 44 px, „62,5“ mit Komma eingebbar, Grenzwerte werden abgefangen. Scan-sim: EAN-13 mit falscher Prüfziffer wird abgelehnt, Demo-Code liefert Treffer, unbekannter Code den Nicht-gefunden-Zustand. QA-Sonde meldet keine Touch-Ziel- oder Überlauffehler."
+  },
+  {
+   "title": "nutrition.foods – Lebensmittel-Datenbank, Nährwert-Tabelle und eigene Lebensmittel",
+   "level": "feature",
+   "area": "Ernährung",
+   "description": "Zweck: nachschlagen, vergleichen, eigene Lebensmittel pflegen. Muss: Liste mit Suche und Filtern (Kategorie, Allergene, Eigene, Favoriten, Marke); Detail mit Nährwert-Tabelle nach EU-Muster (Brennwert kJ und kcal, Fett, davon gesättigte Fettsäuren, Kohlenhydrate, davon Zucker, Ballaststoffe, Eiweiß, Salz), Umschalter „je 100 g / je Portion“, Allergene als Chips, Quellenangabe (Open Food Facts = Community-Daten, Hinweis); eigenes Lebensmittel anlegen mit Plausibilitätsprüfung (Warnung, wenn Makros und kcal mehr als ca. 20 % auseinanderliegen), Portionen definieren, Duplikat-Hinweis; „Nährwerttabelle fotografieren“ (Verbindung zu Picture to Text: Werte vorbefüllt, unsichere Felder markiert). Soll: Orientierungs-Ampel für Zucker, Salz, gesättigte Fette (nüchtern, ohne Wertung des Menschen), Vergleich zweier Lebensmittel. Zustände: leer, keine Treffer, Formularfehler, offline, Datenquelle nicht erreichbar. Events: food.open, food.create, food.edit, food.compare, food.scan-label. Demo: foods mit barcode/allergens/portions. Varianten: A Tabelle + Detailpanel (sidebar, kompakt). B Karten mit Makro-Balken (visuell). C „Vergleichen und Ersetzen“ (fokus): zwei Lebensmittel nebeneinander, Vorschlag eiweißreicher/kalorienärmer. Komponenten vorhanden: data-table, detail-panel, form-card, ocr-result, capture-panel. Neu: nutrition-facts, allergen-chips.",
+   "why": "Die Datenbank ist das Rückgrat von Erfassen, Rezepten und Einkauf. Eigene Lebensmittel und OCR-Import sind der Alltagshebel gegenüber Standard-Apps und nutzen vorhandene TAKT-Bausteine (Picture to Text).",
+   "priority": "P1",
+   "effort": "L",
+   "acceptance": "Nährwert-Tabelle rechnet 100 g ↔ Portion korrekt (Test mit 3 Lebensmitteln). Ein eigenes Lebensmittel mit unplausiblen Werten löst die Warnung aus. Drei Varianten, Allergene sichtbar. Zahlenformat deutsch (Dezimalkomma). Vollständige Zustände, QA grün."
+  },
+  {
+   "title": "nutrition.recipes – Rezepte mit Skalierung, Nährwerten, Kochmodus und Übergabe in Tagebuch/Plan/Einkauf",
+   "level": "feature",
+   "area": "Ernährung",
+   "description": "Zweck: Rezepte finden und mit einem Tap ins Tagebuch, in den Plan oder die Einkaufsliste übernehmen. Muss: Liste mit Suche und Filtern (Zeit, Kategorie, Tags wie vegetarisch, Kalorien, Eiweiß); Detail mit Zutaten (skalierbar per Portionen-Stepper), Schritten, Zeit, Nährwerten je Portion (aus den Zutaten berechnet), aggregierten Allergenen; Aktionen „Ins Tagebuch (1 Portion)“, „Zum Plan“ (Tag und Mahlzeit wählen), „Zutaten zur Einkaufsliste“, Favorit; eigenes Rezept anlegen (Zutaten aus der Datenbank, Nährwerte live). Soll: Kochmodus (ein Schritt pro Ansicht, große Schrift, Bildschirm bleibt an, Schritt-Timer mit rest-timer). Kann: Rezept per Foto/OCR importieren, Link-Import simuliert. Zustände: leer, keine Treffer, Rezept ohne Nährwerte (Zutat fehlt in Datenbank), Fehler. Events: recipe.open, recipe.scale, recipe.log, recipe.plan, recipe.shop, recipe.cook-step. Demo: recipes[12] mit {id,title,minutes,servings,tags,ingredients[{foodId,grams,label}],steps[],source}. Varianten: A Liste + Detail (split, kompakt). B Bildkarten-Raster mit Vollbild-Detail (visuell, card-grid). C Kochmodus zuerst (fokus). Komponenten vorhanden: card-grid, item-list, kb-article (Markdown), search-filter. Neu: recipe-card, ingredient-list (skalierbar), cook-step.",
+   "why": "Rezepte verbinden Wissen, Plan, Einkauf und Tagebuch. Berechnete statt hinterlegter Nährwerte halten die Daten konsistent und zeigen, wie die Module zusammenspielen.",
+   "priority": "P1",
+   "effort": "L",
+   "acceptance": "Portionen von 2 auf 4 skaliert Zutatenmengen und Gesamtnährwerte korrekt, je Portion bleibt gleich. „Zutaten zur Einkaufsliste“ übernimmt die Mengen (Datenraum). Drei Varianten, Kochmodus mit Schrittnavigation auf 390 px bedienbar, kein Überlauf."
+  },
+  {
+   "title": "nutrition.plan – Wochen-Essensplan mit Slots, Tagessummen und Kalender-Bezug",
+   "level": "feature",
+   "area": "Ernährung",
+   "description": "Zweck: Mahlzeiten vorausplanen, damit Erfassen zum Abhaken wird. Muss: Raster Mo bis So × Slots (Frühstück, Mittag, Abend, Snack); Slot füllen aus Rezepten, Zuletzt, Vorlagen, „Reste“, „Auswärts“ (verknüpft mit Kalendertermin, z. B. „Mittag mit Jana“); Verschieben per Drag & Drop (Desktop) bzw. Antippen + Menü „Verschieben“ (Mobile); Tagessummen gegen Ziel (kcal, Eiweiß) mit konstruktivem Hinweis; „Woche kopieren“; „Wie geplant gegessen“ übernimmt einen Slot mit einem Tap ins Tagebuch. Soll: Meal-Prep-Markierung (erzeugt Kalendertermin am Sonntag), Allergen-Konflikt-Hinweis. Kann: regelbasierter Planvorschlag aus Favoriten (keine KI). Zustände: leere Woche (Vorschläge), Konflikt, über Ziel, Fehler. Events: slot.fill, slot.move, slot.eaten, plan.copy-week, plan.suggest. Demo: @plan {date,slot,recipeId|foodId|type}. Varianten: A Wochenraster, mobil als Tag-Streifen + Tagesliste (kompakt). B Tageskarten horizontal mit Bildern (visuell). C „Heute und morgen“ + Wochen-Balkenübersicht (fokus). Komponenten: week-grid (neu, generisch, siehe Bausteine-Idee), recipe-card (kompakt), meal-timeline, calorie-budget (Mini).",
+   "why": "Planung ist der Schritt, der aus Kalorienzählen eine Gewohnheit macht, und verbindet Ernährung mit Einkauf und Kalender. Ohne Plan bleibt die Einkaufsliste leer.",
+   "priority": "P1",
+   "effort": "L",
+   "acceptance": "Rezept in einen Slot ziehen bzw. per Menü setzen aktualisiert Tagessumme und (über den Datenraum) die Einkaufsliste. „Wie geplant gegessen“ schreibt in den Tagebuch-Datenraum. Mobile ohne horizontales Scrollen bedienbar; drei strukturell verschiedene Varianten."
+  },
+  {
+   "title": "nutrition.shopping – Einkaufsliste aus dem Plan mit Vorrat, Gängen und Laden-Modus",
+   "level": "feature",
+   "area": "Ernährung",
+   "description": "Zweck: vom Plan in zwei Taps zur Liste, im Laden ohne Suchen abhaken. Muss: Zeitraum wählen (nächste 3 oder 7 Tage); gleiche Zutaten werden summiert; Vorrat-Abgleich („Zuhause vorhanden“); Gruppierung nach Gang (Obst & Gemüse, Kühlregal, Trockenwaren, Tiefkühl, Getränke, Sonstiges); manuelle Zusätze per quick-add; Abhaken mit großen Touch-Flächen (erledigte rutschen nach unten); Preisschätzung in € als Brücke zu Finanzen (Lebensmittelbudget); Export als Aufgabe „Einkaufen“ (Fälligkeit Samstag) oder Notiz. Zustände: leer (kein Plan: „Plan erstellen“), alles erledigt (dezentes Lob), offline im Laden (Hinweis „lokal gespeichert“), Fehler. Events: shop.toggle, shop.add, shop.pantry, shop.export-task. Demo: @shopping, pantry. Varianten: A Liste nach Gängen (kompakt). B Gruppierung nach Rezept mit Bildern (visuell). C Laden-Modus (fokus): Vollbild, nur Offenes, große Haken, Gang-Sprungleiste. Komponenten vorhanden: item-list (checkable, groupBy), quick-add, task-list-Bezug. Neu: shopping-list (Mengenaggregation, Gangzuordnung, Preissumme).",
+   "why": "Die Einkaufsliste ist der sichtbarste Synergiegewinn: Plan, Rezepte, Aufgaben und Finanzen greifen ineinander.",
+   "priority": "P1",
+   "effort": "M",
+   "acceptance": "Aus einem 3-Tage-Plan entsteht eine summierte Liste (Testfall: zweimal 100 g Haferflocken = 200 g). Abhaken verschiebt Einträge; Export erzeugt eine Aufgabe mit Fälligkeit. Mobile Touch-Ziele mindestens 44 px, Laden-Modus lesbar im Helligkeits-Theme Horizon."
+  },
+  {
+   "title": "nutrition.water – Wasser-Tracker mit 1-Tap-Erfassung, eigenen Gefäßen und Tagesrhythmus",
+   "level": "feature",
+   "area": "Ernährung",
+   "description": "Zweck: Trinken mit einem Tap erfassen, ohne Druck. Muss: Tagesziel in ml (Standard 2.500, anpassbar), Schnelltasten +150/+250/+500 ml und eigene Gefäße („Meine Flasche 750 ml“); letzten Eintrag rückgängig machen; Tagesverlauf als Zeitleiste und Woche als Balken. Soll: Zielvorschlag +500 ml bei Hitze (Wetter) und an Trainingstagen (nur Vorschlag); Erinnerungen konfigurierbar (Intervall, Ruhezeiten, nie nachts); andere Getränke zählen mit Gewichtung (Kaffee), Zuckergetränke wandern zusätzlich ins Kalorientagebuch. Zustände: leer, Ziel erreicht (dezent), weit über Ziel (Hinweis „Das Ziel ist ein Richtwert – Trinken nach Durst reicht“), Fehler. Events: water.add, water.undo, water.vessel, water.goal. Demo: @water {ts,ml,type}. Varianten: A Schnelltasten + Balken, auch als Widget für Start (kompakt). B Flasche/Glas-Raster zum Füllen (visuell). C Tagesrhythmus Soll- gegen Ist-Kurve („Bis 15 Uhr wären 1,2 l gut“) mit Kalenderbezug (fokus). Komponente neu: water-tracker (Prop mode: glas | flasche | balken, Schritte, Gefäße); vorhanden: progress-list, chart, notice-banner.",
+   "why": "Wasser ist die häufigste Mikro-Interaktion des Tages. Eine perfekte 1-Tap-Lösung als wiederverwendbarer Baustein spart Entwurfsarbeit in Tagesübersicht, Start und Widgets.",
+   "priority": "P1",
+   "effort": "M",
+   "acceptance": "+250 ml aktualisiert über den Datenraum Wasser-Tracker in Tagesübersicht und Start. Undo funktioniert, Ziel-Erreicht-Zustand ohne laute Animation (reduced-motion respektiert), Mobile-Touch-Ziele mindestens 44 px, drei Varianten."
+  },
+  {
+   "title": "nutrition.goals – Profil, Ziele und Bedarfsrechner als Wizard (mit Sicherheits-Stopps)",
+   "level": "feature",
+   "area": "Ernährung",
+   "description": "Zweck: nachvollziehbares, sicheres Kalorien- und Makroziel; Profil wird auch von Fitness genutzt (gemeinsames Körperprofil). Muss: Wizard in 4 Schritten: Ziel (Abnehmen, Halten, Aufbauen, „Gesund essen ohne Zahlen“) → Körperdaten (Alter, Größe, Gewicht, Geschlecht mit „keine Angabe“) → Aktivitätslevel mit Alltagsbeispielen → Ergebnis: Grundumsatz (z. B. Mifflin-St-Jeor), Gesamtumsatz, empfohlenes Ziel als Spanne, Tempo-Regler (0,25 / 0,5 kg pro Woche, durch Leitplanken begrenzt), Makroverteilung (Eiweiß g pro kg, Mindestfett, Rest Kohlenhydrate; Presets), Trainings-/Ruhetag-Anpassung, aufklappbare Herleitung („Warum diese Zahl?“). Sicherheits-Stopps: Untergrenze, unter 18 Jahren kein Defizit, Hinweis bei Schwangerschaft/Stillzeit/Vorerkrankung, unplausible Eingaben (20 kg, 300 cm), Zielgewicht mit BMI unter 18,5 → Hinweis. Soll: später adaptive Empfehlung aus Gewichtstrend (nur Vorschlag zur Bestätigung). Zustände: Erststart, Änderung, Validierungsfehler, Zielkonflikt, lädt, Fehler. Events: wizard.next, wizard.back, goal.save, goal.explain. Varianten: A Wizard Schritt für Schritt (fokus). B Einzelseite mit Live-Ergebnis rechts (kompakt, Desktop). C Zielkarten mit „Warum diese Zahl?“ (visuell). Komponenten vorhanden: form-card, progress-list, notice-banner; neu: wizard-steps (generisch, auch für Sparpläne/Alarme nutzbar). Rechenlogik in library/health/calc.js, per tools/check.mjs mit festen Testfällen geprüft.",
+   "why": "Das Ziel bestimmt alles andere (Tagesübersicht, Plan, Report). Ein transparenter, abgesicherter Rechner schafft Vertrauen und verhindert riskante Ziele; der Wizard ist zugleich das Erststart-Erlebnis.",
+   "priority": "P1",
+   "effort": "L",
+   "acceptance": "Testfälle in tools/check.mjs: bekannte Eingaben liefern erwartete Grundumsatz-Werte (±1 kcal); ein Defizit unter der Untergrenze wird geblockt, unter 18 Jahren nicht angeboten. Wizard auf 390 px ohne Scrollen je Schritt bedienbar, jede Zahl hat eine aufklappbare Herleitung, drei Varianten."
+  },
+  {
+   "title": "nutrition.reports – Auswertungen ohne Druck: Wochenschnitt, Zielkorridor, Makro-Verteilung",
+   "level": "feature",
+   "area": "Ernährung",
+   "description": "Zweck: Muster erkennen, nicht bewerten. Muss: Wochen- und Monatsansicht mit Durchschnitt kcal und Eiweiß, Tage im Zielkorridor (±10 %) statt Tages-Streak, Makroverteilung (Ring), Top-5 Lebensmittel nach kcal und Eiweiß, Gewichtstrend neben Kalorien (neutral dargestellt), Ballaststoffe/Zucker/Salz-Durchschnitt gegen Orientierungswerte, Export (CSV/PDF für Arzt oder Coach). Wichtig: nicht erfasste Tage zählen nicht als 0 kcal und gehen nicht in den Durchschnitt ein; unter 3 erfassten Tagen keine Statistik („Noch zu wenig Daten“). Zustände: zu wenig Daten, Lücken, alles im Korridor, Fehler. Events: report.range, report.metric, report.export. Demo: @mealLog 14 Tage. Varianten: A Dashboard-Raster (kompakt). B „Deine Woche in 3 Sätzen“ plus Diagramme (visuell). C fragenbasiert („Habe ich genug Eiweiß gegessen?“) (fokus). Komponenten vorhanden: chart (Balken, Ring), metric-row, data-table, progress-list. Neu: heatmap-calendar, insight-card (kurzer Befund mit Zahl und Kontext).",
+   "why": "Schließt den Kreis von Erfassen zu Erkenntnis. Die Regel „Lücken sind keine Nullen“ verhindert falsche, demotivierende Zahlen.",
+   "priority": "P2",
+   "effort": "M",
+   "acceptance": "Durchschnitt wird über erfasste Tage berechnet (Testfall mit 2 Lücken in 7 Tagen). Unter 3 Tagen erscheint der Hinweis statt Zahlen. Export liefert eine CSV mit deutschem Dezimalformat. Drei Varianten, alle Zustände, QA grün."
+  },
+  {
+   "title": "Modul „Fitness“ ausbauen: Feature-Landkarte vom Platzhalter zum vollwertigen Modul",
+   "level": "modul",
+   "area": "Fitness",
+   "description": "Das Seed-Modul fitness ist als Referenz-Platzhalter (isReference, Status 'reference', 4 Features) angelegt. Vorschlag: Status auf 'concept' setzen, isReference entfernen, source und docs anpassen („Konzepte im TAKT-Projekt (G:\\\\) bleiben maßgeblich; Abgleich in Phase 1; Workbench-Stand ist Gestaltungsvorschlag“), SEED_VERSION erhöhen. Bestehende IDs bleiben unverändert (fitness.overview, plan, progress, body); neu: fitness.session (Workout-Session), fitness.exercises (Übungsbibliothek), fitness.history (Verlauf der Einheiten), fitness.activity (Aktivität und Schritte), fitness.recovery (Erholung und Schlaf), fitness.goals (Ziele und Motivation). Gruppen: Heute (overview) · Training (plan, session, exercises, history) · Auswertung (progress, body, activity, recovery) · Ziele (goals). Informationsarchitektur: Heute mit Primäraktion „Training starten“ → Session; Modulnavigation Heute · Plan · Verlauf · Körper. links um 'nutrition' ergänzen. Offene Entscheidung fitness.overview bleibt erhalten, plus neue: „Trainingsdokumentation im Studio (Satz-Logging) oder nur Übersicht?“ (Empfehlung: Logging, weil Kern des Alltags). Begriffe: Einheit, Satz, Wiederholung, Pause, Aufwärmen, Arbeitssatz.",
+   "why": "Der Auftrag nennt Fitness als Hauptmodul; der heutige Stand deckt nur Anzeige ab, nicht das tägliche Arbeiten (Loggen, Plan, Übungen). Ohne klare Landkarte entstehen Überschneidungen (Ziele in progress und goals, Körper in body und recovery).",
+   "priority": "P0",
+   "effort": "S",
+   "acceptance": "„Neue Seed-Inhalte übernehmen“ ergänzt 6 Features, ohne bestehende zu verändern; Cockpit zeigt Gruppen und Status. Jedes neue Feature hat Zweck, Anforderungen (Muss/Soll/Kann), Interaktionen und Viewports. Vorhandene Varianten und Demo-Daten bleiben unverändert (Test: Hash der alten Features unverändert).",
+   "why_note": ""
+  },
+  {
+   "title": "fitness.session – Workout-Session mit Satz-Logging, Vorgaben, Rest-Timer und Abschluss",
+   "level": "feature",
+   "area": "Fitness",
+   "description": "Zweck: Training im Studio bedienen, auch mit schwitzigen Fingern und in 5 Sekunden pro Satz. Muss: Start aus Plan („Oberkörper A“) oder frei; Übungen mit Sätzen; Satzzeile mit Vorgabe vom letzten Mal (62,5 kg × 8) vorbefüllt, ein Tap auf ✓ übernimmt, Stepper für kg und Wiederholungen; Satztyp Aufwärm/Arbeit/Drop; Rest-Timer startet nach ✓ mit Übungsvorgabe (z. B. 90 s), ±15 s, Überspringen; Kopf mit Dauer, Satzfortschritt, Volumen; aktuelle Übung hervorgehoben; Übung ersetzen/überspringen/Satz hinzufügen; Notiz; ruhiger PR-Hinweis (einmal, abschaltbar); Pausieren/Abbrechen mit Bestätigung (Daten bleiben); Abschluss-Zusammenfassung (Dauer, Volumen, PRs, Befinden 1–5, Speichern, optional Kalendereintrag); Wiederaufnahme nach App-Neustart. Soll: Vorschlag doppelte Progression (Wdh.-Ziel erreicht → +2,5 kg als Vorschlag), Aufwärm-Hinweis vor dem ersten Arbeitssatz. Sicherheit: „Bei Schmerz abbrechen“ im Menü, Auslassen ohne Vorwurf. Zustände: nicht gestartet, läuft, Pause, Timer läuft, alles erledigt, kein Plan (Vorschläge), Speichern fehlgeschlagen (lokal gesichert). Events: session.start, set.complete, set.edit, timer.start, timer.skip, timer.add, exercise.swap, session.finish, session.discard, pr.hit. Demo: @workoutLog, planDay (konsistent zum bestehenden workout-card-Demo, mit prev {kg,reps}). Varianten: A Liste aller Übungen als dichte Tabelle, Desktop mit Notiz/Verlauf rechts (kompakt). B Karte je Übung mit Fortschrittspunkten und schwebender Timer-Leiste (visuell). C Ein Satz im Fokus: Vollbild, riesige Stepper, Timer-Ring, Wischen zum nächsten (fokus, Mobile). Komponenten: set-logger, rest-timer, session-header, exercise-card (neu); workout-card (vorhanden, Überblick).",
+   "why": "Das Herz jeder Fitness-App. Die Variantenfrage (Liste gegen Karten gegen Einzelsatz-Fokus) ist die wichtigste Fitness-Designentscheidung und lässt sich nur durch echtes Bedienen klären.",
+   "priority": "P0",
+   "effort": "XL",
+   "acceptance": "E2E: Satz abhaken startet den Timer, Volumen und Fortschritt im Kopf aktualisieren sich, Training beenden schreibt in den Verlauf (Datenraum) und zeigt die Zusammenfassung. Satz mit Vorgabe loggen = 1 Tap. Alle Zustände vorhanden, Touch-Ziele mindestens 44 px bei 390 px, drei Varianten mit Richtungen, Timer-Screenshots deterministisch."
+  },
+  {
+   "title": "Training-Bausteine: Satz-Logger, Rest-Timer, Session-Kopf, Übungskarte und deterministische Uhr (ctx.clock)",
+   "level": "komponente",
+   "area": "Komponenten (Fitness)",
+   "description": "(1) set-logger: Zeilenmodus (Nr/Typ, Vorher-Wert, kg-Stepper, Wdh-Stepper, optional RPE, ✓) und Fokusmodus (ein Satz groß); Schrittweiten je Equipment (Langhantel 2,5 kg, Kurzhantel 1 kg, Maschine 5 kg); Vorbefüllung aus dem letzten Mal; Events set.complete, set.edit; nutzt number-stepper. (2) rest-timer: Ring oder Leiste, Dauer pro Übung, Auto-Start nach ✓, ±15 s, Überspringen, Ablauf-Hinweis (Flutter-Spezifikation: Vibration, Benachrichtigung im Hintergrund); Events timer.start/skip/add/done. (3) session-header: Dauer, Satzfortschritt, Volumen, Pause/Beenden. (4) exercise-card: Name, Muskel-Chips, Equipment, Level, Mini-Verlauf, Favorit; Modi kompakt | reich. workout-card bleibt als Überblick und bekommt Verweis auf set-logger. Technik: neues ctx.now() und ctx.live – in QA und CLI fest 24.11.2026 09:30 und Timer eingefroren (Prop frozenAt, z. B. 00:47), im interaktiven Launcher lebendig (setInterval). Animationen respektieren prefers-reduced-motion. Optional später: Scheibenrechner (Langhantel-Beladung).",
+   "why": "Zeitabhängige Komponenten zerstören sonst die Pixel-Regression und die Deterministik der QA (Architektur §5). Eine zentrale Uhr löst das für Timer, Fasten und Session-Dauer gleichzeitig.",
+   "priority": "P0",
+   "effort": "L",
+   "acceptance": "Komponenten im Vertrag mit Galerie-Beispiel; zweimaliger CLI-Screenshot der Session ist pixelgleich; im Launcher läuft der Timer sichtbar herunter. Dezimaleingabe mit Komma, Touch-Ziele mindestens 44 px, Kontrast in 3 Themes. Event-Abdeckung erfasst set.complete und timer.start."
+  },
+  {
+   "title": "fitness.plan – Trainingsplan: Wochenrhythmus, Programme, Progression, Kalender-Sync",
+   "level": "feature",
+   "area": "Fitness",
+   "description": "Zweck: festlegen, was wann trainiert wird, und Konflikte mit dem Kalender vermeiden. Muss: aktiver Plan und Alternativen; Wochenansicht Mo bis So mit Trainings- und Ruhetagen; Tag-Detail mit Übungen, Sätzen × Wiederholungsbereich (z. B. 3 × 8–10), Pausen, Progressionsregel (doppelte Progression, +2,5 kg); Übungen hinzufügen (aus Bibliothek), tauschen, Reihenfolge per Drag & Drop; Vorlagen (Ganzkörper 3×, Oberkörper/Unterkörper 4×, Push/Pull/Beine); Deload-Woche markieren; Trainingstage als Kalendertermine (z. B. 18:30) mit Konflikthinweis; Plan duplizieren; „Starten“ am Tag. Zustände: kein Plan (Vorlagen), Plan pausiert (Urlaub/Verletzung, Serie bleibt erhalten), Kalenderkonflikt, Fehler. Events: plan.select, day.open, exercise.add, exercise.reorder, plan.sync-calendar, plan.deload. Demo: @plan mit Tagen und Übungen aus dem Fixture. Varianten: A Wochenraster + Tag-Detail (kompakt). B Tageskarten mit Muskel-Heatmap (visuell). C „Nächste Einheit“-Hero plus Rest der Woche (fokus). Komponenten: week-grid, exercise-card, body-map (optional), item-list, calendar-Bezug (agenda).",
+   "why": "Der Plan versorgt Session, Kalender, Start und Fortschritt. Die Pause-Option und der Deload-Gedanke sind Sicherheits- und Motivationsfeatures zugleich.",
+   "priority": "P1",
+   "effort": "L",
+   "acceptance": "„Training starten“ am Tag öffnet fitness.session mit den Übungen des Tages (Flow). Kalender-Sync erzeugt einen Termin der Kategorie Fitness; Konflikt mit bestehendem Termin wird angezeigt. Drei Varianten; Mobile ohne Überlauf."
+  },
+  {
+   "title": "fitness.exercises – Übungsbibliothek mit Filtern, Anleitung, Alternativen und eigenen Übungen",
+   "level": "feature",
+   "area": "Fitness",
+   "description": "Zweck: Übungen finden, verstehen und im Training austauschen. Muss: Liste/Suche mit Filtern Muskelgruppe (Brust, Rücken, Schulter, Bizeps, Trizeps, Beine, Gesäß, Core), Equipment (Langhantel, Kurzhantel, Kabel, Maschine, Körpergewicht), Typ (Verbund/Isolation), Favoriten, Eigene; Detail mit Ausführung in 3 bis 5 Schritten, häufigen Fehlern, Atemhinweis, Alternativen (z. B. bei Schulterproblemen), Muskeln (body-map), persönliche Bestleistung und Mini-Verlauf, „Zum Plan“, „Im Training ersetzen“; eigene Übung anlegen (Einheit kg/Körpergewicht/Zeit). Medien als Illustration/Video-Platzhalter (Rechte klären, siehe Risiken). Zustände: keine Treffer, leer (keine Favoriten), offline (Medien nicht geladen), Formularfehler. Events: exercise.open, exercise.favorite, exercise.add-plan, exercise.swap, exercise.create. Demo: exercises[40]. Varianten: A Liste + Filterleiste + Detail (sidebar, kompakt). B Bildkarten-Raster (visuell). C „Alternative finden“ (fokus): ersetzt eine Übung im Training, Vorschläge nach gleicher Muskulatur und passendem Equipment. Komponenten vorhanden: search-filter, detail-panel, card-grid, chart. Neu: exercise-card (aus Training-Bausteinen), body-map.",
+   "why": "Ohne Bibliothek bleibt der Plan eine Namensliste. „Alternative finden“ löst den häufigen Studio-Fall „Gerät belegt“ und zeigt den Fokus-Ansatz.",
+   "priority": "P1",
+   "effort": "M",
+   "acceptance": "Filter Muskelgruppe × Equipment liefert korrekte Treffer (Testfall); „Im Training ersetzen“ tauscht die Übung in der laufenden Session über den Datenraum und erhält bereits geloggte Sätze. Drei Varianten, alle Zustände, QA grün."
+  },
+  {
+   "title": "fitness.progress – Rekorde, Volumen und Muskelgruppen-Balance (Fortschritt ohne Vergleichsdruck)",
+   "level": "feature",
+   "area": "Fitness",
+   "description": "Das bestehende Feature (Ziele + Gewichtsverlauf) wird auf Trainingsfortschritt fokussiert; Wochenziele wandern nach fitness.goals. Muss: Verlauf je Übung (Top-Satz, geschätztes 1RM nach Epley bei höchstens 10 Wdh., Volumen); Rekorde-Liste (Typen: geschätztes 1RM, Maximalgewicht, Wiederholungsrekord bei Gewicht, Volumen); Zeitraum 4 Wochen / 3 Monate / 1 Jahr; Wochenvolumen je Muskelgruppe (Sätze pro Woche mit Zielkorridor); Trainingsverlauf als Heatmap-Kalender. Soll: Plateau-Hinweis konstruktiv („3 Einheiten gleich – Pause oder Deload?“); Zeiträume vergleichen. Zustände: zu wenig Daten (unter 3 Einheiten), keine Rekorde, Fehler. Events: progress.exercise, progress.range, pr.open, balance.open. Demo: @workoutLog (8 Wochen). Varianten: A Übungsliste → Detailchart (sidebar, kompakt). B „Highlights“-Feed mit PR-Karten und Medaillen (visuell). C Muskelgruppen-Balance mit Körperkarte „Was vernachlässige ich?“ (fokus). Komponenten vorhanden: chart, metric-row, progress-list. Neu: records-list, heatmap-calendar, body-map. Chart um optionale Trendlinie (gleitender Durchschnitt) erweitern (Version erhöhen).",
+   "why": "Fortschritt sichtbar zu machen ist der stärkste Motivationshebel im Training; die Balance-Sicht gibt zusätzlich Handlungsempfehlungen statt bloßer Zahlen.",
+   "priority": "P1",
+   "effort": "L",
+   "acceptance": "1RM-Schätzung mit Testwerten korrekt (z. B. 80 kg × 5 ergibt ca. 93 kg). Rekord-Liste zeigt je Übung den Bestwert mit Datum; Wechsel des Zeitraums aktualisiert Diagramm und Kennzahlen. Plateau-Hinweis ohne Wertungswörter. Drei Varianten."
+  },
+  {
+   "title": "fitness.body – Körperwerte mit Gewichtstrend, Umfängen und optionaler Ausblendung",
+   "level": "feature",
+   "area": "Fitness",
+   "description": "Zweck: Entwicklung erkennen, ohne sich von Tagesschwankungen verunsichern zu lassen. Muss: Schnellerfassung Gewicht (Stepper 0,1 kg, Datum/Uhrzeit, Standard morgens); weitere Messwerte Körperfett %, Taille, Brust, Hüfte, Oberarm, Oberschenkel (cm), Ruhepuls, Notiz; Verlauf mit Trend (exponentiell geglättet, Rohwerte blass), Zielkorridor, Wochenänderung auf Trend-Basis mit Kontext („Tagesschwankungen von 1 bis 2 kg sind normal“). Soll: BMI nur auf Wunsch, nüchtern ohne Bewertungsfarbe; Fortschrittsfotos privat, lokal, Vorher/Nachher-Schieberegler, standardmäßig aus; Wiegen-Erinnerung optional; Import Waage/Health Connect simuliert; „Gewicht ausblenden“ (Gewohnheitsmodus). Zustände: erster Eintrag (ermutigend), Lücke über 14 Tage (Hinweis ohne Vorwurf), unplausibler Sprung über 3 kg (Rückfrage), Einheit lb, Fehler. Events: body.add, body.metric, body.photo, body.range. Demo: @bodyLog (60 Tage). Varianten: A Eingabe + Tabelle + Chart (kompakt). B großes Trend-Diagramm + Karte je Messwert (visuell). C „Heute wiegen?“-Hero + Wochenrückblick (fokus). Komponenten vorhanden: metric-row, chart, form-card. Neu: weight-trend (als generischer trend-chart: Rohwerte, Trendlinie, Zielband, Annotationen; später für Finanzen/Vermögen und Trading nutzbar), number-stepper.",
+   "why": "Gewicht ist der emotional sensibelste Wert der App. Trend statt Tageszahl, Ausblend-Option und Kontexttexte sind Produktqualität und Schutzmaßnahme zugleich; die Trend-Komponente ist domänenübergreifend nützlich.",
+   "priority": "P1",
+   "effort": "M",
+   "acceptance": "Trendberechnung per Testfall in tools/check.mjs geprüft (glatter als Rohdaten, Endwert plausibel). Gewicht ausblenden entfernt alle Gewichtszahlen im Feature. Erster Eintrag und Lücke zeigen die vorgesehenen Texte ohne Rot. Drei Varianten, alle Zustände."
+  },
+  {
+   "title": "fitness.activity – Aktivität und Schritte mit Health-Connect-Simulation und freien Zeitfenstern",
+   "level": "feature",
+   "area": "Fitness",
+   "description": "Zweck: Alltagsbewegung sehen und mit minimalem Aufwand ergänzen. Muss: Schritte heute mit Stundenverlauf, Wochenschnitt, aktive Minuten, Distanz; Ziel individuell einstellbar (kein Zwang auf 10.000); Quelle Health Connect (Android) als simulierter Berechtigungsfluss (erlaubt, verweigert, Quelle wählen); manuelle Aktivitäten (Spaziergang 30 min, Radfahren) mit Schätzung nach MET-Tabelle, klar als Schätzung gekennzeichnet. Soll: Wetterbezug („Trocken ab 16 Uhr – Spaziergang?“) und Vorschlag im freien Kalenderfenster (Logik aus focus-next/freeSlots wiederverwenden). Zustände: keine Berechtigung, keine Daten heute, Gerät nicht verbunden, Ziel erreicht (dezent), Fehler. Events: activity.add, activity.source, activity.goal, activity.suggest. Demo: @activityLog. Varianten: A Ringe + Stundenchart (kompakt, activity-rings). B Wochenstreifen + Bewegungsliste (visuell). C „Bewegungspause“-Vorschläge im freien Zeitfenster (fokus, nutzt Kalender und Wetter). Komponenten vorhanden: activity-rings, chart, item-list, focus-next-Logik; Neu: nur Kleinteile (Stundenbalken als chart-Konfiguration).",
+   "why": "Verbindet Fitness sichtbar mit Kalender und Wetter und liefert den Aktivitätswert für Start und Ziele; die Berechtigungs-Zustände sind für die echte Android-Umsetzung ohnehin zu entscheiden.",
+   "priority": "P2",
+   "effort": "M",
+   "acceptance": "Alle drei Berechtigungszustände erreichbar (QA-Zustandsumschalter oder Launcher-Szenario). Vorschlag im freien Fenster nutzt dieselben Termine wie der Kalender (ohne Dublette der Daten). Drei Varianten, Mobile ohne Überlauf."
+  },
+  {
+   "title": "fitness.recovery – Erholung und Schlaf mit nachvollziehbaren Faktoren statt Pseudo-Score",
+   "level": "feature",
+   "area": "Fitness",
+   "description": "Zweck: Training und Erholung ausbalancieren, ohne Medizin vorzutäuschen. Muss: Schlafdauer letzte Nacht und 7 Tage (Einschlaf-/Aufwachzeit, Richtwert 7–9 h); subjektive Schlafqualität (1–5); Ruhepuls-Verlauf (58 bpm); Check-in in 10 Sekunden (Energie, Muskelkater, Stress); daraus eine nachvollziehbare Tagesempfehlung („Heute eher leicht trainieren, weil Schlaf unter 6 h und Muskelkater hoch“) mit sichtbaren Faktoren statt einer undurchsichtigen Zahl; Wochenbelastung (Sätze/Volumen) neben Erholung; Deload-Hinweis nach 4 bis 6 Trainingswochen; fester Hinweis „Orientierung, keine medizinische Diagnose“. Zustände: keine Schlafdaten (manuelle Eingabe), zu wenig Daten, dauerhaft erhöhter Ruhepuls (neutral: „Beobachten, bei Beschwerden ärztlich abklären“), Fehler. Events: recovery.checkin, recovery.sleep, recovery.explain. Demo: @sleepLog, restingHr. Varianten: A Karten für Schlaf, Puls, Check-in (kompakt). B Schlaf-Balken über 7 Nächte mit großem Diagramm (visuell). C „Heute trainieren?“-Entscheidungshilfe mit Begründung und Link in den Plan (fokus). Neu: readiness-card (Faktorenliste + Empfehlung), sleep-chart; vorhanden: metric-row, chart, notice-banner, form-card.",
+   "why": "Schließt die Lücke zwischen Training und Alltag und sorgt für Sicherheit (Übertraining). Die Regel „Faktoren zeigen statt Magic-Score“ macht Empfehlungen prüfbar und verhindert falsche Genauigkeit.",
+   "priority": "P2",
+   "effort": "M",
+   "acceptance": "Empfehlung nennt immer mindestens einen Grund aus den Eingaben; Hinweis „keine medizinische Diagnose“ ist in allen Varianten sichtbar. Check-in lässt sich in höchstens 3 Taps abschließen. Drei Varianten, alle Zustände, QA grün."
+  },
+  {
+   "title": "fitness.goals – Motivation ohne Druck: Wochenziele, Serie mit Joker, Meilensteine, Wochenrückblick",
+   "level": "feature",
+   "area": "Fitness (+ Ernährung)",
+   "description": "Zweck: dranbleiben, ohne dass Aussetzer bestrafen. Muss: Wochenziele (Trainings 3–4, Schritte-Durchschnitt, Eiweiß-Tage, Wasser-Tage) als Fortschritt; Serie zählt Wochen mit erreichtem Wochenziel statt einzelner Tage; Pausenjoker und Urlaubs-/Krank-Modus frieren die Serie ein; Meilensteine (10. Training, erstes 100-kg-Bankdrücken, −3 kg Trend) mit ruhiger Würdigung (einmalig, abschaltbar, reduced-motion); Wochenrückblick am Sonntagabend in 3 Zeilen (geschafft, gelernt, Vorschlag nächste Woche); Ziele setzen mit Vorschlägen. Sprache: nach unterbrochener Serie „Neustart – deine 12 Wochen bleiben im Verlauf“ statt „Serie verloren“; nach 3 verfehlten Wochen Vorschlag, das Ziel zu senken. Zustände: keine Ziele (Vorschläge), Ziel erreicht, Serie pausiert, Serie unterbrochen, Fehler. Events: goal.open, goal.add, joker.use, milestone.open, recap.open. Demo: goals, streak {weeks, jokers}, milestones. Varianten: A Fortschrittsliste (progress-list, kompakt). B Meilenstein-Karten und Medaillen (visuell). C Wochenrückblick-Assistent (fokus). Komponenten vorhanden: progress-list, metric-row, notice-banner. Neu: streak-card, weekly-recap, milestone-card.",
+   "why": "Motivation ohne Druck ist ein Kernanspruch an erstklassige Apps. Eine klare Streak-Logik mit Joker und freundlicher Sprache vermeidet den häufigsten Abbruchgrund (Serie gerissen, Lust weg).",
+   "priority": "P1",
+   "effort": "M",
+   "acceptance": "Streak-Logik per Testfall geprüft (Joker einsetzbar, Urlaub friert ein, Neustart behält Verlauf). Keine Texte mit „verloren/versagt“ (QA-Textcheck). Einmalige Würdigung respektiert prefers-reduced-motion. Drei Varianten."
+  },
+  {
+   "title": "Synergien Fitness ↔ Ernährung ↔ Kalender/Start/Aufgaben/Finanzen/Wetter/Picture-to-Text (Verträge und Demo-Brücken)",
+   "level": "app",
+   "area": "Modulübergreifend",
+   "description": "Konkrete Verknüpfungen mit Datenvertrag. Kalender: Trainingstage aus fitness.plan als Termine (Kategorie Fitness), Meal-Prep als Termin, Ruhetag-Markierung, Mahlzeit „Auswärts“ aus Termin. Start (home.today): neue Variante „Körper im Tagesfokus“ mit Kacheln Kalorien übrig, Wasser, nächstes Training, Schritte-Ring (metric-row-Shape {label,value,unit,icon,tone,delta}); Termin „Krafttraining Oberkörper 18:30“ trägt workoutId. Aufgaben: „Einkaufen“ aus der Einkaufsliste mit Fälligkeit; wiederkehrende Aufgabe „Wiegen“ montags. Finanzen: Kategorie Lebensmittel, Budget (z. B. 450 € pro Monat) gegen Einkaufs-Preisschätzung; Fitnessstudio-Beitrag als Abo. Wetter: Outdoor-Hinweis (Regen → Indoor-Plan), Hitze → Wasserziel +500 ml. Picture to Text: Nährwerttabelle abfotografieren → Lebensmittel, Rezeptfoto → Zutaten. Notizen/Wissen: Rezept und Übungsanleitung als verknüpfter Artikel. Einstellungen: Einheiten (kg/lb, kcal/kJ, Dezimalformat), Gesundheitsdaten-Datenschutz, Benachrichtigungen, Health Connect. Kalorienbilanz: Aktivität als Information, Anrechnung ins Budget nur als Option (Default aus, siehe Leitplanken). Umsetzung: ein Dokument docs/HEALTH_SYNERGIEN.md mit Ereignis → Ziel → Datenfeld, plus Feature-`links` und Demo-Schlüssel (@events, @tasks, @weather) so, dass Seeds konsistent bleiben.",
+   "why": "Der Mehrwert einer All-in-one-App gegenüber Einzel-Apps entsteht genau hier: Training ist Termin, Einkauf ist Aufgabe, Hitze erhöht das Wasserziel. Verträge früh festzuhalten verhindert widersprüchliche Seeds.",
+   "priority": "P1",
+   "effort": "M",
+   "acceptance": "docs/HEALTH_SYNERGIEN.md listet mindestens 12 Verknüpfungen mit Datenfeldern. home.today hat eine neue Variante „Körper im Tagesfokus“; der Kalender-Seed enthält Training und Meal-Prep mit denselben IDs wie der Plan. Feature-links in Fitness/Ernährung sind gesetzt, Seed-Check bleibt grün."
+  },
+  {
+   "title": "Launcher: Tagesszenarien und Erststart-Pfad für Gesundheitsdaten",
+   "level": "launcher",
+   "area": "Demo-Launcher / Preview",
+   "description": "Neben den bestehenden Zuständen (Standard, Leer, Lädt, Fehler) ein Szenario-Schalter im Launcher und in der Workbench-Vorschau. Szenarien überschreiben Demo-Daten per Overlay (feature.scenarios: {id: {schlüssel: patch}} bzw. für @-Schlüssel app-weit): „Erster Start“ (leeres Profil, Wizard erscheint), „Trainingstag, Einheit offen“, „Ruhetag“, „Über Ziel“, „Ziel getroffen“, „Serie unterbrochen“, „Hitzetag“, „Offline“. Damit lassen sich Varianten in den Zuständen beurteilen, in denen die eigentliche Entscheidung fällt (Überschreitung nicht rot, Streak-Bruch freundlich). Erststart-Pfad: Hinweis „Kein Medizinprodukt“ → Profil → Ziel-Wizard → Berechtigungen (Kamera, Aktivität, Benachrichtigungen, simuliert) → Heute. Feedback und Bewertung im Launcher werden mit dem Szenario gespeichert, damit „gefällt mir bei Hitzetag nicht“ nachvollziehbar bleibt. QA-Matrix kann Szenarien als zusätzliche Dimension erhalten (qaStates erweitern), standardmäßig nur für Features mit hinterlegten Szenarien.",
+   "why": "Gute Gesundheits-UX zeigt sich in den Randzuständen, nicht im Normalfall. Entscheidungen auf dem Handy (Wunsch: Versionen ansehen und entscheiden) brauchen diese Fälle ohne Daten-Basteln.",
+   "priority": "P1",
+   "effort": "M",
+   "acceptance": "Szenario-Wechsel verändert die Daten sichtbar und reproduzierbar (Screenshot-Test je Szenario). „Erster Start“ führt durch den Pfad bis zur Tagesübersicht. Feedback im Launcher enthält Szenario-ID; Szenarien sind für mindestens nutrition.today, nutrition.log, fitness.session und fitness.goals hinterlegt."
+  },
+  {
+   "title": "Generische Bausteine für Plan, Verlauf und Körper: week-grid, heatmap-calendar, body-map (plus Ordner health/)",
+   "level": "komponente",
+   "area": "Komponenten (generisch)",
+   "description": "(1) week-grid: Raster Zeilen × Mo–So (Slots/Zeiten) mit Zellinhalt, Drag & Drop (Desktop) bzw. Antippen + Verschieben-Menü (Mobile), Tagessummenzeile, optional Ruhetag-Markierung; Mobile als Tag-Streifen mit Tagesliste. Einsatz: Essensplan, Trainingsplan, später Schichtplan/Habit-Tracker. (2) heatmap-calendar: Tage als Zellen mit Intensität (4 Stufen, farbunabhängig durch Zahl/Muster ergänzt), Legende, Antippen öffnet Tag; Einsatz: Trainings-/Erfassungs-Verlauf, Aufgaben-Streaks, Finanz-Ausgabenintensität. (3) body-map: einfache SVG-Körperkarte (Vorder-/Rückansicht) mit Muskelgruppen als antippbare Bereiche, Färbung nach Wert (Sätze pro Woche) oder Auswahl (Filter); nur schematisch, Tokens-konform. Alle mit Vertrag, example, empty-State und Interaktions-Events (grid.drop, heat.day, body.region). Reihenfolge: week-grid zuerst (Plan-Features hängen daran), heatmap-calendar, danach body-map. Library-Kategorien 'Fitness', 'Ernährung', 'Plan' im Registry-Index ergänzen; vorhandene Komponenten aus insights/ (activity-rings, workout-card) in health/ verschieben, IDs unverändert.",
+   "why": "Diese drei Muster werden in mindestens vier Features und in anderen Modulen gebraucht. Als generische Bausteine statt Einzelanfertigung vermeiden sie Mehrfachimplementierungen (Regel aus DESIGN_SYSTEM §5).",
+   "priority": "P2",
+   "effort": "L",
+   "acceptance": "Alle drei im Vertrag, in der Galerie mit Zuständen, ohne Hex-Farben. week-grid: Slot verschieben per Drag & Drop und per Menü funktioniert, Mobile ohne horizontales Scrollen. heatmap-calendar und body-map haben nicht nur Farbe als Information (Zahl/Beschriftung). Verschieben der Ordner ändert keine Komponenten-IDs; npm run qa --changed grün."
+  },
+  {
+   "title": "QA-Erweiterungen für Gesundheitsmodule: Tonalität, Zahlenformat, Touch-Ziele, Daten-Konsistenz, Abläufe",
+   "level": "qualitaet",
+   "area": "QA / Workbench",
+   "description": "Ergänzungen in tools/check.mjs, preview/qa-probe.js und qa/run-qa.mjs. Statisch: Verbotsbegriffe in Seed und health/-Komponenten („Sünde“, „abtrainieren“, „verbrennen“ als Essensguthaben, „Disziplin“, „versagt“); Prüfung, dass in Kalorien- und Gewichtskontext kein --tk-c-danger genutzt wird; Daten-Konsistenz (Atwater, Summen, Portionen) und calc.js-Testfälle (Grundumsatz, Epley-1RM, Trend, Streak, EAN-Prüfziffer). Sonde: Zahlenformat (Dezimalkomma, Tausenderpunkt, geschütztes Leerzeichen vor Einheit „62,5 kg“, „kcal“ klein), strengere Touch-Ziele für Klasse .tk-stepper und Satz-Logger (mindestens 44 px), Farbe nie alleiniges Merkmal (Makros und Heatmap müssen Text oder Zahl tragen), Kontrast der Makro-/Chart-Farben auf surface in allen Themes. E2E (CLI): drei neue Bedientests – Mahlzeit erfassen → Tagessumme steigt; Satz abhaken → Timer läuft und Verlauf erhält Eintrag; Wasser +250 ml → Start-Kachel aktualisiert. Pixel-Regression: Timer, Scanlinie und Konfetti deterministisch (ctx.clock, reduced-motion in QA). Quality Center: Szenario als Dimension (siehe Launcher-Szenarien).",
+   "why": "Die Leitplanken (Tonalität, Sicherheit) und die Rechenlogik sind nur wirksam, wenn sie automatisch geprüft werden; sonst schleichen sich bei 60 und mehr Varianten Verstöße und falsche Zahlen ein.",
+   "priority": "P1",
+   "effort": "M",
+   "acceptance": "Absichtlich eingeschleuste Verstöße (rotes kcal-Badge, „abtrainieren“, falsche Prüfziffer, 36-px-Stepper) werden von check bzw. QA gemeldet; die drei neuen E2E-Tests laufen grün; zwei CLI-Läufe liefern identische Screenshots für Timer-Screens. Dauer von npm run check bleibt unter 1 Sekunde."
+  }
+ ],
+ "risks": [
+  "Scope-Explosion: zwei Module mit rund 17 Features und je zwei bis drei Varianten ergeben 40 bis 50 neue Varianten. Gegenmittel: vertikaler Schnitt zuerst (P0: Leitplanken, Fixture, Datenraum, Ernährung Heute und Erfassen, Fitness Session), Varianten nur dort, wo eine echte Entscheidung ansteht; andere Features zunächst mit einer Variante und Anforderungen.",
+  "Datenraum-Änderung betrifft die Preview-Runtime (runtime.js Screen/Cache) und damit alle Module; Gefahr von Regressionen in der Pixel-QA. Abwärtskompatibel halten (nur Schlüssel mit Präfix @) und zuerst mit npm run qa absichern.",
+  "Pseudo-Genauigkeit und Haftung: Kalorienziele, Erholungs-Empfehlungen und Aktivitätskalorien sind Schätzungen. Ohne Leitplanken (Untergrenzen, Hinweise, Gewohnheitsmodus) besteht Risiko für ungesundes Verhalten und rechtliche Angreifbarkeit; Aktivitätskalorien standardmäßig nicht als Essensbudget anrechnen.",
+  "Gesundheitsdaten sind besondere Kategorie nach Art. 9 DSGVO: Für die echte Flutter-App sind lokale Verschlüsselung, App-Sperre, Export und Löschen sowie ein Datenschutzkonzept erforderlich; in der Workbench nur als Anforderung dokumentierbar, nicht verifizierbar.",
+  "Rechte und Quellen: Übungsillustrationen/-videos, Lebensmitteldaten (BLS ist lizenzpflichtig, Open Food Facts steht unter ODbL mit Namensnennung und ist Community-Daten) und Markenprodukte klären. Die Demo nutzt eigens erzeugte, plausible Werte; die Entscheidung über die produktive Quelle ist offen und als Decision angelegt.",
+  "Zeitabhängige Komponenten (Rest-Timer, Scanlinie, Fasten, Session-Dauer) gefährden die Deterministik der Pixel-Regression; ohne ctx.clock und eingefrorene QA-Zeit entstehen instabile Baselines.",
+  "Nicht in der Cloud-Umgebung prüfbar (kein Flutter-SDK, kein Gerät): Kamera/Barcode-Scan, Health Connect, Hintergrund-Timer, Bildschirm-an, Vibration, Tastaturverhalten und Daumenzone. Diese Punkte brauchen den Gerätetest-Meilenstein auf dem echten Handy; in der Flutter-Spezifikation sind lokale Datenbank (z. B. SQLite) und Offline-Fähigkeit als Muss festzuhalten.",
+  "Phase 1 fehlt weiterhin: Das echte Fitness-Konzept liegt auf G:\\. Die neuen Fitness-Features sind Vorschläge und können dem Bestand widersprechen; deshalb als offene Entscheidungen führen und beim Abgleich zuhause prüfen.",
+  "Bewusst ausgeklammert (später und mit fachlicher Prüfung): Intervallfasten, Supplement- und Medikamentenverwaltung, Wettkampfdiäten, KI-Foto-Kalorienschätzung, Social-Funktionen und Ranglisten – alle haben erhöhtes Risiko für Fehlinformation oder Druck.",
+  "Seed-Größe und Duplizierung: Demo-Daten werden je Feature im Zustand gehalten (Seed ca. 0,9 MB). Ohne gemeinsames Fixture mit Slicing wachsen Seed und Datei durch Lebensmittel-, Rezept- und Übungslisten unnötig."
+ ]
+}

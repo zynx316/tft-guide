@@ -10,7 +10,8 @@ export default {
     source: 'Auftrag 2026-11 (in Phase 1 gegen Modulregister verifizieren)',
     infoArchitecture: 'Textuelle IA: Hauptansichten, Navigation, Hierarchie.',
     docs: 'Freitext/Markdown: Hintergrund, Annahmen, offene Fragen.',
-    links: ['tasks'],              // verknuepfte Module (IDs)
+    links: ['tasks'],              // verknüpfte Module (IDs)
+    homeFeatureId: 'calendar.home', // Modul-Startseite (Ebene 1) – Einstieg im Demo-Launcher
   },
   features: [{
     id: 'calendar.week',           // <modul>.<feature> – stabil, nie umbenennen
@@ -22,7 +23,8 @@ export default {
     viewports: ['desktop', 'notebook', 'tablet', 'mobile'],
     demoData: { events: [ … ], tasks: [ … ] },   // Schlüssel werden von block.bind referenziert
     variants: [{
-      id: 'A', name: 'Kompakt', concept: 'Kernidee in 1–2 Saetzen (Hierarchie, Bedienkonzept).',
+      id: 'A', name: 'Kompakt', direction: 'kompakt',   // Design-Richtung: kompakt | visuell | fokus (Version im Demo-Launcher)
+      concept: 'Kernidee in 1–2 Sätzen (Hierarchie, Bedienkonzept).',
       description: 'Stärken / Schwächen.',
       layout: { type: 'sidebar' },   // stack | split | sidebar | grid | tabs  (+ narrow, even, asideFirstOnMobile, panelLabel)
       blocks: [
@@ -43,3 +45,12 @@ export default {
 Regeln: Varianten müssen sich **strukturell** unterscheiden (Layout-Typ, Informationshierarchie,
 Komponentenwahl, Bedienkonzept) – nicht nur in Props/Farben. Demo-Daten deutsch, realistisch,
 Datumswerte rund um den Referenztag **Di, 24.11.2026 09:30** (`ctx.today`).
+
+## Ebenen & Versionen (seit Schema v2)
+- **Richtung je Variante** (`direction`): `kompakt` (dicht, Listen/Tabellen), `visuell` (Karten, Diagramme, Raum),
+  `fokus` (nächste Aktion, Kontext, Hinweise). Der Demo-Launcher zeigt je Richtung die passende Variante jedes Features –
+  ohne passende Variante fällt er auf die bevorzugte Variante zurück. **Ziel:** Modul-Startseite und Kern-Features in allen drei Richtungen.
+- **Modul-Startseite** (`module.homeFeatureId`): Einstieg beim Tippen auf das Modul. Empfohlen: eigenes Feature „Übersicht“ (Gruppe „Übersicht“).
+- **Navigation** (`interaction.to`): Interaktionen mit Ziel-Feature werden im Launcher zu echten Links (z. B. Liste → Detail).
+  Das Event muss von einer Komponente der Variante ausgelöst werden.
+- **Akzeptanzkriterien** (`acceptance`) und **Abläufe** (`flows`) ergänzen die Anforderungen.

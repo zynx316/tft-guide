@@ -11,6 +11,7 @@ import { makeVersion, bumpMinor, bumpMajor, snapshotOf, releaseChecklist } from 
 import { STORAGE_KEY } from '../core/preview-payload.js';
 import { buildSeedState, mergeSeed } from '../seed/index.js';
 import { getComponent, defaultProps } from '../library/registry.js';
+import { DEFAULT_DIRECTIONS } from '../core/directions.js';
 
 let state = null;
 const listeners = new Set();
@@ -423,6 +424,59 @@ export const actions = {
   updateComponentMeta(id, patch) {
     mutate(`Komponente „${id}“: Status/Notiz`, (s) => { s.components[id] = { ...(s.components[id] || {}), ...patch, changedAt: nowIso() }; }, { entity: 'component', entityId: id, coalesce: `cmp:${id}`, type: 'component.meta' });
   },
+
+  // ---- Ebenen & Richtungen (Ebene 0 App · 1 Modul · 2 Feature) ----
+  setVariantDirection(featureId, variantId, direction) {
+    mutate(`Richtung von Variante ${variantId} → ${direction || 'keine'}`, (s) => { const f = editable(F(s, featureId)); V(f, variantId).direction = direction || null; },
+      { ...featureMeta({ id: featureId }), type: 'variant.direction' });
+  },
+  /**
+   * Richtung anwenden: scope 'feature' | 'module' | 'app'. Wählt je Feature die Variante dieser Richtung
+   * (falls vorhanden), überspringt gesperrte Features und dokumentiert die Entscheidung.
+   * Rückgabe: { applied:[featureId], skippedLocked:[featureId], missing:[featureId] }
+   */
+  applyDirection(scope, targetId, directionId, { rationale = '', tradeoffs = '' } = {}) {
+    return mutate(`Richtung „${directionId}“ für ${scope === 'app' ? 'die App' : scope === 'module' ? `Modul ${targetId}` : `Feature ${targetId}`} gewählt`, (s) => {
+      const dir = (s.directions || []).find((d) => d.id === directionId); if (!dir) throw new Error(`Richtung ${directionId} unbekannt`);
+      const fs = s.features.filter((f) => !f.archived && f.variants.length && (scope === 'app' || (scope === 'module' ? f.moduleId === targetId : f.id === targetId)));
+      const out = { applied: [], skippedLocked: [], missing: [] };
+      for (const f of fs) {
+        const v = f.variants.find((x) => x.direction === directionId);
+        if (!v) { out.missing.push(f.id); continue; }
+        if (f.locked) { out.skippedLocked.push(f.id); continue; }
+        if (f.selectedVariantId !== v.id) { f.selectedVariantId = v.id; f.updatedAt = nowIso(); }
+        out.applied.push(f.id);
+      }
+      if (scope === 'app') { s.app.directionId = directionId; s.app.decidedAt = nowIso(); }
+      if (scope === 'module') { const m = M(s, targetId); m.directionId = directionId; m.updatedAt = nowIso(); }
+      const where = scope === 'app' ? 'App' : scope === 'module' ? `Modul „${M(s, targetId).name}“` : `Feature „${F(s, targetId).name}“`;
+      s.decisions.unshift(createDecision({
+        featureId: scope === 'feature' ? targetId : null, moduleId: scope === 'module' ? targetId : scope === 'feature' ? F(s, targetId).moduleId : null,
+        status: 'decided', decidedAt: nowIso(), level: scope,
+        title: `Richtung „${dir.name}“ für ${where}`, decision: `${where} folgt der Richtung „${dir.name}“ (${dir.claim}). ${out.applied.length} Features umgestellt${out.skippedLocked.length ? `, ${out.skippedLocked.length} freigegebene unverändert` : ''}${out.missing.length ? `, ${out.missing.length} ohne passende Variante` : ''}.`,
+        rationale, tradeoffs, alternatives: (s.directions || []).filter((d) => d.id !== directionId).map((d) => d.name).join(', '),
+      }));
+      return out;
+    }, { entity: scope, entityId: targetId, type: 'direction.apply' });
+  },
+  setModuleHome(moduleId, featureId) {
+    mutate('Modul-Startseite festgelegt', (s) => { const m = M(s, moduleId); m.homeFeatureId = featureId || null; m.updatedAt = nowIso(); }, { entity: 'module', entityId: moduleId, moduleId, type: 'module.home' });
+  },
+  setAppSetting(patch, label = 'App-Ebene bearbeitet') { mutate(label, (s) => { Object.assign(s.app, patch); }, { entity: 'app', type: 'app.update' }); },
+  updateDirection(id, patch) { mutate(`Richtung „${id}“ bearbeitet`, (s) => { const d = s.directions.find((x) => x.id === id); delete patch.id; Object.assign(d, patch); }, { entity: 'direction', entityId: id, coalesce: `dir:${id}:${Object.keys(patch).join()}`, type: 'direction.update' }); },
+  addDirection(d) { return mutate(`Richtung „${d.name}“ angelegt`, (s) => { const id = uniqueId(slug(d.name), (x) => s.directions.some((y) => y.id === x)); s.directions.push({ icon: 'sparkles', tone: 'neutral', claim: '', description: '', principles: [], nav: 'bottom', theme: 'graphite', ...d, id }); return id; }, { entity: 'direction', type: 'direction.add' }); },
+  resetDirections() { mutate('Richtungen auf Standard zurückgesetzt', (s) => { s.directions = clone(DEFAULT_DIRECTIONS); }, { entity: 'direction', type: 'direction.reset' }); },
+
+  // ---- Feedback (Demo-Launcher, auch vom Handy) ----
+  importFeedback(entries) {
+    return mutate(null, (s) => {
+      const known = new Set(s.feedback.map((x) => x.id)); let n = 0;
+      for (const e of entries) if (e?.id && !known.has(e.id)) { s.feedback.unshift({ ...e, status: e.status || 'neu' }); n++; }
+      if (s.feedback.length > 2000) s.feedback.length = 2000;
+      return n;
+    }, { history: false, undo: false });
+  },
+  setFeedbackStatus(id, status) { mutate(null, (s) => { const e = s.feedback.find((x) => x.id === id); if (e) e.status = status; }, { history: false, undo: false }); },
 
   // ---- Daten ----
   importState(obj) {

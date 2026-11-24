@@ -1,0 +1,16 @@
+{
+  "name": "TAKT Demo-Launcher",
+  "short_name": "TAKT Demo",
+  "description": "TAKT V2.0 als klickbarer Prototyp – Versionen vergleichen, bewerten, entscheiden.",
+  "lang": "de",
+  "start_url": "./launcher.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0c0e11",
+  "theme_color": "#0c0e11",
+  "icons": [
+    { "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}

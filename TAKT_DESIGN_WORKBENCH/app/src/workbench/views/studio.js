@@ -9,7 +9,7 @@ import { Icon } from '../../lib/icons.js';
 import { Btn, IconBtn, Badge, Empty, Select, TextInput, Checkbox, Field, openDialog, openMenu, confirmDialog, promptDialog, toast, Seg } from '../ui/kit.js';
 import { act, newWorkingVersionDialog, qaRunDialog } from './common.js';
 import { preferDialog } from './ws-design.js';
-import { actions } from '../store.js';
+import { actions, getState } from '../store.js';
 import { buildFeaturePayload } from '../../core/preview-payload.js';
 import { deviceById } from '../../core/devices.js';
 import { COMPONENTS, componentsByCategory, getComponent, defaultProps } from '../../library/registry.js';
@@ -92,6 +92,8 @@ function VariantInspector({ f, v, locked }) {
       <${Field} label="Name"><${TextInput} size="sm" value=${v.name} disabled=${locked} onCommit=${(x) => upd({ name: x }, `Variante umbenannt: ${x}`)} /><//>
       <${Field} label="Konzept" hint="Kernidee: Informationshierarchie, Bedienkonzept – nicht nur Farben."><${TextInput} multiline rows="4" value=${v.concept} disabled=${locked} onCommit=${(x) => upd({ concept: x }, 'Konzept bearbeitet')} /><//>
       <${Field} label="Stärken / Schwächen"><${TextInput} multiline rows="3" value=${v.description} disabled=${locked} onCommit=${(x) => upd({ description: x }, 'Beschreibung bearbeitet')} /><//>
+      <${Field} label="Design-Richtung (Version im Demo-Launcher)" hint="Ordnet die Variante einer durchgängigen Version der App zu."><${Select} size="sm" value=${v.direction || ''} disabled=${locked}
+        onChange=${(d) => act(() => actions.setVariantDirection(f.id, v.id, d))} options=${[{ value: '', label: '– keine –' }, ...(getState().directions || []).map((d) => ({ value: d.id, label: `${d.name} – ${d.claim}` }))]} /><//>
       ${f.selectedVariantId === v.id ? html`<${Badge} tone="warning" icon="star">Bevorzugte Variante<//>` : html`<${Btn} size="sm" icon="star" disabled=${locked} onClick=${() => preferDialog(f, v)}>Als bevorzugt wählen<//>`}</div>
     <div class="wb-section"><div class="wb-label">Layout</div>
       <div class="wb-layoutpick">${LAYOUT_TYPES.map((t) => html`<button type="button" aria-pressed=${String(L.type === t.id)} disabled=${locked} title=${t.hint} onClick=${() => upd({ layout: { ...L, type: t.id } }, `Layout → ${t.label}`)}><${Icon} name=${t.icon} size=${18} />${t.label}</button>`)}</div>
@@ -159,7 +161,7 @@ export function StudioView({ state, feature: f, variantId }) {
       ${locked && html`<div class="wb-section" style="background:var(--wb-success-soft)"><div class="wb-row wb-small"><${Icon} name="lock" size=${14} /><span class="wb-grow">Freigegeben – nur ansehen.</span></div><${Btn} size="sm" icon="git-branch" onClick=${() => newWorkingVersionDialog(f.id)}>Neue Arbeitsversion<//></div>`}
       <div class="wb-section"><div class="wb-section__head"><div class="wb-label wb-grow">Varianten</div><${Btn} size="sm" icon="plus" disabled=${locked} onClick=${newVariant}>Neu<//></div>
         <div class="wb-varlist">${f.variants.map((x) => html`<div class=${cx('wb-var', x.id === v?.id && 'is-active')} onClick=${() => { setBlockId(null); navigate(studioHref(f.id, x.id)); }} data-variant=${x.id}>
-          <span class="wb-var__letter">${x.id}</span><div class="wb-grow"><div class="wb-trunc" style="font-weight:600">${x.name}</div><div class="wb-xs wb-subtle">${layoutInfo(x.layout?.type).label} · ${x.blocks.length} Blöcke</div></div>
+          <span class="wb-var__letter">${x.id}</span><div class="wb-grow"><div class="wb-trunc" style="font-weight:600">${x.name}</div><div class="wb-xs wb-subtle">${layoutInfo(x.layout?.type).label} · ${x.blocks.length} Blöcke${x.direction ? ` · ${(state.directions || []).find((d) => d.id === x.direction)?.name || x.direction}` : ''}</div></div>
           ${f.selectedVariantId === x.id && html`<span style="color:var(--wb-warning)" title="Bevorzugt"><${Icon} name="star" size=${14} /></span>`}<${IconBtn} icon="more-vertical" label="Variantenaktionen" onClick=${(e) => { e.stopPropagation(); variantMenu(e, x); }} /></div>`)}
           ${!f.variants.length && html`<div class="wb-small wb-subtle">Noch keine Variante.</div>`}</div></div>
       ${v && html`<div class="wb-section" style="flex:1"><div class="wb-section__head"><div class="wb-label wb-grow">Gliederung</div><${Btn} size="sm" variant="primary" icon="plus" disabled=${locked} onClick=${() => addBlock()} data-qa="add-block">Block<//></div>

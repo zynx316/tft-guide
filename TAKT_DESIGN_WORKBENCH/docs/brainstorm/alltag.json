@@ -1,0 +1,317 @@
+{
+ "summary": "Der Seed deckt Alltagsmodule bislang als „Ansichten-Sammlung“ ab. Es gibt 12 Module, aber kein einziges Modul hat eine Startseite (`homeFeatureId` ist überall leer), und die meisten Features haben nur 1–2 Varianten ohne explizite Richtung (kompakt/visuell/fokus). Die App-Shell hat bereits die Schaltflächen Suche, Mitteilungen und „Mehr“, aber dahinter steckt nichts. Die Einstellungen bestehen aus genau einem Formular. Es gibt keinen Zustand für Offline, Erstnutzung oder verweigerte Berechtigung, keine Schnellerfassung, keinen Papierkorb, keine Verknüpfungen, keine App-Sperre, kein Onboarding und keinen Export. Beim Wetter fehlt alles, was ein Wetter-Modul erstklassig macht: Radar/Nowcast, Pollen, UV und Luftqualität, Kleidungstipp, Pendelfenster, vollwertige Warnungen und Einheiten. Daraus ergibt sich der Plan: zuerst ein Plattform-Fundament (Modul „TAKT Kern“ für Suche, Mitteilungen, Capture, Papierkorb, Sperre, Onboarding sowie ein Zustandskatalog), dann je Alltagsmodul Startseite plus Lücken-Features in allen drei Richtungen, danach die fehlenden Kernmodule (Gewohnheiten, Einkauf & Haushalt, Dokumente & Verträge). Kontakte, Reisen und Zeit folgen mit niedrigerer Priorität. P0 ist nur, was ein überzeugendes Gesamt-Gefühl im Demo-Launcher überhaupt erst möglich macht: Navigation, Modul-Startseiten, Capture, Zustände und das Einstellungsgerüst.",
+ "ideas": [
+  {
+   "title": "Plattform-Modul „TAKT Kern“ plus Modul-Hub und Shell-Verdrahtung",
+   "level": "app",
+   "area": "Querschnitt / App-Shell",
+   "description": "Neues Seed-Modul `platform` (Name „TAKT Kern“, `kind: system`, nicht in der Bottom-Navigation, nur über Shell-Buttons und „Mehr“ erreichbar) als Heimat aller modulübergreifenden Features: platform.search, platform.notifications, platform.capture, platform.trash, platform.lock, platform.onboarding, platform.help, platform.export. Die inerten Shell-Buttons „Suche“ und „Mitteilungen“ in `preview/runtime.js` (AppShell) feuern `nav.search` bzw. `nav.notifications`; über das vorhandene `nav`-Regelwerk routen sie zu den Platform-Features. Der „Mehr“-Dialog wird zum Modul-Hub: Suchfeld, Favoriten (bis zu 4, bestimmen die Bottom-Nav), alle Module als Raster, System-Bereiche (Einstellungen, Papierkorb, Hilfe). Wichtig: AppShell schneidet aktuell mit `modules.slice(0,12)` ab. Bei 15+ Modulen verschwinden Module still, also Favoritenlogik und Scroll im Hub einbauen. Neues Seed-Manifest in `seed/index.js` eintragen und `SEED_VERSION` erhöhen.",
+   "why": "Ohne Heimat für Querschnittsfunktionen entstehen sie verstreut oder gar nicht. Mit 12 Modulen und künftig 15+ ist die 4-Slot-Navigation das größte Orientierungsrisiko der ganzen App, und genau dort will der Nutzer „Version A/B/C“ wählen.",
+   "priority": "P0",
+   "effort": "M",
+   "acceptance": "Im Launcher führt Tippen auf Suche und Mitteilungen auf echte Screens und Zurück funktioniert. „Mehr“ zeigt alle Module (auch Nr. 13+), Favoriten per Tippen setzbar, Bottom-Nav folgt den Favoriten. Platform-Modul erscheint nicht in der Bottom-Nav, aber in der Workbench-Modulliste. `npm run check` und `npm run qa` ohne Fehler."
+  },
+  {
+   "title": "Modul-Startseiten („Übersicht“) für alle Alltagsmodule in drei Richtungen",
+   "level": "modul",
+   "area": "Querschnitt / Alle Module",
+   "description": "Jedes Modul bekommt ein Feature `<modul>.home` (Gruppe „Übersicht“) und `homeFeatureId` gesetzt: calendar.home (Heute + nächste Termine + Wochenlast + Feiertage), tasks.home (Heute/Überfällig/Eingang, Fokus-Vorschlag), notes.home (Zuletzt, Angeheftet, Schnellnotiz), weather.home (Jetzt + Radar-Kachel + Warnung + Kleidungstipp), knowledge.home (Zuletzt gelesen, Favoriten, Entwürfe), picture-to-text.home (Scan-Button + letzte Scans + offene Prüfungen), sales.home und settings.home. Je Startseite drei Varianten mit explizitem `direction`: kompakt (Listen/Metric-Row), visuell (Karten/Diagramme), fokus (nächste Aktion + Hinweise aus Nachbarmodulen). Die Kernfeatures der Module bekommen nach und nach ebenfalls eine passende Variante je Richtung. Aktuell setzt kein einziges Seed-Feature `direction` explizit, der Launcher fällt überall auf den Arbeitsstand zurück.",
+   "why": "Der Launcher steigt über die Modul-Startseite ein. Ohne sie ist der Vergleich der Richtungen auf App-Ebene leer, und der Nutzer kann nicht „eins entscheiden“. Eine Startseite beantwortet außerdem Erstnutzung, Leerzustand und Navigation je Modul.",
+   "priority": "P0",
+   "effort": "L",
+   "acceptance": "Alle 9 Alltagsmodule haben `homeFeatureId`. Die Abdeckungsanzeige im Launcher zeigt für die Startseiten 3/3 Richtungen (ohne Fallback). Jede Startseite enthält Leerzustand und Verlinkung (`interaction.to`) in mindestens 3 Unterfeatures. QA über alle neuen Varianten in 4 Viewports bestanden."
+  },
+  {
+   "title": "Schnellerfassung „Capture“ von überall (FAB, Share, Sprache, Eingang)",
+   "level": "feature",
+   "area": "Querschnitt / Erfassen",
+   "description": "Feature `platform.capture`: ein globaler Erfassen-Button (FAB mobil, Tastenkürzel am Desktop) öffnet ein Bottom-Sheet mit einem Textfeld und Typ-Chips (Aufgabe, Termin, Notiz, Ausgabe, Einkauf, Gewohnheit abhaken, Foto/Scan, Sprache). Zeile wird live erkannt (z. B. „morgen 14 Uhr Zahnarzt“ wird Termin, „Milch kaufen“ wird Einkauf, „12,50 Kaffee“ wird Ausgabe) und zeigt eine Vorschau, bevor gespeichert wird. Ohne Zuordnung landet alles im „Eingang“ (Inbox) zur späteren Sortierung. Neue Komponenten `capture-sheet` (Eingabe, Erkennungs-Chips, Vorschau) und `fab-capture`. Varianten: A einzeilig/schnell (kompakt), B Typ-Raster mit großen Kacheln (visuell), C intelligent mit Vorschlägen aus Tageskontext (fokus).",
+   "why": "Alltags-Apps scheitern am Erfassungsaufwand. Wenn Erfassen mehr als 5 Sekunden dauert, wird es nicht benutzt. Der Mehrwert von „alles in einer App“ ist genau, dass ein Eingabeweg in alle Module führt.",
+   "priority": "P0",
+   "effort": "M",
+   "acceptance": "Von jedem Launcher-Screen erreichbar. 5 Beispieleingaben landen im richtigen Typ (Aufgabe/Termin/Notiz/Ausgabe/Einkauf), mit Undo-Toast. Unerkannte Eingabe landet im Eingang. Touch-Ziele ≥ 44 px, Sheet auf Mobile ohne horizontales Scrollen, Leer- und Fehlerzustand vorhanden."
+  },
+  {
+   "title": "Zustandskatalog: Erstnutzung, Offline, Sync-Konflikt, Berechtigung verweigert, Fehler",
+   "level": "qualitaet",
+   "area": "Querschnitt / Zustände",
+   "description": "`UI_STATES` (core/schema.js) kennt nur default, empty, loading, error. Erweitern um `firstrun` (Erstnutzung mit Einladung statt leerer Fläche), `offline` (Banner „Offline – Stand 09:15“, Aktionen in Warteschlange, Schreibzugriff mit Hinweis), `stale` (Daten älter als X), `denied` (Berechtigung verweigert, z. B. Standort, Kamera, Benachrichtigung, mit Weg in die Systemeinstellungen) und `conflict` (zwei Geräte haben denselben Eintrag geändert, Auswahl). Die Runtime rendert generische Varianten dieser Zustände (wie schon loading/error), Komponenten dürfen sie überschreiben. Neue Komponenten `offline-banner`, `sync-status` (Chip „Synchronisiert vor 3 Min.“, „Wartet auf Netz“, „Fehler“) und `permission-card`. Der QA-Lauf bekommt die Zustände als Matrix-Option (`qaStates`). Je Modul mindestens ein Pflicht-Zustand je Typ als Akzeptanzkriterium.",
+   "why": "Echte Apps sind zu 30 % in Randzuständen. Wetter ohne Netz, Sales-Sync-Fehler, Kamera abgelehnt und leere Module nach der Installation entscheiden über den Qualitätseindruck. Aktuell wird nur leer/lädt/Fehler geprüft.",
+   "priority": "P0",
+   "effort": "M",
+   "acceptance": "`?state=offline|firstrun|denied|stale|conflict` funktioniert in der Vorschau. Quality Center zeigt eine Zustands-Matrix je Modul. Mindestens Wetter, Sales, Picture to Text, Kalender und Aufgaben haben je Typ eine Abdeckung. Unbehandelte Zustände sind in der QA als Hinweis markiert."
+  },
+  {
+   "title": "Einstellungen-Gerüst: Gruppen, Modul-Einstellungen und Standards",
+   "level": "modul",
+   "area": "Einstellungen",
+   "description": "Das Modul hat heute ein einziges Feature. Ausbau zu `settings.home` (gruppierte Liste mit Suchfeld) und Unterbereichen: Darstellung (Theme, Dichte, Schriftgröße), Module (ein-/ausblenden, Reihenfolge, Favoriten), Benachrichtigungen (je Modul, Ruhezeiten, Tagesbriefing-Uhrzeit), Region & Einheiten (Sprache, Wochenstart Montag, 24 h, °C/km/h/mm, Euro, Zeitzone), Konten & Sync, Sicherheit, Daten & Backup, Barrierefreiheit (Kontrast, reduzierte Bewegung, TalkBack-Hinweise), Über TAKT (Version, Lizenzen, Feedback). Neue Komponenten `settings-group`, `setting-row` (Schalter, Auswahl, Stepper, Untermenü, Warnhinweis) und `module-toggle-list`. Wichtig: ein Muster „Einstellungen je Modul“ (`<modul>.settings`), das aus dem Modul heraus per Zahnrad erreichbar ist und von der globalen Liste verlinkt wird.",
+   "why": "Nahezu jede Entscheidung im Alltagsmodul (Standarddauer Termin, Wetter-Einheiten, Benachrichtigungen) braucht einen Ort. Ohne einheitliches Muster entstehen 12 verschiedene Einstellungsseiten.",
+   "priority": "P0",
+   "effort": "M",
+   "acceptance": "settings.home plus mindestens 6 Unterbereiche mit je 1–2 Varianten. Jedes Alltagsmodul verweist auf seine Modul-Einstellungen. Einheitenwahl wirkt in der Wetter-Vorschau (°C/°F). Schalter, Auswahl und Stepper haben Touch-Ziele ≥ 44 px."
+  },
+  {
+   "title": "Globale Suche über alle Module",
+   "level": "feature",
+   "area": "Querschnitt / Suche",
+   "description": "Feature `platform.search` hinter dem Such-Button der Shell. Ein Eingabefeld, Ergebnisse gruppiert nach Modul (Termine, Aufgaben, Notizen, Wissen, Dokumente, Kontakte, Orte, Scans, Bestellungen), Filterchips je Modul, „Zuletzt gesucht“, Vorschlags-Aktionen („Neue Notiz ‚xyz‘ anlegen“, „Termin am 3.12. erstellen“) und Befehle („Wetter Hamburg“, „Theme Horizon“). Treffer zeigen Modul-Icon, Titel, Auszug mit Hervorhebung und Datum. Antippen springt per `interaction.to` in das Detail. Neue Komponente `global-search` mit Demo-Daten aus mehreren Modul-Datenschlüsseln. Varianten: A Volltext + Gruppen (kompakt), B Karten-Vorschläge (visuell), C Befehlspalette mit Aktionen zuerst (fokus). Leerzustand, Kein-Treffer, Offline-Suche (nur lokal) abdecken.",
+   "why": "Bei 12+ Modulen ist Suche der schnellste Weg zu allem und der sichtbare Beweis für „alles in einer App“. Der Button ist schon da, aber leer.",
+   "priority": "P1",
+   "effort": "M",
+   "acceptance": "Suche nach „Müller“ liefert Treffer aus mindestens 4 Modulen, gruppiert und hervorgehoben. Tippen springt in das Zielmodul. Kein-Treffer-Zustand nennt den Begriff. Suchverlauf und Filterchips funktionieren in allen 3 Richtungen."
+  },
+  {
+   "title": "Benachrichtigungscenter und Erinnerungsmechanik",
+   "level": "feature",
+   "area": "Querschnitt / Mitteilungen",
+   "description": "Feature `platform.notifications` (Glocke der Shell) mit Liste nach „Neu“ und „Früher“, gruppiert nach Modul, Typen: Erinnerung (Termin in 15 Min., Aufgabe fällig), Warnung (Unwetter, Kursalarm, Budget überschritten, Sync-Fehler Etsy), Info (Bestellung eingegangen, Tagesbriefing). Aktionen am Eintrag: Erledigt, Schlummern (10 Min., 1 Std., morgen), Öffnen. „Alle gelesen“, Filter, Leerzustand. Dazu eine einheitliche Erinnerungslogik für Kalender, Aufgaben, Gewohnheiten und Dokument-Fristen (`reminder`-Objekt: Zeitpunkt, relative Vorlaufzeit, Wiederholung). Neue Komponenten `notification-list`, `reminder-picker` und Systembenachrichtigung als Vorschau-Mockup (Sperrbildschirm). Einstellungen: Kanäle je Modul, Ruhezeiten, Priorität (leise/laut), Wichtig-Durchbruch.",
+   "why": "Kalender, Aufgaben, Wetter-Warnungen, Kursalarme und Fristen benötigen genau einen gemeinsamen Mitteilungsweg, sonst entsteht Benachrichtigungschaos und Doppelungen. Offene Entscheidung im Seed (weather.alerts Push) wird hier zentral entschieden.",
+   "priority": "P1",
+   "effort": "M",
+   "acceptance": "Glocke öffnet das Center mit mindestens 6 Beispielmitteilungen aus 4 Modulen. Schlummern/Erledigt verändern die Liste sichtbar. Reminder-Picker ist in Kalender-Termin und Aufgabe eingebunden. Die offene Entscheidung zu Wetter-Push wird mit Verweis auf dieses Feature dokumentiert."
+  },
+  {
+   "title": "Modulübergreifende Verknüpfungen („Verbunden mit …“)",
+   "level": "komponente",
+   "area": "Querschnitt / Verknüpfungen",
+   "description": "Einheitliche Komponente `link-chips` (Chips mit Modul-Icon, Titel, Typ) und `link-picker` (Sheet zum Verknüpfen mit Suche): Notiz zu Termin, Aufgabe zu Notiz, Beleg (Scan) zu Umsatz, Dokument zu Vertrag, Packliste zu Reise, Kontakt zu Termin. Rückverweise („Wird erwähnt in“) automatisch. Einbau als Block in Detailfeatures (Termin, Aufgabe, Notiz, Artikel, Dokument, Transaktion). Datenmodell-Idee für die Demo: `links: [{type, id, label}]` in den Demo-Daten. Dazu ein Konzept `[[Notiz]]`-Wiki-Links im Editor und im KB-Artikel. In der Workbench: Verknüpfungsmatrix je Modul, die zeigt, welche Beziehungen es gibt und wo sie noch fehlen.",
+   "why": "Die Stärke einer All-in-one-App ist, dass Dinge zusammenhängen. Bisher gibt es nur die Modul-Links der Workbench, aber keine für den Endnutzer sichtbare Verbindung.",
+   "priority": "P1",
+   "effort": "M",
+   "acceptance": "Mindestens 5 Detail-Features zeigen verbundene Elemente. Antippen navigiert in das andere Modul (Launcher). Verknüpfen und Lösen in der Vorschau möglich. Verknüpfungsmatrix im Modul-Cockpit sichtbar."
+  },
+  {
+   "title": "Papierkorb und einheitliches Rückgängig",
+   "level": "feature",
+   "area": "Querschnitt / Datensicherheit",
+   "description": "Zwei Teile. (1) Rückgängig-Muster: jede destruktive Aktion (Termin, Aufgabe, Notiz löschen, Eintrag archivieren) zeigt einen Toast „Gelöscht · Rückgängig“ (8 s). (2) Feature `platform.trash`: Papierkorb über alle Module, Einträge 30 Tage aufbewahrt, filterbar nach Modul, Wiederherstellen, endgültig löschen, „Papierkorb leeren“ mit Bestätigung, Hinweis auf Restdauer („löscht sich in 12 Tagen“). Neue Komponenten `undo-toast` (Erweiterung des Toasts um Aktion) und `trash-list`. Serien-Termine und Projekte mit Unterelementen: Wiederherstellung ganzer Gruppen. Verbindung zu `calendar.edit` („Rückgängig-Hinweis nach Löschen“ ist dort schon Anforderung, aber nirgends gestaltet) und `notes.editor` (Löschen nur nach Bestätigung).",
+   "why": "Versehentliches Löschen ist der häufigste Vertrauensbruch bei persönlichen Daten. Ohne Papierkorb braucht jede Löschfunktion Bestätigungsdialoge, was die App träge macht.",
+   "priority": "P1",
+   "effort": "S",
+   "acceptance": "Löschen in Kalender, Aufgaben und Notizen zeigt einen Undo-Toast, der den Eintrag zurückbringt. Papierkorb listet gelöschte Einträge aus mindestens 3 Modulen mit Restdauer. Leerer Papierkorb zeigt Leerzustand."
+  },
+  {
+   "title": "Datenexport, Backup und Portabilität",
+   "level": "feature",
+   "area": "Einstellungen / Daten",
+   "description": "Feature `settings.data`: Export je Modul oder gesamt in offenen Formaten (JSON komplett, CSV für Aufgaben/Umsätze/Orders, ICS für Kalender, Markdown für Notizen und Wissen, PDF für Auswertungen, ZIP mit Anhängen), Import (ICS, CSV, Markdown-Ordner) mit Vorschau und Fehlerbericht, automatisches lokales Backup (täglich, letzte 7) mit Wiederherstellen, optionales Cloud-Backup (Konto), Speichernutzung je Modul, „Alle Daten löschen“ mit doppelter Bestätigung. Neue Komponenten `export-wizard` (Schritte: Umfang, Format, Ziel) und `storage-bar`. Zustände: Export läuft/Fehler/fertig mit „Teilen“-Button.",
+   "why": "Ein persönliches Datenarchiv ist nur vertrauenswürdig, wenn man jederzeit herauskommt (Datenhoheit, DSGVO Art. 20) und Datenverlust bei Gerätewechsel verhindert wird. Bisher steht „Datenexport“ nur als Satz in der Modulbeschreibung.",
+   "priority": "P1",
+   "effort": "M",
+   "acceptance": "Export-Assistent läuft für mindestens Kalender (ICS), Aufgaben (CSV) und Notizen (Markdown) durch, inklusive Fortschritts- und Fehlerzustand. Backup-Liste mit Wiederherstellen und Bestätigungsdialog. Löschen aller Daten nur nach zweistufiger Bestätigung."
+  },
+  {
+   "title": "App-Sperre, Datenschutz und sensible Module",
+   "level": "feature",
+   "area": "Einstellungen / Sicherheit",
+   "description": "Features `platform.lock` (Sperrbildschirm: PIN, Biometrie-Hinweis, Fehlversuche, „PIN vergessen“) und `settings.security`: App-Sperre mit Wartezeit (sofort/1 Min./5 Min.), Sperre einzelner Module (Finanzen, Trading, Notizen) oder einzelner Notizen, Ansicht im App-Wechsler verbergen, Screenshots blockieren, Beträge verbergen (Privatmodus mit „•••“, Schütteln zum Umschalten), Datenschutz-Übersicht („Diese Daten bleiben auf dem Gerät“, „Diese gehen an Wetterdienst X“). Neue Komponenten `pin-pad` und `privacy-card`. Varianten für den Sperrbildschirm: A minimal, B mit Tagesinfo, C Fokus mit Notfall-Info.",
+   "why": "Finanzen, Trading, Dokumente und Notizen enthalten sensible Daten. Ohne Sperre ist die All-in-one-App nicht vertrauenswürdig. Außerdem betrifft sie Gestaltung jedes Moduls (Privatmodus verändert Zahlendarstellungen).",
+   "priority": "P1",
+   "effort": "M",
+   "acceptance": "Sperrbildschirm im Launcher aufrufbar. Privatmodus maskiert Beträge in Start und Finanz-Demo. Modulsperre zeigt beim Öffnen des Moduls die PIN-Eingabe. Fehlversuche und Vergessen-Weg sind gestaltet."
+  },
+  {
+   "title": "Onboarding, Berechtigungen im Kontext und Hilfe",
+   "level": "feature",
+   "area": "Querschnitt / Erstnutzung",
+   "description": "Feature `platform.onboarding` (4–6 Schritte): Willkommen, Module wählen (Vorschläge nach Zielen wie „Alltag organisieren“, „Finanzen im Blick“, „Fit werden“), Darstellung/Theme (mit Live-Vorschau der drei Richtungen), Daten importieren (Kalender, Notizen) oder mit Beispieldaten starten, Benachrichtigungen. Berechtigungen (Standort fürs Wetter, Kamera für Scans, Kalender, Mikrofon) werden nicht beim Start abgefragt, sondern am Bedarfsort mit Vorab-Erklärung (`permission-card`, Zustand denied → Weg in die Systemeinstellungen). Dazu `platform.help`: Tipps-Karten pro Modul, Kurzbefehle/Gesten, „Neu in TAKT“ (Changelog), Feedback senden. Erste-Schritte-Checkliste auf der Startseite („3 von 5 erledigt“).",
+   "why": "Ohne Onboarding sind 12 Module überwältigend und leer. Kontext-Berechtigungen erhöhen die Zustimmungsrate und sind für Android ein Muss. Das Onboarding ist zugleich der erste Eindruck, den der Nutzer im Launcher bewerten wird.",
+   "priority": "P1",
+   "effort": "M",
+   "acceptance": "Onboarding in 3 Richtungen durchklickbar, Überspringen jederzeit möglich. Wetter ohne Standortfreigabe zeigt die Denied-Karte mit manueller Ortswahl als Alternative. Hilfe verlinkt je Modul auf 2–3 Tipps. Erste-Schritte-Checkliste wird bei erledigten Schritten abgehakt."
+  },
+  {
+   "title": "Widgets, Startbildschirm und Teilen (Share-Target)",
+   "level": "feature",
+   "area": "Querschnitt / Android-Integration",
+   "description": "Zwei verwandte Android-Themen. (1) Feature `platform.widgets`: Galerie und Konfigurator für Home-Screen-Widgets in drei Rastergrößen (2×2, 4×2, 4×4) und Sperrbildschirm: Nächster Termin, Aufgaben heute, Wetter jetzt, Schnellnotiz-Button, Gewohnheiten-Streak, Depotwert (mit Privatmodus), Einkaufsliste. Vorschau in Hell/Dunkel, Tipp-Aktionen (Aufgabe abhaken) und Leerzustände. Neue Komponente `widget-preview` als Gerätebild-Rahmen. (2) Feature `platform.share`: eingehend (Android-Share-Menü: Text, Link, Bild an TAKT, dann Zielwahl Notiz/Aufgabe/Wissen/Scan/Einkauf) und ausgehend (Termin, Notiz, Wetter, Auswertung teilen als Text, PDF oder Link). `share-sheet`-Komponente.",
+   "why": "Auf dem Android-Gerät passiert ein großer Teil der Nutzung außerhalb der App (Widget, Teilen-Menü). Beides prägt die Informationsarchitektur der Module und sollte vor der Umsetzung gestaltet und entschieden sein.",
+   "priority": "P2",
+   "effort": "L",
+   "acceptance": "Widget-Galerie mit mindestens 6 Widgets in 2 Größen und beiden Themes. Share-Eingang für Link, Text und Bild mit Zielauswahl. Alle Widgets haben Leer- und Offline-Darstellung. Keine Hex-Farben."
+  },
+  {
+   "title": "Wetter: Regenradar und Nowcast („Regen in 12 Minuten“)",
+   "level": "feature",
+   "area": "Wetter",
+   "description": "Neues Feature `weather.radar` mit Komponente `precip-radar`: Karte (vereinfachte Kachel-/Raster-Darstellung, keine echte Karte nötig), Niederschlagsintensität in Stufen (Nieselregen bis Starkregen, Schnee eigene Farbe), Zeitleiste mit Play/Pause von −2 h bis +2 h, aktueller Standort als Marker, Zoomstufen. Darunter `nowcast-bar`: Balken für die nächsten 60–120 Minuten mit Textzusammenfassung „Regen beginnt in 12 Min., hört gegen 11:15 auf“. Kurzfassung als Kachel für Wetter-Startseite, Start-Modul und Widget. Varianten: A Karte im Fokus (visuell), B Text-Nowcast zuerst (fokus), C kompakt als Streifen. Zustände: Offline (letzter Stand mit Zeitstempel), Daten nicht verfügbar, Standort verweigert.",
+   "why": "Regenradar ist das meistgenutzte Zusatzfeature moderner Wetter-Apps und erklärt Alltagsentscheidungen („Gehe ich jetzt los?“) besser als Stundenwerte. Es ist im Seed bisher gar nicht vorgesehen.",
+   "priority": "P1",
+   "effort": "L",
+   "acceptance": "Radar-Zeitleiste abspielbar und per Tippen scrubbar. Nowcast-Text passt zu den Balken (aus denselben Demo-Daten). Auf 390 px ohne horizontales Scrollen. Offline-Zustand zeigt Zeitstempel und deaktiviert Play."
+  },
+  {
+   "title": "Wetter: Umwelt und Gesundheit (Pollen, UV, Luftqualität)",
+   "level": "feature",
+   "area": "Wetter",
+   "description": "Feature `weather.health` mit drei Komponenten. `pollen-bars`: Pollenflug-Vorhersage für heute bis +2 Tage, Belastungsstufen 0–3 für Hasel, Erle, Birke, Gräser, Roggen, Beifuß, Ambrosia (in der Demo Novemberwerte fast 0, zusätzlich ein Saison-Umschalter für die Demo), mit „Meine Allergene“ als Auswahl und Mitteilung ab Stufe 2. `uv-gauge`: UV-Index heute mit Tagesverlauf, Hautschutz-Empfehlung und Zeitfenster („Schutz nötig 11–15 Uhr“, im November nicht nötig). `air-quality`: Luftqualitätsindex (europäisch, Skala gut bis sehr schlecht), Feinstaub PM2.5/PM10, Ozon, Hinweis für Sport im Freien. Dazu Erklärungen („Was bedeutet Stufe 2?“) als Info-Sheet. Datenschutz-Hinweis auf Quelle. Verknüpfung zu Fitness (Outdoor-Training bei schlechter Luft).",
+   "why": "Pollen und UV sind für Allergiker und Outdoor-Aktive Kernnutzen. Der Nutzer hat sie ausdrücklich im Wetter-Anforderungsfeld genannt, und im Seed existieren sie nicht.",
+   "priority": "P1",
+   "effort": "M",
+   "acceptance": "Drei Komponenten mit Beispieldaten und je Leerzustand („Für diesen Ort keine Daten“). Allergen-Auswahl filtert die Pollen-Anzeige. Farbe nie alleiniger Informationsträger (Stufe als Text/Zahl). Kontrast in allen 3 Themes bestanden."
+  },
+  {
+   "title": "Wetter: Kleidungstipp, Aktivitäts-Empfehlungen und Pendelfenster",
+   "level": "feature",
+   "area": "Wetter / Alltagsnutzen",
+   "description": "Feature `weather.advice` mit Komponenten `clothing-tip` und `activity-score`. Kleidungstipp aus gefühlter Temperatur, Wind, Regen und UV: Icons/Text („Winterjacke, Mütze, Schirm einpacken“), anpassbar nach Empfindlichkeit (friert schnell/ unempfindlich). Aktivitäts-Score je Tätigkeit (Radfahren, Laufen, Spaziergang, Wäsche draußen trocknen, Auto waschen, Grillen) mit bestem Zeitfenster heute und Begründung. Erweiterung `weather.commute`: Pendeln – Hin- und Rückweg-Zeiten (z. B. 07:30 und 17:00, aus Kalender oder Einstellung), Wetter zu beiden Zeiten nebeneinander mit klarer Empfehlung („Rückweg Regen: Regenjacke mitnehmen“), Verkehrsmittel Rad/ÖPNV/Auto mit Glätte-/Sturmhinweisen. Sonne und Mond als kleines Zusatzfeature (`sun-moon`: Auf-/Untergang, Tageslänge, Mondphase, goldene Stunde). Die Kachel „Heute anziehen“ gehört auf Wetter- und Start-Startseite.",
+   "why": "Das ist der Unterschied zwischen einer Datenanzeige und einer Entscheidungshilfe: Der Nutzer will nicht 4 °C lesen, sondern wissen, was er anzieht und wann er fährt. Passt zur Fokus-Richtung des Launchers.",
+   "priority": "P1",
+   "effort": "M",
+   "acceptance": "Kleidungstipp verändert sich bei Wechsel des Demo-Tages (Mittwoch Sturm: Hinweis). Pendelansicht zeigt zwei Zeitpunkte mit Empfehlung. Empfindlichkeits-Einstellung wirkt sofort. Alles ohne horizontalen Überlauf auf Mobile."
+  },
+  {
+   "title": "Wetter: Unwetterwarnungen vollwertig (Stufen, Karte, Push, Quelle)",
+   "level": "feature",
+   "area": "Wetter / Warnungen",
+   "description": "`weather.alerts` (aktuell nur analysiert, ohne Variante) ausbauen: Liste mit Stufenfarben und Piktogrammen (Sturm, Starkregen, Gewitter, Frost/Glätte, Schnee, Hitze, Nebel), Zeitleiste „gilt von … bis …“, Gebiet auf vereinfachter Karte, Handlungsempfehlungen („Fenster schließen, Fahrrad sichern“), amtliche Quelle und Stand (Attribution Pflicht), Mehrere Orte (Warnung am Reiseziel). Wiederkehrender Banner auf Start/Wetter. Einstellungen: ab Stufe X benachrichtigen, nur für Standort/alle Orte, Ruhezeiten. Zustände: keine Warnung (positive Meldung), Quelle nicht erreichbar, Daten veraltet. Verbindung zum Benachrichtigungscenter und zum Kalender (Outdoor-Termin bei Sturm: „Termin Mi 14:00 betroffen“).",
+   "why": "Sicherheitsrelevant und im Seed auf dem niedrigsten Stand (kein Design, offene Push-Frage). Die Warnlogik prägt Mitteilungen, Start und Kalender.",
+   "priority": "P1",
+   "effort": "M",
+   "acceptance": "Mindestens 3 Beispielwarnungen mit unterschiedlichen Stufen, Textzeichen zusätzlich zur Farbe. Betroffener Kalendertermin wird verlinkt. Zustand „keine Warnung“ und „Quelle nicht erreichbar“ sind gestaltet. Offene Entscheidung zu Push wird entschieden oder mit Folgeaufgabe versehen."
+  },
+  {
+   "title": "Wetter: Orte mit Suche und Karte, Einheiten, Quellen und Offline-Cache",
+   "level": "modul",
+   "area": "Wetter",
+   "description": "Die vorhandene Ortsliste (`weather.locations`) um Ortssuche mit Vorschlägen, Standort-Genehmigung (Denied-Zustand), Reihenfolge per Drag, Reisemarkierung mit Datumsbereich (Lissabon ab 12.12. aus dem Seed), Mini-Vergleich zweier Orte, Wetter am Reiseziel am Reisetag. Neu: `weather.settings` (Einheiten °C/°F, km/h bzw. m/s bzw. Beaufort, mm, Druck hPa, 24 h, Benachrichtigungen, tägliche Zusammenfassung um 07:00), `weather.sources` (Datenquelle, Attribution, Aktualisierungsintervall, Stand), Offline-Cache (letzte Abfrage mit „Stand 09:15, veraltet nach 3 h“, Hinweis bei Mobilfunk-Sparmodus), Verlauf „Wie war es gestern/vor einem Jahr“ als Option. Zusätzlich `weather.home` als Modul-Startseite (Jetzt, Radar-Kachel, Warnungen, Kleidungstipp, Orte). Datenquellen-Entscheidung (DWD, Open-Meteo, kommerziell) als offene Entscheidung dokumentieren.",
+   "why": "Orte und Einheiten sind Grundlage jeder Wetteranzeige, Offline und veraltete Daten sind im Alltag häufig, und die Quellenfrage entscheidet über Rechte, Kosten und Qualität der Pollen/Radar-Daten. Der Seed hat dazu nur Annahmen.",
+   "priority": "P1",
+   "effort": "M",
+   "acceptance": "Ortssuche findet Beispielorte, Reihenfolge ist änderbar, Reiseorte zeigen Datum. Einheitenwechsel wirkt in Aktuell, Stündlich und Täglich der Vorschau. Offline- und Stale-Zustand zeigen Zeitstempel. Entscheidung Wetterquelle liegt im Entscheidungslog."
+  },
+  {
+   "title": "Start: Tagesbriefing, Abendrückblick und Konfiguration der Startseite",
+   "level": "feature",
+   "area": "Start",
+   "description": "`home.today` erweitern um `home.briefing` (Morgenbriefing um 07:00: Wetter und Kleidungstipp, erster Termin und Anfahrtszeit, fällige Aufgaben, Gewohnheiten des Tages, Hinweise wie Budgetwarnung oder Frist, als lesbare Karte und als Mitteilung) und `home.review` (Abendrückblick: was erledigt, was verschoben, kurze Notiz/Stimmung, morgen Vorschau, Aufgaben verschieben mit einem Tipp). Dazu `home.customize`: Kacheln ein-/ausblenden, Reihenfolge, Größen, Vorlagen („Minimal“, „Arbeit“, „Fitness-Fokus“). Neue Komponenten `briefing-card` und `day-timeline`. Leerer Tag, Erstnutzung (nichts angebunden) und Offline abdecken. Die Startseite wird zur Heimat der Erste-Schritte-Checkliste.",
+   "why": "Die Startseite ist der meistgesehene Screen der App und besteht bisher aus einem einzigen Feature. Briefing und Rückblick machen die Datenverknüpfung der Module erlebbar und sind die stärkste Fokus-Richtung.",
+   "priority": "P1",
+   "effort": "M",
+   "acceptance": "Briefing mit mindestens 5 Datenquellen aus anderen Modulen, jede verlinkt (`interaction.to`). Rückblick verschiebt Aufgaben sichtbar. Startseite ist konfigurierbar in der Vorschau. Alle 3 Richtungen vorhanden."
+  },
+  {
+   "title": "Kalender: Termin-Detail, Erinnerungen, Teilnehmer und Konfliktwarnung",
+   "level": "feature",
+   "area": "Kalender",
+   "description": "`calendar.edit` und der Detail-Dialog sind dünn. Neues Feature `calendar.detail` als vollwertiger Screen mit Titel, Zeit, Wiederholung, Ort (mit Karten-Vorschau und Anfahrtszeit), Erinnerungen (mehrere, relativ: 15 Min./1 Tag vorher), Teilnehmer/Kontakte, Videolink, Notiz, Anhänge, Verknüpfungen (Aufgaben, Notizen, Wetter bei Outdoor), Kategorie. Dazu `calendar.conflicts`: Warnung beim Anlegen überlappender Termine mit Vorschlag der nächsten freien Zeit, und Wochen-Auslastung („Mittwoch 6 h gebucht“). `calendar.recurrence` (derzeit nicht analysiert) mit Serien-Editor („nur dieser / dieser und folgende / alle“), was die offene Entscheidung klärt. Und `calendar.home` als Startseite. Neue Komponente `event-detail`.",
+   "why": "Ein Kalender steht und fällt mit der Termin-Detailseite, Erinnerungen und Serienlogik. Sie sind im Seed nur als Satz vorhanden, und die Serien-Entscheidung blockiert Bearbeiten und Löschen.",
+   "priority": "P1",
+   "effort": "M",
+   "acceptance": "Detailscreen mit mindestens 6 Abschnitten und 2 Varianten. Beim Anlegen überlappender Zeiten erscheint Warnung mit Vorschlag. Serien-Dialog bietet 3 Optionen. Entscheidung „Serien bearbeiten“ ist im Log entschieden."
+  },
+  {
+   "title": "Kalender: Quellen, Feiertage, Geburtstage und Abos",
+   "level": "feature",
+   "area": "Kalender",
+   "description": "Feature `calendar.sources` (Einstellungen > Kalender): Liste der Kalender mit Farbe, Sichtbarkeit, Standard-Kalender, Konten (Google, Microsoft, iCloud, Nextcloud/CalDAV, ICS-Abo per URL, Gerätekalender), Sync-Status je Quelle (zuletzt synchronisiert, Fehler: „Anmeldung abgelaufen“), Import einer ICS-Datei mit Vorschau. Automatische Zusatzkalender: gesetzliche Feiertage (NRW), Schulferien, Geburtstage aus Kontakten, Kalenderwochen, Mondphasen optional. In Tages-, Wochen- und Monatsansicht werden Feiertage als Ganztags-Banner und Geburtstage als Chips gezeigt. Kalender-Einstellungen: Wochenstart, Standarddauer, Standard-Erinnerung, Zeitraster 06–22. Neue Komponente `calendar-source-list`. Zustände: Offline, Konto getrennt, Sync-Konflikt.",
+   "why": "Ein persönlicher Kalender, der nicht die Termine der Quellen zeigt, wird nicht benutzt. Feiertage und Geburtstage gehören zur Grunderwartung, und Kalenderquellen entscheiden die Architektur (Sync).",
+   "priority": "P1",
+   "effort": "M",
+   "acceptance": "Quellenliste mit 4 Beispielquellen und unterschiedlichen Sync-Zuständen. Ausblenden einer Quelle blendet deren Termine in der Vorschau aus. Feiertage und Geburtstage erscheinen in Monats- und Wochenansicht. Fehler-Quelle zeigt „Neu anmelden“."
+  },
+  {
+   "title": "Aufgaben: Eingang, Smart-Listen, Tagesplanung und Fokus-Timer",
+   "level": "feature",
+   "area": "Aufgaben",
+   "description": "Ergänzung zu `tasks.overview`: `tasks.inbox` (Eingang aus Capture und Teilen, mit Triage: Datum, Projekt, Priorität per Wisch-Aktionen oder Schnell-Chips), Smart-Listen (Heute, Demnächst, Irgendwann, Überfällig, Zugewiesen/Geteilt, Ohne Datum, Erledigt) als Navigation, `tasks.plan` (Tagesplanung: heutige Aufgaben mit Zeitschätzung in freie Kalenderfenster ziehen, Summe Dauer vs. freie Zeit, „Überlastet“-Hinweis), `tasks.focus` (Fokus-Timer 25/5 mit aktueller Aufgabe, Pause, Protokoll der Fokuszeit, Verbindung zur Kennzahl „Fokuszeit geplant“ auf Start), `tasks.review` (Wochenrückblick: erledigt, verschoben, Vorschläge zum Aufräumen alter Aufgaben). Ergänzend Tags zusätzlich zu Projekt/Kategorie, Zeitschätzung, Erinnerung, Abhängigkeit „wartet auf“. Aufgaben-Einstellungen: Standard-Fälligkeit, „Heute“-Grenze, Sortierung.",
+   "why": "Aufgaben ohne Eingang, Planung und Review werden zur Liste, die wächst. Die Anbindung an Kalender (bereits Seed-Link) und Fokus ist die differenzierende Stärke von TAKT.",
+   "priority": "P1",
+   "effort": "M",
+   "acceptance": "Eingang mit mindestens 5 Einträgen, Triage per Tipp ordnet zu und Eintrag verschwindet. Planung zeigt Überlastung bei zu viel Zeitschätzung. Fokus-Timer läuft in der Vorschau (deterministisch, ohne echte Zeit) und protokolliert. Smart-Listen filtern korrekt."
+  },
+  {
+   "title": "Notizen: Anhänge, Sprachnotiz, Notizbücher, Vorlagen und Verlauf",
+   "level": "feature",
+   "area": "Notizen",
+   "description": "Aktuell reiner Text mit Tags. Neu: `notes.attachments` (Bilder, Dateien, Sprachnotizen mit Wellenform und Transkript, Skizze optional) inline im Editor, `notes.notebooks` (Notizbücher/Ordner zusätzlich zu Tags, Verschieben, Farben), `notes.templates` (Meeting, Tagesplan, Reise-Packliste, Rezept, Projekt-Kickoff) bei „Neue Notiz“, `notes.history` (Versionsverlauf mit Vergleichen und Wiederherstellen; Variante A „Editor mit Verlauf“ im Seed deutet es an), `notes.lock` (einzelne Notiz sperren, siehe Sicherheit), Notizen-Einstellungen (Standardnotizbuch, Autosave, Schrift). Sprachnotiz-Diktat verbindet sich mit Capture. Offline-Konflikt-Zustand für gleichzeitige Bearbeitung auf zwei Geräten.",
+   "why": "Anhänge und Sprache sind der häufigste Grund für Notiz-Apps unterwegs. Notizbücher und Vorlagen machen große Bestände beherrschbar, und der Papierkorb allein löst das Verlustproblem nicht.",
+   "priority": "P2",
+   "effort": "M",
+   "acceptance": "Notiz mit Bild und Sprachnotiz im Editor darstellbar. Notizbuch-Navigation mit Zähler. Vorlagenwahl erzeugt befüllte Notiz. Verlauf zeigt mindestens 3 Stände mit Wiederherstellen."
+  },
+  {
+   "title": "Wissensdatenbank: Leseliste, Web-Clip, Quellen und Lernkarten",
+   "level": "feature",
+   "area": "Wissensdatenbank",
+   "description": "Ergänzungen nach Nutzen: `knowledge.inbox` (Leseliste: Link oder Text per Teilen-Menü speichern, Lesestatus, Hervorhebungen, später in einen Artikel überführen), `knowledge.sources` (Quellenangaben je Artikel, Link-Prüfung auf tote Links), `knowledge.versions` (Verlauf und Wiederherstellen von Artikeln), `knowledge.import` (Markdown/Obsidian-Ordner, Notizen in Artikel umwandeln), `knowledge.cards` (optionale Lernkarten aus Artikeln mit einfacher Wiederholung: Neu/Gelernt/Heute fällig). `knowledge.home` als Startseite (Zuletzt gelesen, Favoriten, Entwürfe, unvollständige Artikel). Verknüpfungen aus `knowledge.links` mit `link-chips` umsetzen, inklusive Rückverweise. Zustände: Erstnutzung (Beispiel-Bereiche), Offline (nur heruntergeladene Artikel).",
+   "why": "Eine Wissensdatenbank wird nur gepflegt, wenn Hineinbekommen einfach ist (Leseliste, Teilen) und Wiederfinden belohnt wird. Das Seed-Modul deckt nur Lesen und Suchen ab.",
+   "priority": "P2",
+   "effort": "M",
+   "acceptance": "Leseliste mit Teilen-Eingang und Statuswechsel. Artikel-Verlauf mit Vergleich. Startseite in 3 Richtungen. Lernkarten-Demo mit 5 Karten und Fortschritt."
+  },
+  {
+   "title": "Picture to Text: Dokumenten-Scanner und Beleg-/Visitenkarten-Erkennung",
+   "level": "feature",
+   "area": "Picture to Text",
+   "description": "Vom reinen OCR zum Scanner. `picture-to-text.scan`: Kamera-Ansicht mit Kantenerkennung, Perspektivkorrektur, Zuschnitt, Drehen, Kontrast (Dokument/Foto/Schwarzweiß), Mehrseiten-Stapel (ersetzt „Mehrseitige Dokumente“, `multipage` bisher nur nice-to-have), PDF-Ausgabe mit Textebene. `picture-to-text.receipt`: Beleg-Erkennung mit Händler, Datum, Betrag, MwSt, Positionen in einem prüfbaren Formular, dann „Als Ausgabe in Finanzen buchen“ oder „An Umsatz anhängen“ (Verbindung zu finance.transactions „Belege anhängen“ und Dokumente & Verträge). `picture-to-text.card`: Visitenkarte wird Kontakt. QR-/Barcode-Scan als Modus (Einkauf, Warenkorb, Links). Einstellungen: Erkennung lokal oder Cloud (offene Entscheidung, Datenschutz-Hinweis), Sprache, Standardziel, Speicherort. Zustände: Kamera verweigert, schlechtes Licht, Erkennung unsicher.",
+   "why": "Die größten Alltagsgewinne von OCR sind Belege, Verträge und Visitenkarten, nicht Text kopieren. Hier entsteht die engste Verknüpfung zu Finanzen, Dokumenten und Kontakten.",
+   "priority": "P1",
+   "effort": "L",
+   "acceptance": "Scan-Flow von Aufnahme bis Ergebnis in der Vorschau. Beleg-Formular übernimmt erkannte Werte und bietet Buchung nach Finanzen an. Kamera-verweigert-Zustand ist gestaltet. Mehrseiten-Stapel mit Umsortieren."
+  },
+  {
+   "title": "Sales Channels: Versand und Tracking, Lagerbestand, Kunden und Marge",
+   "level": "feature",
+   "area": "Sales Channels",
+   "description": "Der Seed hat Bestellungen, Listings, Retouren, Umsatz. Es fehlen: `sales.shipping` (Versandaufträge, Versandlabel, Paketdienst, Sendungsverfolgung mit Status, Sammel-Etiketten), `sales.inventory` (Bestand je Artikel über Kanäle, Mindestbestand mit Warnung, Nachbestellliste, Bestandsabgleich), `sales.customers` (Kunden mit Bestellhistorie, Wiederkäufer, Notizen), `sales.margin` (Einkaufspreis, Kanalgebühren, Versand, daraus Marge je Artikel/Kanal), `sales.invoices` (Rechnungen/Belege, Export für den Steuerberater, Verknüpfung zu Dokumente & Verträge), `sales.sync-log` (Protokoll der Synchronisationen mit Fehlerursache und Wiederholen, wichtig weil Etsy-Token abgelaufen im Seed zeigt, dass Fehler Alltag sind). Kanal-Einstellungen: Intervall, Benachrichtigung bei neuer Bestellung, Standard-Versanddienst. `sales.home` als Startseite.",
+   "why": "Für einen Händler entscheiden Versand, Lager und Marge über Zeitaufwand und Gewinn. Ohne sie bleibt das Modul eine schöne Anzeige. Steuerberater-Termin steht schon in den Demo-Aufgaben.",
+   "priority": "P2",
+   "effort": "L",
+   "acceptance": "Mindestens 4 der 6 Features mit Variante und Demo-Daten. Bestandswarnung erscheint in Benachrichtigungen. Sendungsstatus als Zeitleiste. Fehlerkanal führt im Synchronisationsprotokoll zu „Neu verbinden“."
+  },
+  {
+   "title": "Neues Modul „Gewohnheiten“ (Habits, Routinen, Streaks)",
+   "level": "modul",
+   "area": "Neue Module",
+   "description": "Modul `habits` mit Features: Heute (abhaken, Fortschritt, Tageszeiten Morgen/Mittag/Abend), Gewohnheit anlegen (Name, Rhythmus täglich/Werktage/x-mal pro Woche, Erinnerung, Ziel, Verknüpfung z. B. Wasser/Training), Streaks und Serien mit Gnadentag, Statistik (Kalender-Heatmap, Quote 30/90 Tage, beste Serie), Routinen (Morgen-/Abendroutine als Folge), Einstellungen, Startseite. Komponenten `habit-row` (Abhaken, Streak-Flamme, Wochenpunkte), `habit-heatmap`, `streak-badge`. Integration: Fitness-Training zählt automatisch, Aufgabe „Belege“ als Gewohnheit, Wasser/Ernährung als Messwert, Kalender-Block für Routinen, Widget und Start-Kachel. Richtungen: kompakt Liste, visuell Heatmap/Ringe, fokus „Nächste Gewohnheit jetzt“.",
+   "why": "Gewohnheiten sind das häufigste fehlende Alltagsmodul bei All-in-one-Apps und verbinden Fitness, Ernährung und Aufgaben. Es braucht wenig Datenmodell und liefert täglich wiederkehrende Nutzung.",
+   "priority": "P1",
+   "effort": "M",
+   "acceptance": "Modul mit Startseite und mindestens 5 Features in 3 Richtungen. Abhaken aktualisiert Streak und Start-Kachel. Leerzustand erklärt die Idee mit Vorlagen („Wasser trinken“, „10 000 Schritte“). Verknüpfung zu Fitness sichtbar."
+  },
+  {
+   "title": "Neues Modul „Einkauf und Haushalt“ (Listen, Vorräte, Pläne)",
+   "level": "modul",
+   "area": "Neue Module",
+   "description": "Modul `shopping` mit Features: Einkaufslisten (mehrere Listen, Kategorien nach Ladenbereich sortiert, schnelles Hinzufügen mit Mengen, Abhaken, „Zuletzt gekauft“-Vorschläge, geteilte Liste mit Partner/WG und Live-Status), Haushaltsvorräte (Mindestbestand, nachkaufen), Wiederkehrendes (wöchentlicher Einkauf), Haushaltsaufgaben/Wartung (Rauchmelder, Heizung, Filter, Reifenwechsel mit Intervall und Erinnerung), Preisvergleich/Ausgabenübersicht optional, Barcode-Scan (aus Picture to Text) zum Hinzufügen. Verknüpfungen: Rezept/Wochenplan aus dem Ernährungsmodul füllt die Liste, Ausgabe nach Finanzen, Aufgabe „Einkaufen“ im Kalender, Widget. Offline-Fähigkeit im Laden ist Pflicht, mit Sync-Zustand.",
+   "why": "Einkaufsliste und Haushaltserinnerungen sind tägliche Anwendungsfälle und der natürliche Partner von Ernährung und Finanzen. Geteilte Listen machen die App für mehrere Personen wertvoll.",
+   "priority": "P1",
+   "effort": "M",
+   "acceptance": "Liste abhakbar mit Fortschritt, Kategorien einklappbar, Hinzufügen per Schnelleingabe. Offline-Zustand zeigt Warteschlange. Rezept-Verknüpfung fügt Zutaten ein. Haushaltswartung erzeugt Erinnerung."
+  },
+  {
+   "title": "Neues Modul „Dokumente und Verträge“ (Tresor, Fristen, Garantien)",
+   "level": "modul",
+   "area": "Neue Module",
+   "description": "Modul `docs` mit Features: Dokumentenliste/Tresor (Kategorien Versicherung, Miete, Steuer, Gesundheit, Fahrzeug, Garantie; Vorschau, Tags, Suche), Dokument hinzufügen (Scan, Datei, Foto aus Picture to Text), Vertragsdetails (Anbieter, Laufzeit, Kosten, Kündigungsfrist), Fristenübersicht („Kündigung bis 30.11., Versicherung X“ mit Erinnerung und Kalendereintrag), Garantien und Belege (Kaufdatum, Garantie bis, Beleg), Steuerordner (Belege je Jahr für den Steuerberater, Export), Ablaufwarnungen (Ausweis, TÜV, Reisepass). Komponenten `doc-card`, `deadline-timeline`, `contract-detail`. Verknüpfungen: Abos und wiederkehrende Kosten zu Finanzen, Fristen zu Kalender/Aufgaben/Mitteilungen, Verknüpfung zu Kontakten (Versicherer). Sicherheit: Modulsperre standardmäßig empfohlen, Privatmodus.",
+   "why": "Verträge, Fristen und Belege sind der Kern persönlicher Organisation und werden in Alltags-Apps selten gut gelöst. Der Nutzen ist sehr konkret (Kündigungsfrist verpasst kostet Geld). Das Steuerberater-Beispiel im Seed zeigt den Bedarf.",
+   "priority": "P1",
+   "effort": "L",
+   "acceptance": "Dokumentenliste mit Kategorien und Filter, Vertragsdetail mit Frist-Countdown, Fristenübersicht erzeugt Mitteilung und Kalendereintrag in der Vorschau. Scan-Eingang aus Picture to Text. Modulsperre-Hinweis vorhanden."
+  },
+  {
+   "title": "Weitere Kernmodule im Backlog: Kontakte, Reisen, Zeiterfassung (später Journal, Wunschliste, Fahrzeug)",
+   "level": "modul",
+   "area": "Neue Module",
+   "description": "Nach den P1-Modulen in dieser Reihenfolge. (1) `contacts` – Kontakte mit Geburtstagen, Notizen zum Gespräch, Verknüpfung zu Terminen, Aufgaben und Dokumenten, Gruppen, Visitenkarten-Scan, Anruf/Nachricht-Aktionen (Grundlage für Teilnehmer im Kalender und Geburtstage). (2) `travel` – Reisen mit Zeitstrahl (Flug, Unterkunft, Mietwagen), Packliste (Notiz-Checkliste), Wetter am Ziel (Lissabon steht schon im Wetter-Seed), Budget und Ausgaben (Finanzen), Dokumente (Tickets, Ausweis), Kalender-Block, Offline-Zugriff. (3) `time` – Zeiterfassung/Fokus (Projekte, Timer, Wochenstunden, Export), verbindet Aufgaben und Sales. Später: Journal/Tagebuch (Stimmung, Rückblick), Wunschliste/Geschenke, Fahrzeug/Wohnung. Jeweils als eigene Entscheidung im Log mit „aufnehmen / als Feature in bestehendem Modul / nicht aufnehmen“ vorbereiten, damit nicht jedes Modul automatisch entsteht.",
+   "why": "Kontakte und Reisen füllen echte Lücken, die andere Module schon benötigen (Teilnehmer, Geburtstage, Reisewetter). Zeiterfassung passt zu Sales und Fokus. Das Backlog verhindert Wildwuchs und macht die Entscheidung bewusst.",
+   "priority": "P2",
+   "effort": "XL",
+   "acceptance": "Für jedes der 3 Module: Seed-Manifest mit Startseite plus mindestens 3 Features, Entscheidung im Log (Modul ja/nein), Verknüpfungen zu mindestens 2 bestehenden Modulen. Backlog-Module sind in der Workbench als Status „Konzept“ sichtbar."
+  }
+ ],
+ "risks": [
+  "Scope-Explosion: 30 Ideen plus neue Module können die Qualität je Modul verwässern. Besser Ebene für Ebene (zuerst Plattform, Startseiten, Zustände, dann Module nacheinander), und neue Module nur über eine Entscheidung im Log aufnehmen.",
+  "Overlay-Features (Suche, Mitteilungen, Capture-Sheet, Sperrbildschirm, Widgets) liegen teilweise außerhalb des deklarativen Block-Modells und der AppShell. Sie brauchen Shell-Unterstützung (Events nav.search/nav.notifications, FAB-Slot, Vollbild ohne Chrome), sonst werden sie nur als normale Seiten simuliert.",
+  "AppShell schneidet Module bei 12 ab (`modules.slice(0,12)`) und zeigt nur 4 Bottom-Nav-Plätze. Mit 15+ Modulen verschwinden Module still, das muss zusammen mit dem Modul-Hub gelöst werden.",
+  "Wetterdaten (Radar, Pollen, UV, Luftqualität) sind in der Workbench rein fiktive Demo-Daten. Reale Verfügbarkeit hängt von der Datenquelle ab (DWD, Open-Meteo, kommerziell), und Pollen-/Radardaten sind regional bzw. lizenzpflichtig. Die Quellen-Entscheidung muss früh fallen, sonst wird etwas gestaltet, das nicht lieferbar ist.",
+  "Flutter-Machbarkeit unklar: Home-Screen-Widgets, Share-Target, App-Sperre/Biometrie, Hintergrund-Benachrichtigungen und Sprachnotiz-Transkription sind plattformnah (Android) und nicht mit der Workbench prüfbar. Im Design als Annahme markieren und früh einen Spike im echten TAKT-Projekt einplanen.",
+  "Phase 1 (Bestandsaufnahme TAKT) fehlt weiterhin. Möglicherweise existieren Module wie Gewohnheiten, Einkauf oder Kontakte schon oder anders benannt. Neue Module als Konzept markieren und gegen das echte Modulregister prüfen, bevor Aufwand in Details fließt.",
+  "Querschnitts- und Nachbarperspektiven überlappen: Ernährung, Fitness, Finanzen und Sparpläne laufen separat. Einkauf und Haushalt (Rezept-Verknüpfung), Dokumente und Verträge (Abos, Belege) und Gewohnheiten (Fitness, Wasser) brauchen klare Grenzen, damit nichts doppelt gestaltet wird.",
+  "Datenschutz und Datenhaltung (lokal oder Cloud-Sync, Konto, geteilte Listen, OCR in der Cloud) sind App-Entscheidungen auf Ebene 0 und beeinflussen fast alle Ideen (Sync-Zustände, Sperre, Export). Ohne frühe Entscheidung entstehen widersprüchliche Designs.",
+  "Komponentenwachstum (ca. 20 neue Komponenten) erhöht Wartungs- und QA-Aufwand und Drift-Risiko. Neue Komponenten sollten erst entstehen, wenn mindestens zwei Features sie brauchen, plus CONTRACT-Prüfung, Token-Regeln (keine Hex-Farben) und Umlaut-Check.",
+  "Seed-Umfang und Zustandsgröße: viele neue Features mit Demo-Daten und 3 Richtungen vergrößern workbench.json deutlich (Seed aktuell ca. 0,9 MB) und die QA-Laufzeit. Das Skalierungsthema (Snapshots auslagern) aus TASKS.md wird dadurch dringender."
+ ]
+}

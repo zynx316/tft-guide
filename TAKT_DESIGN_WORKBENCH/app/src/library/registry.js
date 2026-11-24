@@ -8,11 +8,19 @@ import calendar from './components/calendar/index.js';
 import tasks from './components/tasks/index.js';
 import content from './components/content/index.js';
 import insights from './components/insights/index.js';
+import finance from './components/finance/index.js';      // Finanzen (Ausbau)
+import savings from './components/savings/index.js';      // Sparpläne
+import trading from './components/trading/index.js';      // Trading (Ausbau)
+import fitness from './components/fitness/index.js';      // Fitness (Ausbau)
+import nutrition from './components/nutrition/index.js';  // Ernährung
+import weather2 from './components/weather2/index.js';    // Wetter (Ausbau)
+import habits from './components/habits/index.js';        // Gewohnheiten & Ziele
+import crosscut from './components/crosscut/index.js';    // Querschnitt (Suche, Benachrichtigungen, Onboarding …)
 
-export const COMPONENTS = [...core, ...calendar, ...tasks, ...content, ...insights];
+export const COMPONENTS = [...core, ...calendar, ...tasks, ...content, ...insights, ...finance, ...savings, ...trading, ...fitness, ...nutrition, ...weather2, ...habits, ...crosscut];
 
-export const CATEGORY_ORDER = ['Struktur', 'Navigation', 'Daten', 'Diagramme', 'Formulare', 'Feedback',
-  'Kalender', 'Aufgaben', 'Inhalte', 'Wetter', 'Vertrieb', 'Fitness', 'Finanzen', 'Trading'];
+export const CATEGORY_ORDER = ['Struktur', 'Navigation', 'Daten', 'Diagramme', 'Formulare', 'Feedback', 'Querschnitt',
+  'Kalender', 'Aufgaben', 'Inhalte', 'Wetter', 'Vertrieb', 'Finanzen', 'Sparpläne', 'Trading', 'Fitness', 'Ernährung', 'Gewohnheiten'];
 
 const map = new Map();
 for (const c of COMPONENTS) {

@@ -8,7 +8,7 @@
 // * QA-Sonde: window.__taktQA.run() (genutzt von Workbench UND CLI/Playwright)
 // ============================================================================
 import { html, render, Component } from '../lib/html.js';
-import { useState, useEffect, useCallback } from 'preact/hooks';
+import { useState, useEffect, useCallback, useRef } from 'preact/hooks';
 import { Icon } from '../lib/icons.js';
 import { tokensStylesheet } from '../design-system/tokens.js';
 import { getComponent, defaultProps, allComponentCss } from '../library/registry.js';
@@ -16,6 +16,7 @@ import { Skeleton, ErrorState, Card, Button } from '../library/ui.js';
 import { Layout } from './layouts.js';
 import { runProbe } from './qa-probe.js';
 import { clone } from '../lib/util.js';
+import { isWorldRef, worldKey } from '../seed/world/index.js';
 
 const styleEl = document.createElement('style');
 styleEl.id = 'tk-tokens';
@@ -57,7 +58,7 @@ function BlockBody({ block, def, store, ctx, forcedState }) {
   const slots = def.data || [];
   const keyOf = (slot) => block.bind?.[slot] ?? slots.find((s) => s.slot === slot)?.default ?? slot;
   const data = {};
-  for (const s of slots) { const v = store.data[keyOf(s.slot)]; data[s.slot] = state === 'empty' ? emptyOf(v) : v; }
+  for (const s of slots) { const v = store.get(keyOf(s.slot)); data[s.slot] = state === 'empty' ? emptyOf(v) : v; }
   const setData = (slot, valOrFn) => store.setData(keyOf(slot), valOrFn);
   const props = { ...defaultProps(def), ...(block.props || {}) };
   const Render = def.render;
@@ -76,32 +77,38 @@ function Block({ block, store, ctx, forcedState }) {
 }
 
 // ------------------------------------------------------------- App-Shell ---
-function AppShell({ payload, bp, children }) {
-  if (!payload.chrome) return html`<div class="tk-bare">${children}</div>`;
-  const mods = (payload.modules || []).slice(0, 10);
-  const active = payload.module?.id;
-  const nav = (m) => () => { post({ type: 'interaction', event: 'nav.module', detail: { module: m.id } }); };
+// Generischer TAKT-App-Rahmen. Im Feature-Modus melden Klicks nur Events; im App-Modus (Demo-Launcher)
+// navigiert er wirklich (Module, Features eines Moduls, Zurück).
+function AppShell({ chrome, bp, modules = [], activeModule, title, moduleName, canBack, onBack, onNavModule, onMore, onTitle, sideFeatures, activeFeature, onFeature, onSearch, onBell, children }) {
+  if (!chrome) return html`<div class="tk-bare">${children}</div>`;
+  const mods = modules.slice(0, 12);
   document.documentElement.classList.toggle('tk-has-bottomnav', bp === 'mobile');
+  const titleBtn = (strong) => (onTitle
+    ? html`<button type="button" class="tk-app__titlebtn" onClick=${onTitle} aria-label=${`${title} – Bereiche des Moduls`}>${strong}<${Icon} name="chevron-down" size=${15} /></button>`
+    : strong);
+  const back = canBack && html`<button class="tk-btn tk-btn--ghost tk-btn--icon" aria-label="Zurück" onClick=${onBack} data-qa="app-back"><${Icon} name="arrow-left" /></button>`;
   if (bp === 'mobile') {
-    const bottom = mods.slice(0, 4); if (active && !bottom.find((m) => m.id === active) && payload.module) bottom[3] = payload.module;
+    const bottom = mods.slice(0, 4); const act = mods.find((m) => m.id === activeModule);
+    if (act && !bottom.find((m) => m.id === act.id)) bottom[3] = act;
     return html`<div class="tk-app tk-app--mobile">
-      <div class="tk-app__top"><div class="tk-app__crumb"><strong class="tk-truncate">${payload.feature?.name || payload.module?.name}</strong></div>
-        <button class="tk-btn tk-btn--ghost tk-btn--icon" aria-label="Suche"><${Icon} name="search" /></button>
-        <button class="tk-btn tk-btn--ghost tk-btn--icon" aria-label="Mitteilungen"><${Icon} name="bell" /></button></div>
+      <div class="tk-app__top">${back}<div class="tk-app__crumb">${titleBtn(html`<strong class="tk-truncate">${title || moduleName}</strong>`)}</div>
+        <button class="tk-btn tk-btn--ghost tk-btn--icon" aria-label="Suche" onClick=${onSearch} data-qa="app-search"><${Icon} name="search" /></button>
+        <button class="tk-btn tk-btn--ghost tk-btn--icon" aria-label="Mitteilungen" onClick=${onBell} data-qa="app-bell"><${Icon} name="bell" /></button></div>
       <main class="tk-app__content">${children}</main>
-      <nav class="tk-bottomnav" aria-label="Module">${bottom.map((m) => html`<button type="button" aria-current=${m.id === active ? 'page' : undefined} onClick=${nav(m)}><${Icon} name=${m.icon} size=${21} /><span>${m.name}</span></button>`)}
-        <button type="button" onClick=${() => post({ type: 'interaction', event: 'nav.more' })}><${Icon} name="menu" size=${21} /><span>Mehr</span></button></nav>
+      <nav class="tk-bottomnav" aria-label="Module">${bottom.map((m) => html`<button type="button" aria-current=${m.id === activeModule ? 'page' : undefined} onClick=${() => onNavModule && onNavModule(m.id)} data-nav-module=${m.id}><${Icon} name=${m.icon} size=${21} /><span>${m.name}</span></button>`)}
+        <button type="button" onClick=${onMore} data-nav-more><${Icon} name="menu" size=${21} /><span>Mehr</span></button></nav>
     </div>`;
   }
   return html`<div class=${`tk-app tk-app--${bp}`}>
     <nav class="tk-app__nav" aria-label="Module">
       <div class="tk-app__brand"><span class="tk-app__logo">T</span><span>TAKT</span></div>
-      <div class="tk-app__navlist">${mods.map((m) => html`<button type="button" class="tk-navitem" aria-current=${m.id === active ? 'page' : undefined} onClick=${nav(m)} title=${m.name}><${Icon} name=${m.icon} size=${bp === 'tablet' ? 20 : 18} /><span>${m.name}</span></button>`)}</div>
+      <div class="tk-app__navlist">${mods.map((m) => html`<button type="button" class="tk-navitem" aria-current=${m.id === activeModule ? 'page' : undefined} onClick=${() => onNavModule && onNavModule(m.id)} title=${m.name} data-nav-module=${m.id}><${Icon} name=${m.icon} size=${bp === 'tablet' ? 20 : 18} /><span>${m.name}</span></button>
+        ${bp === 'desktop' && m.id === activeModule && sideFeatures?.length > 1 && html`<div class="tk-navsub">${sideFeatures.map((f) => html`<button type="button" class="tk-navsub__item" aria-current=${f.id === activeFeature ? 'page' : undefined} onClick=${() => onFeature(f.id)}>${f.name}</button>`)}</div>`}`)}</div>
     </nav>
     <div class="tk-app__main">
-      <div class="tk-app__top"><div class="tk-app__crumb"><span>${payload.module?.name}</span><${Icon} name="chevron-right" size=${14} /><strong class="tk-truncate">${payload.feature?.name}</strong></div>
-        <button class="tk-btn tk-btn--ghost tk-btn--icon" aria-label="Suche"><${Icon} name="search" /></button>
-        <button class="tk-btn tk-btn--ghost tk-btn--icon" aria-label="Mitteilungen"><${Icon} name="bell" /></button>
+      <div class="tk-app__top">${back}<div class="tk-app__crumb"><span>${moduleName}</span><${Icon} name="chevron-right" size=${14} />${titleBtn(html`<strong class="tk-truncate">${title}</strong>`)}</div>
+        <button class="tk-btn tk-btn--ghost tk-btn--icon" aria-label="Suche" onClick=${onSearch} data-qa="app-search"><${Icon} name="search" /></button>
+        <button class="tk-btn tk-btn--ghost tk-btn--icon" aria-label="Mitteilungen" onClick=${onBell} data-qa="app-bell"><${Icon} name="bell" /></button>
         <span class="tk-avatar" style="width:30px;height:30px" aria-label="Profil"><${Icon} name="user" size=${16} /></span></div>
       <main class="tk-app__content">${children}</main>
     </div>
@@ -109,6 +116,17 @@ function AppShell({ payload, bp, children }) {
 }
 
 // ------------------------------------------------------- Dialog & Toast ---
+function useOverlays(emit) {
+  const [dialogs, setDialogs] = useState([]);
+  const [toasts, setToasts] = useState([]);
+  return {
+    dialogs, toasts,
+    openDialog: (d) => { const id = Math.random().toString(36).slice(2); setDialogs((ds) => [...ds, { ...d, id }]); emit('dialog.open', { title: d.title }); return id; },
+    toast: (text) => { const id = Math.random().toString(36).slice(2); setToasts((t) => [...t, { id, text }]); setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 2200); },
+    closeDialog: (id) => { setDialogs((ds) => ds.filter((d) => d.id !== id)); emit('dialog.close'); },
+  };
+}
+
 function Overlays({ dialogs, closeDialog, toasts }) {
   useEffect(() => {
     const onKey = (e) => { if (e.key === 'Escape' && dialogs.length) closeDialog(dialogs[dialogs.length - 1].id); };
@@ -123,47 +141,135 @@ function Overlays({ dialogs, closeDialog, toasts }) {
   <div class="tk-toasts" aria-live="polite">${toasts.map((t) => html`<div class="tk-toast" key=${t.id}><${Icon} name="check-circle-2" size=${16} />${t.text}</div>`)}</div>`;
 }
 
+// ------------------------------------------------------------- Screen ---
+// Ein Screen = eine Variante mit eigenen Vorschau-Daten und eigenem UI-Zustand.
+// cache (optional): Map, in der der Bedienzustand beim Navigieren erhalten bleibt (App-Modus).
+function Screen({ variant, demoData, cacheKey, cache, theme, today, forcedState, overlays, emit, bp, width, world, privacy, params }) {
+  const cached = cache && cache.get(cacheKey);
+  const [data, setDataState] = useState(() => cached?.data || clone(demoData || {}));
+  const [ui, setUiState] = useState(() => ({ ...(cached?.ui || {}), ...(params?.id != null ? { selectedId: params.id } : {}), ...(params?.ui || {}) }));
+  useEffect(() => { if (cache) cache.set(cacheKey, { data, ui }); }, [data, ui]);
+  // Datenschlüssel mit '@world:…' lesen/schreiben den gemeinsamen Weltzustand (modulübergreifend)
+  const store = {
+    get: (key) => { const v = data[key]; return isWorldRef(v) ? world?.data[worldKey(v)] : v; },
+    setData: (key, v) => {
+      if (isWorldRef(data[key]) && world) return world.setData(worldKey(data[key]), v);
+      setDataState((d) => ({ ...d, [key]: typeof v === 'function' ? v(d[key] ?? []) : v }));
+    },
+  };
+  const ctx = {
+    bp, width, theme, today: new Date(today || DEFAULT_TODAY), emit, ui, privacy: !!privacy,
+    setUi: (k, v) => setUiState((u) => ({ ...u, [k]: v })),
+    openDialog: overlays.openDialog, toast: overlays.toast,
+  };
+  return html`<div class="tk-screen"><${Layout} key=${variant.id} variant=${variant} bp=${bp} renderBlock=${(b) => html`<${Block} key=${b.id} block=${b} store=${store} ctx=${ctx} forcedState=${forcedState} />`} /></div>`;
+}
+
+/** Gemeinsamer Weltzustand (Persona-Daten), geteilt von allen Screens einer Vorschau. */
+function useWorld(initial) {
+  const [data, setData] = useState(() => clone(initial || {}));
+  return { data, setData: (key, v) => setData((d) => ({ ...d, [key]: typeof v === 'function' ? v(d[key] ?? []) : v })) };
+}
+
+const NoVariant = () => html`<div class="tk-state"><div class="tk-state__icon"><${Icon} name="palette" size=${22} /></div><div class="tk-state__title">Noch kein Design</div><div class="tk-state__text">Für dieses Feature gibt es noch keine Variante.</div></div>`;
+
+/** Skizze für Features ohne Variante – im Launcher läuft nichts ins Leere. */
+const SketchScreen = ({ feature }) => html`<div class="tk-screen tk-sketch" data-qa="sketch">
+  <div class="tk-sketch__badge"><${Icon} name="pencil" size=${13} />Skizze – noch kein Design</div>
+  <h1 class="tk-h1">${feature.name}</h1>${feature.purpose && html`<p class="tk-muted" style="margin-top:6px;max-width:640px">${feature.purpose}</p>`}
+  <div class="tk-sketch__grid">${(feature.requirements || []).map((r) => html`<div class="tk-sketch__card"><span class="tk-label">${{ info: 'Zeigt', action: 'Kann', state: 'Zustand', rule: 'Regel' }[r.type] || r.type}${r.priority === 'must' ? ' · Muss' : ''}</span><span>${r.text}</span><span class="tk-sketch__lines"><i></i><i></i></span></div>`)}
+    ${!(feature.requirements || []).length && html`<div class="tk-sketch__card"><span class="tk-label">Offen</span><span>Anforderungen noch nicht erfasst</span><span class="tk-sketch__lines"><i></i><i></i></span></div>`}</div></div>`;
+
 // ----------------------------------------------------------------- Root ---
 function PreviewRoot({ payload }) {
+  if (payload.mode === 'app') return html`<${AppPlayer} key=${`${payload.versionId}|${payload.revision || ''}`} payload=${payload} />`;
   // Daten/UI-Zustand werden zurückgesetzt, wenn Feature, Variante oder Demo-Daten wechseln –
-  // reine Layout-/Prop-Aenderungen (Design Studio) behalten den Bedienzustand.
+  // reine Layout-/Prop-Änderungen (Design Studio) behalten den Bedienzustand.
   const sig = `${payload.mode}|${payload.feature?.id}|${payload.variant?.id}|${payload.component?.id}|${JSON.stringify(payload.mode === 'component' ? payload.component?.data : payload.demoData)}`;
   return html`<${PreviewInner} key=${sig} payload=${payload} />`;
 }
 
 function PreviewInner({ payload }) {
   const { width, bp } = useViewport();
-  const [data, setDataState] = useState(() => clone((payload.mode === 'component' ? payload.component?.data : payload.demoData) || {}));
-  const [ui, setUiState] = useState({});
-  const [dialogs, setDialogs] = useState([]);
-  const [toasts, setToasts] = useState([]);
-
-  const store = { data, setData: (key, v) => setDataState((d) => ({ ...d, [key]: typeof v === 'function' ? v(d[key] ?? []) : v })) };
   const emit = useCallback((event, detail) => post({ type: 'interaction', event, detail: detail ?? null, ts: Date.now() }), []);
-  const ctx = {
-    bp, width, theme: payload.theme, today: new Date(payload.today || DEFAULT_TODAY),
-    emit, ui,
-    setUi: (k, v) => setUiState((u) => ({ ...u, [k]: v })),
-    openDialog: (d) => { const id = Math.random().toString(36).slice(2); setDialogs((ds) => [...ds, { ...d, id }]); emit('dialog.open', { title: d.title }); return id; },
-    toast: (text) => { const id = Math.random().toString(36).slice(2); setToasts((t) => [...t, { id, text }]); setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 2200); },
-  };
-  const closeDialog = (id) => { setDialogs((ds) => ds.filter((d) => d.id !== id)); emit('dialog.close'); };
-
+  const ov = useOverlays(emit);
+  const world = useWorld(payload.world);
   document.documentElement.setAttribute('data-tk-theme', payload.theme || 'graphite');
   let content;
   if (payload.mode === 'component') {
     const block = { id: 'preview', component: payload.component.id, props: payload.component.props || {} };
-    content = html`<${Block} block=${block} store=${store} ctx=${ctx} forcedState=${payload.state} />`;
-    content = html`<div class="tk-bare">${content}</div>`;
-  } else if (payload.variant) {
-    content = html`<${AppShell} payload=${payload} bp=${bp}>
-      <${Layout} key=${payload.variant.id} variant=${payload.variant} bp=${bp} renderBlock=${(b) => html`<${Block} key=${b.id} block=${b} store=${store} ctx=${ctx} forcedState=${payload.state} />`} />
-    <//>`;
+    const variant = { id: 'component', layout: { type: 'stack' }, blocks: [block] };
+    content = html`<div class="tk-bare"><${Screen} variant=${variant} demoData=${payload.component.data} theme=${payload.theme} today=${payload.today} forcedState=${payload.state} overlays=${ov} emit=${emit} bp=${bp} width=${width} /></div>`;
   } else {
-    content = html`<div class="tk-bare"><div class="tk-state"><div class="tk-state__title">Keine Variante</div><div class="tk-state__text">Dieses Feature hat noch keine Designvariante.</div></div></div>`;
+    const navEvt = (event, detail) => () => post({ type: 'interaction', event, detail });
+    content = html`<${AppShell} chrome=${payload.chrome} bp=${bp} modules=${payload.modules} activeModule=${payload.module?.id} moduleName=${payload.module?.name} title=${payload.feature?.name}
+        onNavModule=${(id) => navEvt('nav.module', { module: id })()} onMore=${navEvt('nav.more')}>
+      ${payload.variant ? html`<${Screen} variant=${payload.variant} demoData=${payload.demoData} theme=${payload.theme} today=${payload.today} forcedState=${payload.state} overlays=${ov} emit=${emit} bp=${bp} width=${width} world=${world} privacy=${payload.privacy} />` : html`<${NoVariant} />`}
+    <//>`;
   }
   const hl = payload.highlightBlock ? html`<style>[data-block-id="${payload.highlightBlock}"]{outline:2px dashed var(--tk-c-accent);outline-offset:4px;border-radius:6px}</style>` : null;
-  return html`${hl}${content}<${Overlays} dialogs=${dialogs} closeDialog=${closeDialog} toasts=${toasts} />`;
+  return html`${hl}${content}<${Overlays} dialogs=${ov.dialogs} closeDialog=${ov.closeDialog} toasts=${ov.toasts} />`;
+}
+
+// -------------------------------------------------------- App-Player ---
+// Ganze App klickbar (Demo-Launcher): Module, Features, Navigationsregeln, Zurück.
+let probePayload = null;
+let appNavigate = null;
+function AppPlayer({ payload }) {
+  const { width, bp } = useViewport();
+  const features = payload.features || {};
+  const start = features[payload.route] ? payload.route : features[payload.startFeatureId] ? payload.startFeatureId : Object.keys(features)[0];
+  const [stack, setStack] = useState([{ fid: start, params: null }]);
+  const cache = useRef(new Map()).current;
+  const world = useWorld(payload.world);
+  const top = stack[stack.length - 1];
+  const fid = top.fid;
+  const f = features[fid];
+  const mod = (payload.modules || []).find((m) => m.id === f?.moduleId);
+  const moduleFeatures = (payload.modules || []).length ? Object.values(features).filter((x) => x.moduleId === f?.moduleId) : [];
+
+  const go = (to, { replace = false, reset = false, params = null } = {}) => {
+    if (!features[to] || (to === fid && !params)) return;
+    if (params) cache.delete(`${to}|${JSON.stringify(params)}`);
+    const entry = { fid: to, params };
+    setStack((st) => (reset ? [entry] : replace ? [...st.slice(0, -1), entry] : [...st, entry]));
+  };
+  appNavigate = go;
+  const goModule = (mid) => { const m = (payload.modules || []).find((x) => x.id === mid); if (m?.home) go(m.home, { reset: true }); };
+  const back = () => setStack((st) => (st.length > 1 ? st.slice(0, -1) : st));
+  const emit = useCallback((event, detail) => {
+    post({ type: 'interaction', event, detail: detail ?? null, ts: Date.now(), featureId: fid });
+    const rule = (features[fid]?.nav || []).find((r) => r.event === event);
+    if (rule && features[rule.to]) setTimeout(() => go(rule.to, { params: detail && (detail.id != null || detail.ui) ? { id: detail.id, ui: detail.ui } : null }), 60);
+  }, [fid]);
+  const ov = useOverlays(emit);
+
+  useEffect(() => {
+    probePayload = f ? { mode: 'feature', theme: payload.theme, state: payload.state, feature: { id: f.id, name: f.name }, variant: f.variant } : null;
+    post({ type: 'route', featureId: fid, moduleId: f?.moduleId, depth: stack.length, title: f?.name, sketch: !f?.variant });
+    document.querySelector('.tk-app__content')?.scrollTo?.(0, 0); window.scrollTo(0, 0);
+  }, [fid]);
+  useEffect(() => {
+    const onKey = (e) => { if ((e.key === 'Backspace' && !/input|textarea/i.test(document.activeElement?.tagName)) || (e.altKey && e.key === 'ArrowLeft')) back(); };
+    window.addEventListener('keydown', onKey); return () => window.removeEventListener('keydown', onKey);
+  }, []);
+  document.documentElement.setAttribute('data-tk-theme', payload.theme || 'graphite');
+
+  const groups = (list) => { const m = new Map(); for (const x of list) { const g = x.group || 'Allgemein'; if (!m.has(g)) m.set(g, []); m.get(g).push(x); } return [...m.entries()]; };
+  const featureSheet = () => ov.openDialog({ title: mod?.name || 'Bereiche', body: (close) => html`<div class="tk-sheetlist">${groups(moduleFeatures).map(([g, list]) => html`<div class="tk-label" style="margin:6px 0 2px">${g}</div>
+      ${list.map((x) => html`<button type="button" class="tk-sheetlist__item" aria-current=${x.id === fid ? 'page' : undefined} onClick=${() => { close(); go(x.id); }}>
+        <span class="tk-grow tk-truncate">${x.name}</span>${x.variant ? null : html`<span class="tk-subtle" style="font-size:var(--tk-fs-xs)">ohne Design</span>`}<${Icon} name="chevron-right" size=${15} /></button>`)}`)}</div>` });
+  const areas = [...new Set((payload.modules || []).map((m) => m.area || 'Weitere'))];
+  const moreSheet = () => ov.openDialog({ title: 'Alle Module', body: (close) => html`${areas.map((a) => html`<div class="tk-label" style="margin:4px 0 6px">${a}</div><div class="tk-modgrid" style="margin-bottom:10px">${(payload.modules || []).filter((m) => (m.area || 'Weitere') === a).map((m) => html`<button type="button" class="tk-modgrid__item" aria-current=${m.id === f?.moduleId ? 'page' : undefined} onClick=${() => { close(); goModule(m.id); }}>
+      <span class="tk-modgrid__icon"><${Icon} name=${m.icon} size=${22} /></span><span class="tk-truncate" style="max-width:100%">${m.name}</span></button>`)}</div>`)}` });
+
+  const navModules = payload.favorites?.length ? [...payload.favorites.map((id) => payload.modules.find((m) => m.id === id)).filter(Boolean), ...payload.modules.filter((m) => !payload.favorites.includes(m.id))] : payload.modules;
+  return html`<${AppShell} chrome=${payload.chrome !== false} bp=${bp} modules=${navModules} activeModule=${f?.moduleId} moduleName=${mod?.name} title=${f?.name}
+      canBack=${stack.length > 1} onBack=${back} onNavModule=${goModule} onMore=${moreSheet} onTitle=${moduleFeatures.length > 1 ? featureSheet : null}
+      sideFeatures=${moduleFeatures.filter((x) => x.variant)} activeFeature=${fid} onFeature=${(id) => go(id)}
+      onSearch=${() => (features['system.search'] ? go('system.search') : ov.toast('Globale Suche – noch kein Design'))} onBell=${() => (features['system.notifications'] ? go('system.notifications') : ov.toast('Mitteilungen – noch kein Design'))}>
+    ${f?.variant ? html`<${Screen} key=${`${fid}|${JSON.stringify(top.params)}`} cacheKey=${`${fid}|${JSON.stringify(top.params)}`} cache=${cache} variant=${f.variant} demoData=${f.demoData} theme=${payload.theme} today=${payload.today} forcedState=${payload.state} overlays=${ov} emit=${emit} bp=${bp} width=${width} world=${world} privacy=${payload.privacy} params=${top.params} />` : f ? html`<${SketchScreen} feature=${f} />` : html`<${NoVariant} />`}
+  <//><${Overlays} dialogs=${ov.dialogs} closeDialog=${ov.closeDialog} toasts=${ov.toasts} />`;
 }
 
 // ------------------------------------------------------------------ API ---
@@ -171,16 +277,17 @@ let current = null;
 const mount = document.getElementById('preview-root');
 function renderPayload(payload) {
   current = payload;
+  probePayload = payload.mode === 'app' ? probePayload : payload;
   render(html`<${PreviewRoot} payload=${payload} />`, mount);
   document.body.dataset.ready = 'true';
 }
-window.__taktPreview = { render: renderPayload, get payload() { return current; } };
+window.__taktPreview = { render: renderPayload, get payload() { return current; }, navigate: (fid) => appNavigate && appNavigate(fid) };
 window.__taktQA = {
   run: async () => {
     // rAF kann in verdeckten Frames gedrosselt sein -> mit Timeout absichern
     await Promise.race([new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))), new Promise((r) => setTimeout(r, 150))]);
     await new Promise((r) => setTimeout(r, 60));
-    return runProbe({ payload: current, errors: runtimeErrors.slice() });
+    return runProbe({ payload: probePayload || current, errors: runtimeErrors.slice() });
   },
 };
 // Design Studio: Alt+Klick auf einen Block wählt ihn im Editor aus.
@@ -195,10 +302,11 @@ window.addEventListener('message', (e) => { if (e.data?.target === 'takt-preview
 
 // Eigenständiger Modus (URL-Parameter) – für CLI-QA, Direktlinks, echte Geräte im WLAN.
 const params = new URLSearchParams(location.search);
-if (params.get('feature') || params.get('component')) {
-  import('../core/preview-payload.js').then(async ({ loadStateStandalone, buildFeaturePayload, buildComponentPayload }) => {
+if (params.get('feature') || params.get('component') || params.get('app')) {
+  import('../core/preview-payload.js').then(async ({ loadStateStandalone, buildFeaturePayload, buildComponentPayload, buildAppPayload }) => {
     const opts = { theme: params.get('theme') || undefined, state: params.get('state') || 'default', chrome: params.get('chrome') !== '0' };
     if (params.get('component')) return renderPayload(buildComponentPayload(params.get('component'), opts));
+    if (params.get('app')) { const st = await loadStateStandalone(); return renderPayload(buildAppPayload(st, params.get('version') || 'arbeitsstand', { ...opts, route: params.get('feature') || undefined })); }
     const state = await loadStateStandalone();
     renderPayload(buildFeaturePayload(state, params.get('feature'), params.get('variant'), opts));
   }).catch((err) => { document.body.dataset.ready = 'error'; mount.textContent = 'Preview-Fehler: ' + err.message; console.error(err); });

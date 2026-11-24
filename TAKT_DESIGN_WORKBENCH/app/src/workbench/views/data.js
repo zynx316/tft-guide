@@ -8,6 +8,7 @@ import { actions, exportState, persistence } from '../store.js';
 import { inspectImport, SCHEMA_VERSION } from '../../core/schema.js';
 import { SEED_VERSION } from '../../seed/index.js';
 import { tokensJson } from '../../design-system/tokens.js';
+import { tokensToDart } from '../../core/flutter.js';
 import { download, fmt } from '../../lib/util.js';
 
 function importDialog(obj, source) {
@@ -46,7 +47,8 @@ export function DataView({ state }) {
       <${Card} title="Export" icon="download">
         <p class="wb-small wb-muted">Vollständiger Stand (Module, Features, Varianten, Versionen, Entscheidungen, QA, Einstellungen) als JSON – für Backup, Weitergabe oder Übertragung auf einen anderen Rechner.</p>
         <div class="wb-col" style="gap:8px;margin-top:10px"><${Btn} variant="primary" icon="download" onClick=${() => download(`takt-workbench-${new Date().toISOString().slice(0, 10)}.json`, exportState())}>Workbench exportieren<//>
-          <${Btn} icon="swatch-book" onClick=${() => download('takt-design-tokens.json', JSON.stringify(tokensJson(), null, 2))}>Design-Tokens exportieren<//></div><//>
+          <${Btn} icon="swatch-book" onClick=${() => download('takt-design-tokens.json', JSON.stringify(tokensJson(), null, 2))}>Design-Tokens exportieren (JSON)<//>
+          <${Btn} icon="code" onClick=${() => download('takt_tokens.dart', tokensToDart(), 'text/plain')}>Flutter-Tokens exportieren (Dart)<//></div><//>
       <${Card} title="Import" icon="upload">
         <p class="wb-small wb-muted">Export-Datei einlesen. Vor dem Ersetzen wird geprüft und automatisch eine Sicherung des aktuellen Stands heruntergeladen.</p>
         <label class="wb-btn" style="margin-top:10px;width:100%"><${Icon} name="upload" size=${16} />Datei wählen …<input type="file" accept="application/json,.json" style="display:none" onChange=${onFile} data-qa="import-input" /></label><//>

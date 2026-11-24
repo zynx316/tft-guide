@@ -59,6 +59,12 @@ export function Dashboard({ state }) {
       <${Kpi} label="Freigegeben" icon="badge-check" tone="success" value=${released.length} foot=${`${openDec.length} offene Entscheidungen`} onClick=${() => (location.hash = '#/versions')} />
     </div>
 
+    <a class="wb-card wb-card--hover" href="#/decide" style="display:flex;align-items:center;gap:16px;padding:16px 18px;color:inherit;text-decoration:none;background:linear-gradient(120deg, var(--wb-accent-soft), transparent 70%)">
+      <span style="width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:var(--wb-accent);color:var(--wb-on-accent);flex:none"><${Icon} name="smartphone" size=${22} /></span>
+      <div class="wb-grow"><div style="font-weight:650;font-size:15px">Demo-Launcher: die ganze App in ${state.directions.length} Versionen</div>
+        <div class="wb-small wb-muted">Auf dem Laptop nebeneinander oder auf dem Handy klicken, bewerten, Ebene für Ebene entscheiden.${state.app.directionId ? ` App-Richtung: ${state.directions.find((d) => d.id === state.app.directionId)?.name}.` : ' App-Richtung noch offen.'}</div></div>
+      <span class="wb-btn wb-btn--primary" onClick=${(e) => { e.preventDefault(); window.open('./launcher.html', '_blank'); }}><${Icon} name="external-link" size=${15} />Öffnen</span></a>
+
     <${Card} title="Fortschritt nach Status" icon="activity" actions=${html`<span class="wb-small wb-subtle">${fs.length} Features</span>`}><${StatusPipeline} features=${fs} height=${12} legend /><//>
 
     <div class="wb-grid" style="grid-template-columns:minmax(0,1.35fr) minmax(0,1fr)">

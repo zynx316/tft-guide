@@ -1,0 +1,337 @@
+{
+ "summary": "Der Demo-Launcher sollte kein neuer Technologie-Stack sein, sondern ein weiterer Player auf derselben Preview-Runtime (Preact/htm, 45 Komponenten, Tokens, deterministisches ctx.today). Das ist die einzige Option, die hier ohne Flutter-SDK baubar, per Playwright prüfbar und auf Handy und Laptop identisch lauffähig ist. Flutter Web würde alle 45 Komponenten in Dart duplizieren und die deklarativen Varianten aushebeln. Electron/Tauri lösen nur den Laptop-Fall, nicht den mobilen. Capacitor/TWA ist später als APK-Hülle um dieselbe PWA denkbar. Im Arbeitsbaum existieren bereits ein Rohbau (AppPlayer in runtime.js, buildAppPayload, directions.js, /api/network, /api/feedback, qrcode-Vendor, launcher/devices.js). Es fehlen aber die Launcher-Oberfläche selbst und mehrere Dinge, die aus einer „Vorschau mit Link“ eine glaubwürdige App machen: Der Navigationsgraph im Seed ist leer (keine einzige Interaktion hat ein `to`), der Stack hat keine History oder Deep-Links, `emit` reicht kein Detail (welche Aufgabe wurde getippt) an das Ziel weiter, und es gibt keine Safe-Area, keine Übergänge und pro Modul keinen eigenen Navigationsstapel. Dazu kommt: 21 von 60 Features haben noch keine Variante, und die Richtungen sind dünn belegt (kompakt 22, fokus 13, visuell 8, ohne Richtung 14 von 57 Varianten). Eine Version „Visuell“ besteht deshalb heute überwiegend aus Fallbacks. Den größten Hebel für „entscheiden können“ bieten daher (1) Skizzen-Screens, damit nichts ins Leere läuft, (2) eine ehrliche Abdeckungsanzeige, (3) der Schnellwechsel der Version mit Routen-Erhalt auf dem Handy und (4) eine Entscheidungs-Pipeline, die Bewertungen als Eingang entgegennimmt und die Workbench-Sperrlogik respektiert. Auf dem echten Handy gilt: Über http im LAN gibt es keinen Service Worker, weil die Adresse kein Secure Context ist. Praktikable Wege sind `adb reverse` (localhost am Handy), ein statisches Export-Paket auf HTTPS-Hosting oder ein Tunnel. Das muss ehrlich dokumentiert und im Launcher erklärt werden.",
+ "ideas": [
+  {
+   "title": "Launcher-Shell „Bühne“ (launcher.html) mit Versionswahl und Gerätrahmen",
+   "level": "launcher",
+   "area": "Demo-Launcher",
+   "description": "Eigener Einstieg app/launcher.html mit Code unter app/src/launcher/. Er läuft ohne die Workbench-Shell und lädt den Zustand wie die Vorschau über /api/state, mit Fallback auf Browser-Speicher oder Seed (loadStateStandalone). Die Seite hat zwei Layouts. Auf dem Laptop (breit) gibt es oben eine Werkzeugleiste (Version, Gerät, Hoch/Quer, Theme, Zustand, Sync, Vollbild), mittig die Bühne mit 1 bis 3 Telefonrahmen und rechts ein einklappbares Entscheidungspanel. Auf dem Handy (schmal) zeigt der Launcher eine Startseite mit Versionskarten (Name, Claim, Abdeckung, kleine Live-Vorschau als skaliertes, nicht klickbares iframe) und füllt nach „Öffnen“ den ganzen Viewport mit der App. Jede Version bekommt ihren eigenen iframe auf preview.html (mode:'app'), kein verschachtelter Player. Der Rahmen (Statusleiste mit Uhrzeit aus ctx.today, Notch/Island/Punch-Hole, Home-Indicator, Eckenradius) liegt außerhalb des iframes und nutzt die vorhandene launcher/devices.js. Das Layout der Rahmen übernimmt die Skalierlogik von PreviewFrame. Workbench-Einstieg: neuer Nav-Punkt „Demo“ (#/demo), der denselben Launcher einbettet, plus eine Karte auf der Übersicht.",
+   "why": "Das ist der Kern des Nutzerwunschs („Demo Launcher, nur mobiler, in diversen Versionen auf dem Laptop ansehen, dann entscheiden“). Ohne eigene Oberfläche bleibt der AppPlayer ein Link ohne Auswahl, Rahmen und Entscheidungsweg.",
+   "priority": "P0",
+   "effort": "L",
+   "acceptance": "launcher.html öffnet auf 1440 px Breite mit drei Versionskarten (Kompakt, Visuell, Fokus) plus Arbeitsstand und Freigabe. Ein Klick zeigt die App im Telefonrahmen (iPhone 15, Pixel 8, Galaxy kompakt, iPhone SE wählbar). Bei 390 px Breite füllt die App den Viewport ohne Rahmen. Der Rahmen enthält keine Hex-Farben aus Komponenten, und die Statusleiste zeigt 09:30."
+  },
+  {
+   "title": "AppPlayer-Navigation ausbauen: History, Deep-Links, Tab-Stapel, Parameterübergabe, Dialog-zuerst-Zurück",
+   "level": "technik",
+   "area": "Preview-Runtime (runtime.js)",
+   "description": "Der Stack in AppPlayer liegt nur im Speicher. Nötig sind fünf Dinge. (1) Hash-/History-Sync: Jede Route erzeugt einen history.pushState-Eintrag (#/tasks.detail?id=t7). Das Android-Zurück des Browsers und Reload-Treue funktionieren dann, und die Route lässt sich als Deep-Link und QR teilen. (2) Pro Modul ein eigener Stapel wie bei echten Tab-Apps: Ein Wechsel über die Bottom-Navigation behält den Stapel, ein erneutes Tippen auf den aktiven Tab springt zur Modul-Startseite (heute resettet goModule immer). (3) Parameterübergabe: Navigationsregeln bekommen `carry` (z. B. { event:'task.open', to:'tasks.detail', carry:{ id:'selectedId' } }). emit(event, detail) setzt beim Ziel ctx.ui.selectedId aus detail.id. Sonst öffnet jede Detail-Seite nur die Standardzeile. (4) Zurück-Reihenfolge: offenes Sheet oder Dialog schließen, dann Stapel poppen. Außerdem Rand-Wisch-Geste (Touch ab ≤ 20 px vom linken Rand, dx > 70) und Alt+← statt Backspace als Tastaturzurück. (5) Ping-Pong A→B→A→B poppt zurück auf die vorhandene Instanz statt zu wachsen. Der Screen-Cache wird mit versionId präfixiert, sonst leckt der Bedienzustand zwischen Versionen.",
+   "why": "Ohne diese Punkte fühlt sich der Prototyp wie eine Seitenfolge an und nicht wie eine App. Auf dem echten Handy würde die Zurück-Taste die Demo verlassen, und „Aufgabe antippen“ würde die falsche Aufgabe zeigen.",
+   "priority": "P0",
+   "effort": "L",
+   "acceptance": "E2E-Test: Start → Aufgabe t7 antippen → Detail zeigt t7 → Browser-Zurück → Start. Reload auf #/tasks.detail?id=t7 öffnet dieselbe Aufgabe. Tab-Wechsel Aufgaben→Kalender→Aufgaben behält Scroll und Filter. Ein offener Dialog wird per Zurück zuerst geschlossen. Edge-Swipe geht im Playwright-Touch-Test zurück."
+  },
+  {
+   "title": "Navigationsgraph im Seed anlegen und per Check absichern",
+   "level": "modul",
+   "area": "Seed & Navigation",
+   "description": "Im Seed hat keine Interaktion ein `to`, deshalb sind alle Navigationsregeln leer. Es braucht eine Link-Landkarte, die die vorhandenen Events nutzt: metric.open → Modul-Startseiten, event.open (Start/Agenda) → calendar.day, task.open → tasks.detail (carry id), note.open → notes.editor, kb.related → knowledge.article, transaction.open → finance.accounts, position.open → trading.detail, weather.day → weather.hourly, ocr.save-note → notes.editor, workout.finish → fitness.progress. Dazu kommen modulübergreifende Sprünge (Kalender-Aufgabe → Aufgaben-Detail, Sales-Bestellung → Finanz-Buchung, Notiz-Checkliste → Aufgabe). `tools/check.mjs` prüft: kein totes `to` (Ziel existiert), jedes Feature mit Variante ist vom Start in ≤ 3 Taps erreichbar (BFS über Nav-Regeln und Modul-Hub), und jede Regel zeigt auf ein Event, das mindestens eine Komponente der Variante auch emittiert. In der Workbench (Tab „Interaktionen“) gibt es ein Zielfeld mit Feature-Auswahl und eine kleine Graphansicht.",
+   "why": "Die ganze App ist nur klickbar, wenn die Wege definiert sind. Der Check verhindert Sackgassen, die in einer Demo sofort auffallen. Der Graph liefert später auch die Routen für die Flutter-Umsetzung.",
+   "priority": "P0",
+   "effort": "M",
+   "acceptance": "Mindestens 35 Nav-Regeln im Seed. `npm run check` meldet 0 tote Ziele und 0 unerreichbare Features. Vom Start sind alle 39 Features mit Variante in ≤ 3 Taps erreichbar. Der E2E-Pfad Start→Aufgabe→Detail→Kalender funktioniert."
+  },
+  {
+   "title": "Persona „Ein Tag“: eine Datenquelle für alle Module",
+   "level": "modul",
+   "area": "Demo-Daten",
+   "description": "Neue Datei seed/persona.js mit der Persona-Bibel (Name, Alter, Ort Bielefeld, Beruf Etsy/Shopify-Händler:in, Zielgewicht, Sparziele) und einem Referenztag (Di, 24.11.2026, 09:30). Daraus werden die Demo-Daten aller Module abgeleitet: Kalender-Termine, Aufgaben, Notizen, Wetter für Bielefeld, Konten und Buchungen, Depot-Positionen, Bestellungen, Training und Mahlzeiten. Heute sind Kennzahlen von Hand getippt und driften (Start sagt „5 Termine, 7 Aufgaben fällig“, Ausgaben 1.284 € erscheinen nur in Start und Sales, Oberkörper A taucht in Kalender, Fitness und Start getrennt auf). Die Kennzahlen der Start-Seite werden berechnet (count(termine heute), sum(ausgaben_nov)). Die Persona-Entscheidungen (Name, Branche, Geschlecht, Kontostände in plausibler Größenordnung) trifft der Nutzer, bis dahin gelten neutrale Platzhalter. tools/check.mjs bekommt einen Konsistenzcheck: Zahlen auf Start müssen den abgeleiteten Daten entsprechen, und Namen, Beträge und Orte dürfen nirgends widersprechen.",
+   "why": "Der Nutzer hat ausdrücklich „über Module hinweg konsistent, eine Persona, ein Tag“ verlangt. Mit widersprüchlichen Daten wirkt jede Version unglaubwürdig, und die Entscheidung fällt nach Daten statt nach Design.",
+   "priority": "P0",
+   "effort": "L",
+   "acceptance": "Jede Kennzahl der Start-Variante lässt sich auf Daten anderer Module zurückführen. Der Konsistenzcheck ist grün. Aufgaben/Termine/Beträge, die in zwei Modulen vorkommen, sind identisch. docs/PERSONA.md beschreibt den Tag stundenweise."
+  },
+  {
+   "title": "Versions-Schnellwechsel mit Routen-Erhalt (Demo-Griff am Handy, Tasten am Laptop)",
+   "level": "feature",
+   "area": "Demo-Launcher",
+   "description": "Auf dem Handy sitzt am rechten Rand ein halbtransparenter „Demo-Griff“ (28 px, vertikal verschiebbar). Ein Tippen öffnet ein Sheet mit Segment-Umschalter K | V | F (Kompakt, Visuell, Fokus), dazu Arbeitsstand und Freigabe, Theme, Zustand und Reset. Ein Tippen auf eine Version tauscht das Payload im selben iframe (window.__taktPreview.render) und ruft danach navigate(aktuelleRoute) auf. Man bleibt auf demselben Screen und sieht ihn in der anderen Version. Dafür darf AppPlayer beim Versionswechsel nicht remounten, denn heute ist der key `${versionId}|${revision}`. Er hält stattdessen den Stack, validiert ihn gegen die neuen features und fällt auf die Modul-Startseite zurück, wenn der Screen in der Zielversion fehlt. Am Laptop wechseln die Tasten 1/2/3 und ←/→ die Version, T das Theme, R dreht, F ist Vollbild. Im Rahmen blendet ein Mini-Badge kurz „Visuell · Fallback: Arbeitsstand“ ein, wenn der Screen keine eigene Variante hat.",
+   "why": "Der direkte A/B-Vergleich desselben Screens ist der Moment der Entscheidung. Er muss mit einem Tipp gehen, ohne dass man sich wieder bis zum Screen durchklickt.",
+   "priority": "P0",
+   "effort": "M",
+   "acceptance": "Auf iPhone-15-Rahmen und echtem 390-px-Viewport: In tasks.detail den Griff tippen, Version wechseln, tasks.detail bleibt aktiv, Filter und Scroll des Moduls bleiben erhalten (außer die Varianten sind strukturell verschieden). Wechsel < 300 ms ohne weißes Flackern."
+  },
+  {
+   "title": "Mehrere Versionen nebeneinander mit synchroner Navigation",
+   "level": "launcher",
+   "area": "Demo-Launcher",
+   "description": "Der Laptop-Modus zeigt 2 bis 3 Telefonrahmen mit je eigener Version (vorbelegt K/V/F). Ein Kettensymbol schaltet „Synchron navigieren“: Meldet ein iframe per postMessage {type:'route'} einen Screen-Wechsel (kommt bereits aus AppPlayer), ruft der Launcher in den anderen Frames __taktPreview.navigate(featureId) auf. Gleiche Logik für Theme, Zustand (Leer/Laden/Fehler) und Tageszeit. Optional spiegelt „Taps spiegeln“ Interaktionen (Event + Detail) in die anderen Frames. Ohne Sync ist jeder Frame frei bedienbar. Pro Frame zeigt die Kopfzeile Version, Claim, Abdeckung (z. B. 24/39 eigene Varianten) und Sterne. Der Launcher kann auch dieselbe Version in zwei Geräten zeigen (iPhone SE gegen Pixel 8), um Breitenprobleme zu sehen. Die Skalierung passt die Gruppe so an, dass alle Rahmen ohne Scrollen passen.",
+   "why": "„Mehrere Versionen nebeneinander auf dem Laptop“ ist ein ausdrücklicher Wunsch. Ohne Sync muss man dreimal dieselben Taps wiederholen.",
+   "priority": "P0",
+   "effort": "M",
+   "acceptance": "Mit Sync an führt ein Klick auf „Aufgaben“ im linken Frame in beiden anderen Frames zu tasks.overview. Ein Moduswechsel Hoch→Quer dreht alle Rahmen. Drei Frames laufen auf 1440×900 ohne spürbares Ruckeln (Interaktion < 100 ms)."
+  },
+  {
+   "title": "Entscheidungsmodus: Favorit, 1–5, Kommentar, „Diese Version nehmen“ → Feedback-Eingang → Entscheidungslog",
+   "level": "launcher",
+   "area": "Entscheidungsprozess",
+   "description": "Pro Frame und Ebene (App, Modul, Feature) gibt es ein Panel mit Favorit-Herz, 1–5 Sternen, Kommentar (Text, Diktat über Tastatur) und dem Knopf „Diese Version nehmen“. Der Launcher schickt Einträge an POST /api/feedback (existiert; auf dem Handy auch im LAN erlaubt, append-only). Neue Felder: stateRev, buildId, route, variantId, theme, state, rater (Nutzer-Kürzel), offline-id. Die Server-Whitelist wird entsprechend erweitert. Auf dem Laptop innerhalb der Workbench ruft „Nehmen“ direkt actions.applyDirection(scope, id, directionId) auf, mit Begründung und Nachteilen aus dem Kommentarfeld. Das legt einen Eintrag im Entscheidungslog an, und gesperrte Features werden übersprungen und ausgewiesen. Auf dem Handy entsteht nur ein Feedback-Eintrag (status „neu“). Die Workbench holt neue Einträge beim Start und beim Fokuswechsel (GET /api/feedback → actions.importFeedback), zeigt ein Badge „3 neue Rückmeldungen vom Handy“ und bietet je Eintrag „Übernehmen / Verwerfen / Später“. Erst „Übernehmen“ schreibt die Entscheidung. Das vermeidet Schreibkonflikte (Revision/409) und hält die Sperrlogik zentral. Ist ein Ziel-Feature gesperrt, bietet der Dialog „Als offenen Vorschlag speichern“ oder „Neue Arbeitsversion anlegen“.",
+   "why": "Entscheiden ist das Ziel des Launchers. Die Pipeline muss die harten Regeln einhalten (Sperre, Revisionen, ein einziger Schreibweg) und trotzdem vom Handy aus funktionieren, wo der Server schreibgeschützt ist.",
+   "priority": "P0",
+   "effort": "L",
+   "acceptance": "Handy-Bewertung 4 Sterne + Kommentar erscheint in der Workbench als Eingang. Übernehmen erzeugt eine Entscheidung (level, Begründung, Alternativen) und stellt selectedVariantId um. Bei gesperrtem Feature kein stilles Überschreiben, sondern Hinweis. Doppelter Import derselben id erzeugt keinen zweiten Eintrag."
+  },
+  {
+   "title": "Version „Meine Auswahl“: Mischung aus Richtung je Modul und Einzelvarianten",
+   "level": "app",
+   "area": "Entscheidungsprozess",
+   "description": "Zu den festen Versionen (Arbeitsstand, 3 Richtungen, Freigabe) kommt „Meine Auswahl“ (mix). Sie löst je Feature die Variante in dieser Rangfolge auf: explizit gewähltes selectedVariantId, sonst Modul-Richtung (module.directionId), sonst App-Richtung (app.directionId), sonst Fallback auf den Arbeitsstand. So lässt sich „Finanzen in Fokus, Rest Kompakt“ erleben, bevor man es festlegt. resolveVariant bekommt diesen Zweig, listVersions den Eintrag. Der Launcher zeigt je Modul einen kleinen Richtungs-Chip, den man im Frame umschalten kann (setzt module.directionId als Entwurf, erst „Festlegen“ schreibt eine Entscheidung). Ebenfalls enthalten: `pin:<featureId>:<variantId>` als Pseudoversion für „diese eine Variante im Kontext der ganzen App ansehen“.",
+   "why": "Reale Entscheidungen sind selten „alles Kompakt“. Ohne Mischversion kann man das Ergebnis der Ebene-für-Ebene-Entscheidung nie als Ganzes ansehen.",
+   "priority": "P0",
+   "effort": "M",
+   "acceptance": "Modul-Richtung Finanzen=fokus, App=kompakt ergibt im Player Finanzen-Screens mit Richtung fokus (soweit vorhanden) und überall sonst kompakt. Die Abdeckungsanzeige weist Fallbacks aus. Der Stand überlebt Reload."
+  },
+  {
+   "title": "Skizzen-Screens für Features ohne Variante (nichts läuft ins Leere)",
+   "level": "komponente",
+   "area": "Preview-Runtime",
+   "description": "21 von 60 Features haben keine Variante und zeigen heute „Noch kein Design“. Das ist in einer klickbaren Demo eine Sackgasse. Neue generische Runtime-Ansicht „Skizze“, automatisch aus den Feature-Daten erzeugt: Name und Zweck als Kopf, die Muss-/Soll-Anforderungen als abgeschwächte Platzhalterblöcke (graue Zeilen, Chips nach Typ info/action/state/rule), Interaktionen als Liste „Wird später: …“. Ein deutlicher Streifen „Skizze – noch nicht entworfen“ und ein Knopf „Entwurf starten“ (öffnet in der Workbench das Design Studio, nur im Laptop-Modus). Skizzen zählen in der Abdeckung nicht als eigene Variante. Per Schalter in der Demo-Leiste ausblendbar (dann Hinweis-Karte).",
+   "why": "Die ganze App soll Modul für Modul klickbar sein, auch wenn nicht alles entworfen ist. So bleibt der Fluss intakt, und fehlendes Design ist sofort sichtbar, statt zu verwirren.",
+   "priority": "P0",
+   "effort": "S",
+   "acceptance": "Alle 60 Features sind erreichbar. Ein Feature ohne Variante zeigt Skizze mit ≥ 3 Platzhalterzeilen aus seinen Anforderungen. QA-Sonde markiert Skizzen nicht als Fehler, aber als „Skizze“."
+  },
+  {
+   "title": "Modul-Startseiten (Ebene 1) und Modul-Hub",
+   "level": "modul",
+   "area": "Navigation & Informationsarchitektur",
+   "description": "moduleHome() wählt heute einfach das erste Feature. Ebene 1 braucht eine echte Modul-Startseite. Neuer Route-Typ `module:<id>` im AppPlayer mit einer generischen, aus den Daten erzeugten Hub-Ansicht: Modulkopf (Icon, Zweck, Status), 2–4 Kennzahlen (aus Persona-Daten oder module.hubMetrics), die Features nach `group` als Kacheln oder Liste (je Richtung anders), Schnellaktionen („Neue Aufgabe“, „Neue Notiz“). Ist module.homeFeatureId gesetzt, dient dieses Feature als Start, und der Hub bleibt über den Titel-Dropdown erreichbar (ersetzt featureSheet). Module ohne Features zeigen Hub mit Skizzenhinweis. Der Hub ist selbst Teil der Entscheidung auf Ebene 1 (Liste / Kacheln / Dashboard).",
+   "why": "„Modul für Modul, Ebene für Ebene“ verlangt, dass ein Modul einen eigenen Einstiegspunkt hat. Heute landet man im Modul auf einem willkürlichen Detail-Screen.",
+   "priority": "P0",
+   "effort": "M",
+   "acceptance": "Antippen eines Moduls (Bottom-Nav oder Mehr-Raster) öffnet den Hub mit Kennzahlen und Feature-Kacheln. Von dort ≤ 1 Tap zu jedem Feature. Modul-Hub existiert für alle 12 Module."
+  },
+  {
+   "title": "Safe-Area, Höhenklassen, Quermodus und Übergänge in der Runtime",
+   "level": "technik",
+   "area": "Preview-Runtime (runtime.js, takt-base.css, layouts.js)",
+   "description": "Aktuell gibt es weder env(safe-area-inset-*) noch dvh. .tk-app nutzt min-height:100vh, und die Bottom-Navigation liegt auf dem Home-Indicator. Umsetzung: CSS-Variablen --tk-safe-top/right/bottom/left (Tokens), gesetzt per URL ?safe=47,0,34,0 oder postMessage vom Launcher. Auf dem echten Handy liest die Launcher-Shell env() über ein Probe-Element aus und reicht sie an den iframe durch, weil iframes env() nicht zuverlässig erben. Top-Bar, Bottom-Nav, bottom-Region, Toasts und Sheets rechnen mit den Insets. 100vh wird zu 100dvh. Neue Höhenklasse `hp-compact` (< 500 px, Querformat Handy): Bottom-Nav bleibt, Top-Bar schrumpft, Layouts nutzen 2 Spalten. Heute fällt ein Handy quer (844 px) in den Tablet-Zweig mit Rail. Übergänge: Push gleitet von rechts, Pop nach rechts, Modulwechsel Cross-Fade (View Transitions API in Chromium, sonst CSS-Animation per Klasse), Sheet fährt hoch. Alles unter prefers-reduced-motion deaktiviert und per Token (--tk-motion-*) gesteuert.",
+   "why": "Ohne Safe-Area ist die Demo auf einem echten iPhone/Pixel mit Gestenleiste oder Notch sichtbar kaputt (Nav unter der Leiste, Titel unter der Kamera). Übergänge machen den Unterschied zwischen „Webseite“ und „App-Gefühl“.",
+   "priority": "P0",
+   "effort": "M",
+   "acceptance": "Im iPhone-15-Rahmen liegt die Bottom-Nav oberhalb des Home-Indicators (34 px Inset), der Titel unter der Island. Quer 844×390 zeigt Bottom-Nav und keine Rail. Navigation animiert ≤ 250 ms. QA-Sonde: keine neuen Überlauf-Befunde, Pixel-Baselines bewusst neu gesetzt."
+  },
+  {
+   "title": "QR-Code „Auf dem Handy öffnen“ mit Netzwerkdiagnose und Deep-Link",
+   "level": "launcher",
+   "area": "Echtes Handy",
+   "description": "Dialog im Launcher und in der Workbench (nutzt /api/network und die vendorte qrcode.module.js). Er zeigt je LAN-Adresse einen QR-Code auf die aktuelle Konfiguration (launcher.html?version=dir:fokus&route=tasks.detail&theme=…), plus Kurzlink zum Kopieren. Er erkennt, wenn der Server nur an 127.0.0.1 gebunden ist (boundTo), und zeigt dann „Server läuft nur lokal – `npm run lan` starten“. Hinweise: Windows-Firewall (Privates Netzwerk erlauben), gleiches WLAN, VPN/Gastnetz stört. Erklärung des Secure-Context-Limits (kein Service Worker über http://192.168…). Alternativen: `adb reverse tcp:4317 tcp:4317` und am Handy http://localhost:4317 öffnen (Secure Context, PWA voll nutzbar), Export-Paket oder Tunnel. Ein Probe-Knopf „Erreichbarkeit prüfen“ lässt das Handy eine Test-URL laden (kleine /api/ping-Rückmeldung, die der Launcher am Laptop anzeigt). Optional PIN im Link (siehe Absicherung).",
+   "why": "„Auf dem echten Handy nutzbar“ scheitert in der Praxis an Netzwerkdetails. Ein Dialog, der den Grund nennt, spart Frust. Der Secure-Context-Hinweis verhindert falsche Erwartungen bei der Offline-Fähigkeit.",
+   "priority": "P0",
+   "effort": "M",
+   "acceptance": "Scannen des QR öffnet auf einem Handy im WLAN die gewählte Version und Route. Ist der Server lokal gebunden, steht der Hinweis mit dem Befehl. Der Dialog nennt die adb-reverse-Variante mit exakter Kommandozeile."
+  },
+  {
+   "title": "PWA-Hülle: Manifest aus Tokens, Icons, Service Worker mit Precache, Update-Toast",
+   "level": "technik",
+   "area": "PWA / Offline",
+   "description": "Dateien im App-Root (Scope „/“): manifest.webmanifest (name „TAKT Demo“, display standalone, orientation any, start_url launcher.html, theme_color/background_color vom Server aus tokens.js erzeugt, also keine zweite Farbquelle), Icons 192/512/maskable (tools/make-icons.mjs rastert die SVG per Playwright), apple-touch-icon, apple-mobile-web-app-meta, dynamisches <meta name=theme-color> beim Themewechsel. Server-MIME für .webmanifest ergänzen. sw.js: Precache der App-Shell über eine vom Server erzeugte Dateiliste mit Hash (/sw-manifest.json, aus der Verzeichnisstruktur und dem Importgraph). Cache-first für versionierte Module, network-first für /api/state mit Fallback auf einen gecachten Zustand. skipWaiting plus Hinweis „Neuer Stand verfügbar – neu laden“. Der SW wird nur auf Secure Context registriert und scheitert sonst still mit sichtbarem Status im Launcher („Offline nicht verfügbar: http im LAN“). Der Prozess Installierbarkeit (Chrome/Android) wird mit adb reverse oder dem Export-Paket getestet.",
+   "why": "Der Nutzer wünscht ausdrücklich installierbar und offline. Eine Demo auf dem Handy ohne Netz (Zug, Besprechung) ist ein Hauptanwendungsfall. Das Manifest aus den Tokens verhindert eine zweite Farbquelle.",
+   "priority": "P1",
+   "effort": "L",
+   "acceptance": "Auf localhost: Lighthouse/DevTools zeigt installierbar. Nach dem ersten Laden funktioniert die Demo mit setOffline(true) komplett (alle Module, Navigation). Der Update-Toast erscheint nach Seed-/Codeänderung. Auf http-LAN zeigt der Launcher einen klaren Hinweis statt eines Fehlers."
+  },
+  {
+   "title": "Statisches Demo-Paket exportieren (HTTPS-Hosting, Offline, Teilen)",
+   "level": "technik",
+   "area": "PWA / Offline",
+   "description": "`npm run demo:export` (tools/export-demo.mjs, ohne neue Abhängigkeiten) kopiert app/ nach dist/demo-<datum>/, backt den aktuellen Zustand als demo-state.json ein (Launcher liest ?src=baked), schreibt die Precache-Liste in den Service Worker und erzeugt eine ZIP-Datei. Der Ordner ist ohne Server lauffähig und lässt sich auf jedes statische HTTPS-Hosting legen (GitHub Pages, Netlify Drop, eigener Webspace), womit Service Worker und Installation auf dem Handy ohne Spezialweg funktionieren. Der Export enthält Stand-Stempel (Seed-Version, Revision, Zeit) und blendet Entscheidungs-Schreibwege auf Handy-Feedback (nur Export als Datei/Teilen-Dialog) um, weil es dort keinen Server gibt. Feedback wird dann lokal gesammelt und über „Rückmeldungen exportieren“ als JSON zurück in die Workbench importiert.",
+   "why": "Das ist der einfachste Weg zu einer echt installierbaren PWA, ohne dass der PC laufen muss. Er löst auch „dem Partner/Freund kurz zeigen“.",
+   "priority": "P1",
+   "effort": "M",
+   "acceptance": "dist/demo-… lässt sich mit einem beliebigen statischen Server (z. B. npx serve) öffnen und zeigt die App mit 12 Modulen. Der Export besteht den Importgraph-Check (keine fehlende Datei im Precache). Feedback-Export-JSON lässt sich in der Workbench importieren."
+  },
+  {
+   "title": "Stand-Stempel und Aktualitätsanzeige im Launcher",
+   "level": "launcher",
+   "area": "Echtes Handy",
+   "description": "Im Launcher (Fußzeile und Demo-Menü) steht dauerhaft „Stand: Rev 142 · Seed 2026-11-24.1 · Build a3f9 · 24.11. 09:30“ und im Rahmenkopf pro Version die Variantenquelle. Auf Handy und PWA wird beim Öffnen /api/state-Revision gegen die geladene verglichen. Bei Abweichung erscheint „Neuer Designstand – aktualisieren“. Der Stempel geht in jeden Feedback-Eintrag (stateRev, buildId), damit klar bleibt, auf welchen Designstand sich eine Bewertung bezog.",
+   "why": "Bei Caches, Offline-Betrieb und mehreren Geräten ist die häufigste Fehlerquelle bei Entscheidungen, dass man eine veraltete Version bewertet. Der Stempel macht Bewertungen nachvollziehbar.",
+   "priority": "P1",
+   "effort": "S",
+   "acceptance": "Nach Änderung einer Variante in der Workbench zeigt das Handy innerhalb 30 s oder beim nächsten Fokus den Aktualisieren-Hinweis. Feedback-Einträge enthalten stateRev und buildId."
+  },
+  {
+   "title": "Technologieentscheidung als ADR: HTML/PWA statt Flutter Web, Electron/Tauri, Capacitor",
+   "level": "prozess",
+   "area": "Technik & Dokumentation",
+   "description": "docs/ADR-001-demo-launcher.md mit Bewertungsmatrix. Gewählt: HTML/PWA auf der Preview-Runtime (läuft hier ohne SDK, 45 Komponenten und Tokens werden wiederverwendet, Playwright-prüfbar, auf Handy und Laptop identisch, installierbar). Verworfen: Flutter Web (kein SDK hier, 45 Komponenten doppelt in Dart, CanvasKit ~2 MB, deklarative Varianten und QA-Sonde gingen verloren; sinnvoll erst als späterer Abgleich zu Hause), Electron/Tauri (nur Laptop, löst den mobilen Fall nicht; Tauri braucht Rust-Toolchain, Electron ist schwer), Capacitor/TWA (später als APK-Hülle um dieselbe PWA, braucht Android-SDK/JDK und ist deshalb Hausaufgabe). Mit Kriterien (Aufwand, Treue zum echten Flutter-Gefühl, Offline, Wartung durch Claude, QA) und den bekannten Schwächen: Scroll-Physik, Ripple, Haptik, Schrift sind nicht Flutter-identisch (Gegenmaßnahme: Interaktionsspezifikation je Komponente, siehe Flutter-Export).",
+   "why": "Der Nutzer fragt nach Alternativen und einer Empfehlung. Die Entscheidung gehört in den Entscheidungslog der Workbench (Ebene Technik), damit sie nicht später aus Gewohnheit umgeworfen wird.",
+   "priority": "P1",
+   "effort": "S",
+   "acceptance": "ADR liegt unter docs/, ist als Entscheidung (status decided) im Seed oder Log vorhanden und nennt für jede Alternative ein K.-o.-Kriterium oder einen Anwendungsfall."
+  },
+  {
+   "title": "Versionsabdeckung transparent machen: Matrix Modul × Richtung und ehrliche Fallback-Anzeige",
+   "level": "qualitaet",
+   "area": "Entscheidungsprozess",
+   "description": "Heute besitzen kompakt 22, fokus 13 und visuell 8 von 57 Varianten, 14 haben keine Richtung. Eine Version „Visuell“ besteht deshalb überwiegend aus Fallbacks. versionCoverage existiert, wird aber nicht gezeigt. Der Launcher zeigt je Versionskarte „Eigene Varianten 8/39 – Rest vom Arbeitsstand“ und eine Matrix (Zeilen Module, Spalten Richtungen, Zellen eigen/Fallback/Skizze). Fallback-Screens bekommen im Entscheidungsmodus ein dezentes Etikett. Der Entscheidungsknopf einer Richtung ist gesperrt oder warnt, solange die Abdeckung < 60 % ist („Kann noch nicht fair verglichen werden“). Die Matrix führt direkt in das Design Studio, um die fehlende Richtungsvariante anzulegen (mit Vorlage „Variante aus anderer Richtung ableiten“).",
+   "why": "Ein Vergleich, der unbemerkt zu 80 % aus dem Arbeitsstand besteht, führt zu falschen Entscheidungen. Die Abdeckung ist zugleich die konkrete Arbeitsliste für „Richtung für Richtung ausbauen“.",
+   "priority": "P1",
+   "effort": "M",
+   "acceptance": "Versionskarten zeigen die Abdeckung. Matrix ist in Launcher und Workbench-Übersicht sichtbar. Bei < 60 % erscheint die Warnung vor „Richtung wählen“. Fallback-Etikett erscheint nur im Entscheidungsmodus."
+  },
+  {
+   "title": "Richtungen als Stilprofile und App-Shell-Varianten (Bottom-Tabs, Hub, Drawer)",
+   "level": "app",
+   "area": "Designsystem & Navigation",
+   "description": "directions.js kennt `nav:'bottom'` für alle drei Richtungen, es gibt nur eine Shell. Ebene 0 braucht echte Unterschiede. (a) Shell-Varianten als kleine austauschbare Komponenten in der Runtime: Bottom-Tabs (4–5 Favoriten + Mehr, Kompakt), Hub-Home (Raster aller Module als Startseite, Zurück-Pfeil statt Tabs, Visuell), Fokus-Shell (Tab „Heute“ plus zentraler Erfassen-Knopf, Module per Wisch/Sheet, Fokus). (b) Stilprofile als Token-Ebene in tokens.js (DIRECTION_TOKENS: Dichte 0,9/1/1,1, Eckenradius, Kartenstil, Listenhöhe), gesetzt als Klasse tk-dir-<id> auf html. Themes bleiben reine Farbe (DESIGN_SYSTEM-Regel), Richtungen dürfen Dichte und Form ändern. Dadurch unterscheiden sich Versionen auch dort, wo eine Variante fehlt. Die 4-Tab-Beschränkung (mods.slice(0,4)) wird durch eine konfigurierbare Favoritenreihenfolge ersetzt (app.navFavorites).",
+   "why": "Die erste und wichtigste Entscheidung („Welche Grundrichtung hat die App?“) hängt an Navigation und Grundhaltung, nicht an einzelnen Screens. Ohne Shell-Varianten sind die Versionen auf Ebene 0 kaum unterscheidbar.",
+   "priority": "P1",
+   "effort": "L",
+   "acceptance": "Die drei Versionen zeigen auf dem Startscreen drei erkennbar verschiedene Navigationskonzepte. Eine Tokenänderung an DIRECTION_TOKENS wirkt in allen Features. Kontrast-Audit und QA bleiben grün. Neue Tokens stehen nur in tokens.js."
+  },
+  {
+   "title": "Weltzustand: modulübergreifende Änderungen in der Demo (Aufgabe abhaken wirkt auf Start)",
+   "level": "technik",
+   "area": "Demo-Daten",
+   "description": "Jede Screen-Instanz klont heute ihre eigenen demoData. Abhaken in „Aufgaben“ ändert „Start“ nicht. Neu: ein Weltzustand-Store im AppPlayer mit Domänenschlüsseln aus der Persona (tasks, events, notes, accounts, positions, workouts, meals), den Blöcke über Bindungen wie `@world.tasks` nutzen können. Alte Schlüssel bleiben gültig, und der Seed wird schrittweise umgestellt. Änderungen schreiben in den Store, alle Screens sehen sie, und Kennzahlen (z. B. Start) werden abgeleitet. Der Zustand liegt je Version in sessionStorage/IndexedDB („Demo-Sitzung“) und wird bei „Demo zurücksetzen“ verworfen. Er ist nie Teil der Workbench-Daten (Sperrlogik/Undo unberührt). Der Reset steht im Demo-Menü und beim Erststart.",
+   "why": "Eine App-Demo, in der Aktionen keine Folgen in anderen Modulen haben, wirkt wie Einzelseiten. Gerade der Zusammenhang (Aufgabe, Kalender, Start, Fokus) ist der Mehrwert der All-in-one-App.",
+   "priority": "P1",
+   "effort": "L",
+   "acceptance": "Aufgabe in tasks.list abhaken → Zähler auf home.today sinkt, Kalender-Aufgabenmarker verschwindet. Reset stellt die Persona-Ausgangslage her. Keine Änderungen an data/workbench.json durch Demo-Interaktion."
+  },
+  {
+   "title": "Layout-Engine für App-Gefühl erweitern (Tab-Zustand, FAB-Region, Sheet, Collapse-Header)",
+   "level": "technik",
+   "area": "Preview-Runtime (layouts.js)",
+   "description": "layouts.js hält Tab- und Panel-Zustand lokal in useState. Beim Verlassen und Zurückkommen geht er verloren (nicht im Screen-Cache). Der Tab wandert nach ctx.ui.tab, panelOpen nach ctx.ui.panel. Neue Regionen: `fab` (schwebender Hauptknopf über der Bottom-Nav, auf Mobile verwendet von Fokus-Varianten) und `sheet` (Inhalt, der auf Mobile als Bottom-Sheet statt als Seitenspalte erscheint). Sticky/Collapse-Header (großer Titel schrumpft beim Scrollen) als optionales Layout-Feld `L.collapseHeader`. Pull-to-refresh-Geste ruft ctx.emit('refresh') und zeigt Toast. Die Regionen sind im Design Studio wählbar und in LAYOUT_TYPES dokumentiert. Bestehende Varianten ändern sich nicht (Standardwerte).",
+   "why": "Das deklarative Modell erlaubt heute keine typischen Mobile-Muster. Ohne sie sehen alle Varianten wie responsive Webseiten aus, und Entscheidungen zu „FAB oder Kopfzeilenaktion“ lassen sich nicht darstellen.",
+   "priority": "P1",
+   "effort": "M",
+   "acceptance": "Tab-Wechsel, Navigation weg und zurück bringt denselben Tab zurück. FAB-Region wird in allen 3 Themes ohne Überdeckung der Bottom-Nav gerendert. Pixel-Regression nur dort geändert, wo bewusst."
+  },
+  {
+   "title": "Payload verschlanken: Player lädt Zustand selbst, Workbench sendet nur Revisions-Ping",
+   "level": "technik",
+   "area": "Preview-Runtime / Performance",
+   "description": "buildAppPayload bündelt alle 60 Features mit Varianten und Demo-Daten. Das sind bei 3 Frames mehrfach ~0,9 MB, die PreviewFrame bei jeder Zustandsänderung per JSON.stringify vergleicht und per postMessage kopiert. Neu: Im App-Modus lädt der iframe den Zustand selbst (loadStateStandalone, wie schon im Standalone-Pfad vorgesehen) und baut das Payload lokal (buildAppPayload ist rein). Die Workbench schickt nur {versionId, rev, route, theme, state}. Ist rev neuer, lädt der Player nach (bei Server-Betrieb /api/state, sonst BroadcastChannel/storage-Event im selben Browser). Feature-Daten werden lazy je Route geladen. Die Vorschaukacheln im Launcher (Versionskarten) rendern ein Mini-Payload mit nur dem Startscreen.",
+   "why": "Drei Frames plus Workbench-Live-Updates sind sonst spürbar träge, und auf dem Handy kostet das Akku und Zeit beim Start. Dieselbe Mechanik trägt später das Aktualitäts-Update auf dem Handy.",
+   "priority": "P1",
+   "effort": "M",
+   "acceptance": "Zustandsänderung in der Workbench aktualisiert 3 Frames in < 300 ms ohne Verlust der Route. Messbar kleinere postMessage-Größe (< 5 kB). Startzeit Launcher auf 4×-CPU-Drosselung < 3 s bis zur interaktiven Startseite."
+  },
+  {
+   "title": "Präsentations- und Vollbildmodus mit Touch-Anzeige",
+   "level": "launcher",
+   "area": "Demo-Launcher",
+   "description": "Taste F oder Knopf blendet Werkzeugleiste und Panels aus, skaliert die Rahmen maximal und nutzt die Fullscreen-API. Auf dem Handy: Fullscreen, Wake-Lock (navigator.wakeLock), Orientierungssperre soweit der Browser sie erlaubt (nur im Vollbild/installiert) und Ausblenden der Adressleiste über Standalone-PWA. „Touch-Anzeige“ zeichnet am Mauszeiger einen Kreis (Finger), bei Klick eine Welle, damit Bildschirmaufnahmen und Vorführungen nachvollziehbar sind. Optional „Klick-Fokus“ dunkelt die Umgebung leicht ab. Escape und ein dezenter Touch-Bereich in der Ecke beenden den Modus. Reduced-Motion wird respektiert.",
+   "why": "Wunsch nach Präsentations- und Vollbildmodus. Beim Zeigen an Dritte oder beim Aufnehmen eines Videos für Rückmeldungen ist eine saubere Bühne entscheidend.",
+   "priority": "P1",
+   "effort": "S",
+   "acceptance": "F wechselt in Vollbild mit zentrierten Rahmen, Escape zurück. Touch-Anzeige sichtbar in Playwright-Screenshot. Wake-Lock aktiv, solange Präsentation läuft (Feature-Detect, Fallback ohne Fehler)."
+  },
+  {
+   "title": "Variante im App-Kontext testen (Studio-Knopf „In App ansehen“)",
+   "level": "feature",
+   "area": "Workbench-Integration",
+   "description": "Im Design Studio und im Vergleich bekommt jede Variante den Knopf „In App ansehen“. Er öffnet den Launcher mit Pseudoversion pin:<featureId>:<variantId>: gesamte App im Arbeitsstand, nur dieses Feature mit der gewählten Variante, Start direkt dort, Zurück-Navigation und Nachbarn funktionieren. Gleichfalls im Feature-Workspace „Übersicht“ ein „Auf dem Handy öffnen“ mit QR. Arbeitet der Nutzer im Studio, aktualisiert sich ein offener Launcher-Frame live (Revisions-Ping).",
+   "why": "Eine Variante, die allein gut aussieht, kann im App-Fluss (Navigation, Kontext, Übergänge) scheitern. Das verbindet Entwurf und Demo, ohne dass man erst Modul für Modul klickt.",
+   "priority": "P1",
+   "effort": "S",
+   "acceptance": "Knopf im Studio öffnet den Launcher direkt auf dem Screen, mit der gerade bearbeiteten Variante. Eine Änderung im Studio ist im Launcher innerhalb 1 s sichtbar, Route bleibt."
+  },
+  {
+   "title": "Absicherung des Handy-Feedbacks: PIN im Link, Ratenbegrenzung, Offline-Warteschlange",
+   "level": "technik",
+   "area": "Server & Sicherheit",
+   "description": "POST /api/feedback ist im LAN ohne Anmeldung offen und append-only. Das reicht für ein Heimnetz, aber nicht gegen versehentliche oder fremde Flut. Maßnahmen: optionaler PIN-Token (`npm run lan -- --pin 4711` oder zufällig beim Start, in QR/Link als ?k=…), Ratenbegrenzung (z. B. 60 Einträge/Min. je IP), Obergrenze der jsonl-Datei (z. B. 5 MB, rotieren), Feldvalidierung (Whitelist auch für neue Felder, Länge, Typen). GET /api/state im LAN bleibt lesend, bei PIN ebenfalls geschützt. Auf dem Handy fängt eine Offline-Warteschlange (IndexedDB) Einträge ab, wenn der Server nicht erreichbar ist, und sendet sie später mit idempotenter id (Server dedupliziert). Sichtbarer Status „3 Rückmeldungen warten“.",
+   "why": "Der LAN-Modus öffnet den Rechner im Netz. Die Ausnahme vom Schreibschutz muss eng, begrenzt und fehlertolerant sein. Wechselndes WLAN ist beim Testen mit dem Handy Alltag.",
+   "priority": "P1",
+   "effort": "M",
+   "acceptance": "Ohne korrekten Token liefert der Server 401. Mehr als 60 Anfragen/Min. liefern 429. Offline gespeicherte Einträge kommen nach Wiederverbindung genau einmal im jsonl an. Test für Größenlimit vorhanden."
+  },
+  {
+   "title": "Ebenen-Wizard „Entscheiden Schritt für Schritt“ (App → Modul → Feature → Komponente)",
+   "level": "prozess",
+   "area": "Entscheidungsprozess",
+   "description": "Geführter Pfad im Launcher und in der Workbench, der die Ebenenleiter aus directions.js (LEVELS) abarbeitet. Ebene 0: App-Richtung vergleichen (3 Frames, Startscreen und Navigation), „Nehmen“. Ebene 1: je Modul den Hub und das Home vergleichen, Richtung des Moduls festlegen oder erben. Ebene 2: je Feature in Kontext Varianten vergleichen (nur Features mit > 1 Variante, nach Wichtigkeit sortiert). Ebene 3: Komponenten-Auffälligkeiten sammeln (Notiz „Karte zu eng“ → Aufgabe an Library). Fortschrittsring je Ebene, „Offen/Entschieden/Übernommen“-Status, Zusammenfassung mit Wirkung („Entscheidung auf Ebene 0 stellt 22 Features um, 3 sind gesperrt“). Entscheidungen vererben Standardwerte nach unten, einzelne Abweichungen sind erlaubt und im Log als Ausnahme markiert.",
+   "why": "Der Nutzer will „Ebene für Ebene“ und am Ende „eins entscheiden“. Ohne Führung verliert man sich bei 60 Features in Einzelentscheidungen.",
+   "priority": "P1",
+   "effort": "L",
+   "acceptance": "Wizard zeigt je Ebene offene Entscheidungen mit Anzahl, führt mit „Weiter“ zur nächsten und schließt mit einer Übersicht aller gefallenen Entscheidungen inkl. Auswirkungen. Entscheidungslog enthält level je Eintrag."
+  },
+  {
+   "title": "Vergleichsblatt-Export (PNG/PDF) und Ansichts-Screenshots für den Austausch",
+   "level": "launcher",
+   "area": "Entscheidungsprozess",
+   "description": "`npm run demo:sheet -- --route tasks.overview --versions kompakt,visuell,fokus --device pixel-8 --theme graphite` (Playwright, im Projekt vorhanden) rendert denselben Screen je Version im Telefonrahmen, setzt sie nebeneinander mit Beschriftung (Version, Rev, Datum) und speichert PNG und PDF unter data/exports/. Im Launcher gibt es einen Knopf „Vergleichsblatt“ (ruft über den lokalen Server aus, nur localhost). Auf dem Handy bleibt der Systembutton Teilen für den Link. Ein Modulblatt fasst die Home-Screens aller Module je Version in einem Raster zusammen.",
+   "why": "Entscheidungen werden oft unterwegs oder mit anderen besprochen. Ein Bild je Version ist schneller geteilt als ein Link, und sie dokumentieren den Entscheidungsstand dauerhaft.",
+   "priority": "P2",
+   "effort": "M",
+   "acceptance": "Befehl erzeugt PNG mit 3 Rahmen und Beschriftung in < 20 s. Die Datei enthält Rev und Datum. Ohne installiertes Chromium kommt eine verständliche Fehlermeldung."
+  },
+  {
+   "title": "Szenario- und Tageszeit-Schalter („Ein Tag“ erleben)",
+   "level": "feature",
+   "area": "Demo-Daten",
+   "description": "Im Demo-Menü ein Zeitregler mit Stationen 07:30, 09:30, 12:30, 18:30, 21:00 und eine Szenarioauswahl: „Voller Alltag“, „Neustart (leer)“, „Stressiger Tag“, „Offline/Fehler“. Der Regler setzt payload.today, und Komponenten, die relativ zu ctx.today rechnen (nächster Termin, Begrüßung, „fällig heute“, Wetterstunde, Trainingszeit), verhalten sich passend. Das Szenario wählt einen Persona-Datensatz bzw. blendet Daten aus (Leerzustand). Zustände nutzen den vorhandenen forcedState. Im Sync-Modus gilt die Zeit für alle Frames.",
+   "why": "Die Stärken einer Richtung zeigen sich zu bestimmten Zeitpunkten (Fokus am Morgen, Kompakt im Stress, Visuell am Abend) und in Randzuständen. Ein fester Stichzeitpunkt verdeckt das.",
+   "priority": "P2",
+   "effort": "M",
+   "acceptance": "Wechsel auf 18:30 lässt Start „Training in 0 Min.“ zeigen und Kalender den Marker verschieben. Szenario „Neustart“ zeigt in allen Modulen sinnvolle Leerzustände ohne Fehler (QA-Sonde grün)."
+  },
+  {
+   "title": "Geführter Rundgang und Klickpfad-Aufzeichnung (wird zum E2E-Test)",
+   "level": "qualitaet",
+   "area": "QA & Demo",
+   "description": "feature.flows existiert im Schema ([{id,name,steps:[{featureId,action}]}]), wird aber nirgends genutzt. Der Launcher spielt Flows als Rundgang ab: Sprechblasen mit Text, Hervorhebung über das vorhandene highlightBlock, Weiter/Zurück, Fortschritt. Beispiele: „Morgenroutine“ (Start → Aufgaben → Kalender → Wetter), „Neue Notiz aus Foto“ (Picture to Text → Notizen). Im Aufzeichnungsmodus protokolliert der Launcher Taps (Block, Event, Ziel) und speichert sie als Flow. `qa/run-qa.mjs` führt gespeicherte Flows per Playwright aus und prüft, dass jeder Schritt erreichbar bleibt (Regression bei Änderungen an Komponenten oder Nav-Regeln).",
+   "why": "Löst TASKS §5 (Klickpfade aus Interaktionen), macht Demos wiederholbar und schützt den Navigationsgraph vor stillen Brüchen.",
+   "priority": "P2",
+   "effort": "L",
+   "acceptance": "Ein aufgezeichneter Flow mit 6 Schritten läuft im Rundgang und als CLI-Test (grün/rot). Wird eine Nav-Regel entfernt, schlägt der Test fehl und nennt den Schritt."
+  },
+  {
+   "title": "Aufgabenbasierter Versionsvergleich: Taps und Zeit je Szenario",
+   "level": "feature",
+   "area": "Entscheidungsprozess",
+   "description": "Der Launcher stellt Testaufgaben („Neue Aufgabe für morgen anlegen“, „Heutigen Termin verschieben“, „Wetter für Samstag finden“) und misst je Version Anzahl Taps, Zeit bis Ziel (Zielbedingung als Event, z. B. task.create), Fehltaps (Zurück ohne Ziel). Die Messwerte erscheinen im Entscheidungspanel als kleine Tabelle („Fokus 4 Taps/9 s, Kompakt 7 Taps/14 s“) und gehen mit dem Feedback in die Workbench. Die Aufgabenliste liegt je Feature als acceptance/flows und wird mit den Akzeptanzkriterien verknüpft.",
+   "why": "Subjektive Sterne täuschen. Eine einfache Messung („wie schnell erreiche ich X“) macht die Fokus-/Kompakt-Frage objektiver und füttert die Begründung der Entscheidung.",
+   "priority": "P2",
+   "effort": "M",
+   "acceptance": "Für 3 Testaufgaben liegen je Version Taps und Sekunden vor. Der Wert erscheint in der Entscheidung (Begründungstext oder Anhang). Messung lässt sich pro Aufgabe zurücksetzen."
+  },
+  {
+   "title": "Launcher-QA: E2E für App-Navigation, PWA-Check, Importgraph, Screenshot-Matrix",
+   "level": "qualitaet",
+   "area": "QA",
+   "description": "Erweiterung von qa/run-qa.mjs und tools/check.mjs. (1) E2E: App-Navigation (Start→Detail→Zurück, History, Tab-Stapel), Versionswechsel mit Routenerhalt, Sync von 2 Frames, Entscheidungs-Pipeline (Feedback → Import → Entscheidung, gesperrtes Feature wird übersprungen), Sperrregel. (2) check.mjs: Manifest-Pflichtfelder, Icons vorhanden, Service-Worker-Precache-Liste deckt den kompletten ES-Importgraph von launcher.html und preview.html ab (statisches Parsen von import/import()), tote Navigationsziele, Persona-Konsistenz. (3) PWA-Offline-Test: Playwright auf localhost, SW registrieren, setOffline(true), Navigation Start→3 Module. (4) Screenshot-Matrix: je Version × {iPhone 15, Pixel 8, SE} × Theme für Start und je Modul-Hub, getrennt von der Feature-Matrix, damit die Laufzeit begrenzt bleibt (--only launcher). Safe-Area-Fälle als eigene Prüfung der Sonde (Bottom-Nav überlappt keine Inset-Zone).",
+   "why": "CLAUDE.md verlangt `npm run check` und QA nach jeder Änderung. Der Launcher ist ein neuer Pfad mit eigenen Fehlerklassen (Cache, Offline, Routing), die die vorhandenen 24 E2E-Tests nicht abdecken.",
+   "priority": "P1",
+   "effort": "M",
+   "acceptance": "`npm run qa -- --only launcher` läuft in < 3 min und prüft ≥ 10 neue E2E-Fälle. `npm run check` meldet fehlende Precache-Dateien als Fehler. Offline-Test grün."
+  },
+  {
+   "title": "Navigationsgraph als Flutter-Spezifikation exportieren (Routen, Stapel, Übergänge)",
+   "level": "workbench",
+   "area": "Flutter-Überführung",
+   "description": "Aus Nav-Regeln, Modul-Homes und Shell-Wahl erzeugt ein Export „App-Navigation“ ein Markdown/JSON: Routentabelle (go_router-Pfade mit Parametern wie /tasks/:id), Tab-Struktur je Modul, Rückverhalten, Übergangsart, Safe-Area-Annahmen, Shell-Variante der gewählten Richtung. Ergänzt den vorhandenen Token-Export und ist Teil der Feature-Spezifikation aus TASKS §4. Die Interaktionsspezifikation (Wisch-Zurück, Sheet-Verhalten, Ripple) wird je Komponente beschrieben, damit die Flutter-Umsetzung das Verhalten der Demo trifft, auch wo Scroll-Physik/Haptik nicht simulierbar sind.",
+   "why": "Der Launcher ist nur wertvoll, wenn die Entscheidung in der echten App ankommt. Der Navigationsgraph ist das Bindeglied zwischen Demo und Flutter-Implementierung und nimmt die Hauptschwäche der HTML-Option (nicht Flutter-identisches Gefühl) ernst.",
+   "priority": "P2",
+   "effort": "M",
+   "acceptance": "Export zeigt für alle 39 Features mit Variante Route, Parameter und Ziele. Er ist deterministisch (gleicher Zustand, gleiche Datei) und nennt die gewählte Richtung je Modul."
+  },
+  {
+   "title": "APK-Hülle um die PWA (TWA/Capacitor) als Hausaufgabe dokumentieren",
+   "level": "technik",
+   "area": "Echtes Handy",
+   "description": "Docs-Abschnitt mit zwei Wegen für den eigenen Rechner (G:\\), die hier nicht bauen lassen, weil Android-SDK/JDK fehlen: (1) Bubblewrap/TWA mit gehostetem Export-Paket (HTTPS nötig), (2) Capacitor mit dem dist/demo-Ordner als webDir. Ergebnis wäre eine installierbare „TAKT Demo“-APK neben der echten App, vollständig offline. Enthält Checkliste (Paketname, Signierung, Icons aus make-icons, Startpfad launcher.html) und den Hinweis, dass das nur dann lohnt, wenn die PWA-Installation nicht reicht.",
+   "why": "Der Nutzer baut ohnehin APKs. Eine Demo-APK ist die robusteste Handy-Lösung ohne Server und ohne HTTPS, aber nur auf seinem Rechner erzeugbar. Dokumentation statt Code hält das Projekt abhängigkeitsfrei.",
+   "priority": "P3",
+   "effort": "S",
+   "acceptance": "docs/DEMO_APK.md beschreibt beide Wege Schritt für Schritt auf Windows/PowerShell, ohne dass im Repo neue Abhängigkeiten nötig werden."
+  }
+ ],
+ "risks": [
+  "Teilweise parallele Arbeit: AppPlayer, buildAppPayload, directions.js, /api/feedback, /api/network und launcher/devices.js sind im Arbeitsbaum schon uncommitted vorhanden. Ideen und Dateizuschnitt müssen mit diesem Stand abgeglichen werden, sonst entstehen doppelte oder widersprüchliche Implementierungen (z. B. zwei Gerätelisten: core/devices.js für QA, launcher/devices.js für den Launcher; die Listen dürfen nicht vermischt werden, sonst wachsen QA-Matrix und Feature-Viewports unbeabsichtigt).",
+  "Secure Context: Service Worker und Installierbarkeit funktionieren nicht über http://192.168.x.x. Ohne adb reverse, HTTPS-Hosting oder Tunnel gibt es auf dem Handy kein Offline. Der Launcher muss das offen anzeigen, damit „PWA fertig“ nicht als erreichbar gilt, obwohl es nur am Laptop (localhost) getestet wurde.",
+  "Fairness des Vergleichs: Mit 8/22/13 Varianten je Richtung und 21 Features ohne Variante besteht jede Version zu großen Teilen aus Fallback. Eine Entscheidung „Visuell gewinnt“ wäre ohne Abdeckungsanzeige und Schwelle eine Fehlentscheidung auf dünner Basis.",
+  "Schreibkonflikte und Sperrlogik: Das Handy darf nur anhängen (Feedback), sonst brechen Revisions-/409-Regeln und der Schutz freigegebener Features. Jede Abkürzung (direktes Schreiben in workbench.json oder selectedVariantId) verletzt CLAUDE.md Regel 3.",
+  "Aufwand und Reihenfolge: Safe-Area, Übergänge, Nav-Stapel und Weltzustand berühren runtime.js, takt-base.css und layouts.js und damit alle Pixel-Baselines. Änderungen sollten gebündelt und die Baselines bewusst neu gesetzt werden, sonst gelten die freigegebenen Features pixelweise als Regression.",
+  "Persona-Datenumbau betrifft die Seeds aller 12 Module. Bei Teil-Umstellung drohen Brüche in 57 Varianten (Bindungsschlüssel). Eine Migration mit Konsistenzcheck und stufenweises Umstellen (neue @world-Schlüssel neben alten) ist nötig, außerdem muss der Nutzer die Persona-Eckdaten bestätigen.",
+  "Payload- und Performance-Risiko: Drei iframes mit je dem ganzen Zustand (~0,9 MB) plus Live-Updates können auf Mittelklasse-Handys ruckeln. Messen und lazy laden, bevor weitere Funktionen hinzukommen.",
+  "Gefühlsunterschied HTML gegen Flutter: Scroll-Physik, Ripple, Haptik, Schriftdarstellung und Tastaturverhalten weichen ab. Die Demo darf Layout, Hierarchie und Navigation entscheiden, nicht Mikro-Interaktionen. Das gehört in die ADR und in die Flutter-Spezifikation.",
+  "Netz- und Sicherheitsfläche im LAN: Der Feedback-Endpunkt und der lesende Zustand sind im Heimnetz ohne Anmeldung erreichbar. Ohne PIN, Ratenbegrenzung und Größenlimit sind Missbrauch und volle Platte möglich. Die Workbench-Datei darf nie über den LAN-Modus beschreibbar werden.",
+  "Browserunterschiede: View Transitions, Wake-Lock, Fullscreen und Orientation-Lock sind je Browser/iOS eingeschränkt. Alles muss per Feature-Detect abgesichert sein und ohne sie ein brauchbares Verhalten bieten, außerdem ohne den Test auf iOS-Safari nicht als „geprüft“ gelten (nicht testbar in dieser Umgebung)."
+ ]
+}

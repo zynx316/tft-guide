@@ -1,0 +1,325 @@
+{
+ "summary": "Die Workbench ist als Werkzeug stark (Varianten, Sperre, QA), aber die App-Ebene fehlt fast vollständig. Belegt im Code: Die Vorschau-Shell (preview/runtime.js) zeigt per slice(0, 10) nur 10 Module, „Mehr“ in der Mobile-Navigation sendet nur ein Event, und Suche und Glocke sind Attrappen. „Start“ und „Einstellungen“ haben je ein einziges Feature. Kategorien (Kalender, Aufgaben, Notizen, Finanzen), Wiederholungen (calendar.recurrence und tasks.repeat, beide „Nicht untersucht“) und Alarme (weather.alerts, trading.alerts) sind je Modul getrennt gedacht. Demo-Daten sind von Hand kopiert und driften schon (Krafttraining am 5.11. im Kalender, heute in Start). Der Nutzerwert einer All-in-one-App entsteht aber in den Querschnittsabläufen: erfassen, finden, erinnern, zurückblicken. Dafür braucht es zuerst die App-Ebene (Navigation für 20+ Module, Gesamtkonzepte zum Vergleichen und Entscheiden, Ebenenmodell, gemeinsame Persona-Datenwelt) und danach die fehlenden Alltagsmodule: Ernährung, Sparen, Gewohnheiten, Ziele, Dokumente und Verträge, Haushalt und Einkauf, Kontakte, Zeit und Fokus, Journal. Persona ist ein deutschsprachiger Selbstständiger mit Online-Handel, Belegen und Steuerberater. Reisen, Rechnungsstellung und Passwörter werden bewusst nicht aufgenommen, jeweils mit Begründung im Entscheidungslog. Priorisiert ist streng: P0 nur, was die Basis für „alle Versionen auf dem Laptop ansehen, ein Konzept entscheiden, dann Ebene für Ebene Modul für Modul“ jetzt braucht (7 Ideen). Alles andere folgt in Wellen, damit nicht alles gleichzeitig halb entsteht.",
+ "ideas": [
+  {
+   "title": "App-Navigation für 20+ Module: Favoriten, Gruppen und Modulübersicht („Mehr“)",
+   "level": "app",
+   "area": "App-Ebene / Navigation",
+   "description": "Heute: Sidebar mit slice(0,10), die übrigen Module sind unsichtbar. Mobile: 4 Module plus „Mehr“, das nur ein Event sendet. Neu: (1) Mobile Bottom-Navigation mit 4 frei wählbaren Favoriten plus „Alle Module“ als echter Vollbild-Launchpad (Raster, Suche, Gruppen mit Namen wie Alltag, Gesundheit, Geld, Business, Wissen). (2) Desktop-Sidebar mit Gruppen, einklappbar, Favoriten oben, ausgeblendete Module nur in der Modulübersicht. (3) Tablet: Navigationsleiste mit Gruppen-Flyout. (4) Zuletzt benutzt und Drag-Sortierung der Favoriten. Im Datenmodell bekommt module ein Feld group und pinned. Die Shell liest die Reihenfolge aus dem Zustand statt aus slice. Als Komponenten ein module-launchpad und eine nav-favorites-Konfiguration; die Seed-Gruppen ergeben sich aus dem Modulregister.",
+   "why": "Ohne dieses Konzept bricht die App ab 11 Modulen, und „Modulwahl bei 12+ Modulen“ ist die zentrale Produktfrage der App-Ebene. Nach der geplanten Erweiterung sind es etwa 21 Module.",
+   "priority": "P0",
+   "effort": "L",
+   "acceptance": "Mit 21 aktiven Modulen sind in Desktop, Tablet und Mobile alle per maximal 2 Taps erreichbar, die Reihenfolge der Favoriten ist änderbar, und „Mehr“ öffnet einen funktionierenden Launchpad. Die QA-Sonde meldet bei 390, 360 und 1440 px keinen Überlauf. Ein E2E-Test deckt Favorit ändern, Modul über Launchpad öffnen und zurück ab."
+  },
+  {
+   "title": "Drei Gesamtkonzepte der App als vergleichbare App-Versionen",
+   "level": "launcher",
+   "area": "Demo-Launcher / App-Konzept",
+   "description": "Der Launcher soll nicht nur Features, sondern ganze App-Konzepte vergleichen. Drei strukturell verschiedene Versionen: A „Heute zuerst“ (Start ist ein priorisierter Tagesstrom, Module sind Unterseiten, Erfassen-Button zentral). B „Launchpad“ (Startbildschirm ist ein Raster von Modulkacheln mit Live-Kennzahlen, Widgets pro Modul, dazu die Tab-Leiste). C „Klassisch modulzentriert“ (Bottom-Navigation mit Favoriten, jedes Modul hat ein eigenes Cockpit). Alle drei nutzen dieselben Module, Features und Persona-Daten und unterscheiden sich in Startseite, Navigation, Erfassen-Weg und Informationsdichte. Eine App-Version ist eine deklarative Konfiguration (shell, home-Variante, nav, capture) statt neuer Komponenten. Im Launcher wählt man Version, Gerät und Theme und bedient die App wirklich, auf dem Laptop im Gerätefenster, auf dem Handy bildschirmfüllend.",
+   "why": "Der Auftrag lautet: mehrere Versionen ansehen und dann eine entscheiden. Ohne echte, bedienbare Gesamtkonzepte bleibt es bei Einzelfeatures, und die wichtigste Produktentscheidung (Wie fühlt sich TAKT an?) fällt nie.",
+   "priority": "P0",
+   "effort": "XL",
+   "acceptance": "Im Launcher lassen sich 3 App-Versionen per Tipp wechseln. Jede ist mit der Persona-Datenwelt vollständig bedienbar (Heute, mindestens 5 Module, Erfassen, Suche). Strukturunterschiede sind ohne Farbwechsel erkennbar. Ein Link öffnet genau Version, Gerät und Theme für einen anderen Laptop oder ein Handy."
+  },
+  {
+   "title": "Ebenenmodell und Roadmap-Wellen: Ebene für Ebene statt alles gleichzeitig",
+   "level": "prozess",
+   "area": "Entscheidungsprozess / Roadmap",
+   "description": "Neues Feld layer je Modul und eine Roadmap-Ansicht in der Übersicht. Ebene 0 Fundament (Tokens, Shell, Navigation, Formatregeln, Zustände inkl. Offline). Ebene 1 Querschnitt (Heute, Erfassen, Suche, Mitteilungen, Verknüpfungen, Einstellungen). Ebene 2 Kern-Alltag (Kalender, Aufgaben, Notizen, Wetter, Gewohnheiten, Ziele). Ebene 3 Lebensbereiche (Fitness, Ernährung, Finanzen, Sparen, Haushalt, Journal). Ebene 4 Business und Wissen (Sales, Trading, Dokumente, Kontakte, Zeit, Wissensdatenbank, Picture to Text). Eine Ebene gilt als abgeschlossen, wenn alle ihre Muss-Features freigegeben sind. Eine nächste Ebene kann starten, ohne dass die vorherige perfekt sein muss, aber mit sichtbarer Abhängigkeit. Je Feature optional Nutzungshäufigkeit (täglich, wöchentlich, selten) und Kritikalität als Sortierhilfe für „Nächste sinnvolle Schritte“.",
+   "why": "Der Nutzer will Ebene für Ebene arbeiten und am Ende das Beste. Ohne eine sichtbare Reihenfolge entsteht Streuung: 21 Module mit je zwei halben Features sind wertloser als 6 fertige Module.",
+   "priority": "P0",
+   "effort": "M",
+   "acceptance": "Jedes Modul hat eine Ebene, die Übersicht zeigt je Ebene den Freigabefortschritt, „Nächste sinnvolle Schritte“ nennt zuerst Offenes der niedrigsten unfertigen Ebene, und die Reihenfolge ist im Entscheidungslog begründet."
+  },
+  {
+   "title": "Eine gemeinsame Persona- und Datenwelt für die ganze Demo",
+   "level": "technik",
+   "area": "Demo-Daten / Konsistenz",
+   "description": "Statt je Feature handkopierter demoData (Krafttraining am 5.11. im Kalender, am 24.11. in Start; Steuerberater doppelt gepflegt) gibt es ein zentrales Datenmodell „Welt“: Persona (Selbstständiger, 38, Online-Handel über Shopify und Etsy, nebenher Angestellt bei Northnode, Trading-Depot in Simulation, Fitness 3x pro Woche), Ereignisse, Aufgaben, Konten, Bestellungen, Trainings, Mahlzeiten, Belege, Kontakte, alle mit stabilen IDs und Verknüpfungen. Features binden per Selektor (zum Beispiel world.tasks.dueToday) statt Kopie. Drei Szenarien: Erster Start (leer), Alltag (voll), Stress-Tag (überfällig, Warnungen, Kreditkartenlimit). Die Zeit bleibt deterministisch (ctx.today). Bestehende demoData bleibt als Überschreibung möglich, damit nichts bricht.",
+   "why": "Eine ganze App kann nur glaubwürdig wirken, wenn Heute, Kalender, Aufgaben und Finanzen dieselben Dinge zeigen. Erst dann sind Gesamtkonzepte vergleichbar, und Leerzustände und Erstnutzer-Erlebnis sind ohne Handarbeit prüfbar.",
+   "priority": "P0",
+   "effort": "L",
+   "acceptance": "Ein Termin oder eine Aufgabe, die man in der Vorschau anlegt, erscheint in Heute, Kalender und Suche. tools/check.mjs meldet Widersprüche (gleiche ID, abweichende Zeit). Drei Szenarien sind im Launcher wählbar, und das Szenario „Erster Start“ rendert in allen Modulen sinnvolle Leerzustände."
+  },
+  {
+   "title": "Start/Heute zum Herzstück ausbauen (Tagesstart, Kontext, Smart-Hinweise)",
+   "level": "modul",
+   "area": "Start / Tagesstart",
+   "description": "Das Modul Start hat heute ein Feature mit zwei Varianten. Ausbau auf mindestens 6 Features: (1) Tagesübersicht (bestehend), (2) Tagesstart-Ritual morgens in 20 Sekunden: Wetter, nächster Termin, Top-3-Aufgaben wählen, Gewohnheiten des Tages, Wasser/Training. (3) Tagesabschluss abends (siehe Wochenrückblick). (4) Smart-Hinweise: regelbasiert, nicht KI-pflichtig, zum Beispiel „Regen ab 16 Uhr und Training 18:30“, „Rechnung Stadtwerke fällig Freitag, Girokonto reicht“, „Kündigungsfrist Vertrag X in 9 Tagen“. (5) Widgets-Konfiguration: welche Kacheln in welcher Reihenfolge, ein-/ausblendbar je Persona. (6) Fokus-Karte „Als Nächstes“ (focus-next existiert). Neue Komponenten: hint-card (Hinweis mit Quelle, Aktion, Wegwischen, Später erinnern), day-ritual-stepper, widget-grid mit Sichtbarkeitssteuerung.",
+   "why": "Start ist der meistgeöffnete Bildschirm und entscheidet, ob TAKT als zentraler Ort wirkt. Es bündelt als Einziges die modulübergreifende Wertschöpfung (Kalender, Aufgaben, Wetter, Geld, Fitness).",
+   "priority": "P0",
+   "effort": "L",
+   "acceptance": "Start enthält 6 Features mit Anforderungen, mindestens 2 Varianten für Tagesübersicht und Tagesstart. Alle Hinweise nennen Datenquelle und Aktion. Im Leerzustand zeigt Start Einrichtungsschritte statt leerer Karten, und die QA ist auf allen 5 Pflicht-Viewports grün."
+  },
+  {
+   "title": "Modulregister auf Zielumfang erweitern (Skelett-Manifeste mit Anforderungen)",
+   "level": "modul",
+   "area": "Modulregister / Seed",
+   "description": "Für alle neu aufgenommenen Module (Ernährung, Sparen, Gewohnheiten, Ziele, Dokumente, Haushalt, Kontakte, Zeit, Journal) werden Seed-Manifeste angelegt: Beschreibung, Informationsarchitektur, Features mit Zweck, Anforderungen (Muss/Soll/Kann), Interaktionen, Verknüpfungen zu Nachbarmodulen, Status „Analysiert“, noch ohne Designvarianten. Zusätzlich je Modul ein Abschnitt „Datenquelle und Machbarkeit“ (Kurse: Verzögerung und Lizenz; Wetter: DWD oder Open-Meteo; Ernährung: Open Food Facts; Shop-APIs: Rate-Limits; was ist offline möglich?). Zusammen mit dem Ebenenmodell und der Gruppierung für die Navigation. Bestehende Module ergänzen fehlende Standardfeatures (Settings: Module, Mitteilungen, Datenschutz, Daten und Backup; Home: Tagesstart, Wochenrückblick). SEED_VERSION wird erhöht, „Neue Seed-Inhalte übernehmen“ ändert nichts Bestehendes.",
+   "why": "„Baue alles ein, was fehlt“ heißt zuerst: Das Register muss vollständig sein, damit Navigation, Launcher und Roadmap die echte Größe der App zeigen. Anforderungen vor Design verhindert Nacharbeit.",
+   "priority": "P0",
+   "effort": "L",
+   "acceptance": "Das Register enthält etwa 21 Module und mindestens 100 Features mit Anforderungen. tools/check.mjs ist grün, und kein Modul ohne Ebene, Gruppe und Verknüpfung. Jedes Online-Modul nennt eine Datenquelle samt Offline-Verhalten, und alle Texte sind deutsch mit Umlauten."
+  },
+  {
+   "title": "Schnellerfassung (Quick Capture) als globale Aktion",
+   "level": "feature",
+   "area": "Querschnitt / Erfassen",
+   "description": "Ein zentraler Erfassen-Button in der Shell (Mobile: Mitte der Navigation oder FAB, Desktop: Strg+N und Button). Ein Eingabefeld mit Intelligenz ohne KI-Pflicht: Präfixe und Erkennung („morgen 14 Uhr Zahnarzt“ → Termin, „!Angebot Müller“ → Aufgabe hoch, „-12,50 Rewe“ → Ausgabe, „Wasser“ → Eintrag, Foto → Picture to Text). Darunter Chips zur Zieltypwahl (Aufgabe, Termin, Notiz, Ausgabe, Mahlzeit, Training-Satz, Beleg). Letzte Ziele zuerst, Mehrfacherfassung ohne Schließen, Rückgängig-Toast. Neue Komponente capture-sheet (Bottom-Sheet auf Mobile, Dialog auf Desktop), baut auf quick-add auf. Später Anbindung an Android-Teilen.",
+   "why": "Der Kernversprechen einer All-in-one-App ist, dass alles in unter 3 Sekunden festgehalten ist, ohne vorher das Modul zu wählen. Vorhandenes quick-add ist modulgebunden.",
+   "priority": "P0",
+   "effort": "M",
+   "acceptance": "Von jedem Bildschirm in höchstens 2 Taps zur Eingabe. Die 6 genannten Beispielsätze legen den richtigen Typ an, und die Einträge erscheinen sofort in Heute, Modul und Suche. Rückgängig innerhalb 5 Sekunden funktioniert, QA und E2E sind grün."
+  },
+  {
+   "title": "Entscheidungs-Scorecard für App-Konzepte und Varianten",
+   "level": "prozess",
+   "area": "Entscheidungsprozess",
+   "description": "Im Launcher und Vergleich gibt es einen Entscheidungsmodus: feste Kriterien aus Nutzersicht (Zeit bis zur Aktion, Einhandbedienung, Übersicht auf einen Blick, Ruhe/Dichte, Erlernbarkeit, Eignung für 21 Module) mit 1 bis 5 Sternen je Version, optional Gewichtung. Danach „Dieses Konzept wird TAKT“ mit Pflichtbegründung und bewusst akzeptierten Nachteilen, die als Entscheidung im Decision Log landen (Vorlage existiert). Verworfene Konzepte bleiben archiviert und als Referenz verfügbar. Dasselbe Raster gilt für Feature-Varianten, mit Kriteriensatz je Modultyp (zum Beispiel Finanzen: Lesbarkeit der Beträge, Fehlervermeidung).",
+   "why": "Aus „angucken“ muss eine Entscheidung werden, sonst endet es in endlosen Designrunden (Kernproblem laut Auftrag). Kriterien machen Bauchgefühl nachvollziehbar.",
+   "priority": "P1",
+   "effort": "S",
+   "acceptance": "Eine Entscheidung ist nur mit Begründung speicherbar, erzeugt einen Eintrag im Decision Log mit Verweis auf alle verglichenen Versionen, und die Wahl ist im Launcher als „Gewählt“ markiert."
+  },
+  {
+   "title": "Modul Ernährung (Mahlzeiten, Makros, Wasser, Wochenplan, Rezepte)",
+   "level": "modul",
+   "area": "Ernährung",
+   "description": "Features: Tageslog (Frühstück bis Snack, Kalorien und Makros je Mahlzeit, Ring-Übersicht mit activity-rings), Lebensmittelsuche und Barcode-Scan (Datenquelle Open Food Facts), eigene Lebensmittel und Rezepte, Wasser-Tracker (ein Tippen +250 ml), Wochenplan Mahlzeiten mit Übernahme der Zutaten in die Einkaufsliste, Ziele (Kalorien, Eiweiß, Gewicht) aus Fitness, Auswertung (Wochendurchschnitt, Protein-Treffer, chart). Verknüpfungen: Fitness (Kalorienverbrauch, Körperwerte), Einkaufsliste, Kalender (Mahlzeitenplanung). Varianten: „Schnelllog“ (Favoriten und Letzte) gegen „Detail mit Makros“. Neue Komponenten: macro-bar, meal-section, food-search.",
+   "why": "Vom Nutzer ausdrücklich genannt. Ernährung ist ein täglicher Anwendungsfall mit hoher Wiederkehr und der stärkste natürliche Partner von Fitness.",
+   "priority": "P1",
+   "effort": "XL",
+   "acceptance": "Mindestens 7 Features mit Anforderungen, 2 Varianten für Tageslog, Wochenplan → Einkaufsliste funktioniert in der Vorschau (Zutaten erscheinen in der Liste). Ein Eintrag braucht höchstens 3 Taps, und alle Zustände (leer, lädt, Fehler, Offline) sind geprüft."
+  },
+  {
+   "title": "Modul Sparen & Sparpläne (Sparziele, Sparplan-Rechner, Notgroschen, Vermögen)",
+   "level": "modul",
+   "area": "Finanzen / Sparpläne",
+   "description": "Neues Modul neben dem Referenzmodul Finanzen, damit dessen Konzept nicht erneut auditiert wird. Features: Sparziele (Betrag, Datum, benötigte monatliche Rate, Fortschritt per progress-list), Sparplan-Simulator (Rate, Laufzeit, Rendite-Szenarien pessimistisch/neutral/optimistisch, Zinseszins-Chart; Verknüpfung zu Trading als ETF-Sparplan-Simulation), Notgroschen-Check (Monate Reserve = Tagesgeld / Fixkosten), automatische Zuordnung von Rücklagen („Umsatzsteuer, Steuern zurücklegen“ für Selbstständige), Vermögensentwicklung (Net Worth über Konten, Depot, Sparziele), Dauerauftrag-Übersicht. Hinweisleiste „Simulation, keine Anlageberatung“ bleibt Pflicht (wie Trading-Entscheidung). Neue Komponenten: goal-progress-card, projection-chart, rate-slider.",
+   "why": "Vom Nutzer ausdrücklich genannt. Sparpläne verbinden Finanzen und Trading zu einem Zielbild und liefern den „Wozu spare ich?“-Nutzen, den reine Kontoübersichten nicht bieten.",
+   "priority": "P1",
+   "effort": "L",
+   "acceptance": "Mindestens 6 Features mit Anforderungen, Simulator rechnet nachvollziehbar (Beispielrechnung dokumentiert und geprüft), jedes Sparziel zeigt benötigte Monatsrate und Zielstatus (im Plan, in Verzug). Der Haftungshinweis ist auf jeder Prognose sichtbar."
+  },
+  {
+   "title": "Modul Gewohnheiten & Routinen",
+   "level": "modul",
+   "area": "Gewohnheiten",
+   "description": "Features: Tagesliste (abhaken, Serie/Streak, Tage mit Pause erlaubt), Gewohnheit anlegen (Häufigkeit täglich, X-mal pro Woche, bestimmte Tage; Zeitfenster; Erinnerung), Wochenraster mit Heatmap (neue Komponente habit-grid), Routinen als Bündel (Morgenroutine = 4 Gewohnheiten, mit Stepper im Tagesstart), Auswertung (Erfüllungsquote, beste Serie, Wochentags-Muster), Verknüpfung zu Fitness (Training), Ernährung (Wasser), Ziele (Gewohnheit unterstützt Ziel). Wiederholungsregel aus der gemeinsamen Komponente (siehe Recurrence-Idee). Nicht gamifizieren: keine Punkte, dafür Rücksicht („Pause statt Serie verlieren“).",
+   "why": "Gewohnheiten sind der häufigste Wiederkehrgrund für Alltags-Apps, verbinden alle Lebensbereiche und fehlen komplett. Aufgaben sind einmalig, Gewohnheiten wiederkehrend, und beide sollten nicht vermischt werden.",
+   "priority": "P1",
+   "effort": "M",
+   "acceptance": "5 Features mit Anforderungen, Tagesliste in unter 2 Taps je Gewohnheit bedienbar, Streak-Berechnung testbar (Pausentage, Wochenfrequenz), Heatmap ist ohne Farbe allein lesbar (Muster oder Zahl, Kontrast-Audit bestanden)."
+  },
+  {
+   "title": "Modul Ziele (Jahres-, Quartals-, Wochenziele)",
+   "level": "modul",
+   "area": "Ziele",
+   "description": "Leichtgewichtiges OKR-Modell für Privatpersonen: Ziel (Titel, Lebensbereich, Zeitraum, Messgröße) mit Teilzielen/Schlüsselergebnissen, die sich aus anderen Modulen speisen (Gewicht aus Fitness, Sparbetrag aus Sparen, Umsatz aus Sales, erledigte Aufgaben aus Projekten). Features: Zielübersicht nach Lebensbereich, Zieldetail mit Verlauf, Wochenfokus (max. 3 Prioritäten, fließt in Tagesstart), Quartalsplanung, Abschluss-Rückblick. Komponenten: progress-list und chart vorhanden, neu goal-card, objective-tree. Daten kommen per Verknüpfung, nicht doppelt erfasst.",
+   "why": "Ohne Ziele sind die Module Datensilos. Ziele geben den Zahlen Sinn und liefern die Gliederung für Wochenrückblick und Tagesstart.",
+   "priority": "P1",
+   "effort": "M",
+   "acceptance": "4 Features mit Anforderungen, ein Ziel kann aus mindestens 3 Fremdmodulen automatisch Fortschritt beziehen (in der Vorschau demonstriert), Wochenfokus erscheint im Tagesstart."
+  },
+  {
+   "title": "Modul Dokumente & Verträge (Belege, Verträge, Garantien)",
+   "level": "modul",
+   "area": "Dokumente",
+   "description": "Für Selbstständige zentral. Features: Belegablage (Foto → Picture to Text → Betrag, Datum, Händler erkannt → Kategorie und Verknüpfung zur Transaktion in Finanzen), Verträge (Anbieter, Laufzeit, Kosten, Kündigungsfrist mit Erinnerung 30/14/3 Tage), Garantien und Rechnungen zu Geräten (mit Ablaufdatum), Dokumenttresor für sensible Dokumente (mit App-Sperre), Suche mit Volltext aus der Erkennung, Export für Steuerberater (Ordner/ZIP je Quartal oder Monat). Komponenten: document-card, contract-timeline (Fristen), expiry-badge. Tasks.repeat und Kalender nutzen Fristen als Termine.",
+   "why": "Seed zeigt es bereits: „Belege Oktober hochladen“, „Steuerberater“, Homeoffice-Pauschale in Notizen. Heute verstreut sich das über Notizen, Aufgaben und Fotos. Kündigungsfristen und Garantien sind klassischer, harter Nutzen, den man selbst nie rechtzeitig im Kopf hat.",
+   "priority": "P1",
+   "effort": "L",
+   "acceptance": "6 Features mit Anforderungen, ein Beleg-Foto lässt sich bis zur Verknüpfung mit einer Transaktion durchspielen, Verträge mit Frist < 30 Tage erscheinen in Heute und Mitteilungen, Export-Dialog zeigt Umfang und Zeitraum vor dem Erzeugen."
+  },
+  {
+   "title": "Modul Haushalt & Einkauf (Einkaufsliste, Haushaltsaufgaben, Vorräte)",
+   "level": "modul",
+   "area": "Haushalt",
+   "description": "Einstieg ist die Einkaufsliste: Artikel nach Supermarktbereichen sortiert, Mengen, Abhaken im Laden (große Touchflächen), Wiederkehrendes („Immer da“-Liste), Übernahme aus Wochenplan und Rezepten (Ernährung), Teilen mit Partner (später). Dazu Haushaltsaufgaben mit festen Rhythmen (Fenster putzen alle 8 Wochen, Rauchmelder-Test) aus der gemeinsamen Wiederholungsregel, Vorrats- und Gerätekarten (Haltbarkeit, Garantie über Dokumente verknüpft). Statt als eigene Checklisten in Notizen zu enden, bekommen Listen den Typ „Einkauf“ mit eigener Ansicht.",
+   "why": "Einkaufsliste und Haushaltsrhythmen sind alltägliche, aber heute nur als Notiz-Checkliste (notes.checklists) gedacht. Der Mehrwert entsteht erst durch die Verbindung zu Ernährung und Aufgaben.",
+   "priority": "P2",
+   "effort": "M",
+   "acceptance": "4 Features mit Anforderungen, Einkaufsliste im Laden mit einer Hand bedienbar (Touchziele ≥ 44 px), Zutaten aus dem Ernährungs-Wochenplan landen dedupliziert in der Liste."
+  },
+  {
+   "title": "Modul Kontakte & Kunden (leichtes Personenverzeichnis)",
+   "level": "modul",
+   "area": "Kontakte",
+   "description": "Ein Personenverzeichnis, das Vorkommen in anderen Modulen bündelt: Kunde „Müller GmbH“ (Sales, Angebot als Aufgabe), „Steuerberater“, „Jana“ (Termin), Visitenkarte aus Picture to Text (liegt als Seed-Fall bereits vor). Features: Liste mit Suche, Kontaktkarte mit Verlauf (Termine, Aufgaben, Notizen, Bestellungen), Geburtstage und Jahrestage (fließen in Kalender und Tagesstart), Kontaktpflege-Erinnerung („Lange nicht gemeldet“, optional), Import aus Android-Kontakten (optional, Berechtigung nachfragen). Bewusst kein CRM: keine Pipeline, keine Rechnungen.",
+   "why": "Personen sind der natürliche Verknüpfungspunkt über Termine, Aufgaben, Notizen und Sales hinweg und fehlen als Objekt völlig. Die Beschränkung hält den Umfang klein.",
+   "priority": "P2",
+   "effort": "M",
+   "acceptance": "3 Features mit Anforderungen, eine Kontaktkarte zeigt verknüpfte Termine, Aufgaben und Notizen aus der Persona-Datenwelt, Geburtstage erscheinen im Kalender, Datenschutzhinweis zum Kontakte-Import ist vorhanden."
+  },
+  {
+   "title": "Modul Zeit & Fokus (Fokus-Timer, Zeiterfassung)",
+   "level": "modul",
+   "area": "Zeit & Fokus",
+   "description": "Fokus-Timer an Aufgaben gebunden (25/50 Minuten, Pause, Ablenkungsnotiz), Zeiterfassung je Projekt oder Kunde mit Start/Stop und manueller Korrektur, Wochenübersicht der Fokuszeit (Start und Kalender zeigen Fokuszeit schon an, ohne Quelle), Zeitbudget je Projekt und Wochenziel. Verbindung zu Aufgaben (focus-next) und Kalender (Fokusblock). Export als CSV für Abrechnung. Bewusst ohne Rechnungsstellung.",
+   "why": "Die Kennzahl „Fokuszeit“ existiert in Demo-Daten (Start, Kalender), aber kein Modul liefert sie. Für Selbstständige ist Zeit pro Projekt unmittelbar geldwert.",
+   "priority": "P2",
+   "effort": "M",
+   "acceptance": "4 Features mit Anforderungen, Timer läuft über Bildschirmsperre und Appwechsel (Anforderung, auf dem Gerät prüfen), Fokuszeit in Start und Kalender kommt aus diesem Modul statt aus Handwerten."
+  },
+  {
+   "title": "Modul Journal & Check-in (Stimmung, Energie, Schlaf, Tagesnotiz)",
+   "level": "modul",
+   "area": "Journal / Gesundheit",
+   "description": "Ein 15-Sekunden-Check-in morgens und abends: Stimmung und Energie auf einer 5er-Skala, Schlafdauer und -qualität, optional ein Satz Tagesnotiz und Dankbarkeit. Features: Check-in, Verlauf mit Zusammenhängen („Energie nach 7 h+ Schlaf“ per einfacher Korrelation), Tagesbuch (Notizen mit Tag), Schlafprotokoll als Teil des Check-ins statt eigenes Modul. Datenhoheit: lokale Speicherung, in Datenschutz hervorgehoben. Speist Tagesabschluss und Wochenrückblick.",
+   "why": "Schlaf und Stimmung sind „allgemein notwendig“ für ein Gesundheitsbild, tragen aber als eigene Module nicht (zu wenig Inhalt, zu geringe Nutzung). Als Check-in verbinden sie Fitness, Ernährung und Ziele.",
+   "priority": "P2",
+   "effort": "M",
+   "acceptance": "3 Features mit Anforderungen, Check-in in höchstens 20 Sekunden bedienbar, Verlaufsdiagramm mit Fehler- und Leerzustand geprüft, Journal-Daten sind vom Export ausschließbar."
+  },
+  {
+   "title": "Scope-Entscheidungen im Entscheidungslog: Aufnahme, Zurückstellung, Verzicht",
+   "level": "prozess",
+   "area": "Modulumfang",
+   "description": "Für jeden Kandidaten wird eine Entscheidung mit Begründung, Nachteilen und Wiedervorlage angelegt. Aufgenommen: Ernährung, Sparen, Gewohnheiten, Ziele, Dokumente und Verträge, Haushalt und Einkauf, Kontakte, Zeit und Fokus, Journal (inkl. Schlaf). Zurückgestellt: Reisen (ergibt sich aus Kalender, Packliste, Wetter und Dokumenten; Vorlage „Reise“ statt Modul, Wiedervorlage nach Ebene 3), Rechnungen und Angebote (Pflege eines Buchhaltungsprogramms ist viel Aufwand, zunächst nur Export von Sales-Daten), Steuer/EÜR (nur Beleg-Export). Verzicht: Passwörter (dafür gibt es spezialisierte Manager), News-Feed, Smart-Home, Social. Jede Entscheidung nennt das Kriterium „Häufigkeit × Nutzen ÷ Aufwand“.",
+   "why": "Der Auftrag lautet „alles einbauen, was notwendig ist“, nicht „alles was denkbar ist“. Dokumentierter Verzicht verhindert Wiederholung der Diskussion und Scope-Wucher.",
+   "priority": "P1",
+   "effort": "S",
+   "acceptance": "Mindestens 12 Entscheidungen (9 Aufnahme, 3 Zurückstellung, 3 Verzicht) mit Begründung im Log, Wiedervorlage-Termine gesetzt, jede im Modulregister rückverlinkt."
+  },
+  {
+   "title": "Tagesabschluss und Wochenrückblick (modulübergreifende Rituale)",
+   "level": "feature",
+   "area": "Start / Rückblick",
+   "description": "Tagesabschluss abends (Stepper in 3 Schritten): offene Aufgaben (auf morgen schieben, streichen, erledigt), Gewohnheiten und Ernährung kurz bestätigen, Check-in, Top-3 für morgen. Wochenrückblick sonntags oder montags: automatisch zusammengestellte Karten (erledigte Aufgaben, Fokuszeit, Training, Ausgaben vs. Budget, Sparquote, Umsatz je Kanal, Ziele-Fortschritt, Highlights), drei Fragen („Was lief gut? Was hat Zeit gefressen? Fokus nächste Woche?“) und Speicherung als Notiz im Journal. Neue Komponenten: ritual-stepper, review-summary (nutzt metric-row, chart, progress-list). Auslösung per Mitteilung zu einstellbarer Zeit.",
+   "why": "Rituale erzeugen die Gewohnheit, die App täglich zu öffnen, und machen aus verstreuten Daten eine Rückschau mit Konsequenz. Hohe Bindung bei geringer Erfassungslast, weil Daten schon vorliegen.",
+   "priority": "P1",
+   "effort": "M",
+   "acceptance": "Wochenrückblick lässt sich aus der Persona-Datenwelt automatisch befüllen, zeigt mindestens 6 Kennzahlen aus 5 Modulen, schiebt offene Aufgaben mit einem Tipp weiter und speichert das Ergebnis; Abschluss in höchstens 2 Minuten bedienbar."
+  },
+  {
+   "title": "Globale Suche und Befehlspalette (alles finden, alles auslösen)",
+   "level": "feature",
+   "area": "Querschnitt / Suche",
+   "description": "Die Suche in der Shell (heute ein Platzhalter-Button) durchsucht über alle Module hinweg Termine, Aufgaben, Notizen, Artikel, Kontakte, Belege, Umsätze, Bestellungen, Erkennungsergebnisse. Ergebnisse gruppiert nach Modul mit Treffer-Vorschau, Filterchips (Typ, Zeitraum, Modul), zuletzt gesucht, Tastatur (Strg+K) und auf Mobile über die Navigation. Zweite Ebene: Befehle („Neue Aufgabe“, „Theme wechseln“, „Zu Finanzen“, „Heute exportieren“), damit die Suche auch Navigation ersetzt (hilft bei 21 Modulen). Neue Komponenten: global-search (Overlay), result-group. Bindet an die Persona-Datenwelt (Suchindex je Typ mit Feldmapping).",
+   "why": "Je mehr Module, desto wichtiger wird „Wo war das noch?“. Suche ist die Antwort auf zu viele Modulgrenzen. Außerdem ist der Platzhalter-Button gegen die eigene Qualitätsvorgabe (keine Attrappen).",
+   "priority": "P1",
+   "effort": "L",
+   "acceptance": "Ein Suchbegriff aus der Persona-Welt (zum Beispiel „Müller“) liefert Treffer aus mindestens 4 Modulen, Tippen springt ins Zielobjekt, Befehle funktionieren mit Tastatur, Leerzustand und „Keine Treffer“ sind gestaltet, E2E-Test deckt Suche → Treffer → Ziel ab."
+  },
+  {
+   "title": "Mitteilungszentrale und zentrale Benachrichtigungsregeln",
+   "level": "feature",
+   "area": "Querschnitt / Benachrichtigungen",
+   "description": "Statt je Modul eigener Alarme (weather.alerts, trading.alerts, Fristen, Fälligkeiten) eine zentrale Mitteilungszentrale (die Glocke der Shell): Liste nach Dringlichkeit und Modul, Aktionen direkt aus der Mitteilung (Erledigt, Später, Öffnen), Gruppierung, „Alles gelesen“. Regeln in den Einstellungen: je Modul und Typ ein/aus, Kanal (Push, nur in App, stumm), Ruhezeiten (zum Beispiel 22–7 Uhr), Tagesdigest statt Einzel-Pushes, Priorität „Unwetter und Kündigungsfrist immer“. Mitteilungstypen als Katalog (Fälligkeit, Termin-Vorlauf, Kursalarm, Wetterwarnung, Frist, Rhythmus-Erinnerung, Bestellung eingegangen). Komponenten: notification-item, notification-settings.",
+   "why": "Zehn Module mit eigenen Alarmen werden zur Belästigung. Zentrale Regeln, Ruhezeiten und Digest sind der Unterschied zwischen nützlich und abgeschaltet.",
+   "priority": "P1",
+   "effort": "L",
+   "acceptance": "Alle Alarm-Features der Module sind auf den Mitteilungskatalog abgebildet, Ruhezeit unterdrückt nicht-kritische Mitteilungen (in der Vorschau demonstrierbar), die Glocke zeigt Ungelesen-Zähler und führt in die Zentrale."
+  },
+  {
+   "title": "Einstellungen als vollständiges Modul (heute nur ein Feature)",
+   "level": "modul",
+   "area": "Einstellungen",
+   "description": "Features statt nur „Darstellung & Theme“: Darstellung (Theme, Dichte, Schrift, Bewegung), Module und Navigation (aktivieren, Gruppen, Favoriten, Start-Modul als dynamische Liste statt festem Select), Mitteilungen (Regeln), Datenschutz & Sicherheit (Sperre, Privatmodus), Konten & Sync, Daten & Backup (Export, Import, Papierkorb, Wiederherstellung), Sprache & Region (Format, Wochenstart, Feiertage), Über TAKT & Hilfe. Einstellungs-Suche und Struktur in Gruppen laut bestehender Informationsarchitektur. Das bestehende Select mit festen vier Modulnamen wird aus dem Modulregister gespeist.",
+   "why": "Alle Querschnittsregeln brauchen einen Ort. Die Einstellungen sind das Rückgrat der Modulwahl und der Datenhoheit.",
+   "priority": "P1",
+   "effort": "M",
+   "acceptance": "Mindestens 8 Features mit Anforderungen, mindestens 3 mit Designvariante und freigabefähiger QA (Darstellung, Module & Navigation, Datenschutz), Einstellungsliste ist per Suche durchsuchbar."
+  },
+  {
+   "title": "Onboarding und Modulwahl beim ersten Start",
+   "level": "feature",
+   "area": "Onboarding",
+   "description": "Erststart in höchstens 6 Schritten, überspringbar: Willkommen und Datenschutz in einem Satz, „Was ist dir wichtig?“ (Kacheln: Planung, Geld, Gesundheit, Business, Wissen), daraus ein Modulvorschlag (Presets: Alltag, Selbstständig, Gesundheit, Alles) mit Abwahl, Favoriten wählen, Theme mit Live-Vorschau, optional Berechtigungen (Mitteilungen, Kamera) nur mit Begründung, dann Start mit Beispielinhalten oder leer. Spätere Änderung jederzeit in Einstellungen. Zusätzlich gestaltete Leerzustände mit einer klaren ersten Aktion je Modul. Das Preset bestimmt Navigation und Tagesstart-Kacheln.",
+   "why": "Bei 21 Modulen ist ein alles-aktiviert-Start überwältigend. Ein sinnvoller Voreinsatz macht aus einer Funktionssammlung eine persönliche App.",
+   "priority": "P1",
+   "effort": "M",
+   "acceptance": "Das Preset „Selbstständig“ aktiviert eine passende Teilmenge der Module mit 4 Favoriten, jeder Schritt ist per „Zurück“ erreichbar, Abbruch führt in einen sinnvollen Standard, die Mobile-QA ist grün."
+  },
+  {
+   "title": "Datenschutz, Sicherheit und Datenhoheit (Sperre, Privatmodus, Export, Papierkorb)",
+   "level": "modul",
+   "area": "Datenschutz",
+   "description": "App-Sperre (Biometrie oder PIN, Sperre nach Zeit, Inhalt in der App-Übersicht verdecken), Privatmodus „Beträge verbergen“ in Finanzen, Trading und Sparen (Werte als •••• mit Tippen zum Zeigen; Komponentenparameter über Kontext ctx.privacy, damit alle Zahlenkomponenten ihn gleich umsetzen), Tresor-Bereich für Dokumente, klare Aussage „Alle Daten liegen lokal auf dem Gerät“, vollständiger Export (JSON, CSV, ICS, Markdown), Löschen einzelner Module-Daten, globaler Papierkorb mit 30 Tagen Wiederherstellung und überall Rückgängig-Toast, Verzeichnis der Berechtigungen. Verschlüsseltes Backup (Datei) als Option.",
+   "why": "Finanzen, Depot, Gesundheit und Belege sind sensible Daten. Ein persönlicher Alleskönner, dem man das nicht anvertraut, wird nicht täglich benutzt. Datenhoheit ist zudem DSGVO-nah ohne Backend umsetzbar.",
+   "priority": "P1",
+   "effort": "L",
+   "acceptance": "Privatmodus verbirgt Beträge in allen Zahlen-Komponenten (inkl. Charts und Kennzahlen), per Test belegt; Sperrbildschirm ist als Zustand in der Shell prüfbar; Export und Papierkorb haben je ein Feature mit Anforderungen und QA."
+  },
+  {
+   "title": "Offline- und Sync-Zustände als feste Qualitätsdimension",
+   "level": "qualitaet",
+   "area": "Offline / Zustände",
+   "description": "Die Workbench kennt vier Zustände (Standard, Leer, Lädt, Fehler). Ergänzt werden „Offline“ und „Veraltet“ (zuletzt aktualisiert vor X). Je Modul wird das Offline-Verhalten festgelegt: Wetter (Cache plus „Stand 09:10“), Trading (Kurs verzögert/veraltet, Order-Simulation sperren oder lokal), Sales (Sync-Status, Warteschlange), Picture to Text (lokale Erkennung?), Notizen/Kalender/Aufgaben (voll offline). Neue Komponenten: offline-banner, stale-badge, sync-status in der Shell. Konfliktregel (zuletzt gewinnt vs. zusammenführen) als Entscheidung dokumentiert. QA-Matrix und Probe prüfen die neuen Zustände.",
+   "why": "Eine mobile App wird in der Bahn, im Keller und im Flugmodus benutzt. Offline ist das Verhalten, das Nutzer am meisten an Qualität erleben, und gehört deshalb in jede Freigabe.",
+   "priority": "P1",
+   "effort": "M",
+   "acceptance": "UI_STATES enthält offline und stale, Datenslots erlauben Zeitstempel, alle Online-Module haben ein definiertes Offline-Design und die QA-Matrix prüft es, die Shell zeigt einen Offline-Banner in der Vorschau-Werkzeugleiste."
+  },
+  {
+   "title": "Verknüpfungsmodell: Objekte über Module hinweg verlinken (inkl. Rückverweise)",
+   "level": "komponente",
+   "area": "Querschnitt / Verknüpfungen",
+   "description": "Ein einheitliches Konzept „Verknüpfung“: Jedes Objekt (Aufgabe, Termin, Notiz, Artikel, Kontakt, Beleg, Transaktion, Ziel) kann mit anderen verknüpft werden. Komponenten: link-chips (verknüpfte Objekte mit Icon und Modulfarbe), link-picker (Dialog, Suche über alles, nutzt die globale Suche), backlinks-panel (Wo wird das verwendet?). Beispiele: Notiz „Ideen“ ↔ Aufgabe, Transaktion ↔ Beleg ↔ Kontakt, Termin ↔ Aufgabe (calendar.tasks), Wissensartikel ↔ Notiz (knowledge.links). Bisherige Verknüpfungs-Features (knowledge.links, calendar.tasks, notes.checklists) werden darauf zurückgeführt, statt je Modul neu zu entwerfen.",
+   "why": "Genau hier entsteht der Vorteil einer All-in-one-App gegenüber Einzel-Apps. Heute bestehen mindestens drei getrennte Verknüpfungskonzepte, jedes mit eigener Optik.",
+   "priority": "P1",
+   "effort": "M",
+   "acceptance": "Drei neue Komponenten sind im Vertrag (CONTRACT.md) beschrieben und in der Galerie, mindestens 3 Module nutzen sie, ein Link zwischen zwei Modulen ist in der Vorschau anlegbar und taucht als Rückverweis auf der Gegenseite auf."
+  },
+  {
+   "title": "Gemeinsame Taxonomie „Lebensbereiche“ und Farbsystem für Kategorien",
+   "level": "komponente",
+   "area": "Querschnitt / Kategorien",
+   "description": "Heute gibt es Kategorien separat in Kalender (calendar.categories), Aufgaben (tasks.categories), Notizen (Tags) und Finanzen (Ausgabenkategorien). Neu: eine gemeinsame Ebene „Lebensbereich“ (Arbeit, Business, Privat, Gesundheit, Geld, Lernen, Haushalt) mit fester Farbe und Icon (Tokens: chart-1 bis chart-6 plus Statusfarben, nicht frei wählbar), die in Kalender, Aufgaben, Notizen, Ziele und Gewohnheiten gleich auftauchen, und modulspezifische Unterkategorien darunter (Finanzen: Wohnen, Abos). Filter und Legende (calendar-legend) werden zur globalen Komponente life-area-filter. Einstellung: Bereiche umbenennen, ein-/ausblenden.",
+   "why": "Wer in Kalender „Arbeit“ ausblendet, erwartet das in Aufgaben auch. Einheitliche Farben und Filter sparen Lernaufwand und machen Heute, Suche und Rückblick konsistent.",
+   "priority": "P1",
+   "effort": "M",
+   "acceptance": "Ein Lebensbereich hat in allen Modulen dieselbe Farbe und dasselbe Icon (im Kontrast-Audit aller 3 Themes bestanden), ein globaler Filter wirkt in Kalender, Aufgaben und Heute gleichzeitig, kein Modul definiert eigene Farbe je Bereich."
+  },
+  {
+   "title": "Eine Wiederholungsregel für alles (Recurrence-Komponente und -Logik)",
+   "level": "komponente",
+   "area": "Querschnitt / Wiederholungen",
+   "description": "calendar.recurrence und tasks.repeat sind beide „Nicht untersucht“, dazu kommen Gewohnheiten, Haushaltsrhythmen, Daueraufträge/Abos und Verträge. Statt fünf Varianten: ein recurrence-picker (Täglich, Wochentage, Monatlich am Tag/Nth Wochentag, Jährlich, nach Erledigung X Tage später, Enddatum oder Anzahl) mit Klartextvorschau („jeden 2. Dienstag, bis 31.12.“) und die dazugehörige reine Funktion nextOccurrences() in core/ (browserfrei testbar). Entscheidung „Serien bearbeiten“ (nur dieser, dieser und folgende, alle) als gemeinsames Dialogmuster, passend zur offenen Entscheidung im Kalender.",
+   "why": "Doppelte Entwicklung und unterschiedliches Verhalten von Wiederholungen ist ein klassischer Fehlerherd, und Nutzer erwarten überall dieselbe Bedienung.",
+   "priority": "P1",
+   "effort": "M",
+   "acceptance": "nextOccurrences() hat mindestens 15 Testfälle (Monatsende, Schaltjahr, Sommerzeit, nach Erledigung), Kalender, Aufgaben und Gewohnheiten nutzen dieselbe Komponente, die Klartextvorschau ist korrekt auf Deutsch."
+  },
+  {
+   "title": "Journeys: modulübergreifende Abläufe als bedienbare Szenarien und Tests",
+   "level": "workbench",
+   "area": "Workbench / Abläufe",
+   "description": "Die Workbench denkt in Features, der Nutzerwert liegt aber in Abläufen. Neue Entität „Journey“: benannte Folge von Schritten über mehrere Features/Module („Morgens: Tagesstart → Termin ansehen → Aufgabe abhaken → Wasser loggen“, „Beleg: Foto → Erkennung → Transaktion zuordnen → Export Steuerberater“, „Einkauf: Wochenplan → Einkaufsliste → im Laden abhaken“, „Wochenrückblick“). Jeder Schritt verweist auf Feature und Variante und beschreibt Erwartung. Im Launcher als Führung („Szenario abspielen“), in der QA als automatisierter Klickpfad aus den Schritten (TASKS §5). Journeys bekommen Status und Freigabe wie Features, damit „funktioniert als Ganzes“ messbar wird.",
+   "why": "Einzelne perfekte Features ergeben noch keine gute App. Abläufe über Modulgrenzen entscheiden, ob TAKT im Alltag Zeit spart, und sind der beste Maßstab bei der Wahl zwischen App-Konzepten.",
+   "priority": "P1",
+   "effort": "L",
+   "acceptance": "Mindestens 5 Journeys sind definiert, im Launcher abspielbar und als E2E-Klickpfad automatisch ausführbar; eine Journey wird als „gebrochen“ markiert, wenn ein verknüpftes Feature seine freigegebene Variante wechselt."
+  },
+  {
+   "title": "Android-Integration: Teilen an TAKT, Home-Widgets, Benachrichtigungskanäle",
+   "level": "technik",
+   "area": "Android / Plattform",
+   "description": "Anforderungen für die Flutter-Umsetzung, schon jetzt in der Workbench spezifizierbar und als Mockup: (1) Share-Target „Teilen an TAKT“ (Text → Notiz oder Aufgabe, Bild → Picture to Text, Link → Wissensdatenbank, Beleg-PDF → Dokumente) mit Zielwahl-Sheet. (2) Home-Screen-Widgets (Heute-Agenda, Aufgaben-Schnellerfassung, Wasser +250 ml, Wetter). (3) Benachrichtigungskanäle je Mitteilungstyp (Android-Kanäle, damit Nutzer einzeln stummschalten). (4) App-Verknüpfungen (Long-Press: Neue Aufgabe, Neue Notiz). (5) Hinweise zu Hintergrundlauf (Timer, Sync). Im Launcher als Komponente „Android-Kontext“ zum Anschauen der Share- und Widget-Oberflächen.",
+   "why": "Die Zielplattform ist eine Android-APK. Teilen, Widgets und Kanäle sind dort die Hebel, die eine App von „muss ich öffnen“ zu „ist immer da“ machen und den Erfassungsweg auf Sekunden verkürzen.",
+   "priority": "P2",
+   "effort": "L",
+   "acceptance": "Die Spezifikation liegt als Features im Modul Einstellungen/Start vor (Anforderungen, Interaktionen), Share-Sheet und zwei Widgets sind in der Vorschau als bedienbare Mockups vorhanden, und die Widgets nutzen dieselben Komponenten wie die App."
+  },
+  {
+   "title": "Darstellung, Region und Barrierefreiheit als App-weite Regeln",
+   "level": "qualitaet",
+   "area": "Querschnitt / Basis",
+   "description": "Verbindliche deutsche Regeln als Code und Prüfung: Zahlen- und Währungsformat (1.284,50 €, Tausenderpunkt), Datum (24.11.2026, „heute/gestern“), 24-Stunden-Zeit, Wochenstart Montag, Kalenderwochen, Feiertage je Bundesland (Kalender, Aufgaben-Fälligkeit, Tagesstart), Zeitzone. Eine Formatfunktion in lib/ statt Einzellösungen je Komponente. Barrierefreiheit: Schriftgrößenstufen und Dichte (Komfortabel/Kompakt) als Tokens, reduzierte Bewegung (bereits respektiert), Hochkontrast = Theme Intensiv als Empfehlung, Fokusreihenfolge und ARIA-Prüfung in die QA-Sonde (TASKS §5), Mindestgröße 44 px Touch. Erweiterung von tools/check.mjs um „Betrag ohne Formatierfunktion“.",
+   "why": "Formate sind der häufigste unscheinbare Qualitätsmangel, und Barrierefreiheit ist ab Basis günstiger als nachträglich. Beides wird in jeder Freigabe automatisch mitgeprüft.",
+   "priority": "P2",
+   "effort": "M",
+   "acceptance": "Eine zentrale fmt-Funktion deckt Beträge, Daten, Zeiten ab und wird von allen Zahlenkomponenten genutzt; die QA-Sonde prüft Fokusreihenfolge und Beschriftung der Bedienelemente, Schriftgrößenstufe 130 % erzeugt in den Pflicht-Viewports keinen Überlauf."
+  }
+ ],
+ "risks": [
+  "Scope-Explosion: 9 neue Module plus Querschnitt. Gegenmaßnahme: Ebenenmodell, Skelett-Manifeste (Anforderungen vor Design) und feste Regel, dass eine Ebene zuerst freigegeben wird, bevor die nächste in Design geht.",
+  "Die echten TAKT-Module sind nicht bekannt (Phase 1 fehlt, kein Zugriff auf G:\\). Neu vorgeschlagene Module können Dubletten zu bereits existierenden sein, besonders Start, Einstellungen, Fitness und Finanzen; vor Aufnahme ins Live-Register mit dem Modulregister abgleichen und die Quelle im Feld source kennzeichnen.",
+  "Persona-Datenwelt kann bestehende demoData und Screenshot-Baselines verändern. Einführung als Überschreibung und mit bewusstem qa:baseline; sonst melden freigegebene Features Regressionen.",
+  "Finanz- und Trading-Funktionen (Sparplan-Prognosen, Kurse) berühren Anlageberatung: durchgängig als Simulation kennzeichnen, keine Empfehlungen, Datenquelle und Verzögerung ausweisen.",
+  "Datenschutz: Sensible Daten (Finanzen, Gesundheit, Kontakte, Belege) auch in Demo nie mit echten Daten mischen. Berechtigungen (Kontakte, Kamera, Mitteilungen) nur kontextbezogen anfragen.",
+  "Smart-Hinweise und Texterkennung dürfen nicht nach KI-Magie aussehen, wo sie nur Regeln sind. Zu viele Hinweise und Mitteilungen machen die App lästig; Digest und Ruhezeiten sind Pflicht.",
+  "Ein gemeinsames Verknüpfungs- und Taxonomie-Modell ist invasiv: Es betrifft viele Komponenten und Versionen und löst Drift-Erkennung aus; deshalb vor den Modul-Designs der Ebenen 2 bis 4 klären.",
+  "Echte Smartphones sind nicht getestet. Aussagen zu Timer im Hintergrund, Widgets und Share-Target bleiben bis zum Gerätetest-Meilenstein Annahmen."
+ ]
+}

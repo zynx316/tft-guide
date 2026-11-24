@@ -1,0 +1,307 @@
+{
+ "summary": "Finanzen, Sparpläne und Trading sind eine Kette: Konto, Sparrate, Sparplan-Ausführung, Depotposition, Dividende/Steuer. Im Seed stehen heute zwei isolierte Module (Finanzen mit 4 Features, Trading mit 6) mit je eigenen Demo-Daten, und ein Sparplan-Modul fehlt ganz. Die Zahlen widersprechen sich: Das Konto „Depot“ steht in Finanzen mit 21.480,40 €, Trading rechnet 19.212,84 € in Positionen plus 5.000 € Guthaben, also 24.212,84 €. Es gibt keinen Umbuchungs-Typ. Ohne ihn zählt eine Sparrate fälschlich als Ausgabe und verfälscht Sparquote und Budgets. Die größte Hebelwirkung hat deshalb eine gemeinsame, rechnerisch konsistente Finanz-Datenwelt, ein einheitlicher Zahlen- und Money-Standard samt Privacy-Modus, ein reiner Rechenkern (`finmath`) mit Referenztests und ein zentrales Rechts-/Risikohinweis-System. Darauf setzen das neue Modul „Sparpläne“ und die fehlenden Komponenten auf: Sparplan-Rechner mit Zinseszins-Spanne, Sparplan-Liste, Sparziel mit Projektion, Ausführungskalender, Budget-Hüllen, Abo-Übersicht, Sankey, Vermögensverlauf, Dividendenkalender, Freistellungsauftrag und Numpad-Erfassung. Auf der Plattformseite brauchen mehrere Features einen Layout-Typ `steps` (Assistenten) und QA-Regeln für Zahlenformat, Hinweis-Pflicht und Privacy-Modus. Für das Vertrauen in eine Finanz-App sind vier Dinge entscheidend. Jede Zahl muss herleitbar sein („Wie berechnet?“). Der Datenstand muss ehrlich benannt werden („Stand 09:30, verzögert, fiktiv“). Die Erfassung muss in unter fünf Sekunden gehen. Und es muss sich ein Datenschutz-Gefühl einstellen: lokal, ausblendbar, gesperrt. Alle drei Module bleiben Anzeige, Planung und Simulation: keine Anlageberatung, keine Orderausführung, keine Steuerberatung. Steuer- und Renditeparameter sind konfigurierbare Annahmen mit Stand-Datum, die vor Nutzung zu prüfen sind.",
+ "ideas": [
+  {
+   "title": "Gemeinsame Finanz-Datenwelt (Fixture) für Konten, Sparpläne und Depot",
+   "level": "technik",
+   "area": "Finanzen · Querschnitt",
+   "description": "Neue Datei `app/src/seed/fixtures/finance-world.js`, die `finance.js`, `trading.js` und das neue `savings.js` gemeinsam importieren. Heute hat jedes Feature sein eigenes `demoData`, die Zahlen passen nicht zusammen. Das Fixture exportiert: (1) `accounts[]` mit Typ Girokonto, Tagesgeld, Kreditkarte, Verrechnungskonto und Depot (`{id,name,type,ibanLast4,balance,asOf}`). (2) `categories[]` als feste Taxonomie mit 10 bis 12 Einträgen (id, Label, Icon, Ton, Art fix/variabel/sparen/einkommen). Die Chart-Palette hat nur 6 Farben, deshalb gilt die Regel „Top 5 plus Sonstige“ mit Beschriftung statt nur Farbe. (3) `transactions[]` mit neuem Feld `kind: expense|income|transfer`. Umbuchungen und Sparraten sind neutral und zählen weder in Budgets noch in Cashflow oder Sparquote. (4) `instruments` und `positions`; der Generator wandert aus `trading.js` hierher. (5) `plans[]` (Sparpläne) mit `{id,name,instrumentId,rate,interval,day,fromAccount,toKind,toId,goalId,dynamicPa,status,nextRun}`. (6) `executions[]` (Ausführungen) und `dividends[]`. Die Ausführungen erzeugen die Giro-Umbuchungen und die Sparplan-Orders im Trading (Order-Feld `origin:'sparplan'`) und bilden die Stückzahlen der Positionen. Abgeleitete Funktionen: `netWorth()`, `monthlyFlows()`, `events()` für den Kalender. Referenztag bleibt 24.11.2026. Konsistenz-Invarianten werden von `tools/check.mjs` geprüft: Konto „Depot“ gleich Summe der Positionen plus Verrechnung (±0,01 €), Giro-Endsaldo gleich Startsaldo plus Summe der Umsätze, Summe der Sparplan-Abbuchungen gleich Summe der Plan-Raten im Monat, Budget-Ist gleich Summe der Ausgaben je Kategorie.",
+   "why": "Konto, Sparplan und Depot hängen fachlich zusammen. Widersprüchliche Demo-Zahlen (Depot 21.480 € gegen 24.213 €) zerstören das Vertrauen in jeden Entwurf und machen Varianten-Vergleiche über Module hinweg wertlos. Ohne Umbuchungs-Typ sind Sparquote und Budgets systematisch falsch. Das ist die Grundlage für alle weiteren Finanz-Features.",
+   "priority": "P0",
+   "effort": "M",
+   "acceptance": "`npm run check` schlägt fehl, wenn eine der vier Invarianten verletzt ist. Finanz-Konto „Depot“ und Trading-Depotwert zeigen denselben Betrag. Eine Sparrate erscheint als Umbuchung (neutral) im Giro, als Order mit Herkunft „Sparplan“ im Trading und erhöht die Position, aber nicht die Ausgaben im Budget. Bestehende Features rendern nach der Umstellung ohne QA-Fehler."
+  },
+  {
+   "title": "Zahlenformat- und Money-Standard inkl. Privacy-Modus („Beträge ausblenden“)",
+   "level": "komponente",
+   "area": "Finanzen · Designsystem",
+   "description": "Neue Datei `lib/money.js` und ein Primitiv `<Money>` in `library/ui.js`. Format: de-DE, Tausenderpunkt, Dezimalkomma, geschütztes Leerzeichen vor „€“, echtes Minus „−“ (U+2212) und `tabular-nums`. Beträge stehen rechtsbündig. Cent werden nur gezeigt, wo sie zählen: Umsätze mit 2 Stellen, Hero-Vermögen und Zielbeträge ohne (Option `cents:'auto'|0|2`). Weitere Regeln: Prozent mit Komma; Prozentpunkte als „PP“, nie als „%“; Stückzahlen bis 6 Stellen, Krypto bis 8; Datum TT.MM.JJJJ; Kurzformen nur als „Tsd./Mio.“ mit Tooltip auf den vollen Wert. Vorzeichen und Pfeil-Icon kodieren Gewinn und Verlust zusätzlich zur Farbe (Barrierefreiheit). Berechnet wird intern in Cent als Ganzzahlen. Der Privacy-Modus ist ein Schalter in der Vorschau-Werkzeugleiste und im Einstellungs-Feature: `ctx.privacy` ersetzt Beträge durch „••••,•• €“ gleicher Breite (kein Layout-Sprung), `aria-label` „Betrag ausgeblendet“, Antippen blendet einen Betrag kurz ein. Die lokalen `signed`/`signedPct`-Helfer aus `insights/shared.js` ziehen hierher um. `account-cards`, `transaction-list` und `portfolio-summary` werden umgestellt und die Komponentenversion erhöht (Drift-Erkennung). Dazu eine Ausnahmeliste für Zahlen, die nie maskiert werden (Prozent-Fortschritt).",
+   "why": "Das Zahlenformat ist in einer Finanz-App ein Vertrauensmerkmal. Heute ist es über mindestens vier Komponenten verteilt und uneinheitlich. Der Privacy-Modus (Bahn, Café, Screenshot-Teilen) ist ein Kernanspruch an Datenschutz und fehlt komplett.",
+   "priority": "P0",
+   "effort": "M",
+   "acceptance": "Tabelle mit 14 Testwerten (0, −0,01, 1.234.567,89, 9.999.999,99, 0,5 %, 1 PP, 0,00001234 BTC …) ergibt in Unit-Test und Screenshot identische Ausgabe. Bei aktivem Privacy-Modus enthält das DOM keinen sichtbaren Betrag (DOM-Scan-Test über alle Finanz-Features). Kein horizontaler Überlauf bei 9.999.999,99 € auf 360 px. Alle Komponenten nutzen `<Money>`; `npm run check` meldet rohes `fmt.currency` in Finanz-Komponenten."
+  },
+  {
+   "title": "Finanzmathematik-Kern `core/finmath.js` mit Referenztests",
+   "level": "technik",
+   "area": "Sparpläne · Finanzen · Trading",
+   "description": "Reine, browserfreie Funktionen, in Node importierbar, ohne Datums- oder Zeitzonen-Abhängigkeit außer `isoDay`. Umfang: `futureValue({start,monthly,ratePa,years,dynamicPa,feePa,inflationPa})` mit monatlicher Verzinsung und Jahresreihe; `requiredMonthly(target,…)`; `monthsToGoal`; `scenarioBand(low,base,high)`; `schedule(plan,from,to,holidays)` mit Verschiebung auf den nächsten Handelstag; `netAfterTax({gain,teilfreistellung,pauschbetragRest,kirchensteuer})`; `xirr` (Newton), `twr`, `cagr`; `annuityLoan`; `safeToSpend({balance,fixedUpcoming,plannedSavings,reserves,daysLeft})`; `runway(liquid,avgMonthlyExpense)`. Alle Parameter (Steuersatz, Soli, Pauschbetrag, Teilfreistellung je Fondstyp, Haltefristen) liegen in einem versionierten Objekt `TAX_PARAMS` mit Feld `asOf` (Stand-Datum) und stehen nie hartkodiert in Komponenten. Referenzwerte als Unit-Tests: 10.000 € Start plus 300 €/Monat, 5 % p. a., 20 Jahre ergeben 150.436,50 € bei 82.000 € Einzahlung. 300 €/Monat, 5 %, 30 Jahre ergeben 249.677,59 €. Bei 0 % Rendite gilt exakt Summe der Einzahlungen (300 €, 10 Jahre = 36.000 €). Dynamik 3 % im Beispiel 1 ergibt 184.926,13 €. Zielrate für 50.000 € in 10 Jahren bei 4 % und 5.000 € Start ist 288,94 €. Steuerbeispiel: 1.500 € Gewinn Aktien-ETF, 30 % Teilfreistellung, 1.000 € Pauschbetrag, 25 % plus 5,5 % Soli ergeben 13,19 €.",
+   "why": "Rechner, Sparziele, Ausführungskalender, Steuer-Hinweise und Depot-Kennzahlen brauchen dieselbe, geprüfte Mathematik. Rechenlogik in Komponenten würde dreifach driften und wäre ohne Unit-Tests nicht verlässlich. Falsche Zahlen sind in einer Finanz-App ein Vertrauensbruch.",
+   "priority": "P0",
+   "effort": "M",
+   "acceptance": "`node tools/check.mjs` führt mindestens 25 Unit-Tests aus (Referenzwerte oben, 0 % Rendite, negative Rendite, Schaltjahr, Monatsende 31. im Februar, Ausführungstag auf Wochenende oder Feiertag). Keine Komponente enthält Zinsformeln oder Steuersätze. `TAX_PARAMS.asOf` wird im UI als „Annahmen Stand: …“ angezeigt."
+  },
+  {
+   "title": "Rechts- und Risikohinweis-System (`legal-notice`) mit QA-Pflicht",
+   "level": "komponente",
+   "area": "Finanzen · Trading · Sparpläne",
+   "description": "Neue Komponente `legal-notice` (Kategorie Finanzen) mit `kind: simulation|keine-beratung|risiko|steuer|modellrechnung|kursdaten|krypto` und `style: banner|inline|footer|dialog`. Die Texte stehen zentral in `library/legal-texts.js` mit `LEGAL_VERSION` und Stand-Datum. Sie sind per Variante nicht frei editierbar, damit kein Design den Hinweis wegdesignt. Beispieltexte: „Simulation: Es werden keine Orders an einen Broker gesendet. Kurse sind fiktiv.“; „Keine Anlageberatung: TAKT zeigt Zahlen und Modellrechnungen. Kapitalverlust ist möglich.“; „Modellrechnung mit angenommener, konstanter Rendite. Kein Versprechen, keine Prognose; die Wertentwicklung der Vergangenheit ist kein verlässlicher Indikator für die Zukunft.“; „Steuerhinweis: Orientierung, keine Steuerberatung. Annahmen Stand 2026 prüfen.“; „Kryptowerte sind hochspekulativ und können vollständig an Wert verlieren.“. Beim ersten Öffnen eines Finanz-Moduls erscheint ein einmaliger Dialog „Verstanden“; die Zustimmung liegt im Einstellungs-Zustand. Das Modul-Manifest bekommt `legal: ['simulation','keine-beratung']`. Eine neue QA-Sonden-Prüfung `legal-present` schlägt fehl, wenn ein Feature eines solchen Moduls keinen sichtbaren Hinweis rendert. Die Prüfung wird Teil der Freigabe-Checkliste. Gestaltung: nie wegklickbar in Order-Ticket und Depot, im Rechner als Fußzeile, kontrastgeprüft in allen drei Themes.",
+   "why": "Trading und Sparpläne bewegen sich nah an regulierten Themen (Anlageberatung, Anlageempfehlung, Steuerberatung). Verlässliche, einheitliche Hinweise sind eine Grundvoraussetzung. Heute stehen sie nur als Freitext in einzelnen `notice-banner`-Blöcken. Eine technische Durchsetzung verhindert, dass Hinweise in Varianten verloren gehen. Das ersetzt keine Rechtsprüfung; die Texte sind vor einer echten Veröffentlichung juristisch zu prüfen.",
+   "priority": "P0",
+   "effort": "M",
+   "acceptance": "Ein Feature in Trading oder Sparpläne ohne `legal-notice` besteht die QA nicht und lässt sich nicht freigeben. Alle sieben Hinweisarten sind in der Library-Galerie in Theme Graphite, Horizon und Intensiv kontrastgeprüft. Der Erststart-Dialog erscheint genau einmal und lässt sich in den Einstellungen zurücksetzen."
+  },
+  {
+   "title": "Neues Modul „Sparpläne“ (Seed, Informationsarchitektur, Verknüpfungen)",
+   "level": "modul",
+   "area": "Sparpläne",
+   "description": "Neue Datei `seed/modules/savings.js` (id `savings`, Icon `piggy-bank`, Status `concept`, Theme graphite) und Eintrag in `MANIFESTS` nach Trading; `SEED_VERSION` erhöhen. Links auf finance, trading, calendar, tasks und home. Informationsarchitektur in fünf Ebenen: 1) Übersicht (Gesamtrate, nächste Ausführung, Fortschritt der Ziele) → 2) Pläne (Liste, Detail, Anlegen) → 3) Sparziele → 4) Rechner (Zinseszins, Zielrate) → 5) Kalender (Ausführung, Deckung) plus Einstellungen (Standard-Rendite-Annahmen, Rhythmus, Benachrichtigungen). Feature-Gruppen: Übersicht (`savings.overview`), Pläne (`savings.plans`, `savings.plan-detail`, `savings.create`), Ziele (`savings.goals`), Werkzeuge (`savings.calculator`, `savings.calendar`, `savings.withdrawal` später), Einstellungen. Jeweils Zweck, Muss/Soll/Kann-Anforderungen, Interaktionen, Viewports und mindestens eine Variante; die Features `calculator`, `plans` und `goals` je zwei bis drei strukturell verschiedene Varianten. Modul-`docs` beschreiben das Konzept „Plan-Tracker statt Ausführung“: Die App führt keine Sparpläne beim Broker aus, sondern plant, erinnert, gleicht ab und bestätigt Ausführungen manuell oder per Import. Offene Entscheidungen werden mitgeliefert (siehe Entscheidungs-Backlog).",
+   "why": "Der Nutzer nennt Sparpläne ausdrücklich als eigenes Thema. Im Seed existiert kein Sparplan-Modul, nur eine einzelne Trading-Anforderung. Ein eigenes Modul trennt „Planen und Dranbleiben“ (Sparen) sauber von „Beobachten und Handeln“ (Trading) und bildet die Kette Konto → Sparplan → Depot ab.",
+   "priority": "P0",
+   "effort": "M",
+   "acceptance": "Das Modul erscheint in der Workbench mit mindestens 8 Features und mindestens 14 Varianten, alle rendern ohne Sonden-Fehler in 1440, 768 und 390 px. Seed-Integritätsprüfung (`tools/check.mjs`) ist grün. Die Modulverknüpfungen zu Finanzen und Trading sind in beiden Richtungen sichtbar. Alle Texte haben echte Umlaute."
+  },
+  {
+   "title": "Sparplan-Rechner mit Zinseszins-Kurve und Szenario-Spanne",
+   "level": "feature",
+   "area": "Sparpläne",
+   "description": "Feature `savings.calculator`. Zweck: verstehen, was regelmäßiges Sparen über die Zeit bewirkt und welche Rate ein Ziel braucht. Eingaben: Startkapital, Monatsrate (Slider mit 25-€-Schritten plus Direkteingabe), Laufzeit 1 bis 50 Jahre, Rendite p. a. als Szenario-Chips „vorsichtig 3 % / Basis 5 % / chancenreich 7 %“ (als Annahmen, nicht als Prognose beschriftet), Dynamik % p. a., Kosten (TER plus Depot), Schalter „in heutiger Kaufkraft“ (Inflation 2 %) und „nach Steuern (vereinfacht)“. Ausgaben: Endkapital als Spanne vorsichtig bis chancenreich mit hervorgehobener Basis, Eingezahlt gegen Erträge (Zinseszins-Anteil), Meilensteine („50.000 € nach 9 Jahren und 4 Monaten“), Jahrestabelle zum Aufklappen, Wirkungs-Schnellvergleich („+50 € Rate = +X € nach 20 Jahren“). Rückwärtsmodus: Zielbetrag und Frist ergeben die nötige Rate. Zustände: Standard; ungültige Eingabe (negativ, Rendite über 30 %, Laufzeit 0) mit Fehlertext am Feld; 0 % Rendite (nur linear); Laden und Fehler generisch; Leer-Startwerte aus dem ersten Plan. Interaktionen: Regler → Live-Update; Punkt in der Kurve antippen → Tooltip mit Jahr, eingezahlt und Erträgen; „Als Sparplan übernehmen“ (öffnet den Anlege-Assistenten); „Als Sparziel speichern“. Varianten: A „Regler-Cockpit“ (Layout sidebar: Eingaben links, Ergebnis rechts); B „Fragen-Schritte“ (Layout steps, mobil: Wie viel? Wie lange? Was erwartest du? dann Ergebnis); C „Zielrechner rückwärts“ (Tabs Vorwärts, Rückwärts, Wann erreicht). Neue Komponenten: `savings-calculator` (`layout: full|inputs|result`) und `growth-chart` (gestapelte Fläche eingezahlt plus Erträge, Band zwischen vorsichtig und chancenreich, Basis-Linie; das bestehende `chart` kann weder stapeln noch Bänder). Demo-Daten: `calc:{start,monthly,years,ratePa,dynamicPa,feePa,inflationPa,taxMode}`, `scenarios[]`. Rechenkern aus `core/finmath.js`; Pflichthinweis `legal-notice kind=modellrechnung`.",
+   "why": "Der Rechner ist der Einstieg in das Sparen und das sichtbarste Werkzeug des Moduls. Er soll Verständnis schaffen und nicht Scheingenauigkeit, daher Spannen statt Einzelwert, Kaufkraft, Kosten und Steuer als Schalter. Die zwei fehlenden Visualisierungen (gestapelt, Band) sind der Kern des Zinseszins-Effekts.",
+   "priority": "P0",
+   "effort": "L",
+   "acceptance": "Ergebnis stimmt mit den `finmath`-Referenzwerten überein (150.436,50 € für 10.000 €/300 €/5 %/20 J). Bei 0 % Rendite ist das Ergebnis exakt gleich der Einzahlung. Eingabeänderung aktualisiert die Ausgabe in unter 100 ms. Kein horizontaler Überlauf bei 360 px; Slider-Daumen mindestens 44 px. Der Hinweis „Modellrechnung“ ist in jeder Variante sichtbar. QA besteht in allen 4 Zuständen und 3 Themes."
+  },
+  {
+   "title": "Sparplan-Übersicht mit ETF-Sparplan-Liste (`savings-plan-list`)",
+   "level": "feature",
+   "area": "Sparpläne",
+   "description": "Features `savings.overview` und `savings.plans`. Kopf mit vier Kennzahlen (`metric-row`): Summe der monatlichen Raten, Anteil am Einkommen (Sparquote), nächste Ausführung („in 7 Tagen, 01.12.“) und Wert gegen eingezahlt. Darunter die neue Komponente `savings-plan-list` mit je Plan: Name (fiktiver ETF oder Tagesgeld), Ziel-Tag, Rate und Rhythmus (monatlich, vierteljährlich, jährlich), nächster Termin, eingezahlt, aktueller Wert, Gewinn/Verlust mit Vorzeichen, Status (aktiv, pausiert, Deckung fehlt, Ausführung fehlgeschlagen) und Dynamik-Badge. Aktionen je Plan: pausieren und fortsetzen, Rate ändern (Dialog „gilt ab nächster Ausführung“), beenden (Bestätigung, bereits ausgeführte Käufe bleiben), duplizieren. Zustände: leer („Noch kein Sparplan – im Rechner ausprobieren“), pausiert, Deckung fehlt (Warnfarbe plus Text, Aktion „Tagesgeld auffüllen“), Fehler. Varianten: A „Karten mit Fortschritt“ (mobile-first, `stack`); B „Tabelle mit Summenzeile“ (Desktop, sortierbar, `data-table`-ähnlich, `grid`); C „Verteilung zuerst“ (Ring der Raten je Plan und Regler zum Umverteilen der Gesamtrate in Prozent, `split`). Demo-Struktur: `plans[{id,name,instrumentId,rate,interval,day,fromAccount,status,paid,units,value,nextRun,dynamicPa,goalId}]`. Wiederverwendet werden `metric-row`, `notice-banner`, `chart` (Ring); neu ist nur `savings-plan-list`. Ausführungen bestätigt der Nutzer per Tipp („Ausgeführt: 3,05 Stück zu 98,42 €“) oder per Import.",
+   "why": "Die Liste der laufenden Sparpläne ist das tägliche Arbeitsbild des Moduls. Der Plan-Tracker-Ansatz (planen, erinnern, bestätigen) ist ohne Broker-Schnittstelle der ehrliche und machbare Weg und verhindert den falschen Eindruck einer echten Ausführung.",
+   "priority": "P0",
+   "effort": "M",
+   "acceptance": "Plan pausieren, Rate ändern und beenden funktionieren in der Vorschau und aktualisieren Kopf-Kennzahlen und Ring live. Alle 5 Zustände sind in der Vorschau-Werkzeugleiste prüfbar. Die Summen stimmen mit den Fixture-Invarianten überein. Touch-Ziele mindestens 44 px, kein Überlauf bei 360 px, Gewinn und Verlust zusätzlich mit Vorzeichen markiert."
+  },
+  {
+   "title": "Schnellerfassung einer Buchung (Numpad, Umbuchung, Rückgängig)",
+   "level": "feature",
+   "area": "Finanzen",
+   "description": "Feature `finance.capture` mit neuer Komponente `transaction-capture`. Eine Buchung soll in höchstens 3 Taps und unter 5 Sekunden gespeichert sein: Betrag über das Numpad (Komma, 2 Dezimalstellen, optional +/−-Rechnen), Art-Umschalter Ausgabe, Einnahme, Umbuchung, Kategorie-Chips (die sechs zuletzt oder häufigsten, plus Suche), Konto (vorbelegt mit dem zuletzt genutzten), Datum (Heute, Gestern, Datumswahl), Notiz, Beleg (Foto → Picture to Text), „Monatlich wiederholen“ und Aufteilen auf zwei Kategorien (Split). Speichern zeigt einen Toast mit „Rückgängig“ (5 Sekunden). Validierung: Betrag größer 0, Umbuchung nicht aufs gleiche Konto, Duplikatwarnung bei gleichem Betrag und Empfänger innerhalb von 24 Stunden. Zustände: Standard, Fehler am Feld, Offline (alles lokal, daher immer möglich), Konto archiviert. Varianten: A „Numpad-Sheet“ (Bottom-Sheet, mobile-first, Gewichtung auf Betrag zuerst); B „Eine Zeile“ (Texteingabe „Rewe 42,80 Lebensmittel“ wird in Betrag, Empfänger und Kategorie zerlegt und als Chips bestätigt); C „Vollformular“ (Desktop, `form-card`-Stil mit Beleg-Dropzone und Split-Zeilen). Demo-Daten: `categories[]`, `recentPayees[{name,category,account}]`, `accounts[]`. Bestehendes `quick-add` kennt nur einen Titel und `form-card` hat kein Numpad, daher die neue Komponente mit Betrags-Parser aus `lib/money.js` („12,5“ ergibt 12,50 €; „1.234,56“ gültig; „1,234.56“ wird abgelehnt).",
+   "why": "Schnelle Erfassung entscheidet, ob ein Haushaltsbuch dauerhaft gepflegt wird. Heute gibt es keinen Erfassungsweg für Beträge. Umbuchungen gehören dazu, weil Sparraten sonst als Ausgaben erscheinen würden.",
+   "priority": "P0",
+   "effort": "L",
+   "acceptance": "E2E-Test: Betrag, Kategorie, Speichern in höchstens 3 Interaktionen; die Buchung erscheint sofort in Transaktionsliste und Konto-Saldo. „Rückgängig“ stellt den Zustand vollständig wieder her. Parser-Testtabelle mit 12 Eingaben besteht. Umbuchung ändert beide Salden, aber weder Budget noch Cashflow. Bedienbar mit einer Hand auf 390 px, Touch-Ziele mindestens 44 px."
+  },
+  {
+   "title": "Finanzen-Start v2 „Heute“: frei verfügbar, Anstehendes, Vermögens-Brücke",
+   "level": "feature",
+   "area": "Finanzen",
+   "description": "Erweiterung von `finance.accounts` um zwei strukturell neue Varianten. Neue Komponente `safe-to-spend`: „Frei verfügbar bis Monatsende: 612 € (ca. 102 € pro Tag)“, berechnet als Girosaldo minus anstehende Fixkosten minus geplante Sparraten minus Rücklagen. Antippen öffnet den Rechenweg als Dialog („Wie berechnet?“) und schafft damit Vertrauen. Zustände: grün, gelb ab 20 % Rest, rot bei negativ; Daten veraltet („Stand vor 3 Tagen“); leer; Privacy-Modus. Variante B „Heute-Fokus“ (`stack`, mobile-first): Hero frei verfügbar, darunter Anstehendes der nächsten 7 Tage (Miete, Abo, Sparplan, Gehalt erwartet), die letzten 5 Umsätze und ein fester Erfassen-Knopf. Variante C „Vermögen zuerst“ (`grid`): Vermögensverlauf, Konten und zwei Teaser, die Brücken in die anderen Module schlagen („Sparpläne: 650 € pro Monat, nächster Termin 01.12.“, „Depot: +4,6 %, Simulation“). Variante A (bestehend) bleibt für den Vergleich. `account-cards` und `transaction-list` erhalten Version 1.1: Umbuchungen neutral dargestellt, Status „vorgemerkt“, Konten-Typen Festgeld und Darlehen, Kreditlinie. Entscheidungsfrage für den Nutzer: Welcher Einstieg passt (Kontostand, freier Betrag oder Vermögen)?",
+   "why": "Die wichtigste Frage im Alltag lautet „Was kann ich noch ausgeben?“ und nicht „Wie hoch ist mein Kontostand?“. Ein Hero mit nachvollziehbarer Herleitung hebt die App von reinen Saldo-Anzeigen ab. Die Brücken-Teaser machen die Kette Konten → Sparpläne → Depot für den Nutzer sichtbar.",
+   "priority": "P1",
+   "effort": "M",
+   "acceptance": "Der Rechenweg zeigt jede Position nachvollziehbar und die Summe stimmt mit `finmath.safeToSpend` überein. Alle drei Varianten rendern in 4 Zuständen und 3 Themes ohne Fehler. Vergleichsansicht (drei bedienbare Varianten) funktioniert. Die Seed-Entscheidung „Welcher Finanz-Einstieg?“ ist angelegt."
+  },
+  {
+   "title": "Sparziele mit Projektion (`goal-progress`)",
+   "level": "feature",
+   "area": "Sparpläne",
+   "description": "Feature `savings.goals`. Ein Ziel hat Name, Icon, Zielbetrag, Zieldatum, aktuellen Stand, monatlichen Beitrag und Verknüpfung (Konto oder Sparplan); Art `cash` (Tagesgeld, ohne Rendite) oder `invest` (mit Rendite-Annahme als Spanne). Die neue Komponente `goal-progress` zeigt Fortschritt (Ring oder Balken) mit Meilensteinen bei 25, 50, 75 und 100 Prozent und eine ehrliche Projektion: „Voraussichtlich erreicht im Mai 2028“ oder „Es fehlen 45 € pro Monat, um bis September 2027 am Ziel zu sein“. Status: im Plan, hinterher, erreicht. Vorlagen: Notgroschen (3 × Monatsausgaben, aus dem Fixture), Urlaub, Auto, Anzahlung, Ruhestand. Interaktionen: Einzahlung buchen (erzeugt eine Umbuchung), Was-wäre-wenn-Regler für den Beitrag, Priorisierung per Drag & Drop, Ziel archivieren. Zustände: leer (Vorlagen anbieten), Ziel erreicht, Ziel überfällig, Ziel ohne Verknüpfung. Varianten: A „Karten-Raster mit Ring“; B „Zeitleiste nach Zieldatum“ (zeigt Überschneidungen von Fälligkeiten); C „Hauptziel groß, Rest kompakt“. Das bestehende `progress-list` kennt nur Ist/Soll ohne Projektion und ohne Zielart. Demo-Struktur: `goals[{id,name,icon,target,saved,due,kind,monthly,accountId,planId}]`.",
+   "why": "Ziele machen aus einer Rate einen Sinn („wofür“) und halten die Motivation. Die Projektion beantwortet die eigentliche Frage („Reicht das so?“) und verbindet Rechner, Pläne und Konten.",
+   "priority": "P1",
+   "effort": "M",
+   "acceptance": "Projektion stimmt mit `finmath.monthsToGoal` überein (Referenzfälle mit und ohne Rendite). Alle vier Status sind sichtbar und prüfbar. Einzahlen erhöht den Stand und den Giro-Umbuchungsverlauf konsistent. Fortschritt wird nicht nur über Farbe vermittelt (Text plus Prozent)."
+  },
+  {
+   "title": "Sparplan-Ausführungskalender mit Deckungs-Check",
+   "level": "feature",
+   "area": "Sparpläne",
+   "description": "Feature `savings.calendar`, neue Komponente `execution-calendar`. Monatsraster mit Ausführungstagen: Marker mit Summe, Nicht-Handelstage (Wochenende, bundesweite Feiertage, Börsenschließtage) sind gekennzeichnet und verschieben die Ausführung automatisch auf den nächsten Handelstag mit Hinweis („28.12. statt 25.12.“). Der Deckungs-Check prognostiziert den Giro-Saldo je Ausführung (grün genügend, gelb knapp, rot fehlt) auf Basis von Fixkosten und erwartetem Gehalt. Tagesliste unter dem Raster mit Plan, Betrag und Status (geplant, ausgeführt, übersprungen, fehlgeschlagen). Aktionen: Ausführungstag ändern, einzelne Ausführung überspringen, „In Kalender übernehmen“ (Kategorie „Finanzen“). Banner bei fehlender Deckung mit Aktion „Rate verschieben oder Tagesgeld auffüllen“. Zustände: keine Pläne, nur pausierte Pläne, Deckung fehlt. Varianten: A „Monat plus Tagesliste“; B „Nächste 90 Tage als Zeitleiste“ (kann die bestehende `agenda` mit Datenabbildung wiederverwenden); C „Jahres-Heatmap“ (12 Mini-Monate, Farbe nach Summe der Raten). `calendar-month` hat Termin-Chips, aber keine Summen, Nicht-Handelstage oder Deckung; Hilfsfunktionen aus `calendar/_cal.js` werden gemeinsam genutzt. Demo-Daten: `executions[{planId,date,amount,status}]` aus `finmath.schedule` plus `DE_BANKING_HOLIDAYS`.",
+   "why": "Die häufigste Panne bei Sparplänen ist fehlende Kontodeckung oder Terminverwechslung. Ein Kalender mit Deckungsprüfung macht das Modul „vorausschauend“ und bindet es an Kalender und Finanzen an.",
+   "priority": "P1",
+   "effort": "M",
+   "acceptance": "Referenzfälle: 25.12.2026 (Freitag) verschiebt auf 28.12.2026; ein Plan zum 31. im Februar landet auf dem letzten Handelstag. Deckungsstatus ändert sich live, wenn die Rate oder der Tagesgeld-Saldo geändert wird. Raster ohne Überlauf in 390 px (Punkte statt Text)."
+  },
+  {
+   "title": "Sparplan anlegen als Assistent mit neuem Layout-Typ `steps`",
+   "level": "feature",
+   "area": "Sparpläne · Workbench",
+   "description": "Feature `savings.create`. Fünf Schritte: 1) Wofür (Ziel wählen oder neu). 2) Wohin (Tagesgeld oder Wertpapier aus Watchlist/ETF-Liste; Kosten, Risikoklasse 1 bis 7 und Link zum Basisinformationsblatt als Information; ausdrücklich ohne Empfehlung, nur Filter). 3) Rate, Rhythmus, Ausführungstag, Start, Ende, Dynamik. 4) Von wo (Konto, Deckungsprüfung). 5) Prüfen (Zusammenfassung mit Gesamtkosten und Hinweisen, Bestätigung „Plan speichern (Simulation)“). Die Workbench erhält dafür einen neuen Layout-Typ `steps` in `preview/layouts.js`: Blöcke tragen ein Feld `step`, analog zu `tab`; Fortschrittsanzeige, Weiter/Zurück, Validierung vor Weiter, Zustand bleibt beim Zurückgehen erhalten. Dasselbe Layout nutzen Order-Assistent, CSV-Import und Konto-Ersteinrichtung. Zustände: Validierungsfehler pro Schritt, Deckung nicht ausreichend (Warnung, nicht blockierend), Abbruch (Entwurf bleibt als „Entwurf fortsetzen“). Varianten: A „Wizard in 5 Schritten“ (`steps`, mobile-first); B „Eine Seite mit Live-Zusammenfassung“ (`split`: Formular links, Zusammenfassung rechts); C „Aus Rechner übernehmen“ (Werte vorbelegt, nur Konto und Bestätigung offen). Neue Komponente `summary-card` für die Zusammenfassung; `form-card` wird mit Feldmapping (TASKS §3) ergänzt.",
+   "why": "Das Anlegen ist die kritischste Eingabe im Modul: Fehler (falsche Rate, falsches Konto) wirken über Jahre. Ein Assistent mit Zusammenfassung senkt Fehlbedienung. Der Layout-Typ `steps` kostet wenig, weil `tabs` schon existiert, und wird in drei weiteren Features gebraucht.",
+   "priority": "P1",
+   "effort": "M",
+   "acceptance": "Layout `steps` ist im Design Studio wählbar und prüfbar; QA-Sonde kennt den Typ. Weiter ist erst bei gültigem Schritt möglich; Zurück verliert keine Eingabe. Der gespeicherte Plan erscheint sofort in Liste und Ausführungskalender. Variante C übernimmt alle Rechnerwerte fehlerfrei."
+  },
+  {
+   "title": "Budgets v2 mit Budget-Hüllen (`budget-envelopes`)",
+   "level": "feature",
+   "area": "Finanzen",
+   "description": "Erweiterung von `finance.budgets` um eine Hüllen-Logik. Neue Komponente `budget-envelopes` und kleine Komponente `period-nav` (Monat zurück und vor, „Heute“). Je Hülle: zugewiesen, ausgegeben, verbleibend, Übertrag aus dem Vormonat, Status (OK, ab 85 % gelb, über 100 % rot, jeweils mit Text). Oben „Noch nicht zugewiesen: 120 €“ (Ziel null). Umbuchen zwischen Hüllen per Tipp (von, nach, Betrag). Sparhüllen sind mit Sparplan-Raten verknüpft und werden automatisch befüllt. Zustände: überzogene Hülle, nicht zugewiesener Betrag, neuer Monat leer (Aktion „Aus Vormonat übernehmen“), Monat in der Zukunft. Varianten: A „Balken“ (bestehendes `progress-list`, erweitert um Übertrag); B „Hüllen-Karten“ (Raster, spielerisch, mobil gut); C „Zero-Based-Tabelle“ (Desktop, Spalten Zugewiesen, Aktivität, Verfügbar, Inline-Bearbeitung). Demo-Daten: `envelopes[{id,label,icon,kind,assigned,spent,rollover}]`, `unassigned`. Umbuchungen bleiben außen vor (Fixture-Regel).",
+   "why": "Die bestehende Budget-Ansicht zeigt Ist gegen Soll, hilft aber nicht beim Verteilen des Einkommens. Hüllen verbinden Budgets mit Sparen (Sparen ist eine Hülle) und sind das verbreitetste Modell für aktives Planen. Der Variantenvergleich A, B, C klärt, welches Mental-Modell passt.",
+   "priority": "P1",
+   "effort": "M",
+   "acceptance": "Umbuchung zwischen Hüllen ändert beide Werte und die Summe „nicht zugewiesen“ korrekt. Warnschwellen (85 % und 100 %) lösen im Test den richtigen Zustand aus. Monatswechsel lädt die Daten des gewählten Monats. Alle Zustände in 3 Themes ohne Kontrastfehler."
+  },
+  {
+   "title": "Abos und Fixkosten-Übersicht (`subscription-overview`)",
+   "level": "feature",
+   "area": "Finanzen",
+   "description": "Neues Feature `finance.subscriptions` mit neuer Komponente `subscription-overview`. Kopf: Monatssumme (Jahresabos geteilt durch 12 normalisiert), Jahreskosten, Anzahl; Fixkostenquote am Einkommen. Liste: Name, Betrag, Rhythmus (monatlich, vierteljährlich, jährlich), nächste Abbuchung, „kündbar bis 31.12.“, Preiserhöhungs-Badge („+1,00 € seit Januar“), Kategorie, Status (aktiv, gekündigt, pausiert). Sortierbar nach Kosten oder Datum. Erkennung vermuteter Abos aus den Umsätzen (gleicher Empfänger, ähnlicher Betrag, mindestens 3 Monate) mit „Bestätigen“ oder „Verwerfen“. Aktionen: Kündigungserinnerung (erzeugt Aufgabe plus Kalendereintrag, querschnittlich), Notiz mit Kündigungslink. Ausdrücklicher Hinweis: Die App kündigt nichts. Zustände: leer („Noch keine wiederkehrenden Zahlungen erkannt“), Preiserhöhung, kündbar in unter 14 Tagen. Varianten: A „Liste mit Summenkopf“; B „Abbuchungs-Kalender“ (Monatsraster zeigt Lastspitzen im Monat); C „Kosten-Ranking“ (sortierte Balken, Jahreskosten und Kosten pro Tag). Demo: Strom 78 €, Miete 980 €, Streaming 12,99 €, Studio 39,90 €, Handy 19,99 €, Cloud 2,99 €, Haftpflicht 312 € jährlich.",
+   "why": "Wiederkehrende Kosten sind der größte Hebel im Haushaltsbudget und Voraussetzung für die Prognose „frei verfügbar“. Der Fixkosten-Block speist `safe-to-spend` und den Deckungs-Check.",
+   "priority": "P1",
+   "effort": "M",
+   "acceptance": "Normalisierte Monatssumme stimmt rechnerisch (Haftpflicht 312 € jährlich ergibt 26,00 € pro Monat). Vermutetes Abo wird bestätigt und erscheint in der Liste und in den Fixkosten für `safe-to-spend`. Kündigungserinnerung erzeugt einen Kalender- und Aufgabeneintrag in den Demo-Daten. 5 Zustände prüfbar."
+  },
+  {
+   "title": "Cashflow und Auswertungen mit Sankey (`cashflow-sankey`)",
+   "level": "feature",
+   "area": "Finanzen",
+   "description": "Ausbau von `finance.reports` (derzeit nur Platzhalter, Status nicht untersucht). Zeitraum-Navigation (Monat, Quartal, Jahr, frei). Neue Komponente `cashflow-sankey`: Einnahmen → Fixkosten, Variabel, Sparen, Steuer-Rücklage → Kategorien; auf Mobile als horizontale Flussliste (Wasserfall) statt Diagramm. Dazu Kategorien-Vergleich mit Vormonat und Vorjahr (Delta in PP und €), Top-10-Empfänger, Verlauf der Sparquote und Export (CSV, PDF) mit Hinweis auf den Datenschutz. Umbuchungen sind standardmäßig ausgeblendet (Schalter „Umbuchungen zeigen“). Die Kategoriefarben folgen der Regel „Top 5 plus Sonstige“ mit Beschriftung. Zustände: Zeitraum ohne Daten, nur ein Monat vorhanden, sehr viele Kategorien. Varianten: A „Dashboard-Raster“ (Kennzahlen, Balken, Ring); B „Sankey-Fokus“ (großes Flussdiagramm, Klick auf Knoten öffnet die Detailliste); C „Bericht“ (Pivot Kategorien × Monate mit Heatmap-Färbung, für Selbstständige und Steuerberater). Demo-Daten: `monthlyFlows[{month,income,fixed,variable,saved,tax}]` aus dem Fixture.",
+   "why": "Ohne Auswertung bleibt die Erfassung folgenlos. Der Sankey macht den Weg des Geldes verständlich und zeigt Sparen als Teil des Flusses; er ist das einprägsamste Finanz-Diagramm und fehlt in der Bibliothek.",
+   "priority": "P1",
+   "effort": "L",
+   "acceptance": "Summen aller Flüsse sind gleich der Einnahmen-Summe (Rundungsdifferenz maximal 0,01 €). Mobil wird keine Beschriftung abgeschnitten. Datenpunkt und Knoten sind per Tastatur erreichbar. Export-Dialog nennt Zeitraum, Format und Datenschutzhinweis."
+  },
+  {
+   "title": "Vermögen und Finanz-Check (`net-worth-chart`)",
+   "level": "feature",
+   "area": "Finanzen",
+   "description": "Neues Feature `finance.networth`. Neue Komponente `net-worth-chart`: gestapelte Fläche über die Zeit (Liquidität, Sparen/Tagesgeld, Depot, Sachwerte manuell, minus Verbindlichkeiten) mit Zeitraum 1M, 6M, 1J, Max; Marker für Ereignisse (große Einzahlung, Entnahme). Kennzahlen mit „Wie berechnet?“-Tooltip: Nettovermögen, Veränderung zum Vormonat, Liquiditäts-Reichweite (liquide Mittel geteilt durch durchschnittliche Monatsausgaben, Richtwert 3 bis 6 Monate nur als Orientierung), Sparquote, Fixkostenquote, Schuldenquote. Keine Bewertung im Sinne einer Beratung. Sachwerte (Auto, Immobilie) werden manuell mit Bewertungsdatum gepflegt. Zustände: nur ein Datenpunkt („Verlauf entsteht ab Monatsende“), negatives Nettovermögen, Daten älter als 30 Tage. Varianten: A „Verlauf plus Aufteilung“; B „Finanz-Check“ (Kennzahlen-Karten mit Ampel und Erklärtext); C „Bilanz-Tabelle“ (Aktiva und Passiva, Desktop). Demo: `networthHistory` mit 24 Monaten aus dem Fixture.",
+   "why": "Vermögen ist die Klammer über Konten, Sparpläne und Depot. Der Verlauf macht den Effekt des Sparens über die Zeit sichtbar und motiviert; Reichweite und Quoten geben eine neutrale Standortbestimmung.",
+   "priority": "P1",
+   "effort": "M",
+   "acceptance": "Letzter Datenpunkt gleicht der Summe der Konten, Positionen und Sachwerte abzüglich Verbindlichkeiten (Fixture-Invariante). Gestapelte Flächen summieren sich exakt; Legende nennt jede Schicht mit Wert. Alle Zustände ohne Fehler, Texte ohne Bewertungsvokabular („gut/schlecht“) bei Kennzahlen."
+  },
+  {
+   "title": "Steuer-Übersicht und Freistellungsauftrag (`tax-allowance`)",
+   "level": "feature",
+   "area": "Trading",
+   "description": "Neues Feature `trading.tax` (Simulation) mit Komponente `tax-allowance`. Inhalt: Sparer-Pauschbetrag (Parameter, derzeit 1.000 € Einzel oder 2.000 € Zusammenveranlagung, Stand-Datum und Hinweis zum Prüfen) und Freistellungsaufträge je Institut (z. B. Broker 600 €, Bank 400 €; Summe darf den Pauschbetrag nicht übersteigen, sonst Fehler) mit Auslastungsbalken genutzt gegen zugeteilt. Prognose zum Jahresende aus Zinsen, Dividenden und realisierten Gewinnen. Hinweis „Noch 237 € frei – Freistellungsauftrag bei Institut X erhöhen?“ mit Aktion „Aufgabe anlegen“. Verlusttöpfe (Aktien gegen allgemein), Teilfreistellung nach Fondstyp (Aktienfonds 30 %), Vorabpauschale-Hinweis im Januar, Krypto-Haltefrist-Countdown („in 112 Tagen steuerfrei nach einem Jahr, Freigrenze prüfen“) und geschätzte Steuer (25 % plus 5,5 % Soli, optional Kirchensteuer). Für Selbstständige Hinweis auf getrennte Einkommensteuer-Vorauszahlungen. Dauerhaft sichtbar: „Orientierung, keine Steuerberatung“. Zustände: kein Freistellungsauftrag hinterlegt, Überzuteilung, Jahreswechsel. Varianten: A „Auslastung je Institut“ (Karten); B „Jahres-Steuerrechnung“ (Wasserfall: Erträge → Teilfreistellung → Pauschbetrag → Steuer); C „Checkliste Jahresende“ (Aufgaben, die in `tasks` und Kalender landen). Rechenlogik aus `finmath.netAfterTax`; alle Sätze aus `TAX_PARAMS`.",
+   "why": "Der Freistellungsauftrag ist für Privatanleger in Deutschland eine konkrete, häufig vergessene Stellschraube. Die Funktion unterscheidet die App von reinen Kurs-Anzeigen. Wegen der Rechtslage sind Parameter nur als geprüfte Annahmen mit Stand-Datum zu führen.",
+   "priority": "P1",
+   "effort": "M",
+   "acceptance": "Das Referenzbeispiel (1.500 € Gewinn, 30 % Teilfreistellung, 1.000 € Pauschbetrag) liefert 13,19 € Steuer. Überzuteilung zeigt einen Fehler und blockiert das Speichern. Der Hinweis „keine Steuerberatung“ ist in jeder Variante sichtbar. Parameter-Änderung in `TAX_PARAMS` wirkt ohne Komponentenänderung."
+  },
+  {
+   "title": "Dividendenkalender (`dividend-calendar`)",
+   "level": "feature",
+   "area": "Trading",
+   "description": "Neues Feature `trading.dividends` mit Komponente `dividend-calendar`. Zwölf Monatsbalken (brutto und geschätzt netto), Liste der Zahltermine mit Ex-Tag, Zahltag, Stück × Dividende je Aktie, Brutto, geschätzter Netto-Betrag nach Steuer sowie Kennzeichnung Ist oder geschätzt. Summen pro Jahr und Dividendenrendite auf Einstandswert. Thesaurierende ETFs zahlen nichts aus und erhalten einen Hinweis (Vorabpauschale, Verweis auf `tax-allowance`). Aktionen: „In Kalender übernehmen“, Zahltag-Erinnerung. Zustände: keine ausschüttenden Positionen (Leerzustand mit Erklärung), nur Schätzungen (Badge „geschätzt, Daten fiktiv“), Währung nicht EUR (Hinweis auf Umrechnung, später). Varianten: A „Monatsbalken plus Liste“; B „Kalender-Raster“ (Zahltage als Punkte, integrierbar in das Kalender-Modul); C „Passives-Einkommen-Ziel“ (z. B. 200 € pro Monat, Fortschritt). Demo-Struktur: `dividends[{id,positionId,exDate,payDate,perShare,qty,gross,estimated}]`. Das bestehende `chart` (Balken) wird wiederverwendet; neu ist nur die Terminliste und Berechnung.",
+   "why": "Ausschüttungen sind für viele Anleger der sichtbarste Ertrag und ein typischer Alltagsanlass für den Blick in die App. Das Feature verbindet Trading mit Kalender und Steuer.",
+   "priority": "P1",
+   "effort": "M",
+   "acceptance": "Brutto, Steuerschätzung und Netto stimmen mit `finmath` überein. Jede Dividende gehört zu einer vorhandenen Position (Fixture-Invariante). Gesamtsumme je Jahr stimmt mit der Summe der Liste überein. Hinweis „geschätzt“ ist an jedem nicht bestätigten Betrag sichtbar."
+  },
+  {
+   "title": "Order-Ticket 2.0 (Simulation): Ordertypen, Kostenvorschau, Plausibilitätsschutz",
+   "level": "komponente",
+   "area": "Trading",
+   "description": "Erweiterung der bestehenden Komponente `order-ticket` (ID bleibt, `version` auf 2.0, damit die Drift-Erkennung freigegebene Features markiert). Neu: Ordertypen Markt, Limit, Stop, Stop-Limit; Gültigkeit (Tag, bis Widerruf, bis Datum); Kostenvorschau mit Gebühr, geschätztem Spread, Fremdkosten und Gesamt; Plausibilitätsschutz gegen Fehleingaben (Limit weicht über 5 % vom Kurs ab → Warnung; Order über 25 % des Depotwerts → Doppelbestätigung; Verkauf über den Bestand und Kauf über das Guthaben bleiben blockiert); Order-Lebenszyklus (offen, teilausgeführt, ausgeführt, storniert, abgelehnt) in der Orderliste; optionale Begründung als Journal-Eintrag (später auswertbar, Verknüpfung zur Workbench-Idee Entscheidungslog). Zustände: Börse geschlossen (Order wird vorgemerkt, Handelszeiten als Text), Kurs älter als 15 Minuten (vor Bestätigung neu laden), Krypto 24/7, Simulationsbanner in jedem Schritt. Varianten: A „Ticket plus Liste“ (bestehend); B „Mehrschritt-Assistent“ (Layout `steps`, mobile-first); C „Schnell-Sheet aus der Position“ (Bottom-Sheet, Menge per Chip 25 %, 50 %, 100 % des Bestands). Es wird weiterhin nie etwas an einen Broker gesendet.",
+   "why": "Das Ticket ist die Stelle mit der höchsten Fehler- und Haftungsrelevanz im Trading. Der Schutz vor Fehleingaben und die Kostentransparenz sind Qualitätsmerkmale, die sich in Simulation und später in der echten App gleichermaßen bewähren.",
+   "priority": "P1",
+   "effort": "M",
+   "acceptance": "Validierungsmatrix mit mindestens 12 Fällen (Stückzahl 0, Bruchteile, Verkauf über Bestand, Kauf über Guthaben, Limit ≤ 0, Stop über Kurs …) besteht als E2E-Test. Das Simulationsbanner ist in jedem Schritt und im Bestätigungsdialog sichtbar. Version 2.0 löst „Regression nötig“ für `trading.order` aus."
+  },
+  {
+   "title": "Datenschutz und Sicherheit für Finanzdaten (Feature in Einstellungen)",
+   "level": "feature",
+   "area": "Einstellungen · Finanzen",
+   "description": "Neues Feature `settings.privacy` (das Einstellungs-Modul hat bisher nur „Darstellung“). Inhalt: Privacy-Modus mit den Optionen aus, an, „Beträge beim Start verbergen“; App-Sperre (PIN oder Biometrie, Sperrzeit 1/5/15 Minuten); Schutz vor Screenshots und im App-Wechsler (Android FLAG_SECURE, nur für Finanzbereiche); Benachrichtigungen ohne Beträge auf dem Sperrbildschirm; IBAN nur mit den letzten 4 Stellen speichern (Datensparsamkeit); verschlüsselter Export und Backup (Passphrase, AES-256) mit Warnung bei unverschlüsseltem Export; „Welche Daten verlassen das Gerät?“ als Transparenzseite (lokal, Kursabfrage überträgt nur Symbole); Daten löschen (zweistufige Bestätigung, Eingabe des Wortes „LÖSCHEN“). Zustände: Sperre aktiv, Biometrie nicht verfügbar (PIN-Fallback), Backup fehlgeschlagen. Varianten: A „Einstellungsliste“ (Schaltergruppen); B „Sicherheits-Check“ (Anzeige „3 von 5 Schutzmaßnahmen aktiv“ mit Empfehlungen); C „Erststart-Schritte“ (Layout `steps`, Sperre und Privacy beim Onboarding). In der Workbench wird die Wirkung im Privacy-Modus demonstriert (siehe Money-Standard).",
+   "why": "Finanzdaten sind besonders sensibel. Datenschutz und Sicherheit sind ein erwartetes Merkmal einer erstklassigen Finanz-App und ein Verkaufsargument der lokalen Architektur (kein Backend). Heute existiert dafür kein Feature.",
+   "priority": "P1",
+   "effort": "M",
+   "acceptance": "Alle Einstellungen sind in Vorschau und Variantenvergleich bedienbar; die Wirkung des Privacy-Modus ist in Finanz-Features sichtbar. Löschen funktioniert nur nach zwei Bestätigungen. Transparenzseite listet jede ausgehende Datenart. Texte ohne Fachjargon, Kontrast in allen Themes bestanden."
+  },
+  {
+   "title": "Konten verwalten und Ersteinrichtung mit sauberen Leerzuständen",
+   "level": "feature",
+   "area": "Finanzen",
+   "description": "Neues Feature `finance.accounts-manage`. Konto anlegen: Typ (Girokonto, Tagesgeld, Festgeld, Kreditkarte, Bargeld, Verrechnungskonto Depot, Darlehen, Sachwert), Name, Startsaldo mit Stichtag, Farbe und Icon, Reihenfolge, Kreditlinie, optional nur die letzten 4 IBAN-Stellen. Archivieren statt Löschen (Umsätze bleiben erhalten). Saldo-Abgleich: „Kontostand laut Bank: 3.482,16 € – Differenz 12,00 € – Ausgleichsbuchung anlegen?“. Ersteinrichtung bei leerem Zustand: Willkommensbild mit drei Wegen (Konto manuell anlegen, CSV importieren, Demo-Daten ansehen). Zustände: leer, Differenz beim Abgleich, archiviertes Konto, negativer Saldo ohne Kreditlinie (Warnung). Varianten: A „Liste mit Detail-Dialog“; B „Assistent für die Ersteinrichtung“ (Layout `steps`); C „Inline-Bearbeitung“ (Desktop, Tabelle). `account-cards` erhält eine kompakte Listenvariante für mehr als 6 Konten. Der Datenstand („Stand: heute 08:15, manuell“) wird je Konto angezeigt.",
+   "why": "Ohne Kontenpflege gibt es keine Daten. Die Ersteinrichtung entscheidet, ob ein Nutzer die App durchhält. Der Saldo-Abgleich ist der ehrliche Weg, Vertrauen in manuell gepflegte Zahlen herzustellen.",
+   "priority": "P1",
+   "effort": "M",
+   "acceptance": "Neues Konto erscheint in Kontenübersicht, Erfassung und Vermögen. Abgleich erzeugt eine Ausgleichsbuchung und der Saldo stimmt danach. Archiviertes Konto verschwindet aus Auswahllisten, seine Umsätze bleiben in Auswertungen. Leerzustand bietet alle drei Wege und ist in Variante A und B prüfbar."
+  },
+  {
+   "title": "Entscheidungs-Backlog Finanzen und Sparpläne im Entscheidungslog",
+   "level": "prozess",
+   "area": "Finanzen · Sparpläne · Trading",
+   "description": "Die Workbench lebt von dokumentierten Entscheidungen. Die Seed-`decisions[]` der drei Module werden mit offenen Fragen samt Optionen, Empfehlung und Abwägung gefüllt: 1) Kontodaten: manuell plus CSV/CAMT (Empfehlung für V2) gegen Bank-Aggregator (Kosten, Backend, Datenschutz, Haftung). 2) Kursdaten: verzögerte kostenlose Quelle mit sichtbarem Stand gegen lizenzierte Echtzeitdaten. 3) Sparplan: Plan-Tracker (Empfehlung) gegen simulierte Ausführung gegen echte Broker-Anbindung. 4) Rendite-Annahmen im Rechner: feste Szenarien 3/5/7 % gegen freie Eingabe gegen beides. 5) Steuerparameter: mit App-Update ausliefern gegen in den Einstellungen editierbar (mit Stand). 6) Kategorie-Set: feste 12 Standard-Kategorien plus eigene gegen komplett frei. 7) Umbuchungen als eigener Typ (Empfehlung) gegen Kategorie „Umbuchung“. 8) Modulschnitt: Sparpläne als eigenes Modul (Nutzerwunsch) gegen Untermenü von Trading. 9) Finanz-Einstieg: Kontostand, frei verfügbar oder Vermögen. 10) Währung: nur EUR in V2 gegen Mehrwährung. Jede Entscheidung bekommt `status: open`, Optionen als `alternatives` und eine Empfehlung als Vorschlag, den der Nutzer entscheidet.",
+   "why": "Diese Fragen bestimmen Architektur und Aufwand mehr als jedes Design. Werden sie früh sichtbar gemacht, vermeidet das Umbauten und entspricht dem Workbench-Prinzip „entscheiden statt endlos variieren“.",
+   "priority": "P1",
+   "effort": "S",
+   "acceptance": "Mindestens 10 Entscheidungen sind nach „Neue Seed-Inhalte übernehmen“ im Entscheidungs-Center sichtbar, jeweils mit Optionen, Empfehlung und Auswirkung. Jede ist dem passenden Feature zugeordnet. Eine entschiedene Frage lässt sich mit Begründung abschließen."
+  },
+  {
+   "title": "Finanz-QA: Zahlen-Stresstest, Format-Prüfung und Invarianten-Tests",
+   "level": "qualitaet",
+   "area": "Finanzen · Workbench",
+   "description": "Ein zusätzlicher Demo-Zustand `stress` im Fixture mit Extremwerten: 0,00 €, −0,01 €, 9.999.999,99 €, 1.234.567,89 € auf 360 px, 0,00001234 BTC, Empfängername mit 120 Zeichen und Emoji, 500 Umsätze (Performance), Rechner mit 50 Jahren und −5 % Rendite, Ausführungstag 29.02.2028 und 31. im Februar. Erweiterungen: neue QA-Sonden-Prüfung `money-format` (sichtbare Beträge mit Punkt als Dezimaltrenner, „€“ vor der Zahl oder Bindestrich statt Minus sind Fehler); `legal-present` (siehe Hinweis-System); `privacy-clean` (bei aktivem Privacy-Modus darf kein Betrag im DOM sichtbar sein). In `qa/run-qa.mjs` zusätzlich 8 E2E-Tests: Rechner-Referenzwert, Erfassung mit Rückgängig, Umbuchung ändert beide Salden, Order-Validierungsmatrix, Sparplan pausieren, Privacy-Modus, Steuer-Überzuteilung, Zielprojektion. Die Screenshot-Matrix bekommt den Zustand „Privacy“. Die Fixture-Invarianten laufen in `tools/check.mjs`.",
+   "why": "Finanzdarstellungen scheitern an Randfällen (lange Beträge, negative Nullen, Rundung) und werden in Standardtests nicht gefunden. Rechenfehler und fehlende Hinweise lassen sich automatisch erkennen und sollten vor der Freigabe auffallen.",
+   "priority": "P1",
+   "effort": "M",
+   "acceptance": "`npm run qa` enthält die drei neuen Prüfungen und 8 neue Tests und ist grün. Absichtlich eingebaute Fehler (Dezimalpunkt, fehlender Hinweis, sichtbarer Betrag im Privacy-Modus) werden von der QA gefunden. Stress-Zustand rendert in 360, 390, 768 und 1440 px ohne Überlauf."
+  },
+  {
+   "title": "Import und Abgleich (CSV, CAMT.053) mit Kategorisierungsregeln",
+   "level": "feature",
+   "area": "Finanzen",
+   "description": "Neue Features `finance.import` und `finance.rules`. Ohne Bank-Anbindung ist der Import der realistische Weg zu Daten. Assistent im Layout `steps`: 1) Datei wählen (Dropzone; Formate CSV, CAMT.053, MT940; allgemeine Bank-Vorlagen). 2) Spalten zuordnen (Datum, Betrag, Verwendungszweck, Gegenseite) mit automatischer Erkennung von Dezimaltrenner, Datumsformat und Kodierung. 3) Vorschau mit Dublettenerkennung (Datum, Betrag, Text), Umbuchungs-Erkennung (gegengleicher Betrag auf anderem Konto innerhalb von 2 Tagen) und Kategorisierung per Regeln. 4) Ergebnis („123 neu, 4 Duplikate übersprungen, 2 Umbuchungen erkannt“) mit Rückgängig für den gesamten Import. Die Datei verlässt das Gerät nie (Hinweis im UI). Regel-Feature: Liste „Text enthält ‚REWE‘ → Lebensmittel“ mit Priorität, Test „wirkt auf 37 Umsätze“, Aktivieren und Deaktivieren. Zustände: defekte Datei, falsche Kodierung, leere Datei, alle Zeilen Duplikate. Varianten: A „Assistent“ (Mobile und Desktop); B „Drag-&-Drop-Fläche mit Direktvorschau“ (Desktop, `split`). Komponenten: Layout `steps`, `data-table` mit Spaltenzuordnung, `item-list` für Regeln.",
+   "why": "Eine Haushaltsbuch-App ohne Datenimport verlangt dauerhaft manuelle Arbeit; Dubletten und Umbuchungen sind die häufigsten Fehlerquellen. Die Entscheidung gegen eine Bank-Anbindung (Datenschutz, Lizenz, Backend) macht diesen Weg zur Kernfunktion.",
+   "priority": "P2",
+   "effort": "L",
+   "acceptance": "Ein Testexport mit 150 Zeilen wird korrekt in Spalten gemappt; Dubletten werden beim zweiten Import erkannt (0 neue). Ein gesamter Import lässt sich mit einem Klick zurücknehmen. Regelvorschau nennt die Zahl der betroffenen Umsätze korrekt."
+  },
+  {
+   "title": "Depot v2: Soll/Ist-Allokation und Performance gegen Vergleichsindex",
+   "level": "feature",
+   "area": "Trading",
+   "description": "Erweiterung von `trading.portfolio` und neues Feature `trading.performance`. Komponente `allocation-target`: Zielanteile je Anlageklasse oder Position, Toleranzband (±5 PP), Abweichung als Balken; Hinweis, wie die nächsten Sparraten verteilt werden könnten, um die Abweichung zu verringern (ohne Verkauf, rein informativ, keine Empfehlung). Komponente `performance-compare`: Depot (zeitgewichtet) gegen fiktiven Vergleichsindex gegen Einzahlungen; Kennzahlen zeitgewichtete Rendite, geldgewichtete Rendite (XIRR) mit Erklärschalter („Warum zwei Zahlen?“), maximaler Rückgang und Schwankung; Zeiträume YTD, 1J, 3J, Max. Zustände: zu kurze Historie (unter 30 Tage, Kennzahlen ausgegraut), Zielallokation fehlt, Abweichung über Band. Varianten: A „Tabs Allokation, Performance, Kosten“; B „Dashboard-Raster“. Pflichthinweis „Wertentwicklung der Vergangenheit ist kein verlässlicher Indikator“. Berechnung aus `finmath.twr` und `finmath.xirr`.",
+   "why": "Für Anleger mit Sparplänen ist die Abweichung vom Zielportfolio die wichtigste laufende Frage. Der Vergleich der Rendite-Definitionen verhindert Fehlinterpretation, wenn regelmäßig eingezahlt wird.",
+   "priority": "P2",
+   "effort": "L",
+   "acceptance": "XIRR und zeitgewichtete Rendite stimmen mit Referenzfällen überein. Band-Überschreitung wird durch Text und Icon, nicht nur Farbe, angezeigt. Legal-Hinweis in beiden Varianten vorhanden."
+  },
+  {
+   "title": "Selbstständige: Steuer-Rücklagen und Einnahmen aus Vertriebskanälen",
+   "level": "feature",
+   "area": "Finanzen · Sales",
+   "description": "Feature `finance.business` für Privatpersonen mit Nebenerwerb oder Selbstständigkeit. Betriebliche Einnahmen (z. B. Auszahlungen aus Shopify oder Etsy aus dem Sales-Modul) werden als Kategorie „Betrieblich“ geführt. Rücklagen-Rechner: Umsatzsteuer (19 % oder 7 % im Bruttoumsatz enthalten; Option Kleinunternehmer = keine Umsatzsteuer), Einkommensteuer-Rücklage mit einstellbarer Quote (z. B. 30 %), Termine der Einkommensteuer-Vorauszahlung (10.03., 10.06., 10.09., 10.12.) als Kalendereinträge, Warnung bei Unterdeckung vor dem Termin. Betrieblich und privat trennbar (Konto-Kennzeichen), Beleganhänge per Picture to Text, Export für Steuerberater (CSV nach Kategorie und Zeitraum). Ausdrücklich: keine Steuerberatung und keine GoBD-konforme Buchführung. Komponente `tax-reserve` (Fortschrittsbalken je Rücklagentopf plus Termine). Zustände: Kleinunternehmer an oder aus, Rücklage unterdeckt, kein betrieblicher Umsatz. Varianten: A „Rücklagen-Töpfe“; B „Monatsabschluss-Bericht“ (Tabelle nach Monat).",
+   "why": "Der Nutzer führt Sales Channels und Rechnungen; die Brücke vom Verkaufserlös zu „Was gehört mir wirklich?“ fehlt. Rücklagen verhindern die typische Steuernachzahlung.",
+   "priority": "P2",
+   "effort": "M",
+   "acceptance": "Bei 1.000 € Bruttoumsatz mit 19 % enthaltener Umsatzsteuer zeigt die Rücklage 159,66 € USt-Anteil plus gewählte ESt-Quote. Vorauszahlungstermine erscheinen im Demo-Kalender. Der Hinweis „keine Steuerberatung“ ist sichtbar; Export enthält Zeitraum und Kategorie."
+  },
+  {
+   "title": "Modulübergreifende Finanz-Ereignisse in Kalender, Aufgaben und Heute-Ansicht",
+   "level": "modul",
+   "area": "Finanzen · Kalender · Aufgaben · Home",
+   "description": "Aus dem Fixture entsteht ein gemeinsamer Ereignisstrom `events()` mit Sparplan-Ausführung, erwartetem Gehalt, Abo-Abbuchung, Kündigungsfrist, Dividenden-Zahltag, Freistellungsauftrag prüfen, Einkommensteuer-Vorauszahlung, Steuererklärung (Frist 31.07., Parameter) und ausgelöstem Kursalarm. Der Kalender erhält eine Kategorie „Finanzen“ (Filter, Legende); Aufgaben bekommen Erinnerungen („Ausführung bestätigen: 300 € → MSCW“); die Heute-Ansicht eine kompakte Finanzkarte (frei verfügbar, nächster Termin). Datenschutz: Beträge in Kalendereinträgen und Benachrichtigungen sind maskierbar (Privacy-Modus). Verknüpfungen (`links`) zwischen den Features werden gesetzt, damit die Workbench die Abhängigkeiten zeigt. Umsetzung im Seed: `calendar.js` und `home.js` binden Fixture-Ereignisse; neue Daten bleiben mit `events`-Format der Kalender-Komponenten kompatibel.",
+   "why": "Der Mehrwert einer All-in-one-App entsteht erst durch Verknüpfung: Finanztermine gehören in den Kalender und Fristen in die Aufgaben. Der Nutzer soll nicht an drei Stellen nachsehen.",
+   "priority": "P2",
+   "effort": "M",
+   "acceptance": "Kalender zeigt mindestens 8 Finanzereignisse im Zeitraum 24.11. bis 31.12.2026, filterbar nach Kategorie. Eine Ausführungserinnerung erscheint in Aufgaben und Kalender mit gleichem Datum. Im Privacy-Modus enthalten die Einträge keine Beträge."
+  },
+  {
+   "title": "Entnahmeplan und Ruhestandsrechner (Simulation)",
+   "level": "feature",
+   "area": "Sparpläne",
+   "description": "Feature `savings.withdrawal` als Variante des Rechners. Eingaben: Kapital, monatliche Entnahme, Rendite-Spanne, Inflation, Dauer. Ergebnis: Kapitalverlauf mit Ende-Zeitpunkt („reicht bis Alter 87 bei der Basis-Annahme“) und Band vorsichtig bis chancenreich, optional dauerhafte Entnahme als Prozentsatz („4-%-Regel“ nur als Rechenbeispiel mit Hinweis auf Annahmen). Zustände: Kapital reicht nicht, Kapital reicht dauerhaft. Pflichthinweise „Modellrechnung“ und „keine Anlageberatung“. Nutzt `growth-chart` und `finmath`.",
+   "why": "Sparen hat ein Ziel; viele Nutzer fragen „Wie lange reicht das?“. Die Funktion ist reine Rechnung und fügt sich ohne neue Komponente an den Rechner an.",
+   "priority": "P3",
+   "effort": "M",
+   "acceptance": "Referenzfall (Kapital, Entnahme, 0 % Rendite) endet exakt nach Kapital geteilt durch Entnahme Monaten. Beide Pflichthinweise sichtbar. Band wird als Spanne und nicht als Einzelwert beschriftet."
+  },
+  {
+   "title": "Kredite und Tilgungsplan (`loan-schedule`)",
+   "level": "feature",
+   "area": "Finanzen",
+   "description": "Feature `finance.loans`: Darlehen mit Zins, Tilgung oder Rate, Zinsbindung, Sondertilgung. Komponente `loan-schedule` mit Restschuld-Kurve, Tilgungsplan als Tabelle (Zins- und Tilgungsanteil), Hinweis zum Ende der Zinsbindung und Wirkung einer Sondertilgung („spart X € Zinsen, Laufzeit minus Y Monate“). Anbindung an Vermögen (Verbindlichkeiten) und `safe-to-spend` (Rate als Fixkosten). Berechnung aus `finmath.annuityLoan`. Zustände: ohne Zinsbindungsende, voll getilgt. Hinweis „Modellrechnung, keine Finanzierungsberatung“.",
+   "why": "Verbindlichkeiten gehören zu einem vollständigen Vermögensbild. Der Einsatz ist später und weniger dringlich als Sparen, passt aber in dieselbe Rechenbasis.",
+   "priority": "P3",
+   "effort": "M",
+   "acceptance": "Annuitätenformel liefert Referenzwerte (z. B. 200.000 €, 3,5 %, 2 % Anfangstilgung ergibt die erwartete Monatsrate). Restschuld nach der Laufzeit ist 0 € (±0,01 €). Sondertilgung ändert Laufzeit und Zinssumme korrekt."
+  }
+ ],
+ "risks": [
+  "Seed-Änderungen an `finance.js` und `trading.js` erreichen bestehende Live-Daten in `data/workbench.json` nicht: `mergeSeed` ändert Bestehendes nie. Für die gemeinsame Datenwelt braucht es das opt-in-`seedRev` je Feature (TASKS §3) oder eine bewusste Ersetzung der noch nicht freigegebenen Finanz- und Trading-Features. Freigegebene Features dürfen wegen der Sperre nicht still verändert werden.",
+  "Rechts- und Steuerthemen: Hinweise, Steuerparameter (Sparer-Pauschbetrag, Teilfreistellung, Freigrenzen, Fristen) und Aussagen zu Anlageprodukten sind Annahmen mit Stand-Datum. Rechtslage und Gesetzesreformen (Vorsorge, Kapitalertragsteuer) können sich ändern. Vor einer echten Veröffentlichung braucht es eine juristische Prüfung. Die Workbench darf nie den Eindruck von Beratung oder Orderausführung erwecken.",
+  "Der Plan-Tracker-Ansatz (keine echte Ausführung, keine Bank-Anbindung) kann die Erwartung „die App führt meinen Sparplan aus“ verfehlen. Das muss in Texten, Leerzuständen und Entscheidungsdokument ausdrücklich geklärt sein. Echte Bank- und Broker-Anbindung (PSD2, Lizenz, Backend) ist ein eigenes Projekt mit Datenschutz- und Haftungsfragen.",
+  "Kursdaten und Marktdaten sind lizenz- und aktualitätskritisch. Alle Werte in der Workbench sind fiktiv; die Entscheidung über die echte Datenquelle (kostenlos verzögert gegen lizenziert) ist offen und beeinflusst Alarme, Order-Plausibilität und Dividendenkalender.",
+  "Das deklarative Modell stößt hier an Grenzen: keine verschachtelten Container, keine Props je Breakpoint, nur beschreibende Interaktionen. Assistenten (Layout `steps`), Hüllen-Umbuchung und Rechner-Logik brauchen Komponenten mit eigenem Zustand. Das erhöht Aufwand und Risiko von Drift zwischen Komponenten und Spezifikation. Für Flutter muss die Rechenlogik (`finmath`) später 1:1 in Dart portiert und gegen dieselben Referenzwerte getestet werden.",
+  "Scheingenauigkeit und Fehlinterpretation: Rendite-Szenarien (3/5/7 %) können als Prognose gelesen werden, Kennzahlen mit Ampel als Bewertung. Gegenmaßnahmen: Spannen statt Einzelwert, neutrale Sprache, „Wie berechnet?“ an jeder Zahl. Hoher Gestaltungsaufwand; im Zweifel Kennzahlen weglassen.",
+  "Umfang: Sparpläne plus Ausbau von Finanzen und Trading sind sehr viel Inhalt (rund 30 neue oder erweiterte Features und 15 neue Komponenten). Es besteht das Risiko, Breite vor Tiefe zu liefern. Empfohlene Reihenfolge: Fundament (Fixture, Money, `finmath`, Hinweise) vor Sparplan-Kern (Rechner, Liste, Erfassung) vor Rest. Bei Zeitnot P0 vollständig und P1 nur mit je einer polierten Variante.",
+  "Komponenten-Änderungen (`order-ticket` 2.0, `account-cards` und `transaction-list` 1.1, `portfolio-summary`) lösen laut Drift-Erkennung „Regression nötig“ für betroffene Features aus. Das ist gewollt, erzeugt aber QA-Lauf- und Baseline-Aufwand (`npm run qa:baseline`).",
+  "Chart-Palette mit nur 6 Farben und viele Kategorien: Ohne klare Regel (Top 5 plus Sonstige, Beschriftung statt Farbe) werden Ring- und Sankey-Diagramme unlesbar und für Farbsehschwache unbrauchbar.",
+  "Android-spezifische Schutzfunktionen (Bildschirmschutz FLAG_SECURE, Biometrie, verschlüsselter Speicher) lassen sich in der Browser-Workbench nur beschreiben und simulieren, nicht echt prüfen. Sie sind im Flutter-Projekt separat zu testen; die Workbench-Variante bleibt Entwurf."
+ ]
+}

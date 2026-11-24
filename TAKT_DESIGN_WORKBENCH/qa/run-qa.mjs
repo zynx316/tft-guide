@@ -131,11 +131,16 @@ async function contractStage(page, base) {
           const def = reg.getComponent(b.component);
           if (!def) { errors.push(`${f.id}/${v.id}#${b.id}: unbekannte Komponente ${b.component}`); continue; }
           if (bids.has(b.id)) errors.push(`${f.id}/${v.id}: doppelte Block-ID ${b.id}`); bids.add(b.id);
-          for (const slot of def.data || []) { const key = b.bind?.[slot.slot] ?? slot.default; if (slot.required && !(key in (f.demoData || {}))) warnings.push(`${f.id}/${v.id}#${b.id}: Datenschlüssel „${key}“ fehlt in Demo-Daten`); }
+          for (const slot of def.data || []) {
+            const key = b.bind?.[slot.slot] ?? slot.default; const val = (f.demoData || {})[key];
+            if (slot.required && !(key in (f.demoData || {}))) warnings.push(`${f.id}/${v.id}#${b.id}: Datenschlüssel „${key}“ fehlt in Demo-Daten`);
+            if (typeof val === 'string' && val.startsWith('@world:') && !(val.slice(7) in (state.world || {}))) errors.push(`${f.id}/${v.id}#${b.id}: Welt-Schlüssel „${val.slice(7)}“ existiert nicht`);
+          }
           for (const k of Object.keys(b.props || {})) if (!(def.props || []).some((p) => p.name === k)) warnings.push(`${f.id}/${v.id}#${b.id}: Prop „${k}“ nicht im Schema von ${def.id}`);
         }
       }
       if (f.selectedVariantId && !f.variants.some((v) => v.id === f.selectedVariantId)) errors.push(`${f.id}: bevorzugte Variante ${f.selectedVariantId} fehlt`);
+      for (const i of f.interactions) if (i.to && !state.features.some((x) => x.id === i.to)) errors.push(`${f.id}: Navigationsziel „${i.to}“ existiert nicht`);
       const events = new Set(f.variants.flatMap((v) => v.blocks.flatMap((b) => reg.getComponent(b.component)?.events || [])));
       for (const i of f.interactions) if (i.event && f.variants.length && !events.has(i.event) && !/^(nav|dialog|state)\./.test(i.event)) warnings.push(`${f.id}: Interaktion „${i.event}“ wird von keiner verwendeten Komponente ausgelöst`);
     }
@@ -276,7 +281,7 @@ async function e2eStage(browser, base, log) {
   await T('Export und Import (Rundreise)', async () => {
     await go('#/data'); const [dl] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: 'Workbench exportieren' }).click()]);
     const file = path.join(OUT, 'export.json'); await dl.saveAs(file); const exported = JSON.parse(fs.readFileSync(file, 'utf8'));
-    await expect(Promise.resolve(exported.features.length > 10 && exported.schemaVersion === 1), 'Export unvollständig');
+    await expect(Promise.resolve(exported.features.length > 10 && exported.schemaVersion >= 2 && Array.isArray(exported.directions)), 'Export unvollständig');
     exported.modules.push({ id: 'qa-import', name: 'QA Import', icon: 'box' }); fs.writeFileSync(file, JSON.stringify(exported));
     await page.locator('[data-qa="import-input"]').setInputFiles(file); await page.waitForTimeout(300);
     const [dl2] = await Promise.all([page.waitForEvent('download'), confirm()]); await dl2.cancel().catch(() => {}); await page.waitForTimeout(500);
@@ -304,6 +309,37 @@ async function e2eStage(browser, base, log) {
     await page.getByRole('button', { name: 'Navigation' }).click(); await page.waitForTimeout(300); await page.locator('.wb-nav__item', { hasText: 'Module' }).first().click(); await page.waitForTimeout(300);
     await expect(page.getByRole('heading', { name: 'Module' }).isVisible(), 'Mobile Navigation');
     await page.setViewportSize({ width: 1440, height: 900 });
+  });
+  await T('Demo-Launcher: Versionen, gekoppelte Navigation, Bewertung, Übernehmen', async () => {
+    const lp = await ctx.newPage(); await lp.setViewportSize({ width: 1600, height: 1000 });
+    lp.on('pageerror', (e) => consoleErrors.push('Launcher: ' + e.message));
+    await lp.goto(base + '/launcher.html'); await lp.waitForSelector('body[data-ready]', { timeout: 15000 });
+    await lp.waitForFunction(() => document.querySelectorAll('[data-launcher-version] iframe').length >= 2, null, { timeout: 8000 });
+    await lp.waitForTimeout(1500);
+    const n = await lp.locator('[data-launcher-version]').count(); if (n < 2) throw new Error(`nur ${n} Versionen sichtbar`);
+    const f0 = lp.frameLocator('[data-launcher-version] iframe').first();
+    await f0.locator('[data-nav-module="calendar"]').first().click(); await lp.waitForTimeout(1200);
+    const routes = await lp.locator('.ln-col__foot .wb-trunc').allTextContents();
+    if (!routes.every((r) => r.startsWith('Kalender'))) throw new Error(`Navigation nicht gekoppelt: ${routes.join(' | ')}`);
+    await lp.locator('.ln-stars button').nth(4).click(); await lp.waitForTimeout(400);
+    await lp.locator('[data-launcher-version]').nth(1).getByRole('button', { name: 'Übernehmen' }).click();
+    await lp.locator('.wb-dialog').getByRole('tab', { name: /^Modul/ }).click();
+    await lp.locator('.wb-dialog textarea').first().fill('QA: im Launcher am klarsten'); await lp.locator('[data-confirm]').last().click(); await lp.waitForTimeout(800);
+    await eventually(() => state().then((s) => s.decisions.some((d) => d.level === 'module' && /Richtung/.test(d.title) && /klarsten/.test(d.rationale)) && s.modules.find((m) => m.id === 'calendar').directionId), 'Übernehmen hat keine Modul-Entscheidung erzeugt');
+    const fb = await lp.evaluate(async () => (await (await fetch('/api/feedback')).json()).length); if (fb < 2) throw new Error(`Feedback nicht gespeichert (${fb})`);
+    await lp.close();
+  });
+  await T('Demo & Entscheidung: Ebenen-Leiter und Feedback-Eingang', async () => {
+    await go('#/decide'); await page.getByRole('heading', { name: 'Demo & Entscheidung' }).waitFor();
+    await page.locator('[data-tab="feedback"]').click(); await page.getByRole('button', { name: 'Vom Server laden' }).click(); await page.waitForTimeout(600);
+    await expect(page.locator('.wb-table tbody tr').count().then((c) => c >= 2), 'Feedback-Eingang leer');
+  });
+  await T('Spezifikation (Flutter-Vorlage) und Dart-Tokens exportierbar', async () => {
+    await go('#/features'); const [dl] = await Promise.all([page.waitForEvent('download'), (async () => { await page.locator('[data-feature="calendar.month"]').getByRole('button', { name: 'Aktionen' }).click(); await page.getByRole('menuitem', { name: /Spezifikation/ }).click(); })()]);
+    const md = path.join(OUT, 'spec.md'); await dl.saveAs(md); const txt = fs.readFileSync(md, 'utf8');
+    if (!/# Kalender › Monatsansicht/.test(txt) || !/## Aufbau/.test(txt) || !/Freigabe v1\.0/.test(txt)) throw new Error('Spezifikation unvollständig');
+    await go('#/data'); const [d2] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: /Flutter-Tokens/ }).click()]);
+    const dart = path.join(OUT, 'takt_tokens.dart'); await d2.saveAs(dart); if (!/class TaktColors extends ThemeExtension/.test(fs.readFileSync(dart, 'utf8'))) throw new Error('Dart-Tokens fehlerhaft');
   });
   await T('Keine JavaScript-Fehler während der Bedienung', async () => { if (consoleErrors.length) throw new Error(consoleErrors.slice(0, 3).join(' | ')); });
   await ctx.close();

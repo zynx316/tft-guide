@@ -3,9 +3,11 @@
 // Reines JS ohne Browser-Abhängigkeit (auch von Node/CLI importierbar).
 // Siehe ARCHITECTURE.md › Datenmodell.
 // ============================================================================
-import { uid, nowIso, slug } from '../lib/util.js';
+import { uid, nowIso, slug, clone } from '../lib/util.js';
+import { DEFAULT_DIRECTIONS, guessDirection } from './directions.js';
+import { WORLD } from '../seed/world/index.js';
 
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = 2;
 
 export const FEATURE_STATUSES = [
   { id: 'not_analyzed', label: 'Nicht untersucht', short: 'Offen', tone: 'neutral', icon: 'circle-dashed' },
@@ -66,6 +68,9 @@ export function createModule(partial = {}) {
     id: partial.id || slug(partial.name || 'modul'),
     name: 'Neues Modul', icon: 'box', description: '', status: 'concept', theme: 'graphite', designVersion: '0.1',
     order: 999, archived: false, isReference: false, links: [], docs: '', infoArchitecture: '', source: 'Workbench',
+    area: null,                   // Lebensbereich (Gruppierung bei vielen Modulen)
+    homeFeatureId: null,          // Modul-Startseite (Ebene 1); null = automatisch
+    directionId: null,            // gewählte Richtung auf Modulebene (Ebene 1); null = erbt App-Richtung
     createdAt: t, updatedAt: t,
     ...partial,
   };
@@ -76,6 +81,7 @@ export function createVariant(partial = {}) {
   return {
     id: partial.id || uid('var'), name: 'Variante', concept: '', description: '',
     layout: { type: 'stack' }, blocks: [], createdAt: t, updatedAt: t, origin: 'manual',
+    direction: partial.direction === undefined ? guessDirection({ name: partial.name || '', concept: partial.concept || '' }) : partial.direction,
     ...partial,
     blocks: (partial.blocks || []).map((b, i) => ({ id: b.id || `b${i + 1}`, region: 'main', props: {}, ...b })),
   };
@@ -94,14 +100,16 @@ export function createFeature(partial = {}) {
     ...partial,
   };
   f.requirements = (f.requirements || []).map((r, i) => (typeof r === 'string' ? { text: r } : r)).map((r, i) => ({ id: r.id || `r${i + 1}`, type: 'info', priority: 'must', ...r }));
-  f.interactions = (f.interactions || []).map((x, i) => ({ id: x.id || `i${i + 1}`, trigger: '', result: '', event: '', ...x }));
+  f.interactions = (f.interactions || []).map((x, i) => ({ id: x.id || `i${i + 1}`, trigger: '', result: '', event: '', to: '', ...x }));
+  f.acceptance = f.acceptance || [];   // Akzeptanzkriterien (Given/When/Then oder Prüfsätze)
+  f.flows = f.flows || [];             // Abläufe: [{ id, name, steps:[{ featureId, action }] }]
   f.variants = (f.variants || []).map((v) => createVariant(v));
   if (!f.selectedVariantId && f.variants[0]) f.selectedVariantId = f.variants[0].id;
   return f;
 }
 
 export function createDecision(partial = {}) {
-  return { id: uid('dec'), featureId: null, moduleId: null, title: '', decision: '', rationale: '', tradeoffs: '', alternatives: '', status: 'open', createdAt: nowIso(), decidedAt: null, ...partial };
+  return { id: uid('dec'), featureId: null, moduleId: null, level: partial.featureId ? 'feature' : partial.moduleId ? 'module' : 'app', title: '', decision: '', rationale: '', tradeoffs: '', alternatives: '', status: 'open', createdAt: nowIso(), decidedAt: null, ...partial };
 }
 
 export function emptyState() {
@@ -113,6 +121,11 @@ export function emptyState() {
     modules: [], features: [], versions: [], decisions: [], history: [],
     qa: { runs: [], latest: {}, cli: null },
     components: {},
+    // Ebene 0 (App): gewählte Richtung + App-Shell-Entscheidungen
+    app: { directionId: null, decidedAt: null, nav: 'bottom', startFeatureId: 'home.today', notes: '', favorites: ['home', 'calendar', 'tasks', 'finance'] },
+    directions: clone(DEFAULT_DIRECTIONS),
+    feedback: [],                      // Bewertungen/Kommentare aus dem Demo-Launcher (auch vom Handy)
+    world: clone(WORLD),               // gemeinsame Datenwelt (Persona „Ein Tag“), gebunden per '@world:<schlüssel>'
   };
 }
 
@@ -127,7 +140,12 @@ export function migrate(state) {
   s.modules = (s.modules || []).map((m) => createModule(m));
   s.features = (s.features || []).map((f) => createFeature(f));
   s.versions = s.versions || []; s.decisions = s.decisions || []; s.history = s.history || []; s.components = s.components || {};
-  // zukünftige Migrationen: if ((state.schemaVersion || 1) < 2) { … }
+  // v1 → v2: App-Ebene, Richtungen, Feedback (Felder an Modulen/Varianten ergänzen createModule/createVariant)
+  s.app = { ...base.app, ...(state.app || {}) };
+  s.directions = Array.isArray(state.directions) && state.directions.length ? state.directions : base.directions;
+  s.feedback = Array.isArray(state.feedback) ? state.feedback : [];
+  // Neue Welt-Schlüssel aus dem Seed ergänzen, vorhandene (ggf. bearbeitete) Werte behalten
+  s.world = { ...clone(WORLD), ...(state.world || {}) };
   s.schemaVersion = SCHEMA_VERSION;
   return s;
 }
