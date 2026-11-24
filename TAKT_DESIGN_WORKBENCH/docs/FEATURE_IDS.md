@@ -1,6 +1,6 @@
 # Feature-Katalog (verbindliche IDs)
 
-> Automatisch erzeugt aus dem Seed 2026-11-24.7 mit `node tools/feature-ids.mjs` – nicht von Hand bearbeiten.
+> Automatisch erzeugt aus dem Seed 2026-11-24.8 mit `node tools/feature-ids.mjs` – nicht von Hand bearbeiten.
 > Feature-IDs werden nie umbenannt (Querverweise, Entscheidungen, Versionen hängen daran). Neue IDs nach dem Muster `<modul>.<name>`.
 
 **19 Module · 197 Features · 154 mit Design · 348 Varianten**

@@ -85,7 +85,7 @@ export const searchFilter = {
   name: 'Suche & Filter',
   category: 'Navigation',
   description: 'Suchfeld plus Filterchips. Setzt ctx.ui.query und ctx.ui.filter – Listen, Tabellen und Karten filtern automatisch.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'placeholder', label: 'Platzhalter', type: 'text', default: 'Suchen …' },
     { name: 'filters', label: 'Filterchips', type: 'list', default: ['Alle', 'Offen', 'Erledigt'] },
@@ -102,7 +102,8 @@ export const searchFilter = {
   .tk-search-filter--stacked { flex-direction:column; align-items:stretch; }
   .tk-search-filter--stacked .tk-search { max-width:none; flex:none; }
   .bp-mobile .tk-search-filter { flex-direction:column; align-items:stretch; }
-  .bp-mobile .tk-search-filter .tk-search { max-width:none; flex:none; }`,
+  .bp-mobile .tk-search-filter .tk-search { max-width:none; flex:none; }
+  [data-tk-large-text] .tk-search-filter__chips { flex-wrap:wrap; overflow-x:visible; }`,
   example: { props: { filters: ['Alle', 'Heute', 'Diese Woche', 'Überfällig'] } },
   render: ({ props, ctx }) => {
     const filters = list(props.filters);

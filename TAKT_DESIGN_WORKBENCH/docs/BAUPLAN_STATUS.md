@@ -1,10 +1,12 @@
 # Bauplan – Umsetzungsstand je Paket
 
-> Stand: 24.11.2026, Ende Session 2. Bezug: `docs/BAUPLAN.md` (Verträge) und `docs/BAUPLAN_PAKETE.json` (Pakete mit Abnahmekriterien).
+> Stand: 24.11.2026, Ende Session 2 (nach Lückenschluss und 200-%-Sweep). Bezug: `docs/BAUPLAN.md` (Verträge) und `docs/BAUPLAN_PAKETE.json` (Pakete mit Abnahmekriterien).
 > Legende: **fertig** = Abnahmekriterien im Kern erfüllt und geprüft · **teilweise** = nutzbar, einzelne Punkte offen (stehen in
 > `TASKS.md`) · **anders gelöst** = Ziel erreicht, aber bewusst mit anderem Mittel · **offen** = nicht begonnen.
-> Seed-Zahlen: 16 Module, 173 Features (Tier 1: 44, Tier 2: 60, Tier 3: 54), 295 Varianten (kompakt 120 · visuell 96 · fokus 79),
-> 389 Navigationswege (`to`), 122 Entscheidungen (11 App, 20 Muster, 91 Feature). Genaue Listen: `docs/FEATURE_IDS.md`, `docs/KOMPONENTEN.md`.
+> Seed-Zahlen (Seed 2026-11-24.8): 19 Module, 197 Features (Tier 1: 49, Tier 2: 67, Tier 3: 66, ohne Tier: 15), 348 Varianten
+> (kompakt 140 · visuell 116 · fokus 92), 296 Komponenten, 478 Navigationswege (`to`), 150 Entscheidungen (11 App, 20 Muster,
+> 119 Feature). Alle 49 Tier-1-Features haben eine eigene Variante in jeder der drei Richtungen. Genaue Listen:
+> `docs/FEATURE_IDS.md`, `docs/KOMPONENTEN.md`.
 
 ## Fundament (Phase 0)
 | Paket | Stand | Umgesetzt | Offen / Abweichung |

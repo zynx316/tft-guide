@@ -60,7 +60,7 @@ export const itemList = {
   name: 'Liste',
   category: 'Daten',
   description: 'Universelle Liste (Titel, Untertitel, Meta, Badge, optional Checkbox). Respektiert Suche/Filter, wählt Elemente für Master-Detail (ctx.ui.selectedId).',
-  version: '1.2',
+  version: '1.3',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: '' },
     { name: 'checkable', label: 'Abhakbar', type: 'boolean', default: false },
@@ -85,7 +85,10 @@ export const itemList = {
   .tk-item-list__sub { font-size:var(--tk-fs-sm); color:var(--tk-c-text-muted); }
   .tk-item-list__meta { font-size:var(--tk-fs-sm); color:var(--tk-c-text-subtle); white-space:nowrap; }
   .tk-item-list--dense .tk-listrow { min-height:40px; padding-top:6px; padding-bottom:6px; }
-  .bp-mobile .tk-item-list--dense .tk-listrow { min-height:48px; }`,
+  .bp-mobile .tk-item-list--dense .tk-listrow { min-height:48px; }
+  [data-tk-large-text] .tk-item-list .tk-listrow { flex-wrap:wrap; row-gap:4px; }
+  [data-tk-large-text] .tk-item-list .tk-listrow > .tk-grow { flex:1 1 6em; overflow-wrap:break-word; }
+  [data-tk-large-text] .tk-item-list__meta { white-space:normal; margin-left:auto; text-align:right; }`,
   example: { props: { title: 'Notizen', groupBy: 'group' }, data: { items: [
     { id: '1', title: 'Projekt-Kickoff vorbereiten', subtitle: 'Agenda, Teilnehmer, Ziele', meta: 'Heute', badge: 'Arbeit', tone: 'accent', icon: 'briefcase', group: 'Heute' },
     { id: '2', title: 'Arzttermin bestätigen', meta: 'Morgen', badge: 'Privat', tone: 'success', icon: 'heart-pulse', group: 'Morgen' },

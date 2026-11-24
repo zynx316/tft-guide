@@ -9,7 +9,7 @@ export const trash = [
   { id: 'tr1', title: 'Altes Angebot Schmidt prüfen', module: 'tasks', kind: 'task', deletedAt: '2026-11-23T16:20:00', detail: 'Vertrieb', payload: { id: 't-trash-1', title: 'Altes Angebot Schmidt prüfen', due: '2026-11-20', priority: 'mittel', project: 'Vertrieb', category: 'Arbeit', status: 'Offen', subtasks: [] } },
   { id: 'tr2', title: 'Zahnreinigung', module: 'calendar', kind: 'event', deletedAt: '2026-11-21T09:10:00', detail: 'Do, 26.11., 08:30', payload: { id: 'e-trash-1', title: 'Zahnreinigung', start: '2026-11-26T08:30:00', end: '2026-11-26T09:15:00', category: 'Gesundheit', tone: 'danger', reminders: ['1 Tag vorher'] } },
   { id: 'tr3', title: 'Idee: Newsletter-Betreff Winter', module: 'notes', kind: 'note', deletedAt: '2026-11-16T11:00:00' },
-  { id: 'tr4', title: 'Doppelbuchung Amazon', module: 'finance', kind: 'transaction', deletedAt: '2026-11-10T19:45:00', detail: '23,99 €' },
+  { id: 'tr4', title: 'Doppelbuchung Amazon', module: 'finance', kind: 'transaction', deletedAt: '2026-11-10T19:45:00', detail: '23,99\u00a0€' },
   { id: 'tr5', title: 'Meditation (Gewohnheit)', module: 'habits', kind: 'habit', deletedAt: '2026-11-02T08:05:00', detail: '12 Tage Serie' },
   { id: 'tr6', title: 'Kartons bestellen', module: 'tasks', kind: 'task', deletedAt: '2026-10-28T14:00:00', detail: 'erledigt' },
   { id: 'tr7', title: 'Reiseplan Japan, Entwurf', module: 'notes', kind: 'note', deletedAt: '2026-10-26T21:30:00' },

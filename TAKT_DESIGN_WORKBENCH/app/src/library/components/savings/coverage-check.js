@@ -11,7 +11,7 @@ export const coverageCheckCard = {
   name: 'Deckungs-Check',
   category: 'Sparpläne',
   description: 'Prüft für die nächsten Ausführungen, ob das Girokonto nach Fixkosten, Sparraten und erwartetem Einkommen ausreicht – mit einstellbarem Puffer und aufklappbarer Herleitung („Wie berechnet?“). Nie als Alarm formuliert.',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Deckung Girokonto' },
     { name: 'limit', label: 'Ausführungstage', type: 'number', default: 3 },
@@ -37,7 +37,9 @@ export const coverageCheckCard = {
   .tk-svc__dt { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:6px 0; margin:0; font-size:var(--tk-fs-sm); font-variant-numeric:tabular-nums; } .tk-svc__dt dt { padding-right:16px; } .tk-svc__dt dd { margin:0; text-align:right; } .tk-svc__dt dt { color:var(--tk-c-text-muted); }
   .tk-svc__dt .sum { font-weight:var(--tk-fw-semibold); border-top:1px solid var(--tk-c-border); padding-top:6px; color:var(--tk-c-text); }
   .tk-svc__tog { border:0; background:none; color:var(--tk-c-text-muted); font:inherit; font-size:var(--tk-fs-sm); display:inline-flex; gap:6px; align-items:center; padding:8px 0; min-height:36px; cursor:pointer; align-self:flex-start; }
-  .tk-svc__chips { display:flex; flex-wrap:wrap; gap:6px; align-items:center; }`,
+  .tk-svc__chips { display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
+  [data-tk-large-text] .tk-svc__row { grid-template-columns:minmax(0,1fr); }
+  [data-tk-large-text] .tk-svc__row > div:last-child { text-align:left; align-items:flex-start; }`,
   example: { data: { plans: [{ id: 'a', name: 'All-World', monthly: 300, day: 1, intervalMonths: 1, active: true, startDate: '2024-01-01' }], accounts: [{ id: 'acc-giro', type: 'giro', balance: 3842.17 }], subscriptions: [{ id: 's1', name: 'Miete', amount: 1150, day: 1, interval: 'monatlich' }], transactions: [{ id: 't1', account: 'acc-giro', subscriptionId: 's1', type: 'expense', amount: -1150 }] } },
   render: function CoverageCheck({ props, data, ctx }) {
     const [open, setOpen] = useState(false);

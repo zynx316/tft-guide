@@ -64,6 +64,13 @@
       Annahmen 3/5/7 % bleiben sichtbar) – Entscheidung des Nutzers
 - [ ] App-Rahmen bei großer Schrift: Kopfzeile und Reiterbeschriftungen der Leiste („Einstellun…“) bleiben gekürzt (feste Höhe);
       prüfen, ob Reiter bei 200 % nur Symbole zeigen sollen
+- [ ] Große Schrift, Feinschliff (alle Varianten sind bei 200 % ohne Befund der Sonde; Rest ist Optik): Querschnitt-Komponenten
+      `_xc-css.js` von `overflow-wrap:anywhere` auf `break-word` (Versionssprung ~20 Komponenten); Sparplan-Ausführungsliste
+      zweispaltig eng; Depot-Positionen und „Auch wichtig“ mit Icon-Kachel; Kursalarm-Aktionen nur als Symbol; Kalender-Woche
+      kürzt Termine in schmalen Überlappungsspalten (`data-clip-ok`, Volltext per Tippen); Wochenleiste nutrition.home/B eng;
+      Notizkarten kürzen die Vorschau (line-clamp); `calendar/_cal.js › bigTextScale()` auf `ctx.textScale` umstellen
+- [ ] Viewport 320 px bei 200 % (außerhalb der Zielbreiten 360/390): Fitness `records-list`, `set-logger`, `weight-entry`,
+      `focus-set` haben noch enge Stellen
 - [ ] Launcher: Tageszeit-Stationen (07:30/12:30/18:30) für kontextabhängige Startseiten
 - [ ] Bestehende Stände: nach jedem Pull **Daten & Backup › Seed abgleichen …** (neue Varianten, Bindungen, Module kommen sonst
       nicht in einen gespeicherten Stand)
@@ -95,3 +102,6 @@
       Modulgruppen mit Korrektur und Nachprüfung; Lückenschluss: alle 49 Tier-1-Features in allen drei Richtungen, ruhige
       Erststarts der Startseiten, Altlasten (check 0 Hinweise, Vertrag 0 Hinweise); große Schrift; Start/Suche/Erfassen kennen
       die neuen Module; Blockbedingungen `hideWhenEmpty`/`showWhenEmpty`, `quietEmpty`
+- [x] Session 2, Mittag: Schrift 200 % in allen 348 Varianten (390/360/1440 px) ohne abgeschnittene Texte, zeichenweise Umbrüche
+      oder zu schmale Spalten – 4 Modulgruppen mit Korrektur und unabhängiger Nachprüfung (alle „gut“), bei 100 % pixelgleich;
+      Basisregeln für Chips, Badges, Reiter, Filterchips, Silbentrennung und Listenzeilen; `ctx.textScale`/`ctx.largeText`

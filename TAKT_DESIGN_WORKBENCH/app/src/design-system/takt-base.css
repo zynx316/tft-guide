@@ -301,9 +301,13 @@ h1, h2, h3, h4, p { margin: 0; }
 
 /* ---- Große Schrift (≥ 125 %): Beschriftungen umbrechen statt abschneiden/überlaufen ---- */
 [data-tk-large-text] .tk-btn, .tk-btn--wrap { white-space: normal; height: auto; min-height: var(--tk-size-control); padding-top: 6px; padding-bottom: 6px; text-align: center; line-height: 1.25; }
-[data-tk-large-text] .tk-chip { height: auto; min-height: 32px; white-space: normal; }
+[data-tk-large-text] .tk-chip { height: auto; min-height: var(--tk-size-control); white-space: normal; flex-shrink: 0; max-width: 100%; } /* nie zu hohen Kapseln gequetscht („Ka-mera“); Touch-Ziel bleibt ≥ 36 px */
+/* Badges: bei großer Schrift Höhe frei, nur umbrechen, wenn länger als die ganze Zeile */
+[data-tk-large-text] .tk-badge { height: auto; min-height: 22px; padding-top: 2px; padding-bottom: 2px; line-height: 1.25; white-space: normal; flex-shrink: 0; max-width: 100%; }
+/* Reiter: bei großer Schrift umbrechen statt versteckt seitlich wischen („Vorlagen“ → „Vo“) */
+[data-tk-large-text] .tk-tabs { flex-wrap: wrap; overflow-x: visible; }
 /* Große Schrift: abgeschnittene Texte (.tk-truncate) und Kartentitel brechen um statt „Einkauf …“ (QA: Schrift 200 % bei 390 px) */
-[data-tk-large-text] { hyphens: auto; -webkit-hyphens: auto; } /* lange Wörter mit Trennstrich statt hartem Umbruch (lang="de") */
+[data-tk-large-text] { hyphens: auto; -webkit-hyphens: auto; hyphenate-limit-chars: 10 4 4; } /* lange Wörter mit Trennstrich statt hartem Umbruch (lang="de"); kurze Wörter bleiben ganz („Spa-ren“) */
 [data-tk-large-text] .tk-truncate, [data-tk-large-text] .tk-card__title { white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: break-word; }
 [data-tk-large-text] .tk-app__top .tk-truncate { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } /* Kopfleiste hat feste Höhe */
 /* Kartenkopf: Titel behält Lesebreite (mind. 8 Zeichen), Badge/Aktionen rutschen in die nächste Zeile statt den Titel zu quetschen */

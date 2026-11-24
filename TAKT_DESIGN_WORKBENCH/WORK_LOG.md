@@ -125,7 +125,7 @@ Zeiten in UTC. Neue Einträge unten anhängen (Datum, Phase, Entscheidung/Änder
 - Danach: kaufmännische Rundung, Privatsphäre in Kern-Tabellen, Vertragsprüfung erkennt konfigurierbare Events (123 → 7).
 
 ### ab 07:10 – Abschluss-QA-Workflow (4 Modulgruppen: Sichtprüfung → Korrektur → Nachprüfung, dann Vollständigkeitsprüfung)
-- (Ergebnisse folgen unten, sobald der Workflow abgeschlossen ist.)
+- Ergebnisse: Abschnitt „07:10–09:50 – Ergebnis Abschluss-QA-Workflow“ weiter unten.
 
 ### 07:10–09:05 – Parallel in der Hauptsession: Lücken aus der Vollständigkeitsliste geschlossen
 - **WLAN-PIN** für `npm run lan` (Server prüft `X-Takt-Pin` bzw. `?k=`, QR-Link enthält die PIN, lokal ohne PIN; 3 Tests).
@@ -183,3 +183,27 @@ Zeiten in UTC. Neue Einträge unten anhängen (Datum, Phase, Entscheidung/Änder
   Erststart, Belegtext im Privatmodus). Keine Regressionen.
 - Vollständigkeitsprüfung: Auftrag und Basis-v1-Abnahme überwiegend erfüllt; offen bzw. teilweise: Phase 1 (nur zuhause),
   Gerätetest, Baselines, 12 fehlende Tier-1-Richtungen, Erststart Fitness/Ernährung, Altlasten → Lückenschluss-Workflow.
+
+### 10:10–11:40 – Lückenschluss-Workflow (4 Pakete, je Bau → unabhängige Prüfung, alle „gut“; Commit 6707ce0)
+- **Tier 1 vollständig:** alle 49 Kernfeatures haben eine eigene Variante in jeder Richtung (vorher 12 Lücken), u. a. Aufgaben-
+  und Notiz-Eingang, Wissensartikel, Beleg, Laden-Ansicht, Bestellung und Kanal (Sales), Unwetter und Radar, Sparplan, Depot,
+  Moduleinstellungen. Neue Bausteine u. a. `task-sorter`, `note-board`, `kb-story`, `receipt-slip`, `program-picker`,
+  `alert-timeline`, `radar-table`, `channel-cockpit`, `order-journey`, `sales-firstrun`. Launcher-Chip „Kern NN %“.
+- **Altlasten:** `npm run check` und Vertragsprüfung ohne Hinweise; Seed 2026-11-24.7, 296 Komponenten.
+- **Hauptsession parallel (Commit 66e9eb5):** Blockbedingungen `hideWhenEmpty`/`showWhenEmpty` (auch mehrere Schlüssel),
+  `quietEmpty` für chart, metric-row, item-list, card-grid; leere Blöcke ohne Rasterlücke. Erststart von Sales, Ernährung und
+  Picture to Text zeigt genau eine Einladung statt leerer Karten. E2E-Wartezeit des Launcher-Szenariotests auf 15 s (unter Last
+  dauerte der Neuaufbau der drei Rahmen 4,3 s).
+
+### 11:40–13:40 – Workflow „Schrift 200 %“ (4 Modulgruppen, je Korrektur → unabhängige Nachprüfung, 8 Agenten, alle „gut“)
+- Ausgangslage (Sweep aller Varianten bei 390 px, Schrift 200 %): 57 Varianten mit abgeschnittenen Texten, zeichenweisen
+  Umbrüchen oder zu schmalen Spalten (Finanzen 26 Befunde, Einstellungen 20, System 16, Kalender 15, Trading 14 …).
+- Korrekturen nur unter `[data-tk-large-text]` (bei 100 % pixelgleich, geprüft gegen HEAD): Zeilen stapeln Titel und Betrag,
+  Kennzahlen-Listen einspaltig, Kalender-Woche zeigt bei großer Schrift weniger Tagesspalten (mobil einen Tag mit Tagesleiste),
+  Ringe wachsen mit der Schrift, Knöpfe stapeln volle Breite, Icon-Kacheln weichen.
+- **Kern danach (Hauptsession):** Chips und Badges nie gequetscht (Chips mind. 36 px – Touch-Hinweis der Sonde weg), Reiter und
+  Filterchips brechen um statt versteckt zu wischen, Silbentrennung erst ab 10 Zeichen („Spa-ren“ weg), `item-list` 1.3 bricht
+  Zeilen um, `ctx.textScale`/`ctx.largeText`, Papierkorb-Betrag mit geschütztem Leerzeichen. Seed 2026-11-24.8.
+- Ergebnis: alle 348 Varianten bei 200 % ohne Befund der Sonde (390, 360 und 1440 px) und bei 130 %; check 0/0, 400 Tests grün.
+- Bewusst offen (Optik, kein Lesbarkeitsproblem): siehe TASKS.md › 4 „Große Schrift, Feinschliff“ und 320-px-Restpunkte.
+

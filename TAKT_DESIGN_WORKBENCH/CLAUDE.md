@@ -25,14 +25,14 @@ gestaltet und entschieden wird. Kern ist der **Demo-Launcher**: die ganze App be
 4. **Entscheidungen trifft der Nutzer.** Claude bereitet vor (Empfehlung mit Begründung, `/takt-round-prep`), entscheidet aber
    nicht selbst über Richtung, Varianten, Grundsatzfragen oder Freigaben. Rundenlimit 2 respektieren.
 5. **Design-Tokens nur in `app/src/design-system/tokens.js`.** Komponenten nutzen ausschließlich `var(--tk-…)`. Themes ändern nur Farben.
-6. **Komponenten erfüllen `app/src/library/CONTRACT.md`** (inkl. Ergänzungen: `ctx.fmt/now/live/world/newId/mode/blockWidth`,
-   `flutter`-Feld, CSS-Präfix je Bereich). IDs nie umbenennen. Sichtbare Änderung → `version` erhöhen (Drift-Erkennung).
+6. **Komponenten erfüllen `app/src/library/CONTRACT.md`** (inkl. Ergänzungen: `ctx.fmt/now/live/world/newId/mode/blockWidth/textScale/largeText`,
+   `flutter`-Feld, CSS-Präfix je Bereich, Regeln für große Schrift unter `[data-tk-large-text]`). IDs nie umbenennen. Sichtbare Änderung → `version` erhöhen (Drift-Erkennung).
 7. **Eine Datenwelt:** geteilte Daten (Aufgaben, Termine, Buchungen, Notizen, Gewohnheiten …) liegen in `app/src/seed/world/`
    und werden per `'@world:<schlüssel>'` gebunden – nie kopieren. Eigentümer je Objekt: `docs/DATENWELT.md`.
    Konsistenz prüft `tests/world-invariants.test.mjs`.
 8. **Leitlinien für Inhalte:** `docs/HEALTH_GUIDELINES.md` (Gesundheit), `docs/FINANCE_GUIDELINES.md` (Finanzen),
    `docs/TEXT_STIL.md` (Anrede „du“, Tonalität, echte Umlaute). `npm run check` prüft Begriffslisten und Umlaute.
-9. **Nach jeder Code-Änderung:** `npm run check` (< 1 s) und `npm test` (~5 s). Nach Komponenten-/Layout-Änderungen zusätzlich
+9. **Nach jeder Code-Änderung:** `npm run check` (< 1 s, Soll 0 Fehler/0 Hinweise) und `npm test` (400 Tests, ~5 s). Nach Komponenten-/Layout-Änderungen zusätzlich
    `npm run qa:changed`. Vor Übergaben: `npm run qa` (inkl. 32 E2E-Tests).
 10. **Keine neuen Abhängigkeiten/Build-Schritte ohne triftigen Grund** (Preact+htm vendored, kein Bundler, Server ohne Deps).
 
@@ -52,7 +52,8 @@ server.mjs        Statischer Server + /api/state (Revision/409) + Backups + /api
 tests/            Node-Tests (npm test)      qa/run-qa.mjs  Vertrag · E2E · Matrix · Regression      tools/  check, verify, Generatoren
 ```
 **Kernideen:** Varianten sind **deklarativ** (`layout` + `blocks[]`) und tragen eine **Richtung** (= Version im Launcher).
-Entscheidungen haben **Ebenen** (App/Muster/Modul/Feature) und laufen über **Runden** mit Zeitbox und Limit. Alles, was der
+Blöcke können sich nach Datenlage ein-/ausblenden (`hideWhenEmpty`/`showWhenEmpty`, Komponenten-Prop `quietEmpty`) – so bleibt
+der Erststart ruhig. Entscheidungen haben **Ebenen** (App/Muster/Modul/Feature) und laufen über **Runden** mit Zeitbox und Limit. Alles, was der
 Nutzer in der Demo tut, wirkt über die **gemeinsame Welt** modulübergreifend.
 
 ## Typische Aufgaben – wie vorgehen
@@ -65,6 +66,8 @@ Nutzer in der Demo tut, wirkt über die **gemeinsame Welt** modulübergreifend.
 - **Neue Komponente:** `library/components/<bereich>/`, Vertrag + `example` + `flutter`, Galerie `#/library/<id>`,
   Katalog neu: `node --import ./tools/register.mjs tools/component-catalog.mjs`.
 - **Design eines Features ändern:** in der Workbench (Design Studio) – der Seed ist nur Startinhalt.
+- **Nach Layout-Änderungen große Schrift prüfen:** `npm run qa -- --feature <id> --all-variants --scale 2` (Sonde meldet „…“,
+  gequetschte Titel und zu schmale Spalten als `clipped`). Bei 100 % darf sich dadurch nichts ändern.
 
 ## Befehle
 ```

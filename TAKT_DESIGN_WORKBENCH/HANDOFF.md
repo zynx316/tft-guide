@@ -1,4 +1,4 @@
-# Übergabe – TAKT Design Workbench (Stand 24.11.2026, nach Session 2 „V2 – beste Basis“)
+# Übergabe – TAKT Design Workbench (Stand 24.11.2026, Ende Session 2 „V2 – beste Basis“)
 
 ## Kurzfassung
 Die Workbench ist eine **vollständige Entscheidungs- und Designumgebung** für TAKT V2.0:
@@ -9,12 +9,17 @@ Die Workbench ist eine **vollständige Entscheidungs- und Designumgebung** für 
   alle Zahlen konsistent und getestet): Start, Kalender, Aufgaben, Gewohnheiten, **Ziele**, **Einkauf & Haushalt**, Notizen,
   Wissensdatenbank, Picture to Text, **Dokumente & Verträge**, Sales, **Finanzen, Sparpläne, Trading, Fitness, Ernährung, Wetter**,
   TAKT Kern (Suche, Mitteilungen, Erfassen), Einstellungen.
-  Zahlen: `docs/FEATURE_IDS.md` und `docs/KOMPONENTEN.md` (automatisch erzeugt).
+  Zahlen (Seed 2026-11-24.8): 197 Features, 348 Varianten, 296 Komponenten; alle 49 Tier-1-Features in allen drei Richtungen.
+  Listen: `docs/FEATURE_IDS.md` und `docs/KOMPONENTEN.md` (automatisch erzeugt).
 - **Entscheiden ohne Endlosschleifen:** App-Ebene (Leitbild, 11 Grundsatzfragen, 20 Muster – jeweils mit begründeter
   Empfehlung), Entscheidungs-Inbox nach Blockierwirkung, **Entscheidungsrunden** mit Zeitbox und Rundenlimit 2, Gates
   (bereit/fertig), Scorecard, Arbeitsauftrag für Claude Code.
-- **Qualität:** `npm run check` (< 1 s), `npm test` (~275 Node-Tests), `npm run qa` (Vertrag, 32 E2E-Tests, Screenshot-Matrix,
-  Regression), QA-Sonde mit 11 Prüfungen inkl. Barrierefreiheit, Privatsphäre, Pflichthinweis und Geldformat. Leitlinien für Gesundheit, Finanzen und Text.
+- **Qualität:** `npm run check` (< 1 s, 0 Fehler/0 Hinweise), `npm test` (400 Node-Tests), `npm run qa` (Vertrag 0/0, 32 E2E-Tests,
+  Screenshot-Matrix, Regression), QA-Sonde mit 11 Prüfungen inkl. Barrierefreiheit, Privatsphäre, Pflichthinweis und Geldformat.
+  Alle 348 Varianten sind bei **Schrift 200 %** (390/360/1440 px) ohne abgeschnittene Texte oder zeichenweise Umbrüche.
+  Leitlinien für Gesundheit, Finanzen und Text.
+- **Ruhiger Erststart:** Szenario „Erster Start“ zeigt auf allen Startseiten Einladungen statt leerer Kennzahlen (Blockbedingungen
+  `hideWhenEmpty`/`showWhenEmpty`, `quietEmpty` – siehe `app/src/library/CONTRACT.md`).
 
 **Nicht erledigt, weil technisch unmöglich:** Phase 1 (Abgleich mit dem echten TAKT-Projekt auf `G:\`) – die Cloud-Umgebung hat
 keinen Zugriff. Module/Features sind Annahmen (Annahmen-Register in der Workbench). Erste Aufgabe zuhause: `/takt-phase1`.
@@ -30,9 +35,11 @@ Remove-Item -Recurse -Force _wb_transfer
 Ohne Git: GitHub › Branch wählen › „Code › Download ZIP“, Ordner `TAKT_DESIGN_WORKBENCH` entpacken.
 > Den Ordner **neben** `TAKT-Merge-Git` ablegen, **nicht hinein**. Das TAKT-Repo bleibt unberührt.
 
-**Hattest du die Workbench (Session 1) schon in Gebrauch?** Dann nach dem Kopieren in der Workbench **Daten & Backup ›
-„Seed abgleichen …“** ausführen: Neues kommt hinzu, von dir unveränderte Features werden aktualisiert (vorher gesichert),
-Freigegebenes bleibt unberührt (erscheint als „Seed-Vorschlag“). Ohne eigene Arbeit: einfach „Zurücksetzen“ (Backup entsteht).
+**Wichtig nach jedem Kopieren/Pull, wenn schon eine `data/workbench.json` existiert:** in der Workbench **Daten & Backup ›
+„Seed abgleichen …“** ausführen. Sonst fehlen im gespeicherten Stand neue Module, Varianten und Bindungen (der Launcher zeigt
+dann den alten Stand). Neues kommt hinzu, von dir unveränderte Features werden aktualisiert (vorher gesichert), Freigegebenes
+bleibt unberührt (erscheint als „Seed-Vorschlag“). Ohne eigene Arbeit: einfach „Zurücksetzen“ (Backup entsteht). Der
+SessionStart-Hook weist darauf hin, wenn der Seed neuer ist als der Live-Stand.
 
 ## 2. Einrichten & starten
 ```powershell
@@ -76,7 +83,19 @@ eine WLAN-PIN (neu bei jedem Start, in der Konsole angezeigt); andere Geräte im
   Grundsatzfrage.
 - **Workbench-Zustand** liegt in einer JSON-Datei (~1,8 MB); Rückgängig teilt Speicher strukturell. Offene Skalierungsmaßnahme
   (Versions-Snapshots je Feature auslagern) steht in TASKS.md.
+- **Abgeleitete Welt-Werte** (Zusammenfassungen, Start-Untertitel, Hinweiskarten) werden beim Laden berechnet und folgen
+  Änderungen in der Demo erst nach Neuladen.
 - Restpunkte aus den Prüfungen und der Vollständigkeitsprüfung: **TASKS.md**.
+
+## 5a. Vorbereitete, offene Entscheidungen (du entscheidest)
+Alle liegen mit Empfehlung in der Workbench (Entscheidungs-Inbox, App-Ebene) bzw. in `TASKS.md`; nichts davon ist vorentschieden:
+- **App-Richtung** (Kompakt · Visuell · Fokus · Mischung) und die 11 Grundsatzfragen – erste Runde mit `/takt-round-prep app`.
+- **Privatsphäre-Ausnahmen:** welche Werte bei „Beträge ausblenden“ sichtbar bleiben (Anteile, Kurse, Sparziel-%).
+- **Einkaufsliste:** gehört sie Ernährung oder „Einkauf & Haushalt“ (`shopping.list`)?
+- **Dokumente:** Modulsperre für sensible Module (Schalter ist da, Standard aus), Erinnerungsstufen, Verknüpfung Abo → Vertrag
+  („Vorlage“ ist als Vorschlag gebaut).
+- **Große Schrift:** sollen die Reiter der unteren Leiste bei 200 % nur Symbole zeigen?
+- **Rechtsprüfung** der Gesundheits-, Finanz-, Steuer- und Gewährleistungstexte vor einer Veröffentlichung.
 
 ## 6. Ordnerübersicht
 ```

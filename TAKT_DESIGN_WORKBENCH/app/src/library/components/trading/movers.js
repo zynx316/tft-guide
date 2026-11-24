@@ -20,7 +20,7 @@ export const trdMovers = {
   name: 'Top-Bewegungen',
   category: 'Trading',
   description: 'Die größten Kursbewegungen des Tages aus Depot und Watchlist. Als Liste mit Euro-Wirkung, als Gewinner-/Verlierer-Balken oder als schlanke Chips. Tippen öffnet das Wertpapier.',
-  version: '1.2',
+  version: '1.3',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Top-Bewegungen' },
     { name: 'style', label: 'Darstellung', type: 'select', options: ['list', 'bars', 'chips'], default: 'list' },
@@ -35,7 +35,10 @@ export const trdMovers = {
   .tk-trd-mv__track i { position:absolute; left:0; top:0; bottom:0; border-radius:4px; }
   .tk-trd-mv__chips { display:flex; gap:var(--tk-space-2); flex-wrap:wrap; }
   .tk-trd-mv__chip { display:flex; align-items:center; gap:8px; padding:8px 12px; border-radius:var(--tk-radius-pill); border:1px solid var(--tk-c-border); background:var(--tk-c-surface2); color:inherit; font:inherit; cursor:pointer; min-height:40px; max-width:100%; }
-  .tk-trd-mv__chip:hover { background:var(--tk-c-surface3); }`,
+  .tk-trd-mv__chip:hover { background:var(--tk-c-surface3); }
+  [data-tk-large-text] .tk-trd-mv { grid-template-columns:minmax(0,1fr); }
+  [data-tk-large-text] .tk-trd-mv__bar { flex-wrap:wrap; row-gap:4px; padding:4px 0; }
+  [data-tk-large-text] .tk-trd-mv__bar > .tk-trd-title { flex:1 1 100% !important; }`,
   example: { data: ex('positions', 'watchlist') },
   render: function TrdMovers({ props, data, ctx }) {
     const all = movers(data), list = all.slice(0, props.limit);

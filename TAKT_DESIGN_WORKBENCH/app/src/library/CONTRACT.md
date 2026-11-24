@@ -121,3 +121,18 @@ export const taskList = {
   Dezimalpunkte und Bindestrich statt „−“.
 - **Hinweise anderer Module** (Komponente `hint-cards`): ein Hinweis mit `to`/`carry` navigiert direkt zum Anlass
   (`detail.to`, Auswahl über `detail.ui`), ohne feste Regel im Manifest.
+- **Blöcke nach Datenlage:** Block-Felder `hideWhenEmpty` / `showWhenEmpty` (Datenschlüssel oder Liste) blenden einen Block
+  aus bzw. nur im Leerzustand ein – z. B. Erststart-Kopf statt Kennzahlen. Komponenten mit `quietEmpty` (metric-row, item-list,
+  card-grid, chart) rendern ohne Daten nichts; leere Blöcke nehmen keinen Platz ein (`.tk-block:empty`).
+
+## Ergänzungen (Stand 24.11.2026, nach dem 200-%-Sweep)
+- **Kontext:** `ctx.textScale` (Zahl, 1 = 100 %) und `ctx.largeText` (`true` ab 125 %) – für Logik, die mit der Schrift wächst
+  (Spaltenzahl, Stundenhöhe, Ringgröße). CSS-Regeln weiterhin unter `[data-tk-large-text]`; ACHTUNG: in der Vorschau hängen
+  `.bp-mobile` und `data-tk-large-text` am selben Root-Element – Selektoren `.bp-mobile[data-tk-large-text] …` bzw.
+  `[data-tk-large-text] …` verwenden, nicht `[data-tk-large-text] .bp-mobile …`.
+- **Basis bei großer Schrift (takt-base.css):** Chips und Badges werden nie gequetscht (`flex-shrink:0`, umbrechen erst, wenn
+  länger als die Zeile), Chips mind. 36 px hoch; Reiter (`.tk-tabs`) und Filterchips (`search-filter`) brechen um statt
+  versteckt seitlich zu wischen; Silbentrennung erst ab Wörtern mit 10 Zeichen (`hyphenate-limit-chars: 10 4 4`).
+- **Zeilen mit Titel + Betrag/Meta:** bei großer Schrift umbrechen lassen (`flex-wrap`, Titel `flex:1 1 6em`, Meta rechts in
+  der Folgezeile) statt den Titel auf wenige Pixel zu quetschen; Icon-Kacheln dürfen ausgeblendet werden. Vorbild: `item-list`
+  1.3, `fin-tx-list` 1.1.

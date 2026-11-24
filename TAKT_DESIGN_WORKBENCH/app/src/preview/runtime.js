@@ -208,6 +208,7 @@ function Screen({ variant, demoData, cacheKey, cache, theme, today, forcedState,
     setPrefs: (patch) => world && world.setData('prefs', (p) => deepMerge(p && !Array.isArray(p) ? p : {}, patch)),
     setTheme: (id) => world && world.setData('prefs', (p) => deepMerge(p && !Array.isArray(p) ? p : {}, { theme: id })),
     setPrivacy: (on) => world && world.setData('prefs', (p) => deepMerge(p && !Array.isArray(p) ? p : {}, { privacy: { hideAmounts: !!on } })), emit, ui, privacy: !!privacy, env: env || {},
+    textScale: Number(env?.scale) || 1, largeText: (Number(env?.scale) || 1) >= 1.25,
     setUi: (k, v) => setUiState((u) => ({ ...u, [k]: v })),
     openDialog: overlays.openDialog, toast: overlays.toast,
   };
