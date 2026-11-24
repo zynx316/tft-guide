@@ -5,7 +5,6 @@
 // ============================================================================
 import { uid, nowIso, slug, clone } from '../lib/util.js';
 import { DEFAULT_DIRECTIONS, guessDirection } from './directions.js';
-import { WORLD } from '../seed/world/index.js';
 
 export const SCHEMA_VERSION = 2;
 
@@ -51,7 +50,7 @@ export function defaultSettings() {
     wbTheme: 'dark',            // Oberfläche der Workbench selbst
     previewTheme: 'graphite',   // TAKT-Theme in der Vorschau
     viewport: 'mobile',
-    previewState: 'default',
+    previewState: 'default', previewScenario: 'alltag',
     chrome: true,               // TAKT-App-Rahmen anzeigen
     zoom: 'fit',
     multiViewports: ['desktop', 'tablet', 'mobile'],
@@ -147,7 +146,7 @@ export function emptyState() {
     rounds: [],                        // Entscheidungsrunden (Zeitbox, Agenda, Ergebnis)
     pins: [],                          // Anmerkungen an Varianten/Blöcken
     scores: {},                        // Scorecard-Bewertungen { featureId: { variantId: { kriterium: 1–5 } } }
-    world: clone(WORLD),               // gemeinsame Datenwelt (Persona „Ein Tag“), gebunden per '@world:<schlüssel>'
+    worldOverrides: {},                // bewusste Abweichungen von der Seed-Welt (Datenwelt selbst: core/world.js)
   };
 }
 
@@ -171,7 +170,10 @@ export function migrate(state) {
   s.scores = state.scores || {};
   s.decisions = (s.decisions || []).map((d) => createDecision(d));
   // Neue Welt-Schlüssel aus dem Seed ergänzen, vorhandene (ggf. bearbeitete) Werte behalten
-  s.world = { ...clone(WORLD), ...(state.world || {}) };
+  // Die Datenwelt kommt seit Seed 2026-11-24.3 immer aus dem Code (core/world.js → getWorld), damit sie nach
+  // Seed-Änderungen nie veraltet. Nur bewusst gespeicherte Abweichungen bleiben (worldOverrides).
+  delete s.world;
+  s.worldOverrides = state.worldOverrides || {};
   s.schemaVersion = SCHEMA_VERSION;
   return s;
 }

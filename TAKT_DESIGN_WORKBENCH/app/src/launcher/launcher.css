@@ -64,3 +64,5 @@
 .ln-vrow.is-active { border-color: var(--wb-accent); background: var(--wb-accent-soft); }
 .ln-vrow__icon { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; background: var(--wb-panel-3); flex: none; }
 @media (max-width: 760px) { .ln-body { overflow: hidden; } }
+
+.ln-vchip__cov.is-low { color: var(--wb-warning); }

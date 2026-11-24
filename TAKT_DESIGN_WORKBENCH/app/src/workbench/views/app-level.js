@@ -15,7 +15,7 @@ import { newRoundDialog } from './rounds.js';
 import { cx } from '../../lib/util.js';
 
 const TABS = [
-  { value: 'leitbild', label: 'Leitbild', icon: 'target' }, { value: 'inbox', label: 'Inbox', icon: 'inbox' }, { value: 'muster', label: 'App-weite Muster', icon: 'scale' },
+  { value: 'leitbild', label: 'Leitbild', icon: 'target' }, { value: 'inbox', label: 'Inbox', icon: 'inbox' }, { value: 'muster', label: 'Grundsätze & Muster', icon: 'scale' },
   { value: 'gates', label: 'Gates & Fortschritt', icon: 'clipboard-check' }, { value: 'annahmen', label: 'Annahmen', icon: 'flag' },
 ];
 
@@ -63,13 +63,17 @@ function Inbox({ state }) {
 
 function Patterns({ state }) {
   const ps = state.decisions.filter((d) => d.level === 'pattern');
+  const basics = state.decisions.filter((d) => d.level === 'app' && String(d.id).startsWith('app-') && d.status !== 'superseded');
   const done = ps.filter((d) => d.status === 'decided').length;
+  const recLabel = (d) => (d.status === 'open' && d.recommendation ? `Empfehlung: ${d.options.find((o) => o.id === d.recommendation.optionId)?.label}` : '');
   return html`<div class="wb-col" style="gap:12px">
     <${Card} pad><div class="wb-row wb-wrap" style="gap:12px"><div class="wb-grow"><strong>${done} von ${ps.length} App-weiten Mustern entschieden.</strong>
       <div class="wb-small wb-muted">Einmal entscheiden, überall anwenden: Navigation, Erfassen, Löschen, Formate, Datenschutz … Jede Frage hat eine vorbereitete, begründete Empfehlung. Rundenlimit: ${MAX_ROUNDS}.</div></div>
       <div class="wb-bar" style="width:160px"><span style=${`width:${ps.length ? (done / ps.length) * 100 : 0}%;background:var(--wb-success)`}></span></div>
       <${Btn} variant="primary" icon="play" onClick=${() => newRoundDialog(state, 'app')} data-qa="pattern-round">In einer Runde entscheiden<//></div><//>
-    <${Card}><div class="wb-col" style="gap:0;margin:-8px -16px -16px">${ps.map((d) => html`<${DecisionRow} d=${d} state=${state} reason=${d.status === 'open' && d.recommendation ? `Empfehlung: ${d.options.find((o) => o.id === d.recommendation.optionId)?.label}` : ''} />`)}</div><//></div>`;
+    <${Card} title=${`Grundsatzfragen (${basics.filter((d) => d.status !== 'open').length}/${basics.length} geklärt)`} icon="compass" sub="Persona, Datenhaltung, Modulumfang, Quellen, Plattform – einmal klären, dann gilt es für alle Module.">
+      <div class="wb-col" style="gap:0;margin:-8px -16px -16px">${basics.map((d) => html`<${DecisionRow} d=${d} state=${state} reason=${recLabel(d)} />`)}</div><//>
+    <${Card} title=${`Muster (${done}/${ps.length} entschieden)`} icon="scale"><div class="wb-col" style="gap:0;margin:-8px -16px -16px">${ps.map((d) => html`<${DecisionRow} d=${d} state=${state} reason=${recLabel(d)} />`)}</div><//></div>`;
 }
 
 function Gates({ state }) {

@@ -16,6 +16,7 @@ import { listVersions, versionCoverage, LEVELS } from '../core/directions.js';
 import { THEME_IDS, themes } from '../design-system/tokens.js';
 import { LAUNCHER_DEVICES, launcherDevice } from './devices.js';
 import { uid, cx } from '../lib/util.js';
+import { SCENARIOS } from '../core/world.js';
 import qrcode from '../../vendor/qrcode.module.js';
 
 const LOCAL = ['localhost', '127.0.0.1', '[::1]', ''].includes(location.hostname);
@@ -25,6 +26,7 @@ const QUEUE_KEY = 'takt-launcher-feedback-queue';
 const ls = { get: (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } }, set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch { /* noop */ } } };
 
 let store = null; // Workbench-Store (nur lokal)
+let fbCtx = {}; // Kontext jedes Feedback-Eintrags (Szenario, Stand-Revision)
 
 // ------------------------------------------------------------ Feedback ---
 async function flushQueue() {
@@ -34,7 +36,7 @@ async function flushQueue() {
   ls.set(QUEUE_KEY, rest);
 }
 async function sendFeedback(entry) {
-  const e = { id: uid('fb'), device: deviceLabel(), ...entry };
+  const e = { id: uid('fb'), device: deviceLabel(), ...fbCtx, ...entry };
   if (store) store.actions.importFeedback([{ ...e, ts: new Date().toISOString() }]);
   try {
     const r = await fetch('/api/feedback', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(e) });
@@ -178,6 +180,10 @@ function Launcher({ initialState }) {
   const [coupled, setCoupled] = useState(prefs0.coupled ?? true);
   const [level, setLevel] = useState(prefs0.level || 'feature');
   const [privacy, setPrivacy] = useState(!!prefs0.privacy);
+  const [scenario, setScenario] = useState(prefs0.scenario || 'alltag');
+  const [offline, setOffline] = useState(!!prefs0.offline);
+  const [textScale, setTextScale] = useState(prefs0.textScale || 1);
+  fbCtx = { scenario, stateRev: state.meta?.rev || 0, env: [offline && 'offline', privacy && 'privacy', textScale !== 1 && `schrift-${Math.round(textScale * 100)}`].filter(Boolean).join(',') || undefined };
   const [present, setPresent] = useState(false);
   const [mobileIdx, setMobileIdx] = useState(0);
   const [routes, setRoutes] = useState({});
@@ -185,17 +191,26 @@ function Launcher({ initialState }) {
   const frames = useRef({});
   const mobile = vw < 760;
   useEffect(() => { const on = () => { setVw(window.innerWidth); setVh(window.innerHeight); }; window.addEventListener('resize', on); return () => window.removeEventListener('resize', on); }, []);
-  useEffect(() => { ls.set(PREFS_KEY, { selected, deviceId, themeMode, coupled, level, privacy }); }, [selected, deviceId, themeMode, coupled, level, privacy]);
+  useEffect(() => { ls.set(PREFS_KEY, { selected, deviceId, themeMode, coupled, level, privacy, scenario, offline, textScale }); }, [selected, deviceId, themeMode, coupled, level, privacy, scenario, offline, textScale]);
   useEffect(() => { flushQueue(); }, []);
 
   const device = launcherDevice(deviceId);
   const shown = mobile ? [versions.find((v) => v.id === selected[mobileIdx % Math.max(1, selected.length)]) || versions[0]] : selected.map((id) => versions.find((v) => v.id === id)).filter(Boolean);
-  const payloads = useMemo(() => Object.fromEntries(shown.map((v) => [v.id, buildAppPayload(state, v.id, { theme: themeMode === 'version' ? undefined : themeMode, revision: 1, privacy })])), [state, shown.map((v) => v.id).join(), themeMode, privacy]);
+  const payloads = useMemo(() => Object.fromEntries(shown.map((v) => [v.id, buildAppPayload(state, v.id, { theme: themeMode === 'version' ? undefined : themeMode, revision: 1, privacy, scenario, env: { offline, scale: textScale } })])), [state, shown.map((v) => v.id).join(), themeMode, privacy, scenario, offline, textScale]);
+
+  // Handy: Android-/Browser-Zurück geht in der App eine Ebene zurück statt den Launcher zu verlassen.
+  const depthRef = useRef(1);
+  useEffect(() => {
+    if (!mobile) return undefined;
+    const onPop = () => { const el = Object.values(frames.current).find(Boolean); if (depthRef.current > 1 && el?.contentWindow?.__taktPreview?.back) el.contentWindow.__taktPreview.back(); };
+    window.addEventListener('popstate', onPop); return () => window.removeEventListener('popstate', onPop);
+  }, [mobile]);
 
   const onRoute = useCallback((vid) => (r) => {
+    if (mobile) { if ((r.depth || 1) > depthRef.current) history.pushState({ takt: r.depth }, ''); depthRef.current = r.depth || 1; }
     setRoutes((rs) => ({ ...rs, [vid]: r }));
     if (coupled && !r.synced) for (const [id, el] of Object.entries(frames.current)) if (id !== vid && el?.contentWindow?.__taktPreview?.navigate) el.contentWindow.__taktPreview.navigate(r.featureId);
-  }, [coupled]);
+  }, [coupled, mobile]);
 
   useEffect(() => {
     const on = (e) => {
@@ -220,7 +235,12 @@ function Launcher({ initialState }) {
       <div class="wb-label">Bewerten · ${LEVELS.find((l) => l.id === level)?.label}</div>
       <${Seg} value=${level} onChange=${setLevel} options=${LEVELS.slice(0, 3).map((l) => ({ value: l.id, label: l.label }))} />
       <${RatingBar} state=${state} version=${v} level=${level} route=${routes[v.id]} compact />
-      <${Btn} icon=${privacy ? 'eye' : 'eye-off'} onClick=${() => { setPrivacy(!privacy); close(); }}>${privacy ? 'Beträge zeigen' : 'Beträge ausblenden'}<//></div>` });
+      <div class="wb-label">Szenario & Umgebung</div>
+      <${Seg} value=${scenario} onChange=${(x) => { setScenario(x); close(); }} options=${SCENARIOS.map((x) => ({ value: x.id, label: x.label, icon: x.icon, title: x.hint }))} label="Szenario" />
+      <div class="wb-row wb-wrap" style="gap:8px">
+        <${Btn} icon=${privacy ? 'eye' : 'eye-off'} onClick=${() => { setPrivacy(!privacy); close(); }}>${privacy ? 'Beträge zeigen' : 'Beträge ausblenden'}<//>
+        <${Btn} icon="wifi-off" pressed=${offline} onClick=${() => { setOffline(!offline); close(); }}>${offline ? 'Online' : 'Offline'}<//>
+        <${Select} value=${String(textScale)} onChange=${(x) => { setTextScale(Number(x)); close(); }} options=${[{ value: '1', label: 'Schrift 100 %' }, { value: '1.3', label: 'Schrift 130 %' }, { value: '2', label: 'Schrift 200 %' }]} aria-label="Schriftgröße" /></div></div>` });
     return html`<div class="ln-mobile">
       <${DeviceFrame} key=${v.id} bare device=${device} payload=${payloads[v.id]} onRoute=${onRoute(v.id)} frameRef=${(el) => { frames.current[v.id] = el; }} />
       <div class="ln-fab">
@@ -241,7 +261,7 @@ function Launcher({ initialState }) {
         <div class="ln-brand"><span class="wb-brand__logo">T</span><div><div class="ln-brand__name">TAKT Demo-Launcher</div><div class="wb-xs wb-subtle">${state.meta.project} · ${Object.keys(payloads[shown[0]?.id]?.features || {}).length} Screens · ${state.modules.filter((m) => !m.archived).length} Module</div></div></div>
         <div class="ln-versions" role="group" aria-label="Versionen">${versions.map((v) => { const cov = versionCoverage(state, v.id); const on = selected.includes(v.id);
           return html`<button type="button" class=${cx('ln-vchip', on && 'is-on')} aria-pressed=${String(on)} onClick=${() => toggleVersion(v.id)} title=${`${v.claim}${v.kind === 'direction' ? ` · ${cov.own}/${cov.total} Features mit eigener Variante` : ''}`} data-version=${v.id}>
-            <${Icon} name=${v.icon} size=${15} /><span>${v.name}</span>${v.kind === 'direction' && html`<span class="ln-vchip__cov">${Math.round(cov.ratio * 100)} %</span>`}</button>`; })}</div>
+            <${Icon} name=${v.icon} size=${15} /><span>${v.name}</span>${v.kind === 'direction' && html`<span class=${cx('ln-vchip__cov', cov.ratio < 0.6 && 'is-low')} title=${cov.ratio < 0.6 ? 'Unter 60 % eigene Varianten – Vergleich nur eingeschränkt aussagekräftig' : ''}>${Math.round(cov.ratio * 100)} %</span>`}</button>`; })}</div>
         <span class="wb-grow"></span>
         <${Btn} size="sm" icon="smartphone" onClick=${qrDialog}>Aufs Handy<//>
         ${LOCAL && html`<a class="wb-btn wb-btn--sm" href="./#/decide"><${Icon} name="layout-dashboard" size=${14} />Workbench<//>`}
@@ -251,6 +271,9 @@ function Launcher({ initialState }) {
         <${Select} size="sm" style="width:auto" value=${themeMode} onChange=${setThemeMode} options=${[{ value: 'version', label: 'Theme: je Version' }, ...THEME_IDS.map((t) => ({ value: t, label: `Theme: ${themes[t].label}` }))]} aria-label="Theme" />
         <${Btn} size="sm" icon="link-2" pressed=${coupled} onClick=${() => setCoupled(!coupled)} title="Navigation in allen Versionen gleichzeitig">Gekoppelt<//>
         <${Btn} size="sm" icon=${privacy ? 'eye-off' : 'eye'} pressed=${privacy} onClick=${() => setPrivacy(!privacy)} title="Beträge ausblenden (Privatsphäre-Modus)">Beträge<//>
+        <${Select} size="sm" style="width:auto" value=${scenario} onChange=${setScenario} options=${SCENARIOS.map((x) => ({ value: x.id, label: `Szenario: ${x.label}` }))} aria-label="Szenario" title=${SCENARIOS.find((x) => x.id === scenario)?.hint} data-qa="ln-scenario" />
+        <${Btn} size="sm" icon="wifi-off" pressed=${offline} onClick=${() => setOffline(!offline)} title="Offline-Zustand simulieren" data-qa="ln-offline">Offline<//>
+        <${Select} size="sm" style="width:auto" value=${String(textScale)} onChange=${(x) => setTextScale(Number(x))} options=${[{ value: '1', label: 'Schrift 100 %' }, { value: '1.3', label: 'Schrift 130 %' }, { value: '2', label: 'Schrift 200 %' }]} aria-label="Schriftgröße" data-qa="ln-scale" />
         <span class="wb-small wb-muted" style="margin-left:8px">Bewerten auf Ebene</span>
         <${Seg} value=${level} onChange=${setLevel} options=${LEVELS.slice(0, 3).map((l) => ({ value: l.id, label: l.label }))} />
         <span class="wb-grow"></span>

@@ -74,3 +74,69 @@ export const PATTERN_QUESTIONS = [
     ['calm', 'Ruhig, ohne Rot bei Überschreitung, keine Diät-Moral, Untergrenzen bei Zielen'], ['gamified', 'Stark spielerisch (Abzeichen, Ranglisten)']],
   'calm', ['Nachhaltige Gewohnheiten statt Druck', 'Keine Medizinprodukt-Aussagen'], 'Gesundheits-Leitplanken verbindlich für alle Varianten.', 'aufwendig'),
 ];
+
+// ============================================================================
+// GRUNDSATZFRAGEN DER APP (Ebene 0) – aus dem Bauplan (docs/BAUPLAN.md, „Entscheidungen für den Nutzer“).
+// Fragen, die schon als Pflichtfrage oben stehen (Tonalität, Navigation/Start, Themes), sind hier nicht doppelt.
+// ============================================================================
+const a = (id, title, question, options, rec, reasons, consequences, reversibility = 'aufwendig') => ({
+  ...q(id, title, question, options, rec, reasons, consequences, reversibility), id: `app-${id}`, level: 'app',
+});
+
+export const APP_QUESTIONS = [
+  a('persona', 'Persona der Demo-Datenwelt', 'Mit wessen Alltag werden alle Module gezeigt und bewertet?', [
+    ['jonas', 'Jonas Keller beibehalten', 'Platzhalter: 38, Bielefeld, Online-Shop, ETF-Sparer, Krafttraining 3×/Woche'],
+    ['eigen', 'An die eigene Lebenssituation anpassen', 'Struktur bleibt, Werte (Beträge, Termine, Ziele) in seed/world ändern'],
+    ['zwei', 'Zweite Persona zur Gegenprüfung', 'z. B. Familie mit Kindern, angestellt – zeigt, ob Entwürfe tragen']],
+  'eigen', ['Entscheidungen fallen realistischer, wenn Beträge, Termine und Ziele zum echten Alltag passen', 'Nur Werte ändern – alle Komponenten und Invarianten bleiben gültig'], 'Alle Module zeigen dieselbe Welt; Anpassung in app/src/seed/world/*.js (siehe docs/DATENWELT.md).', 'leicht'),
+  a('sync', 'Datenhaltung und Synchronisation', 'Wo liegen die Daten von TAKT – nur auf dem Gerät oder auch synchronisiert?', [
+    ['local', 'Nur lokal + manuelles Backup (Export-Datei)'],
+    ['local-sync', 'Lokal zuerst + optionaler, verschlüsselter Sync/Backup', 'Konflikte sichtbar, geteilte Listen (z. B. Einkauf) möglich'],
+    ['cloud', 'Cloud zuerst (Konto Pflicht)']],
+  'local-sync', ['Erfassen muss ohne Netz funktionieren', 'Gerätewechsel und geteilte Einkaufsliste brauchen später Sync', 'Verschlüsselung hält Gesundheits- und Finanzdaten privat'], 'Bestimmt Datenmodell (IDs, Zeitstempel, Konfliktfelder), Einstellungen › Daten und das Onboarding. Siehe docs/ADR-002-datenhaltung.md.', 'unumkehrbar'),
+  a('scope', 'Modulumfang von V2.0 (Moduldeckel)', 'Welche Module gehören in V2.0 – und welche bewusst nicht?', [
+    ['basis', '19 Module laut Bauplan', 'Reisen als Vorlage, Rechnungen nur als Export, Kontakte/Zeiterfassung/Journal später'],
+    ['mehr', '+ Kontakte, Zeiterfassung und Journal', 'Mehr Abdeckung, aber weniger Tiefe je Modul'],
+    ['schlank', 'Nur Kern: Start, Kalender, Aufgaben, Notizen, Finanzen, Fitness, Ernährung, Wetter', 'Schneller fertig, weniger All-in-one']],
+  'basis', ['Tiefe vor Breite: lieber 19 gute als 25 halbe Module', 'Verworfene Module bleiben als Entscheidung dokumentiert und können später kommen'], 'Legt Navigation (Mehr/Lebensbereiche), Ausbaustufen und Datenwelt fest.', 'aufwendig'),
+  a('sources', 'Datenquellen für Wetter, Kurse und Lebensmittel', 'Welche externen Quellen nutzt TAKT?', [
+    ['frei', 'Frei verfügbare Quellen', 'Wetter: DWD/Open-Meteo · Kurse: verzögert (15 Min.) · Lebensmittel: Open Food Facts (ODbL, Namensnennung)'],
+    ['lizenz', 'Lizenzierte Quellen', 'Echtzeitkurse, kommerzielle Lebensmitteldatenbank – laufende Kosten, Verträge'],
+    ['demo', 'Bis Phase 2 nur Demo-Daten, Entscheidung je Modul']],
+  'frei', ['Keine laufenden Kosten für eine persönliche App', 'Offline-Cache möglich', 'Lizenzpflichten (Namensnennung) sind überschaubar'], 'Beeinflusst Alarme (Wetterwarnungen), Plausibilitätsprüfungen im Order-Ticket und das Offline-Verhalten. Pollen und Radar nur regional verfügbar.', 'aufwendig'),
+  a('banking', 'Konto- und Depotanbindung', 'Wie kommen Buchungen und Depotwerte in TAKT?', [
+    ['manuell', 'Manuelle Erfassung + CSV/CAMT-Import, Sparpläne als Plan-Tracker'],
+    ['aggregator', 'Bank-Aggregator (PSD2-Dienst)', 'Automatisch, aber Backend, Vertrag und Haftung nötig'],
+    ['broker', 'Broker-Anbindung mit echten Orders']],
+  'manuell', ['Ohne Backend und Lizenz umsetzbar', 'Schnellerfassung in unter 5 Sekunden ist ohnehin der Hauptweg', 'TAKT führt nie selbst Sparpläne oder Orders aus'], 'Finanzen/Sparen/Trading bleiben Planung und Überblick; Import-Assistent wird eigenes Feature.', 'aufwendig'),
+  a('health', 'Umfang der Gesundheitsfunktionen', 'Wie weit gehen Fitness und Ernährung?', [
+    ['ruhig', 'Ruhiger Kern', 'Aktivitätskalorien nie als Zusatzbudget, kein GPS-Tracking, Gewohnheitsmodus ohne Zahlen wählbar'],
+    ['gps', '+ GPS-Ausdauertraining (Laufen, Rad)'],
+    ['voll', '+ Health-Connect-Sync, Aktivitätskalorien verrechnet']],
+  'ruhig', ['Nachhaltig statt Druck (siehe docs/HEALTH_GUIDELINES.md)', 'GPS und Sync brauchen Berechtigungen, Hintergrunddienste und Gerätetests'], 'Legt Berechtigungen, Datenschutzhinweise und die Ernährungsrechnung fest.', 'aufwendig'),
+  a('legal-review', 'Fachliche Prüfung der Hinweistexte', 'Wer prüft Texte zu Anlage, Steuer und Gesundheit – und wann?', [
+    ['vor-release', 'Vor jeder Veröffentlichung durch eine Fachperson; bis dahin als Annahme gekennzeichnet'],
+    ['selbst', 'Selbstprüfung anhand der Leitlinien-Checkliste'],
+    ['keine', 'Keine Prüfung (nur private Nutzung)']],
+  'vor-release', ['Hinweise sind zentral (legal-notice) – eine Prüfung gilt für alle Module', 'Private Nutzung braucht keine Prüfung, eine Veröffentlichung schon'], 'Texte in legal-notice und den Leitlinien tragen ein Stand-Datum und den Status „Annahme“.', 'leicht'),
+  a('android', 'Android-Plattformvorgaben', 'Welche Android-Konventionen gelten für die Flutter-Umsetzung?', [
+    ['takt', 'Eigene TAKT-Themes, Edge-to-Edge und Predictive Back Pflicht', 'Dynamic Color später als Option'],
+    ['dynamic', 'Material You (Dynamic Color) als Standard'],
+    ['minimal', 'Nur Edge-to-Edge, sonst Standardverhalten']],
+  'takt', ['Themes sind geprüft (Kontrast-Audit) und markenprägend', 'Edge-to-Edge ist ab Android 15 Standard, Predictive Back erwartet'], 'ThemeData/ThemeExtension aus dem Token-Export, Navigation mit Predictive-Back-Unterstützung.', 'aufwendig'),
+  a('seed-patch', 'Übernahme der neuen Seed-Inhalte zuhause', 'Wie kommt der neue Stand in die eigene Workbench-Datei?', [
+    ['neu', 'Neu anlegen aus dem Seed (vorher automatisches Backup)', 'Empfohlen, solange noch kaum eigene Entscheidungen im Stand sind'],
+    ['additiv', 'Nur Neues ergänzen („Neue Seed-Inhalte übernehmen“)', 'Bestehende Features bleiben unverändert – neue Varianten bestehender Features fehlen dann'],
+    ['patch', 'Seed-Patch: unveränderte, nicht gesperrte Features aktualisieren, Gesperrtes als Vorschlag', 'Noch zu bauen (Bauplan 5.10)']],
+  'neu', ['Der Seed enthält jetzt alle Module mit Richtungsvarianten', 'Backup macht den Schritt umkehrbar', 'Ergänzen allein würde neue Varianten bestehender Features auslassen'], 'Daten & Backup › „Auf Seed zurücksetzen“ (Backup entsteht automatisch) oder „Neue Seed-Inhalte übernehmen“.', 'leicht'),
+  a('device-test', 'Gerätetest als Freigabe-Bedingung', 'Ab wann ist ein Test auf einem echten Android-Gerät Pflicht?', [
+    ['tier1', 'Pflicht für Tier-1-Features und Modul-Meilensteine'],
+    ['meilensteine', 'Nur an Meilensteinen (erste Modulfreigabe, Gesamtcheck)'],
+    ['alle', 'Für jede Freigabe']],
+  'tier1', ['Tier 1 sind die täglich genutzten Screens – dort zählt Daumenzone und Tastatur', 'Alle Freigaben zu testen bremst ohne Mehrwert'], 'Gate „Fertig“ prüft den Gerätetest bei Tier 1 (bereits so umgesetzt); Checkliste in docs/GERAETETEST.md.', 'leicht'),
+  a('coverage', 'Richtungswahl bei geringer Abdeckung', 'Darf eine App-Richtung gewählt werden, wenn weniger als 60 % der Tier-1-Features eine eigene Variante haben?', [
+    ['warnen', 'Erlaubt, mit sichtbarer Warnung und Pflichtbegründung'],
+    ['sperren', 'Gesperrt, bis 60 % erreicht sind'],
+    ['frei', 'Ohne Einschränkung']],
+  'warnen', ['Ehrlicher Vergleich ohne den Prozess zu blockieren', 'Fehlende Varianten werden danach gezielt nachgezogen'], 'Launcher und Entscheidungsrunde zeigen die Abdeckung je Richtung.', 'leicht'),
+];

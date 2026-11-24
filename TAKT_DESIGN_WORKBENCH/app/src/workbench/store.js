@@ -9,7 +9,9 @@ import { clone, nowIso, uid, slug, debounce } from '../lib/util.js';
 import { migrate, createModule, createFeature, createVariant, createDecision, inspectImport, statusInfo, defaultSettings } from '../core/schema.js';
 import { makeVersion, bumpMinor, bumpMajor, snapshotOf, releaseChecklist } from '../core/versioning.js';
 import { STORAGE_KEY } from '../core/preview-payload.js';
-import { buildSeedState, mergeSeed } from '../seed/index.js';
+import { buildSeedState, mergeSeed, SEED_VERSION } from '../seed/index.js';
+import { applySeedPatch } from '../core/seedpatch.js';
+import { APP_QUESTIONS, PATTERN_QUESTIONS } from '../seed/catalog.js';
 import { getComponent, defaultProps } from '../library/registry.js';
 import { DEFAULT_DIRECTIONS } from '../core/directions.js';
 
@@ -632,6 +634,11 @@ export const actions = {
   },
   resetToSeed() { mutate('Auf Seed zurückgesetzt', (s) => { const next = buildSeedState(); next.settings = { ...defaultSettings(), ...s.settings }; Object.keys(s).forEach((k) => delete s[k]); Object.assign(s, next); }, { type: 'data.reset' }); },
   mergeSeed() { return mutate('Neue Seed-Inhalte übernommen', (s) => mergeSeed(s), { type: 'data.mergeSeed' }); },
+  /** Seed-Patch: neue Inhalte ergänzen, ausgewählte Features aktualisieren (vorher gesichert), Gesperrtes als Vorschlag. */
+  applySeedPatch(ids) {
+    return mutate(`Seed ${SEED_VERSION} abgeglichen`, (s) => { const r = applySeedPatch(s, buildSeedState(), { ids, seedVersion: SEED_VERSION }); s.meta.seedVersion = SEED_VERSION;
+      for (const pq of [...APP_QUESTIONS, ...PATTERN_QUESTIONS]) if (!s.decisions.some((x) => x.id === pq.id)) s.decisions.push(createDecision(pq)); return r; }, { type: 'data.seedPatch' });
+  },
 };
 
 /** Komponenten-Versionen, die die Varianten eines Features verwenden. */

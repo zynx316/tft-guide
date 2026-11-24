@@ -107,10 +107,12 @@ export function moduleDone(state, m) {
 
 export function appDone(state) {
   const patterns = state.decisions.filter((d) => d.level === 'pattern');
+  const basics = state.decisions.filter((d) => d.level === 'app' && String(d.id).startsWith('app-') && d.status !== 'superseded');
   return [
     ok('direction', 'App-Richtung entschieden', !!state.app?.directionId),
     ok('vision', 'Leitbild (Vision, Kontexte, Prinzipien) gepflegt', !!(state.app?.vision && (state.app?.principles || []).length >= 3)),
-    ok('patterns', 'App-weite Pflichtfragen entschieden', patterns.length > 0 && patterns.every((d) => d.status === 'decided'), `${patterns.filter((d) => d.status === 'decided').length}/${patterns.length}`),
+    ok('patterns', 'App-weite Muster entschieden', patterns.length > 0 && patterns.every((d) => d.status === 'decided'), `${patterns.filter((d) => d.status === 'decided').length}/${patterns.length}`),
+    ok('basics', 'Grundsatzfragen entschieden oder bewusst geparkt', basics.every((d) => d.status === 'decided' || d.status === 'parked'), `${basics.filter((d) => d.status !== 'open').length}/${basics.length}`),
     ok('nav', 'Navigation & Favoriten festgelegt', (state.app?.favorites || []).length >= 3),
     ok('phase1', 'Phase 1 (Abgleich mit echtem TAKT) abgeschlossen', !!state.app?.phase1Done),
   ];

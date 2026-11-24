@@ -1,15 +1,18 @@
 // Baut das Payload für die Preview-Runtime (Workbench, Vergleich, QA, Direktlinks).
 import { getComponent } from '../library/registry.js';
 import { migrate } from './schema.js';
-import { resolveVariant, moduleHome, navigationRules, listVersions, areaOf } from './directions.js';
+import { resolveVariant, moduleHome, navigationRules, versionById, areaOf } from './directions.js';
 import { isWorldRef, worldKey } from '../seed/world/index.js';
+import { getWorld } from './world.js';
 
-/** Nur die Welt-Schlüssel, die die Demo-Daten referenzieren. */
-export function worldFor(state, demoData) {
-  const out = {};
-  for (const v of Object.values(demoData || {})) if (isWorldRef(v)) { const k = worldKey(v); if (state.world && k in state.world) out[k] = state.world[k]; }
+/** Nur die Welt-Schlüssel, die die Demo-Daten referenzieren (im gewählten Szenario). */
+export function worldFor(state, demoData, scenario = 'alltag') {
+  const world = getWorld(state, scenario); const out = {};
+  for (const v of Object.values(demoData || {})) if (isWorldRef(v)) { const k = worldKey(v); if (k in world) out[k] = world[k]; }
   return out;
 }
+/** Umgebung der Vorschau: offline, veraltet, Schriftskalierung (1 | 1.3 | 2). */
+const envOf = (opts) => ({ offline: !!opts.env?.offline, stale: !!opts.env?.stale, scale: Number(opts.env?.scale) || 1 });
 
 export const STORAGE_KEY = 'takt-workbench-state-v1';
 export const DEFAULT_TODAY = '2026-11-24T09:30:00';
@@ -30,7 +33,8 @@ export function buildFeaturePayload(state, featureId, variantId, opts = {}) {
     feature: { id: feature.id, name: feature.name },
     variant: variant ? { id: variant.id, name: variant.name, layout: variant.layout, blocks: variant.blocks } : null,
     demoData: feature.demoData || {},
-    world: worldFor(state, feature.demoData),
+    scenario: opts.scenario || 'alltag', env: envOf(opts), privacy: !!opts.privacy,
+    world: worldFor(state, feature.demoData, opts.scenario),
   };
 }
 
@@ -59,7 +63,7 @@ export async function loadStateStandalone() {
  * versionId: 'arbeitsstand' | 'freigabe' | 'dir:<richtung>'
  */
 export function buildAppPayload(state, versionId = 'arbeitsstand', opts = {}) {
-  const version = listVersions(state).find((v) => v.id === versionId) || listVersions(state)[0];
+  const version = versionById(state, versionId);
   const modules = state.modules.filter((m) => !m.archived).sort((a, b) => a.order - b.order);
   const features = {};
   let own = 0, total = 0;
@@ -83,8 +87,9 @@ export function buildAppPayload(state, versionId = 'arbeitsstand', opts = {}) {
     state: opts.state || 'default', chrome: opts.chrome ?? true, today: opts.today || DEFAULT_TODAY,
     modules: modules.map((m) => ({ id: m.id, name: m.name, icon: m.icon, home: moduleHome(state, m.id), area: areaOf(m) })),
     favorites: (state.app?.favorites || []).filter((id) => modules.some((m) => m.id === id)),
-    features: sortedFeatures, startFeatureId: startId, route: opts.route || null,
+    features: sortedFeatures, startFeatureId: startId, route: opts.route || (version.kind === 'pin' ? version.featureId : null),
     coverage: { own, total }, revision: opts.revision || state.meta?.rev || 0,
-    world: state.world || {}, privacy: !!opts.privacy,
+    scenario: opts.scenario || 'alltag', env: envOf(opts),
+    world: getWorld(state, opts.scenario || 'alltag'), privacy: !!opts.privacy,
   };
 }

@@ -67,6 +67,45 @@ for (const f of state.features) {
   if (!f.requirements.length && f.status !== 'not_analyzed') warnings.push(`${f.id}: keine Anforderungen`);
 }
 
+// 3b) Navigationsgraph, Startseiten und Richtungen (Hinweise – Module entstehen schrittweise)
+const { moduleHome } = await import(pathToFileURL(path.join(SRC, 'core/directions.js')).href);
+const featById = new Map(state.features.map((f) => [f.id, f]));
+const navTargets = new Set();
+for (const f of state.features) for (const i of f.interactions || []) {
+  if (!i.to) continue;
+  const ok = i.to.startsWith('module:') ? state.modules.some((m) => m.id === i.to.slice(7)) : featById.has(i.to);
+  if (!ok) warnings.push(`${f.id}: Interaktion „${i.event || i.trigger}“ führt zu unbekanntem Ziel ${i.to}`);
+  else if (!i.to.startsWith('module:') && !featById.get(i.to).variants.length) warnings.push(`${f.id}: Interaktion „${i.event || i.trigger}“ führt zu ${i.to} ohne Variante (Skizze)`);
+  navTargets.add(i.to);
+}
+for (const m of state.modules.filter((x) => !x.archived)) {
+  const fs = state.features.filter((f) => f.moduleId === m.id && !f.archived && f.variants.length);
+  if (fs.length < 3) continue;
+  const home = moduleHome(state, m.id); const hf = featById.get(home);
+  const dirs = new Set((hf?.variants || []).map((v) => v.direction).filter(Boolean));
+  if (dirs.size < 3) warnings.push(`Modul ${m.id}: Startseite ${home || '–'} hat ${dirs.size} von 3 Richtungen (${[...dirs].join(', ') || 'keine'})`);
+  const orphan = fs.filter((f) => f.id !== home && !navTargets.has(f.id)).map((f) => f.id);
+  if (orphan.length > 2) warnings.push(`Modul ${m.id}: ${orphan.length} Features nur über das Bereichsmenü erreichbar (${orphan.slice(0, 4).join(', ')}${orphan.length > 4 ? ' …' : ''}) – Navigationsregeln (interaction.to) ergänzen`);
+}
+
+// 3c) Verbotene Begriffe in Gesundheitsbereichen (Liste: docs/HEALTH_GUIDELINES.md)
+const hg = path.join(ROOT, 'docs/HEALTH_GUIDELINES.md');
+if (fs.existsSync(hg)) {
+  const block = (fs.readFileSync(hg, 'utf8').match(/<!-- verbotsbegriffe:start -->([\s\S]*?)<!-- verbotsbegriffe:end -->/) || [])[1] || '';
+  // Format (siehe Leitlinie): je Zeile ein Teilwort (Groß/klein egal) oder /Regex/Flags; „#“ = Kommentar
+  const res = block.split('\n').map((l) => l.trim()).filter((l) => l && !l.startsWith('#') && !l.startsWith('```') && !l.startsWith('<!--')).map((l) => {
+    const m = l.match(/^\/(.+)\/([a-z]*)$/);
+    try { return m ? new RegExp(m[1], m[2].includes('u') ? m[2] : `${m[2]}u`) : new RegExp(l.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'iu'); } catch { return null; }
+  }).filter(Boolean);
+  const healthFiles = [...['fitness', 'nutrition', 'habits'].flatMap((a) => (fs.existsSync(path.join(SRC, 'library/components', a)) ? walk(path.join(SRC, 'library/components', a)) : [])),
+    ...['fitness', 'nutrition', 'habits'].map((m) => path.join(SRC, 'seed/modules', `${m}.js`)), ...['fitness', 'nutrition'].map((m) => path.join(SRC, 'seed/world', `${m}.js`))].filter((f) => fs.existsSync(f) && f.endsWith('.js'));
+  for (const f of healthFiles) fs.readFileSync(f, 'utf8').split('\n').forEach((line, i) => {
+    if (/^\s*(\/\/|\*)/.test(line)) return;
+    const strs = line.match(/(['`"])(?:(?!\1).)*\1/g) || [];
+    for (const raw of strs) { const st = raw.replace(/„[^“]*“/g, ''); for (const re of res) { const hit = st.match(re); if (hit) { warnings.push(`${rel(f)}:${i + 1}: Begriff „${hit[0].trim()}“ widerspricht den Gesundheits-Leitlinien (docs/HEALTH_GUIDELINES.md)`); break; } } }
+  });
+}
+
 // 4) ASCII-Umlaute in sichtbaren Texten (häufige Fälle)
 const ascii = /\b(fuer|Fuer|ueber|Ueber|Uebersicht|waehl\w*|Waehl\w*|moeglich\w*|koennen|muessen|Aenderung\w*|aender\w*|Pruef\w*|pruef\w*|faellig|Faellig\w*|zurueck|Rueck\w*|Loesch\w*|loesch\w*|hinzufueg\w*|Hinzufueg\w*|Oeffn\w*|oeffn\w*|Groesse|groesser|naechst\w*|Naechst\w*|spaeter|Eintraege|Schluessel|Bestaetig\w*|bestaetig\w*)\b/;
 for (const f of [...compFiles, ...walk(path.join(SRC, 'seed')), ...walk(path.join(SRC, 'workbench'))].filter((x) => x.endsWith('.js'))) {

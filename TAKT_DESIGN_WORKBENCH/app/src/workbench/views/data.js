@@ -6,7 +6,8 @@ import { Card, Btn, Badge, Empty, confirmDialog, openDialog, toast, Field } from
 import { act } from './common.js';
 import { actions, exportState, persistence } from '../store.js';
 import { inspectImport, SCHEMA_VERSION } from '../../core/schema.js';
-import { SEED_VERSION } from '../../seed/index.js';
+import { SEED_VERSION, buildSeedState } from '../../seed/index.js';
+import { diffSeed } from '../../core/seedpatch.js';
 import { tokensJson } from '../../design-system/tokens.js';
 import { tokensToDart } from '../../core/flutter.js';
 import { download, fmt } from '../../lib/util.js';
@@ -60,10 +61,34 @@ export function DataView({ state }) {
         ${backups?.length > 0 && html`<div class="wb-col" style="gap:0;margin:-8px -16px -16px;max-height:300px;overflow:auto">${backups.map((b) => html`<div class="wb-listrow"><${Icon} name="file-json" size=${15} /><span class="wb-grow wb-mono wb-trunc">${b.name}</span><span class="wb-small wb-subtle wb-num">${(b.size / 1024).toFixed(0)} KB</span>
           <${Btn} size="sm" variant="ghost" icon="rotate-ccw" onClick=${() => restore(b.name)}>Wiederherstellen<//></div>`)}</div>`}<//>
       <${Card} title="Seed & Zurücksetzen" icon="package">
-        <p class="wb-small wb-muted">Der Seed (app/src/seed/) ist der Startinhalt. Neue Module/Features, die später im Seed ergänzt werden (z. B. nach der Phase-1-Analyse), lassen sich übernehmen, ohne bestehende Arbeit zu verändern. Aktueller Seed: <span class="wb-mono">${SEED_VERSION}</span>.</p>
+        <p class="wb-small wb-muted">Der Seed (app/src/seed/) ist der Startinhalt. „Seed abgleichen“ ergänzt Neues, aktualisiert nur Features, die du nicht verändert hast (vorher gesichert), und lässt Freigegebenes unberührt (dafür entsteht ein Vorschlag). Aktueller Seed: <span class="wb-mono">${SEED_VERSION}</span>${state.meta.seedVersion && state.meta.seedVersion !== SEED_VERSION ? html` · <strong style="color:var(--wb-warning)">dein Stand: ${state.meta.seedVersion}</strong>` : ''}.</p>
         <div class="wb-row wb-wrap" style="gap:8px;margin-top:10px">
-          <${Btn} icon="merge" onClick=${() => { const added = act(() => actions.mergeSeed()); if (added) toast(added.modules.length + added.features.length ? `Übernommen: ${added.modules.length} Module, ${added.features.length} Features` : 'Nichts Neues im Seed'); }}>Neue Seed-Inhalte übernehmen<//>
+          <${Btn} variant="primary" icon="merge" onClick=${() => seedPatchDialog(state)} data-qa="seed-patch">Seed abgleichen …<//>
           <${Btn} variant="danger" icon="rotate-ccw" onClick=${async () => { if (await confirmDialog({ title: 'Auf Seed zurücksetzen?', text: 'Alle Änderungen gehen verloren (vorher wird automatisch ein Export heruntergeladen; Rückgängig mit Strg+Z möglich).', danger: true, confirmLabel: 'Zurücksetzen' })) { download(`takt-workbench-vor-reset-${Date.now()}.json`, exportState()); act(() => actions.resetToSeed()); toast('Auf Seed zurückgesetzt'); } }}>Zurücksetzen …<//></div><//>
     </div>
   </div>`;
+}
+
+/** Vorschau und Auswahl für den Seed-Patch. */
+function seedPatchDialog(state) {
+  const d = diffSeed(state, buildSeedState());
+  openDialog({ title: `Seed ${SEED_VERSION} abgleichen`, size: 'wide', body: ({ close }) => {
+    const [ids, setIds] = useState(d.aktualisierbar.map((x) => x.id));
+    const toggle = (id, on) => setIds(on ? [...ids, id] : ids.filter((x) => x !== id));
+    const group = (title, list, tone, selectable, hint) => html`<div class="wb-col" style="gap:4px"><div class="wb-row"><${Badge} tone=${tone} sq>${list.length}<//><strong>${title}</strong><span class="wb-small wb-muted">${hint}</span></div>
+      ${list.length > 0 && html`<div class="wb-card" style="max-height:180px;overflow:auto">${list.map((x) => html`<label class="wb-listrow" style=${selectable ? 'cursor:pointer' : ''}>${selectable ? html`<input type="checkbox" checked=${ids.includes(x.id)} onChange=${(e) => toggle(x.id, e.currentTarget.checked)} style="accent-color:var(--wb-accent)" />` : html`<${Icon} name=${tone === 'info' ? 'lock' : 'plus'} size=${14} />`}
+        <span class="wb-grow wb-trunc">${x.label || x.name}</span>${x.variants && html`<span class="wb-xs wb-subtle">Varianten ${x.variants}</span>`}</label>`)}</div>`}</div>`;
+    const nothing = !d.neueModule.length && !d.neu.length && !d.aktualisierbar.length && !d.geaendert.length && !d.gesperrt.length;
+    return html`<div class="wb-col" style="gap:12px">
+      ${nothing ? html`<${Empty} icon="check-check" title="Alles aktuell" text=${`${d.gleich} Features entsprechen dem Seed.`} />` : html`
+      ${group('Neue Module', d.neueModule, 'success', false, 'werden ergänzt')}
+      ${group('Neue Features', d.neu, 'success', false, 'werden ergänzt')}
+      ${group('Aktualisierbar', d.aktualisierbar, 'accent', true, 'von dir unverändert – vorher wird eine Arbeitsversion gesichert')}
+      ${group('Von dir geändert', d.geaendert, 'warning', true, 'nur ankreuzen, wenn der Seed-Stand deine Änderung ersetzen soll (Sicherung entsteht)')}
+      ${group('Freigegeben (gesperrt)', d.gesperrt, 'info', false, 'bleiben unverändert – je Feature entsteht eine offene Entscheidung „Seed-Vorschlag“')}
+      <div class="wb-small wb-subtle">${d.gleich} Features sind bereits auf Seed-Stand.</div>`}
+      <div class="wb-row" style="justify-content:flex-end"><${Btn} onClick=${close}>Abbrechen<//>${!nothing && html`<${Btn} variant="primary" icon="merge" data-confirm onClick=${() => {
+        const r = act(() => actions.applySeedPatch(ids)); close();
+        if (r) toast(`Seed abgeglichen: ${r.modules} Module und ${r.features} Features neu, ${r.updated} aktualisiert${r.proposals ? `, ${r.proposals} Vorschläge` : ''}`); }}>Abgleichen<//>`}</div></div>`;
+  } });
 }

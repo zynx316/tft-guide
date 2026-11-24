@@ -51,8 +51,34 @@ export function listVersions(state) {
   return [
     { id: 'arbeitsstand', name: 'Arbeitsstand', icon: 'pencil', tone: 'neutral', claim: 'Bevorzugte Variante je Feature', kind: 'state' },
     ...dirs.map((d) => ({ ...d, id: `dir:${d.id}`, directionId: d.id, kind: 'direction' })),
+    { id: 'mix', name: 'Meine Auswahl', icon: 'list-checks', tone: 'accent', claim: 'Nach deinen Entscheidungen: Feature vor Modul-Richtung vor App-Richtung', kind: 'state' },
     { id: 'freigabe', name: 'Freigegeben', icon: 'badge-check', tone: 'success', claim: 'Nur freigegebene Stände (sonst Arbeitsstand)', kind: 'state' },
   ];
+}
+
+/**
+ * „Meine Auswahl“: Variante nach den getroffenen Entscheidungen.
+ * Rangfolge: entschiedene Variante des Features › Richtung des Moduls › Richtung der App › Arbeitsstand.
+ */
+function resolveMix(state, feature, selected) {
+  const decided = (state.decisions || []).some((d) => d.featureId === feature.id && d.kind === 'variant' && d.status === 'decided');
+  if (decided && selected) return { variant: selected, demoData: feature.demoData, source: 'feature', reason: 'Variante des Features entschieden' };
+  const m = state.modules?.find((x) => x.id === feature.moduleId);
+  for (const [dir, src, why] of [[m?.directionId, 'modul', 'Richtung des Moduls'], [state.app?.directionId, 'app', 'Richtung der App']]) {
+    if (!dir) continue;
+    const match = feature.variants.find((v) => v.direction === dir);
+    if (match) return { variant: match, demoData: feature.demoData, source: src, reason: why };
+    return { variant: selected, demoData: feature.demoData, source: selected ? 'fallback' : 'none', reason: `${why} „${dir}“ – keine passende Variante` };
+  }
+  return { variant: selected, demoData: feature.demoData, source: selected ? 'selected' : 'none', reason: 'Noch nichts entschieden – Arbeitsstand' };
+}
+
+/** Version per ID – inkl. Pseudoversion pin:<featureId>:<variantId> („In App ansehen“ aus dem Studio). */
+export function versionById(state, id) {
+  const list = listVersions(state);
+  if (String(id).startsWith('pin:')) { const [, fid, vid] = id.split(':'); const f = state.features.find((x) => x.id === fid);
+    return { id, name: `Ansicht: ${f?.name || fid} · ${vid}`, icon: 'pin', tone: 'accent', claim: 'Diese Variante im App-Zusammenhang, alles andere Arbeitsstand', kind: 'pin', featureId: fid }; }
+  return list.find((v) => v.id === id) || list[0];
 }
 
 /** Variante eines Features für eine Version (inkl. Herkunft für die Abdeckungsanzeige). */
@@ -71,6 +97,13 @@ export function resolveVariant(state, feature, versionId = 'arbeitsstand') {
     const match = feature.variants.find((v) => v.direction === dir);
     if (match) return { variant: match, demoData: feature.demoData, source: 'direction' };
     return { variant: selected, demoData: feature.demoData, source: selected ? 'fallback' : 'none' };
+  }
+  if (versionId === 'mix') return resolveMix(state, feature, selected);
+  if (versionId.startsWith('pin:')) {
+    // Pseudoversion „In App ansehen“: pin:<featureId>:<variantId> – nur dieses Feature weicht vom Arbeitsstand ab.
+    const [, fid, vid] = versionId.split(':');
+    const pinned = fid === feature.id && feature.variants.find((v) => v.id === vid);
+    if (pinned) return { variant: pinned, demoData: feature.demoData, source: 'pin', reason: `Variante ${vid} zur Ansicht` };
   }
   return { variant: selected, demoData: feature.demoData, source: selected ? 'selected' : 'none' };
 }

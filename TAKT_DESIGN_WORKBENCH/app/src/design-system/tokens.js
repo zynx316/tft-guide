@@ -107,7 +107,7 @@ const px = (v) => (typeof v === 'number' ? `${v}px` : v);
 export function baseCssVars() {
   const v = [];
   v.push(`--tk-font: ${base.font.family}`, `--tk-font-mono: ${base.font.mono}`);
-  for (const [k, val] of Object.entries(base.font.size)) v.push(`--tk-fs-${k}: ${px(val)}`);
+  for (const [k, val] of Object.entries(base.font.size)) v.push(`--tk-fs-${k}: calc(${px(val)} * var(--tk-text-scale, 1))`);
   for (const [k, val] of Object.entries(base.font.weight)) v.push(`--tk-fw-${k}: ${val}`);
   for (const [k, val] of Object.entries(base.font.lineHeight)) v.push(`--tk-lh-${k}: ${val}`);
   for (const [k, val] of Object.entries(base.font.tracking)) v.push(`--tk-ls-${k}: ${val}`);

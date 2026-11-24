@@ -1,0 +1,871 @@
+{
+ "vision": "TAKT V2.0 wird in der Workbench als ganze, bedienbare mobile App erlebbar und nicht als Sammlung einzelner Screens. Der Demo-Launcher (launcher.html) ist das zentrale Element. Auf dem Laptop zeigt er bis zu drei Versionen der App nebeneinander im Telefonrahmen, mit gekoppelter Navigation und umschaltbarem Szenario (Erster Start, Alltag, Stress-Tag), Theme, Offline, Privatmodus und Schriftgröße. Auf dem Handy öffnet derselbe Launcher per QR-Code oder Direktlink vollbildig. Eine Version ergibt sich aus zwei Achsen: Richtung (Kompakt, Visuell, Fokus: Stil, Dichte, Variantenwahl) mal Shell (Tab-Leiste, Launchpad, Fokus mit Erfassen). Dazu kommen Arbeitsstand, Freigabe und Meine Auswahl (Mischung je Modul). Alle Versionen laufen auf derselben Preview-Runtime mit denselben 45+ Komponenten und einer einzigen Persona-Datenwelt (Jonas, Bielefeld, Online-Shop, ETF-Sparer, Krafttraining), sodass Termine, Aufgaben, Konten, Depot, Mahlzeiten und Trainings in jedem Modul dieselben Zahlen zeigen und Aktionen modulübergreifend wirken. Entschieden wird Ebene für Ebene (App, Modul, Feature, Komponente) mit Pflichtbegründung, Wiedervorlage und einer ehrlichen Abdeckungsanzeige. Ein Rückkanal vom Handy läuft append-only und wird in der Workbench bewusst übernommen, die Sperrlogik bleibt unberührt. Auf diese Basis folgen die Fachmodule als Schnitte mit Tiefe: Finanzen (Frei verfügbar, Erfassung in unter 5 Sekunden, Umbuchungen), Sparen (getesteter Rechner, Pläne, Ziele, Deckungskalender), Trading (Simulation mit Order-Schutz, Steuer, Dividenden), Ernährung (Heute, Erfassen in 3 Taps), Fitness (Satz-Logger, Rest-Timer) und Wetter (Radar, Pollen, Kleidungstipp). Daneben stehen Querschnitt (Erfassen, Suche, Mitteilungen), die fehlenden Alltagsmodule (Gewohnheiten, Ziele, Dokumente, Einkauf) und dokumentierte Scope-Entscheidungen. Gesundheits- und Finanz-Leitplanken, Formatstandard, Zustandskatalog und ein Prüfsystem (Node-Tests, Check, Probe, E2E) sichern die Qualität. Der Flutter-Übergang wird nur so weit vorbereitet, wie er ohne SDK und ohne Phase 1 belastbar ist.",
+ "workPackages": [
+  {
+   "id": "DOC-0",
+   "title": "Leitplanken, Verträge und Welt-Katalog (Doku vor Code)",
+   "kind": "doku",
+   "priority": "P0",
+   "dependsOn": [],
+   "files": [
+    "docs/HEALTH_GUIDELINES.md",
+    "docs/FINANCE_GUIDELINES.md",
+    "docs/DATENWELT.md",
+    "docs/FEATURE_IDS.md",
+    "docs/TEXT_STIL.md",
+    "docs/PERSONA.md",
+    "docs/ADR-001-demo-launcher.md",
+    "docs/ADR-002-datenhaltung.md",
+    "docs/GERAETETEST.md",
+    "docs/BAUPLAN.md",
+    "docs/WORKER_BRIEF.md"
+   ],
+   "scope": "Schreibt die verbindlichen Texte, bevor Module entworfen werden. HEALTH_GUIDELINES: kein Medizinprodukt, Untergrenzen beim Kalorienziel (keine Ziele unter geschätztem Grundumsatz, Abnahme höchstens ca. 0,5 bis 1 Prozent Körpergewicht pro Woche, unter 18 keine Defizit-Ziele, Hinweis bei Schwangerschaft und Vorerkrankung), Tonalität (Überschreitung nie rot, keine Moralwörter, Wochen- statt Tagesbewertung, Serie mit Pausenjoker), Gewohnheitsmodus ohne Zahlen, Gewicht ausblendbar, Trainings-Sicherheit, 14 EU-Allergene, Datenschutz nach Art. 9 DSGVO, Verbotsbegriffe-Liste für den Check. FINANCE_GUIDELINES: Hinweisarten (simulation, keine-beratung, modellrechnung, steuer, kursdaten, krypto) mit Mustertexten, Annahmen mit Stand-Datum, Spannen statt Einzelwert, Umbuchung neutral, Rundung, Privatmodus. DATENWELT: Eigentümer-Tabelle (Bauplan 5.13), Schlüsselkatalog je Welt-Datei, Summary/Hints/Search/Notifications-Vertrag, Szenario-Vertrag, prefs. FEATURE_IDS: vollständiger Katalog aller Feature-IDs je Modul mit Tier und Startseite (aus Bauplan Abschnitt 6), damit Pakete Querverweise ohne Abstimmung setzen. TEXT_STIL: Anrede, Tonalität, Mikrotexte, Leerzustand-Muster, Umlaute. PERSONA: Tag stundenweise aus den vorhandenen Welt-Dateien. ADR-001 (HTML/PWA statt Flutter Web, Electron, Capacitor, Secure-Context-Hinweis), ADR-002 (Datenhaltung lokal-first, Sync optional, Konfliktregel, Cloud-OCR offen). GERAETETEST: Checkliste und Protokollformat. BAUPLAN.md enthält den Bauplan-Text (vom Orchestrator übergeben). WORKER_BRIEF.md auf Stand der Verträge bringen (resolveDesign, ctx.now, Szenarien, Ownership, Test-Namensraum, Standard-DoD).",
+   "acceptance": [
+    "Alle genannten Dateien existieren, deutsch mit Umlauten, ohne Widersprüche zu Bauplan und Code",
+    "FEATURE_IDS enthält jede bestehende Feature-ID unverändert und alle neuen IDs aus dem Bauplan",
+    "DATENWELT nennt je Welt-Datei Eigentümer-Paket und alle Pflicht-Exporte",
+    "HEALTH_GUIDELINES enthält die maschinenlesbare Verbotsbegriffe-Liste (eigener Abschnitt) für INF-5",
+    "CLAUDE.md und HANDOFF.md werden hier nicht verändert (macht DOC-1)"
+   ]
+  },
+  {
+   "id": "INF-1",
+   "title": "Preview-Runtime: App-Player, Shells, Navigation, Zustände, Umgebung",
+   "kind": "infrastruktur",
+   "priority": "P0",
+   "dependsOn": [],
+   "files": [
+    "app/src/preview/runtime.js",
+    "app/src/preview/layouts.js",
+    "app/src/preview/app-player.js",
+    "app/src/preview/shell.js",
+    "app/src/preview/states.js",
+    "app/src/design-system/takt-base.css",
+    "app/src/design-system/tokens.js",
+    "app/src/design-system/takt-extras.css",
+    "app/src/core/preview-payload.js",
+    "app/preview.html",
+    "tests/inf1-*.test.mjs"
+   ],
+   "scope": "Setzt Bauplan 5.3 bis 5.7 um. AppPlayer in eigene Dateien auslagern (runtime.js bleibt Einstieg). (1) History und Deep-Links (Hash, pushState, popstate), Stapel je Modul, Tab-Re-Tap zur Modul-Startseite, Ping-Pong-Pop, Zurück-Reihenfolge Dialog vor Stapel, Rand-Wischgeste, Screen-Cache mit versionId, Versionswechsel ohne Remount mit Routenerhalt (Fallback Modul-Startseite). (2) `carry` auswerten (`ctx.ui[schlüssel]` am Ziel), Altverhalten behalten. (3) Shells tabs, launchpad (Modulraster mit Live-Kennzahlen aus `world.allKpis`, Bottom-Leiste mit Favoriten und Alle), fokus (Heute, zentraler Erfassen-Knopf, Modul-Sheet); keine slice-Grenzen mehr, Favoriten aus `world.prefs.favorites` oder `app.favorites` (4 Slots), „Mehr“ als Vollbild-Launchpad mit Suche, Gruppen nach `area`, zuletzt benutzt; Desktop-Sidebar mit einklappbaren Gruppen; Tablet-Rail. (4) Generischer Modul-Hub `module:<id>` (Kennzahlen, Feature-Kacheln nach Gruppe) für Module ohne Startseite. (5) Safe-Area-Variablen (URL `safe=` und Host-Nachricht), dvh, Höhenklasse hp-compact für Quermodus Handy, Übergänge (View Transitions mit CSS-Fallback), reduced motion global, Dialog-Fokus (Fokus hinein, Falle, zurück zum Auslöser, Hintergrund inert). (6) Zustände firstrun, denied, stress generisch (states.js), Umgebung offline (Banner, Stand-Zeit), stale, privacy, scale (`--tk-text-scale`). (7) Kontext ctx.now/live/newId/world/env/fmt, Welt-Szenarien über `getWorld(state, scenario)` statt `state.world`, `ctx.world.add` für Erfassen. (8) Suche und Glocke: funktionsfähig, wenn `system.search/system.notifications` Varianten haben, sonst sichtbar gesperrt mit Tooltip. (9) DIRECTION_TOKENS (Dichte, Radius) und Klasse tk-dir-<id> in tokens.js, Shell-Standard je Richtung. (10) Payload-Optionen scenario, env, safeArea, shell, route, params; Revisions-Ping statt Voll-Payload nur falls Messung nötig. `legacy=1` schaltet den alten Pfad. takt-extras.css leer anlegen (füllt INF-2) und in preview.html einbinden.",
+   "acceptance": [
+    "E2E-Test (Playwright, 390 px): Start, Aufgabe t7 antippen, Detail zeigt t7, Browser-Zurück zeigt Start; Reload auf #/tasks.detail?id=t7 öffnet dieselbe Aufgabe",
+    "Tab-Wechsel Aufgaben, Kalender, Aufgaben behält Filter und Scroll; offener Dialog wird per Zurück zuerst geschlossen; Rand-Wisch geht zurück",
+    "Mit 21 aktiven Modulen ist jedes Modul in höchstens 2 Taps erreichbar, in allen drei Shells, ohne Abschneiden",
+    "Versionswechsel im selben Frame behält die Route und dauert unter 300 ms ohne Flackern",
+    "scale=2 und safe=47,0,34,0 erzeugen keinen neuen Überlauf in der Probe; Bottom-Navigation liegt über dem Inset",
+    "state=firstrun|denied|stress, env offline|stale|privacy rendern ohne Konsolenfehler",
+    "Standard-DoD erfüllt (Bauplan 5.14)"
+   ]
+  },
+  {
+   "id": "INF-2",
+   "title": "Primitive, Formatstandard, Wiederholungslogik, Health-Rechner",
+   "kind": "komponenten",
+   "priority": "P0",
+   "dependsOn": [],
+   "files": [
+    "app/src/library/ui.js",
+    "app/src/library/helpers.js",
+    "app/src/library/CONTRACT.md",
+    "app/src/lib/format.js",
+    "app/src/lib/date.js",
+    "app/src/lib/util.js",
+    "app/src/core/recurrence.js",
+    "app/src/library/health/calc.js",
+    "app/src/library/components/insights/shared.js",
+    "app/src/library/components/insights/activity-rings.js",
+    "app/src/design-system/takt-extras.css",
+    "tests/inf2-*.test.mjs"
+   ],
+   "scope": "Setzt Bauplan 5.8 und 5.9 um. lib/format.js (alle Format-Funktionen, echtes Minus, geschütztes Leerzeichen, tabular-nums, PP), money()/percent() delegieren dorthin, Maskierung ctx.privacy in gleicher Breite. ui.js: RowButton, NumberStepper (44 px, Komma-Eingabe, Dauerdruck, min/max, Einheit, inputmode decimal), Money; Fokus-Stile für role=button. lib/date.js. core/recurrence.js mit nextOccurrences und describeRule (Deutsch), mindestens 15 Testfälle. library/health/calc.js (Grundumsatz, Gesamtumsatz, Makros, Epley-1RM, Trend, Serie mit Joker, EAN-Prüfziffer, Atwater-Plausibilität) mit Tests. RingChart aus activity-rings nach insights/shared.js ziehen, activity-rings auf Version 1.1 mit Prop centerMode (percent oder remaining), pixelgleich im Standard. CONTRACT.md um flutter, a11y, perf, testIds und die Regeln aus 5.7 und 5.9 ergänzen. takt-extras.css für neue Primitive (Stepper, RowButton-Fokus) füllen. Keine Änderung an Komponenten anderer Bereiche außer activity-rings und shared.",
+   "acceptance": [
+    "Format-Tabelle mit 14 Testwerten (0, −0,01, 1.234.567,89, 9.999.999,99, 0,5 %, 1 PP, 0,00001234 BTC …) als Node-Test grün",
+    "Privatmodus: DOM enthält keinen sichtbaren Betrag (Test über money() und Money)",
+    "nextOccurrences hat mindestens 15 Tests (Monatsende, Schaltjahr, Sommerzeit, nach Erledigung, Enddatum) und deutschen Klartext (jeden 2. Dienstag, bis 31.12.)",
+    "calc.js Tests: bekannte Grundumsatz-Werte ±1 kcal, 80 kg mal 5 ergibt ca. 93 kg, Serie mit Joker, falsche EAN-Prüfziffer wird abgelehnt",
+    "activity-rings rendert im Standard pixelgleich (qa:changed zeigt nur erwartete Drift durch Versionssprung)",
+    "Standard-DoD erfüllt (Bauplan 5.14)"
+   ]
+  },
+  {
+   "id": "INF-3",
+   "title": "Datenmodell v3, Migrationskette, Auflösung, Seed-Patch, Welt-Mechanik, Store",
+   "kind": "infrastruktur",
+   "priority": "P0",
+   "dependsOn": [],
+   "files": [
+    "app/src/core/schema.js",
+    "app/src/core/migrations.js",
+    "app/src/core/directions.js",
+    "app/src/seed/index.js",
+    "app/src/seed/SEED_FORMAT.md",
+    "app/src/seed/world/index.js",
+    "app/src/seed/world/finance.js",
+    "app/src/seed/world/trading.js",
+    "app/src/seed/world/savings.js",
+    "app/src/seed/world/habits.js",
+    "app/src/seed/world/goals.js",
+    "app/src/seed/world/documents.js",
+    "app/src/seed/world/shopping.js",
+    "app/src/seed/world/knowledge.js",
+    "app/src/seed/world/scans.js",
+    "app/src/seed/world/sales.js",
+    "app/src/seed/world/system.js",
+    "app/src/seed/world/settings.js",
+    "app/src/seed/world/home.js",
+    "app/src/seed/decisions.js",
+    "app/src/seed/modules/goals.js",
+    "app/src/seed/modules/documents.js",
+    "app/src/seed/modules/shopping.js",
+    "app/src/library/registry.js",
+    "app/src/library/components/goals/index.js",
+    "app/src/library/components/documents/index.js",
+    "app/src/library/components/shopping/index.js",
+    "app/src/library/components/system/index.js",
+    "app/src/library/components/knowledge/index.js",
+    "app/src/library/components/scan/index.js",
+    "app/src/library/components/sales/index.js",
+    "app/src/library/components/home/index.js",
+    "app/src/library/components/settings/index.js",
+    "app/src/workbench/store.js",
+    "tests/inf3-*.test.mjs"
+   ],
+   "scope": "Setzt Bauplan 5.1, 5.2, 5.5, 5.10 und den Datenteil von 5.11 um. Schema 3 mit allen Feldern und Defaults, UI_STATES, migrations.js (Kette, Snapshots additiv, Backup-Aufruf), validateState, inspectImport strukturell. Welt nicht mehr im Zustand: getWorld(state, scenario), applyScenario, WORLD ohne scenarios-Export, Aggregation allKpis, allHints, searchIndex, allNotifications aus den Exporten <m>Summary/Hints/Search/Notifications, summaryKey(moduleId). Welt-Dateien aufteilen ohne Schlüsselverlust: Depot, Positionen, Watchlist, Dividenden, Steuerfreibetrag nach trading.js; Sparpläne, Sparziele, Sparrate nach savings.js; finance.js importiert depotValue aus trading.js. Leere, kommentierte Stub-Dateien für alle weiteren Welt-Dateien (Eigentümer laut Bauplan 5.13), Stubs für seed/modules/goals, documents, shopping (Manifest mit module-Objekt, area, stage, features: []), seed/decisions.js (export default [] app-weite Entscheidungen, von buildSeedState übernommen), Manifeste in seed/index.js registrieren (MANIFESTS inkl. goals, documents, shopping), SEED_VERSION erhöhen. directions.js: resolveDesign, mix, pin:, versionCoverage mit tier1, decisionReady, navigationRules mit carry, AREA_BY_MODULE ergänzen, moduleHome berücksichtigt homeFeatureId. Seed-Patch: seedRev/seedHash, diffSeed, applySeedPatch (überspringt Gesperrtes, Vorschlags-Entscheidung, Backup, Verlauf). registry.js: neue Bereiche einbinden, CATEGORY_ORDER erweitern; je neuer Komponentenordner index.js mit export default []. store.js: Actions für Entscheidung v2 (createDecision mit Optionen, decide, park, revisit, supersede), selectVariant/applyDirection erzeugen immer einen Eintrag, setShell, setFavorites, importFeedback v2 idempotent mit Status neu/übernommen/verworfen/später, applyFeedback, diffSeed/applySeedPatch, compareRounds-Zähler, Migration beim Laden mit Backup und Heilungsbericht.",
+   "acceptance": [
+    "Ein v2-Export (docs/examples) lässt sich laden, wird auf Schema 3 migriert, Freigabe-Snapshots bleiben inhaltlich byteweise gleich, erneute Migration ist idempotent (Test)",
+    "validateState meldet tote Modulreferenz, unbekannte Richtung, Pin auf unbekannte Variante, totes to-Ziel; Import mit schemaVersion 4 wird abgelehnt",
+    "resolveDesign-Tests: nur App-Richtung, Modul überschreibt App, Feature-Pin überschreibt Modul, Fallback ohne Tag, gesperrtes Feature",
+    "applySeedPatch aktualisiert ein unverändertes Feature, überspringt ein gesperrtes (Vorschlags-Entscheidung) und ein vom Nutzer geändertes",
+    "WORLD-Schlüssel sind nach der Aufteilung identisch zu vorher (Test), npm run check und test-finmath grün, Zustand enthält kein world mehr",
+    "Aggregation: ein Test-Export <m>Summary erscheint in allKpis, scenarios werden von applyScenario angewendet",
+    "Standard-DoD erfüllt (Bauplan 5.14)"
+   ]
+  },
+  {
+   "id": "INF-4",
+   "title": "Server und Demo-Launcher: Versionen, Szenarien, Entscheidungspanel, Handy",
+   "kind": "launcher",
+   "priority": "P0",
+   "dependsOn": [
+    "INF-1",
+    "INF-3"
+   ],
+   "files": [
+    "server.mjs",
+    "app/launcher.html",
+    "app/manifest.webmanifest",
+    "app/sw.js",
+    "app/icon.svg",
+    "app/src/launcher/launcher.js",
+    "app/src/launcher/launcher.css",
+    "app/src/launcher/devices.js",
+    "app/src/launcher/decision-panel.js",
+    "app/src/launcher/coverage.js",
+    "app/src/launcher/qr-dialog.js",
+    "app/src/launcher/scenarios.js",
+    "app/src/launcher/feedback.js",
+    "tests/inf4-*.test.mjs"
+   ],
+   "scope": "Baut auf dem vorhandenen Launcher auf, kein Neubau. Kann gegen die Verträge 5.3, 5.4, 5.11 parallel zu INF-1 und INF-3 starten, Abnahme nach beiden. (1) Versionsliste inkl. Meine Auswahl und pin:, Versionskarten mit Claim, Tier-1-Abdeckung, Stand; Matrix Modul mal Richtung (eigen, Ersatz, Skizze) mit Link ins Studio; Warnung unter 60 Prozent vor Richtung wählen. (2) Laptop: Werkzeugleiste (Version, Gerät, Hoch/Quer, Theme, Zustand inkl. firstrun/denied/stress, Szenario, Tageszeit-Station, Offline, Privatmodus, Schrift 100/130/200, Synchron, Vollbild F, Touch-Anzeige), 1 bis 3 Rahmen (Geräte iPhone 15, Pixel 8, Galaxy kompakt, iPhone SE) mit synchroner Navigation und gespiegelten Umgebungsschaltern über die Nachrichten aus 5.4; Tasten 1/2/3, T, R. (3) Handy: Versionskarten-Startseite, Vollbild ohne Rahmen, Demo-Griff mit Umschaltblatt, Safe-Area aus env() per Probe-Element an den Iframe, Browser-Zurück an die App-History weiterreichen, Deep-Link-Parameter (version, device, theme, route, scenario, env, frames). (4) Entscheidungspanel mit Favorit, Sternen, fünf Kriterien, Kommentar, Nehmen mit Pflichtbegründung und Nachteilen; Laptop direkt per actions.applyDirection, Handy als Feedback-Eintrag mit Schema v2 (stateRev, buildId, scenario, route, criteria), Offline-Warteschlange (IndexedDB oder localStorage) mit idempotenter id. (5) QR-Dialog mit /api/network, Hinweis wenn nur an 127.0.0.1 gebunden, PIN im Link, Firewall/WLAN/VPN-Hinweise, adb-reverse-Befehl, Secure-Context-Erklärung, Erreichbarkeits-Probe /api/ping. (6) Server: Feedback-Schema v2 mit Validierung, PIN, Rate-Limit, 5-MB-Rotation, Dedupe, GET ?since=, /api/ping, MIME webmanifest, Revisionszähler meta.rev für den Stand-Stempel. /api/state bleibt im LAN schreibgeschützt. (7) Service Worker nur auf Secure Context registrieren und Status im Launcher zeigen, kein Precache-Versprechen über http. (8) Stand-Stempel und Hinweis bei neuerem Stand (Prüfung alle 30 s und beim Fokus).",
+   "acceptance": [
+    "Drei Versionen per Tipp wechselbar, Strukturunterschied ohne Farbwechsel erkennbar, bei 390 px Breite füllt die App den Viewport ohne Rahmen",
+    "Mit Synchron an führt ein Klick auf Aufgaben im ersten Frame beide anderen Frames nach tasks.overview; drei Frames laufen auf 1440×900 mit Interaktionszeit unter 100 ms",
+    "Handy-Bewertung mit Kommentar landet im Server (jsonl) mit allen Schema-Feldern; doppelte id erzeugt keinen zweiten Eintrag; falsche PIN liefert 401, mehr als 60 Anfragen pro Minute 429, zu große Einträge 413",
+    "PUT /api/state aus dem LAN bleibt 403 (Test)",
+    "Nehmen auf dem Laptop legt eine Entscheidung mit Ebene, Begründung, Nachteilen an, gesperrte Features werden übersprungen und ausgewiesen",
+    "Versionswechsel behält Route, Szenario und Umgebung; Deep-Link öffnet genau diese Konfiguration auf einem zweiten Gerät",
+    "Standard-DoD erfüllt (Bauplan 5.14)"
+   ]
+  },
+  {
+   "id": "INF-5",
+   "title": "Test-Infrastruktur, Node-Loader, Check-Erweiterungen, verify",
+   "kind": "qualitaet",
+   "priority": "P0",
+   "dependsOn": [],
+   "files": [
+    "tools/register.mjs",
+    "tools/check.mjs",
+    "tools/verify.mjs",
+    "tools/bench-store.mjs",
+    "tools/hooks/pre-commit",
+    "tests/_helpers.mjs",
+    "tests/core-*.test.mjs",
+    "docs/component-baseline.json",
+    "package.json"
+   ],
+   "scope": "Loader-Hook (module.register), der preact, preact/hooks und htm auf app/vendor abbildet, damit library/registry.js, core/spec.js und core/preview-payload.js in Node importierbar sind. package.json: test (node --import ./tools/register.mjs --test tests/), verify (check, test, qa:changed), Skripte bleiben; keine neuen Abhängigkeiten. Core-Tests: migrate und Idempotenz, versioning, directions, Theme-Audit aller Themes, Seed-Integrität, Format-Smoke. Bauplan-Abschnitt 10 Ebene 1 als Check-Regeln: Navigationsgraph (totes to, Erreichbarkeit in höchstens 3 Taps vom Start per BFS über Nav-Regeln und Modul-Hub), Startseite mit drei Richtungen je Modul mit mehr als 2 Features, legal-notice in jeder Variante von Modulen mit legal, Verbotsbegriffe (Liste aus docs/HEALTH_GUIDELINES.md), kein danger-Token im Kalorien-/Gewichtskontext, Lint Date.now/new Date/Math.random-ID/toLocale/Intl außerhalb format.js, Seed-Größe unter 1,6 MB, Flutter-Feld für Komponenten, die nicht in docs/component-baseline.json stehen (Datei aus dem aktuellen Registry-Stand erzeugen), Umlaute, Hex-Farben. verify.mjs mit Zeit je Stufe und Ergebnisbericht qa/results/latest.md. bench-store.mjs erzeugt 150 synthetische Features mit Versionen und misst mutate-Dauer und Undo-Speicher (Entscheidungsgrundlage für spätere Delta-Persistenz). Optionaler Pre-Commit-Hook (check und test unter 10 s). Tests der anderen Pakete laufen automatisch über den Namensraum tests/<paket>-*.test.mjs.",
+   "acceptance": [
+    "import registry.js in Node läuft ohne Fehler und liefert alle Komponenten",
+    "npm test läuft in unter 10 s mit mindestens 25 Tests grün; npm run check unter 2 s",
+    "Absichtlich eingeschleuste Verstöße (totes to, fehlendes legal-notice, Verbotsbegriff, Date.now in der Library, Hex-Farbe) werden vom Check gemeldet (je ein Negativtest)",
+    "verify liefert Exit-Code 0 oder 1 und einen Bericht mit allen Stufen",
+    "bench-store.mjs gibt Dauer und Speicher als Zahlen aus und dokumentiert die Schwelle",
+    "Standard-DoD erfüllt (Bauplan 5.14)"
+   ]
+  },
+  {
+   "id": "INF-6",
+   "title": "QA-Probe, CLI-QA, modulare E2E-Suite und Launcher-Tests",
+   "kind": "qualitaet",
+   "priority": "P1",
+   "dependsOn": [
+    "INF-1",
+    "INF-3"
+   ],
+   "files": [
+    "app/src/preview/qa-probe.js",
+    "qa/run-qa.mjs",
+    "qa/lib/workbench.mjs",
+    "qa/e2e/launcher.mjs",
+    "qa/e2e/core.mjs",
+    "qa/perf-budget.json",
+    "app/src/workbench/qa-runner.js",
+    "app/src/workbench/views/quality.js",
+    "app/src/workbench/views/ws-qa.js"
+   ],
+   "scope": "Probe: neue Prüfungen legal-present (Features von Modulen mit legal brauchen sichtbaren Hinweis), money-format (Dezimalpunkt, Euro-Zeichen vorn, Bindestrich statt Minus, fehlendes geschütztes Leerzeichen), privacy-clean (bei env privacy kein sichtbarer Betrag), a11y-names, a11y-roles (role=button ohne Tastaturbehandlung, div mit onClick), a11y-forms, a11y-headings, Überlauf und abgeschnittener Text bei Schrift 130 und 200 Prozent, DOM-Knotenbudget je Viewport (qa/perf-budget.json); Skizzen werden als Skizze gemeldet, nicht als Fehler. CLI: Zustände firstrun, denied, stress und Umgebung (--env offline,privacy --scale 2), Parallelisierung (--workers N), Inhalts-Hash je Feature für qa:changed (qa/baselines/content-hashes.json), Tags und --only launcher, Retry bei Flackern, Zeitbudget. E2E-Suite modular: qa/lib/workbench.mjs (frischer Server mit temporärem Datenordner), die 24 bestehenden Tests unverändert nach qa/e2e/core.mjs, neue Launcher-Tests in qa/e2e/launcher.mjs: Versionswechsel mit Routenerhalt, Synchron von zwei Frames, Szenario wechseln, Privatmodus, Zurück per History, Feedback zu Eingang zu Entscheidung, Sperre bleibt unberührt, Seed-Patch überspringt Gesperrtes. Quality Center und Feature-Workspace-QA zeigen neue Zustände, Umgebung und Befunde.",
+   "acceptance": [
+    "Absichtlich kaputtes Test-Feature (Icon-Button ohne Label, Betrag mit Punkt, fehlender Hinweis in legal-Modul, sichtbarer Betrag im Privatmodus) schlägt rot an",
+    "Bestehende Seed-Features erzeugen keine neuen Fehler (nur dokumentierte Hinweise)",
+    "npm run qa -- --only launcher läuft in unter 3 Minuten mit mindestens 10 Tests grün",
+    "--workers 4 ist bei 100 Jobs mindestens doppelt so schnell wie ein Worker bei gleichem Ergebnis",
+    "qa:changed erkennt eine Prop-Änderung an einem Block (Inhalts-Hash)",
+    "Standard-DoD erfüllt (Bauplan 5.14)"
+   ]
+  },
+  {
+   "id": "INF-7",
+   "title": "Workbench: Entscheidungs-Fahrplan, Übersicht, Module, Feature-Browser, Gerätetest",
+   "kind": "workbench",
+   "priority": "P1",
+   "dependsOn": [
+    "INF-3"
+   ],
+   "files": [
+    "app/src/workbench/views/decide.js",
+    "app/src/workbench/views/dashboard.js",
+    "app/src/workbench/views/modules.js",
+    "app/src/workbench/views/versions.js",
+    "app/src/workbench/views/features.js",
+    "app/src/workbench/views/feature-workspace.js",
+    "app/src/workbench/views/studio.js",
+    "app/src/workbench/views/ws-design.js",
+    "app/src/workbench/views/ws-tabs.js",
+    "app/src/workbench/views/library.js",
+    "app/src/workbench/views/common.js",
+    "app/src/workbench/app.js",
+    "app/src/workbench/router.js",
+    "app/src/workbench/workbench.css",
+    "app/src/workbench/ui/kit.js",
+    "app/src/workbench/ui/preview-frame.js",
+    "app/index.html",
+    "tests/inf7-*.test.mjs"
+   ],
+   "scope": "Baut die Oberflächen für Bauplan Abschnitt 8 auf den Store-Actions aus INF-3. decide.js: Ebenenleiter mit Zählern, Vererbungsbaum (App, Modul, Feature) mit Quelle (geerbt, Pin, Ausnahme mit Grund), „Nächste Entscheidung“ nach Blockierwirkung, Eingang vom Handy (Übernehmen, Verwerfen, Später), Richtungsmatrix mit Tier-1-Abdeckung, Kriterienraster, Rundenzähler (dritte Vergleichsrunde bietet nur Entscheiden, Standardempfehlung oder Parken), Entscheidungsdialog v2 (Optionen, Reversibilität, Evidenz, Wiedervorlage), Parken mit Datum oder Auslöser. dashboard.js: Fortschritt je Ausbaustufe und Ebene, Entscheidungsstau, fällige Wiedervorlagen, Tier-Zähler, Karte „Demo öffnen“ und „Auf dem Handy öffnen“. modules.js: Felder stage, dataSource, offline, legal, assumption, Verknüpfungsmatrix, Startseiten-Status. features.js: Filter nach Tier, Richtung, Abdeckung, Status. ws-tabs.js: Tab „Gerätetest“ (Gerät, Android-Version, Checkliste aus docs/GERAETETEST.md, Ergebnis, Pflicht für Tier 1 in der Freigabe-Checkliste als Hinweis mit Ausnahme-Begründung), Akzeptanzkriterien und Abläufe bearbeitbar. studio.js und ws-design.js: Richtung beim Anlegen einer Variante, Knopf „In App ansehen“ (pin:), Umgebungs- und Szenarioschalter in der Vorschau-Werkzeugleiste (preview-frame.js). versions.js: Entscheidungsprotokoll-Export (Markdown nach Ebene mit Optionen, Evidenz, Reversibilität, Wiedervorlage). library.js: Zustandsreihe erweitert (firstrun, denied, stress) und Flutter-Feld. Navigationseintrag Demo und Entscheidung bleibt, index.html nur bei Bedarf.",
+   "acceptance": [
+    "#/decide zeigt vier Ebenen mit korrekten Zählern aus dem Seed (Module, Features, Komponenten) und die App-Richtung steht in „Nächste Entscheidung“ an erster Stelle",
+    "Eine Variantenwahl im Vergleich erzeugt immer einen Entscheidungseintrag mit options und chosen (E2E)",
+    "Entscheiden der App-Richtung ändert Stufe und Kennzeichen darunter; gesperrte Features werden nie verändert",
+    "Gerätetest-Tab speichert das Protokoll und überlebt Export/Import",
+    "Alle Ansichten bei 1440 und 390 px ohne Überlauf, per Tastatur bedienbar",
+    "Standard-DoD erfüllt (Bauplan 5.14)"
+   ]
+  },
+  {
+   "id": "INF-8",
+   "title": "Flutter-Brücke light: Spezifikation als JSON, Export-CLI, Daten-Ansicht",
+   "kind": "workbench",
+   "priority": "P2",
+   "dependsOn": [
+    "INF-3",
+    "INF-5"
+   ],
+   "files": [
+    "app/src/core/spec.js",
+    "app/src/core/flutter.js",
+    "app/src/workbench/views/data.js",
+    "tools/export.mjs",
+    "docs/schemas/feature-spec.schema.json",
+    "tests/inf8-*.test.mjs"
+   ],
+   "scope": "core/spec.js erzeugt zuerst ein strukturiertes Objekt takt-feature-spec/1 (Meta, Anforderungen mit stabilen IDs und Akzeptanzkriterien, Interaktionen mit to/carry, aufgelöstes Layout je Breakpoint, Blöcke mit Komponente, Version, Props, Bindung und flutter-Mapping, Zustände, Datenbindungen, Entscheidungen, Hinweise zu Offline, Privatmodus, Schrift 200 Prozent) mit specHash (kanonisches JSON aus Freigabe-Snapshot, Komponentenversionen, TOKENS_VERSION) und rendert daraus das bisherige Markdown (Golden-Test). Vollständigkeitshinweise in der Freigabe-Checkliste (Muss ohne Kriterium, Interaktion ohne Event). flutter.js: Token-Export v2 mit TextStyles, Schatten, Zustandswerten, ColorScheme-Rollen und Routentabelle aus den Navigationsregeln (go_router-Pfade, Parameter aus carry). tools/export.mjs (nutzt den Loader) schreibt export/<datum>_rev<N>/ mit MANIFEST.json (Hashes), Tokens, Specs, COMPONENT_MAP, routes, FLUTTER_HANDOFF.md; deterministisch bis auf generatedAt; Filter --feature, --module, --released. data.js: Seed-Patch-Oberfläche (Vorschau neu, aktualisierbar, gesperrt/Vorschlag, Übernehmen mit Backup), Heilungsbericht der Validierung, Export-Dialog mit Dateiliste und Hinweis, wenn der Export gegenüber der Freigabe veraltet ist. Alle Flutter-Annahmen sind als Annahme gekennzeichnet (Phase 1 fehlt).",
+   "acceptance": [
+    "Zwei Exporte desselben Zustands sind bis auf generatedAt byte-identisch",
+    "specHash ändert sich bei Prop-, Komponentenversions- oder Token-Änderung, nicht bei Notizen",
+    "Markdown-Spezifikation bleibt im Golden-Test inhaltlich identisch zum bisherigen Stand",
+    "Seed-Patch-Oberfläche zeigt neu/aktualisierbar/gesperrt korrekt und überspringt Gesperrtes",
+    "Standard-DoD erfüllt (Bauplan 5.14)"
+   ]
+  },
+  {
+   "id": "INF-9",
+   "title": "Querschnitt-Bausteine: Hinweis, Offline, Berechtigung, Wiederholung, Rückgängig, Verknüpfung",
+   "kind": "querschnitt",
+   "priority": "P0",
+   "dependsOn": [
+    "INF-2"
+   ],
+   "files": [
+    "app/src/library/components/crosscut/index.js",
+    "app/src/library/components/crosscut/legal-notice.js",
+    "app/src/library/components/crosscut/offline-banner.js",
+    "app/src/library/components/crosscut/sync-status.js",
+    "app/src/library/components/crosscut/permission-card.js",
+    "app/src/library/components/crosscut/recurrence-picker.js",
+    "app/src/library/components/crosscut/undo-toast.js",
+    "app/src/library/components/crosscut/link-chips.js",
+    "app/src/library/components/crosscut/firstrun-card.js",
+    "tests/inf9-*.test.mjs"
+   ],
+   "scope": "legal-notice: Hinweisarten simulation, keine-beratung, modellrechnung, steuer, kursdaten, krypto, gesundheit mit zentralen Texten und Version (nicht pro Variante frei editierbar), Stile banner, inline, footer, Erststart-Dialog einmalig mit Zustimmung in den Einstellungen. offline-banner (Stand-Zeit, Warteschlange), sync-status (Chip: synchronisiert, wartet, Fehler), permission-card (Zustand denied: Erklärung, Alternative, Weg in die Systemeinstellungen; Kamera, Standort, Mitteilungen), recurrence-picker (nutzt core/recurrence.js: täglich, Wochentage, monatlich am Tag oder n-ten Wochentag, jährlich, nach Erledigung, Ende; Klartextvorschau; Serien-Dialog nur dieser, dieser und folgende, alle), undo-toast (Aktion Rückgängig, 5 bis 8 Sekunden, ruft ctx.world oder setData zurück), link-chips (verknüpfte Objekte mit Modul-Icon, Navigation per to), firstrun-card (Einladung mit erster Aktion, wiederverwendbar). Alle mit Vertrag, example, empty-State, flutter-Feld, Mobile 44 px, Tokens only, Galerie-Prüfung in den drei Themes.",
+   "acceptance": [
+    "Alle Komponenten in der Galerie (#/library/<id>) mit Beispiel und Zuständen, Kontrast in allen drei Themes bestanden",
+    "legal-notice: sieben Hinweisarten sichtbar, Text nicht über Props änderbar, Erststart-Dialog erscheint genau einmal und ist in den Einstellungen zurücksetzbar",
+    "recurrence-picker Klartext stimmt mit describeRule überein (Test), Serien-Dialog liefert drei Optionen",
+    "undo-toast stellt den vorherigen Zustand wieder her (Playwright)",
+    "Standard-DoD erfüllt (Bauplan 5.14)"
+   ]
+  },
+  {
+   "id": "MOD-FIN",
+   "title": "Finanzen: Heute mit Frei verfügbar, Erfassung, Budgets, Abos, Auswertung",
+   "kind": "modul",
+   "priority": "P1",
+   "dependsOn": [
+    "INF-1",
+    "INF-2",
+    "INF-3",
+    "DOC-0"
+   ],
+   "files": [
+    "app/src/seed/modules/finance.js",
+    "app/src/seed/world/finance.js",
+    "app/src/library/components/finance/index.js",
+    "app/src/library/components/finance/*.js",
+    "app/src/library/components/insights/account-cards.js",
+    "app/src/library/components/insights/transaction-list.js",
+    "tests/fin-*.test.mjs"
+   ],
+   "scope": "Modul-Pflichtprogramm (5.12) für Finanzen, Status von Referenz auf Konzept, legal keine-beratung, Privatmodus durchgängig über money(). Kern: finance.home (Tier 1, 3 Richtungen: Kompakt Kontenliste mit Zeilenaktionen, Visuell Vermögensverlauf mit Karten, Fokus „Frei verfügbar bis Monatsende“ mit Rechenweg-Dialog, Anstehendes der nächsten 7 Tage, Erfassen-Knopf), finance.capture (Tier 1, 3 Varianten: Numpad-Sheet, Eine Zeile mit Erkennung von Betrag, Empfänger, Kategorie, Vollformular mit Split; Art Ausgabe/Einnahme/Umbuchung, Kategorie-Chips der häufigsten, Duplikatwarnung, Rückgängig-Toast; schreibt in @world:transactions und Kontosalden), finance.accounts (2 Richtungen, Umbuchung neutral, Konten-Typen, Kreditkarte), transactions (2 Varianten), budgets (3 Varianten Balken, Hüllen, Zero-Based; Warnschwellen 85 und 100 Prozent), subscriptions (2, normalisierte Monatssumme, Kündigungsfrist, erkannte Abos), reports (2, Cashflow; Sankey nur falls Kapazität), networth (Variante), accounts-manage, import, business als Skelett mit Anforderungen. Welt: Transaktionen mit kind (expense, income, transfer), Kategorie-Taxonomie 10 bis 12 (Top 5 plus Sonstige in Diagrammen, Icon und Label statt Farbe allein), Invarianten laut Bauplan Abschnitt 10, finance-Summary/Hints/Search/Notifications, scenarios (erststart leer mit Einrichtung, stress mit Kreditkartenlimit, negativer Saldo). Neue Komponenten: safe-to-spend, transaction-capture, budget-envelopes, subscription-overview, net-worth-chart (jeweils mit flutter-Feld). account-cards und transaction-list auf Version 1.1 (Umbuchung neutral, Status vorgemerkt). 10 Entscheidungen aus der Finanz-Perspektive (Kontodaten manuell/CSV gegen Aggregator, Kursdaten, Kategorie-Set, Umbuchungstyp, Finanz-Einstieg, EUR only …) mit Optionen und Empfehlung; Dublette Konzept aus dem TAKT-Projekt übernehmen bereinigen. Freigegebene Seed-Features nur mit Richtungs-Tag und to ändern.",
+   "acceptance": [
+    "Konto Depot und Trading-Depotwert zeigen denselben Betrag (Welt-Invariante im Test); Sparrate erscheint als Umbuchung und ändert weder Budget noch Cashflow",
+    "Erfassen: Betrag, Kategorie, Speichern in höchstens 3 Interaktionen, Eintrag sofort in Liste, Saldo und (App-Modus) Start; Rückgängig stellt vollständig her; Parser-Tabelle mit 12 Eingaben besteht (12,5 gleich 12,50 €, 1.234,56 gültig, 1,234.56 abgelehnt)",
+    "Frei-verfügbar-Rechenweg zeigt jede Position und die Summe stimmt mit der Welt-Berechnung überein",
+    "Privatmodus: kein Betrag im DOM sichtbar, kein Überlauf bei 9.999.999,99 € auf 360 px",
+    "Alle Tier-1-Features in vier Zuständen und drei Themes grün; 10 Entscheidungen sichtbar",
+    "Standard-DoD erfüllt (Bauplan 5.14)"
+   ]
+  },
+  {
+   "id": "MOD-SAV",
+   "title": "Sparen: Rechner, Pläne, Ziele, Deckungskalender, Assistent",
+   "kind": "modul",
+   "priority": "P1",
+   "dependsOn": [
+    "INF-1",
+    "INF-2",
+    "INF-3",
+    "DOC-0"
+   ],
+   "files": [
+    "app/src/seed/modules/savings.js",
+    "app/src/seed/world/savings.js",
+    "app/src/library/components/savings/index.js",
+    "app/src/library/components/savings/*.js",
+    "app/src/core/finmath.js",
+    "tools/test-finmath.mjs",
+    "tests/sav-*.test.mjs"
+   ],
+   "scope": "Modul-Pflichtprogramm (5.12) für Sparen (id savings, Status Konzept, legal modellrechnung und keine-beratung, Plan-Tracker statt Ausführung beim Broker, Eigentümer von savingsPlans und savingsGoals). Rechenkern core/finmath.js erweitern und testen: futureValue mit Dynamik, Kosten, Inflation, Zielrate, monthsToGoal, scenarioBand, schedule mit Verschiebung auf den nächsten Handelstag (Wochenende, bundesweite Feiertage, 31. im Februar), netAfterTax mit versioniertem TAX_PARAMS (Stand-Datum, nie in Komponenten), xirr/twr falls Kapazität. Referenzwerte als Tests: 10.000 € Start, 300 €/Monat, 5 %, 20 Jahre = 150.436,50 €; 300 €, 5 %, 30 Jahre = 249.677,59 €; 0 % exakt Summe der Einzahlungen; Dynamik 3 % = 184.926,13 €; Zielrate 50.000 € in 10 Jahren bei 4 % und 5.000 € Start = 288,94 €; Steuerbeispiel 1.500 € Gewinn, 30 % Teilfreistellung, 1.000 € Pauschbetrag = 13,19 €. Features: savings.home (Tier 1, 3R), calculator (Tier 1, 3 Varianten: Regler-Cockpit, Fragen-Schritte als Layout steps, Zielrechner rückwärts; Ergebnis als Spanne vorsichtig 3 %, Basis 5 %, chancenreich 7 % mit Annahmen-Beschriftung, Schalter Kaufkraft und nach Steuern, ungültige Eingaben mit Fehlertext), plans (Tier 1, 3 Varianten Karten, Tabelle, Verteilung; pausieren, Rate ändern, beenden, Deckung fehlt als Zustand), plan-detail, create (Assistent in drei Varianten, nutzt Layout steps aus INF-1), goals (Tier 1, 3 Varianten, Projektion und Status im Plan oder in Verzug, Vorlagen Notgroschen), calendar (2 Varianten, Deckungs-Check), withdrawal als Skelett. Komponenten growth-chart (gestapelte Fläche, Band, Basis-Linie), savings-calculator, savings-plan-list, goal-progress, execution-calendar, summary-card. legal-notice in jeder Variante. Welt savings.js: Ausführungen, Feiertage, savings-Summary/Hints/Search/Notifications, scenarios (erststart ohne Pläne mit Vorlagen, stress mit fehlender Deckung).",
+   "acceptance": [
+    "tools/test-finmath.mjs enthält mindestens 30 Referenztests inklusive aller genannten Werte, grün; keine Komponente enthält Zinsformeln oder Steuersätze (check)",
+    "Rechner stimmt mit finmath überein, bei 0 % Rendite exakt gleich Einzahlung, Eingabeänderung aktualisiert in unter 100 ms, Slider-Daumen mindestens 44 px, kein Überlauf bei 360 px",
+    "Referenzfälle Ausführung: 25.12.2026 verschiebt auf 28.12.2026, 31. im Februar landet auf dem letzten Handelstag",
+    "Plan pausieren, Rate ändern, beenden aktualisiert Kennzahlen und Ring live; alle fünf Zustände prüfbar",
+    "Hinweis Modellrechnung und keine Anlageberatung in jeder Variante (Probe legal-present grün)",
+    "Standard-DoD erfüllt (Bauplan 5.14)"
+   ]
+  },
+  {
+   "id": "MOD-TRD",
+   "title": "Trading: Übersicht, Order-Ticket 2.0, Steuer, Dividenden (Simulation)",
+   "kind": "modul",
+   "priority": "P1",
+   "dependsOn": [
+    "INF-1",
+    "INF-2",
+    "INF-3",
+    "DOC-0"
+   ],
+   "files": [
+    "app/src/seed/modules/trading.js",
+    "app/src/seed/world/trading.js",
+    "app/src/library/components/trading/index.js",
+    "app/src/library/components/trading/*.js",
+    "app/src/library/components/insights/portfolio-summary.js",
+    "app/src/library/components/insights/price-chart.js",
+    "app/src/library/components/insights/order-ticket.js",
+    "tests/trd-*.test.mjs"
+   ],
+   "scope": "Modul-Pflichtprogramm (5.12) für Trading, legal simulation, keine-beratung, kursdaten (krypto wo gezeigt). Features: trading.home (Tier 1, 3R Übersicht), portfolio (2 Richtungen, Depotwert aus der Welt), watchlist, detail, order (Tier 1, Ticket 2.0: Markt, Limit, Stop, Gültigkeit, Kostenvorschau, Plausibilitätsschutz bei Limit über 5 Prozent vom Kurs und Order über 25 Prozent des Depots, Verkauf über Bestand und Kauf über Guthaben blockiert, Lebenszyklus offen/ausgeführt/storniert, Börse geschlossen und veralteter Kurs als Zustände; 3 Varianten Ticket plus Liste, Mehrschritt-Assistent, Schnell-Sheet aus der Position; Order schreibt in @world:positions und Guthaben), alerts (Variante mit Kursverzögerung), history (Variante), tax (Tier 2, Freistellungsauftrag je Institut, Überzuteilung als Fehler, Steuer-Orientierung aus TAX_PARAMS, Hinweis keine Steuerberatung; Referenz 1.500 € Gewinn ergibt 13,19 €), dividends (Tier 2, Monatsbalken, Zahlterminliste Brutto/Netto, geschätzt gekennzeichnet), performance als Skelett. order-ticket auf Version 2.0, neue Komponenten tax-allowance, dividend-calendar. Der Hinweis ist im Ticket und im Bestätigungsdialog nie wegklickbar. Welt trading.js (Eigentümer von Positionen, Watchlist, Dividenden, Freibetrag): trading-Summary/Hints/Search/Notifications, scenarios (stress: Kurs älter als 15 Minuten, Börse geschlossen). Dublette-Entscheidungen bereinigen, offene Entscheidung Kursdatenquelle mit Optionen. Es wird nie etwas an einen Broker gesendet.",
+   "acceptance": [
+    "Validierungsmatrix mit mindestens 12 Fällen (Stückzahl 0, Bruchteile, Verkauf über Bestand, Kauf über Guthaben, Limit kleiner oder gleich 0, Stop über Kurs …) als Test grün",
+    "Simulationsbanner in jedem Schritt und im Bestätigungsdialog sichtbar (Probe legal-present grün); order-ticket 2.0 löst Regression-nötig für trading.order aus",
+    "Depotwert in Trading und Finanzen-Konto Depot identisch; Order ändert Position und Guthaben konsistent",
+    "tax: Überzuteilung blockiert das Speichern, Referenzfall 13,19 €",
+    "dividends: Summen stimmen mit der Liste überein, jede Dividende gehört zu einer Position",
+    "Standard-DoD erfüllt (Bauplan 5.14)"
+   ]
+  },
+  {
+   "id": "MOD-FIT",
+   "title": "Fitness: Heute, Workout-Session mit Satz-Logger, Plan, Körper, Fortschritt",
+   "kind": "modul",
+   "priority": "P1",
+   "dependsOn": [
+    "INF-1",
+    "INF-2",
+    "INF-3",
+    "DOC-0"
+   ],
+   "files": [
+    "app/src/seed/modules/fitness.js",
+    "app/src/seed/world/fitness.js",
+    "app/src/library/components/fitness/index.js",
+    "app/src/library/components/fitness/*.js",
+    "app/src/library/components/insights/workout-card.js",
+    "tests/fit-*.test.mjs"
+   ],
+   "scope": "Modul-Pflichtprogramm (5.12) und Gesundheits-Leitplanken (DOC-0) für Fitness: Status von Referenz auf Konzept, isReference entfernen, legal gesundheit, bestehende IDs fitness.overview/plan/progress/body bleiben. Features: overview (Startseite Heute, Tier 1, 3R), session (Tier 1, 3 Varianten: A dichte Tabelle mit Notiz/Verlauf rechts, B Karte je Übung mit Timer-Leiste, C ein Satz im Fokus mit riesigen Steppern; Start aus Plan, Satz mit Vorgabe vom letzten Mal in 1 Tap, Satztyp, Rest-Timer mit ±15 s und Überspringen, Übung ersetzen, Abschluss-Zusammenfassung, Wiederaufnahme, Bei Schmerz abbrechen, Auslassen ohne Vorwurf; schreibt in @world:workoutLog), plan (2R, Trainingstage als Kalender-Weltterminen mit gleicher ID), exercises (2 Varianten, Alternative finden), progress (Rekorde, Volumen, Plateau-Hinweis konstruktiv), body (3 Varianten, Trend statt Tageszahl, Gewicht ausblendbar, kein Rot, Lücke ohne Vorwurf), history, activity, recovery (Faktoren statt Pseudo-Score, Hinweis keine Diagnose), goals (Wochenziele, Serie mit Pausenjoker, Neustart-Text ohne verloren) als Skelett mit je einer Variante wo billig. Komponenten set-logger, rest-timer, session-header, exercise-card, weight-trend (Rohwerte, Trend, Zielband). Zeit nur über ctx.now (in QA eingefroren, im Launcher live). Welt fitness.js: Profil, Plan, 8 Wochen Verlauf, 60 Tage Körperwerte, Übungen (ca. 40), fitness-Summary/Hints/Search/Notifications, scenarios (erststart, Serie unterbrochen). Dublette bereinigen, Entscheidung Satz-Logging im Studio entscheiden.",
+   "acceptance": [
+    "Satz abhaken startet den Rest-Timer, Volumen und Fortschritt im Kopf aktualisieren sich, Training beenden schreibt in den Verlauf (Datenraum) und zeigt die Zusammenfassung; Satz mit Vorgabe loggen ist 1 Tap",
+    "Zwei CLI-Screenshots der Session sind pixelgleich (Timer eingefroren), im Launcher läuft der Timer sichtbar",
+    "Trend-Berechnung per Test geprüft; Gewicht ausblenden entfernt alle Gewichtszahlen im Feature; keine Texte mit verloren oder versagt, kein danger-Token (Check)",
+    "Touch-Ziele mindestens 44 px bei 390 px, Dezimaleingabe mit Komma, Kontrast in drei Themes",
+    "Alle Zustände vorhanden; drei Varianten mit Richtung für session und body",
+    "Standard-DoD erfüllt (Bauplan 5.14)"
+   ]
+  },
+  {
+   "id": "MOD-NUT",
+   "title": "Ernährung: Heute, Erfassen in 3 Taps, Wasser, Ziele-Wizard",
+   "kind": "modul",
+   "priority": "P1",
+   "dependsOn": [
+    "INF-1",
+    "INF-2",
+    "INF-3",
+    "DOC-0"
+   ],
+   "files": [
+    "app/src/seed/modules/nutrition.js",
+    "app/src/seed/world/nutrition.js",
+    "app/src/library/components/nutrition/index.js",
+    "app/src/library/components/nutrition/*.js",
+    "tests/nut-*.test.mjs"
+   ],
+   "scope": "Modul-Pflichtprogramm (5.12) und Gesundheits-Leitplanken für das neue Modul nutrition (Status Konzept, legal gesundheit, Eigentümer von Wasser; Einkaufsliste gehört shopping). Features: today (Startseite, Tier 1, 3R: A Bilanzzeile mit dichter Timeline, B Kalorienring mit Makro-Ringen und Mahlzeiten-Karten, C „Was fehlt noch?“ mit nächster Mahlzeit und Eiweiß-Restgramm; Überschreitung neutral, Zahlen-ausblenden-Modus, leerer Tag mit Wie gestern), log (Tier 1, 3 Varianten: Suche zuerst, Schnellwahl-Kacheln, Scan zuerst; Zuletzt sofort sichtbar, Portions-Sheet, Schnell-Kalorien, Barcode-Simulation mit Treffer, nicht gefunden, Kamera verweigert, EAN-Prüfziffer; Mahlzeit vorgewählt per Parameter; schreibt @world:mealLog), water (2 Varianten, +250 ml in 1 Tap, Rückgängig, Ziel erreicht dezent), goals (Wizard in 4 Schritten mit Sicherheits-Stopps und „Warum diese Zahl?“, Rechner aus library/health/calc.js), foods, recipes, plan, reports (Tier 2/3, je eine Variante oder Skelett; Auswertung zählt nicht erfasste Tage nicht als 0, unter 3 Tagen kein Durchschnitt). Komponenten calorie-budget, macro-bar (Buchstaben E/KH/F, nicht nur Farbe), meal-timeline, food-search, portion-picker, scan-sim, water-tracker, nutrition-facts/allergen-chips falls Kapazität (14 EU-Allergene). Welt nutrition.js: ca. 60 Lebensmittel (10 mit Barcode), 12 Rezepte, Mahlzeiten heute plus 14 Tage, Wasser, Ziele konsistent zur Persona (2.400 kcal, 140 g Eiweiß, Trainings-/Ruhetag), nutrition-Summary/Hints/Search/Notifications, scenarios (erststart mit Wizard, über Ziel, Ziel getroffen); Konsistenz kcal aus Makros ±12 %, Mahlzeitensummen gleich Tagessumme. Zusätzlich Seed-Größe unter 150 KB.",
+   "acceptance": [
+    "Zuletzt-Lebensmittel loggen sind 2 Taps ab Erfassen, Barcode 2 Taps nach dem Scan, Schnell-Kalorien höchstens 3 Eingaben (E2E); nutrition.today zeigt danach die neuen Summen",
+    "Welt-Datenprüfung: absichtlich verfälschter Eintrag (kcal 900 bei 10 g Fett) wird im Test gemeldet",
+    "Ziel-Wizard: Defizit unter der Untergrenze wird geblockt, unter 18 kein Defizit angeboten, jede Zahl hat Herleitung (Testfälle in tests/nut-*)",
+    "Überschreitung ohne Rot und ohne Moralwörter (Check), Zahlen-ausblenden-Modus entfernt alle Zahlen",
+    "Bei 390 px zeigt der erste Bildschirm ohne Scrollen Kalorien übrig und die Plus-Aktion; Touch-Ziele mindestens 44 px",
+    "Standard-DoD erfüllt (Bauplan 5.14)"
+   ]
+  },
+  {
+   "id": "MOD-WET",
+   "title": "Wetter: Startseite, Radar und Nowcast, Pollen/UV/Luft, Kleidungstipp, Warnungen",
+   "kind": "modul",
+   "priority": "P1",
+   "dependsOn": [
+    "INF-1",
+    "INF-2",
+    "INF-3",
+    "DOC-0"
+   ],
+   "files": [
+    "app/src/seed/modules/weather.js",
+    "app/src/seed/world/weather.js",
+    "app/src/library/components/weather2/index.js",
+    "app/src/library/components/weather2/*.js",
+    "app/src/library/components/content/weather-alerts.js",
+    "app/src/library/components/content/weather-daily.js",
+    "app/src/library/components/content/weather-hourly.js",
+    "app/src/library/components/content/weather-now.js",
+    "app/src/library/components/content/weather-util.js",
+    "tests/wet-*.test.mjs"
+   ],
+   "scope": "Modul-Pflichtprogramm (5.12) für Wetter (Quelle: Entscheidung DWD oder Open-Meteo offen, Demo fiktiv, Offline: letzter Stand mit Zeitstempel). Features: home (Tier 1, 3R: Jetzt, Radar-Kachel, Warnung, Kleidungstipp), current (freigegeben: nur Richtungs-Tag und to), hourly, daily, radar (Tier 2, 3 Varianten: Karte mit Zeitleiste und Play, Text-Nowcast zuerst, kompakter Streifen; Zustände Offline mit deaktiviertem Play, nicht verfügbar, Standort verweigert), health (Pollen mit Allergen-Auswahl, UV mit Tagesverlauf, Luftqualität; Stufe als Text und Zahl, nie nur Farbe), advice (Kleidungstipp aus gefühlter Temperatur, Wind, Regen, UV mit Empfindlichkeit; Aktivitäts-Score mit bestem Zeitfenster), commute (Pendelfenster Hin- und Rückweg, Skelett oder 1 Variante), alerts (Tier 1, Stufen mit Piktogramm und Text, amtliche Quelle und Stand, betroffene Kalendertermine verlinkt, Zustände keine Warnung und Quelle nicht erreichbar), locations (Ortssuche, Reise-Ort Lissabon, Reihenfolge), settings (Einheiten °C/°F, km/h, Quelle, Offline-Cache; Einheitenwechsel wirkt in Aktuell, Stündlich, Täglich), widgets als Skizze. Komponenten precip-radar, nowcast-bar, pollen-bars, uv-gauge, air-quality, clothing-tip. Welt weather.js (inklusive Unwetterwarnung Mittwoch/Sturmböen ab 14 Uhr passend zu Persona und Kalender-Outdoor-Termin): weather-Summary/Hints/Search/Notifications, scenarios (Hitzetag, Offline). Offene Entscheidung Wetterquelle und Push-Frage dokumentieren.",
+   "acceptance": [
+    "Radar-Zeitleiste abspielbar und per Tippen scrubbar, Nowcast-Text passt zu den Balken (gleiche Daten), Offline zeigt Zeitstempel",
+    "Kleidungstipp ändert sich beim Wechsel des Demo-Tages; Empfindlichkeit wirkt sofort",
+    "Pollen- und Luft-Stufen sind ohne Farbe lesbar (Kontrast-Audit in drei Themes bestanden), Allergen-Auswahl filtert",
+    "Einheitenwechsel wirkt in drei Features der Vorschau",
+    "Alerts: drei Beispielwarnungen mit Textzeichen, betroffener Termin verlinkt, beide Sonderzustände gestaltet",
+    "Standard-DoD erfüllt (Bauplan 5.14)"
+   ]
+  },
+  {
+   "id": "MOD-CAL",
+   "title": "Kalender und Aufgaben: Startseiten, Navigation, Termin-Detail, Planung, Fokus",
+   "kind": "modul",
+   "priority": "P1",
+   "dependsOn": [
+    "INF-1",
+    "INF-2",
+    "INF-3",
+    "INF-9",
+    "DOC-0"
+   ],
+   "files": [
+    "app/src/seed/modules/calendar.js",
+    "app/src/seed/modules/tasks.js",
+    "app/src/seed/world/organisation.js",
+    "app/src/library/components/calendar/index.js",
+    "app/src/library/components/calendar/*.js",
+    "app/src/library/components/tasks/index.js",
+    "app/src/library/components/tasks/*.js",
+    "tests/cal-*.test.mjs"
+   ],
+   "scope": "Modul-Pflichtprogramm (5.12) für calendar und tasks. Bestehende Features behalten ihre IDs, Richtungs-Tags an allen Varianten setzen, to/carry-Regeln für den Navigationsgraphen (Start, Kern, Detail), Kalender-Aufgabe zu tasks.detail mit carry. Neu: calendar.home (Startseite 3R: Heute, nächste Termine, Wochenlast, Feiertage), calendar.detail (Erinnerungen, Konflikt-Hinweis, Verknüpfungen), calendar.recurrence und tasks.repeat mit dem recurrence-picker aus INF-9 (Serien-Dialog), calendar.conflicts als Variante, sources und settings als Skelett. tasks.overview wird Startseite 3R (Heute, Überfällig, Eingang), neu tasks.inbox (Triage per Chips), tasks.plan (Tagesplanung gegen freie Zeit, Überlastet-Hinweis), tasks.focus (Fokus-Timer mit ctx.now, schreibt focusMinutes in die Welt; Start und Kalender lesen diesen Wert), tasks.review als Skelett. Abhaken, Anlegen, Verschieben wirken über @world:tasks und @world:events in allen Modulen. organisation.js: Welt-Daten, abgeleitete Zähler (Termine heute, fällige Aufgaben) rechnen, calendar/tasks-Summary/Hints/Search/Notifications, Feiertage NRW, Geburtstage, scenarios (erststart leer, stress mit Überfälligem und Terminkonflikt). Freigegebene Seed-Features (calendar.month, tasks.detail) nur mit Richtungs-Tag und to ändern; Anforderung Serien bearbeiten als Entscheidung entscheiden oder mit Vorschlag versehen.",
+   "acceptance": [
+    "Aufgabe in tasks.list abhaken senkt den Zähler auf Start und entfernt den Aufgabenmarker im Kalender (App-Modus, gemeinsame Welt)",
+    "Navigationsweg Start, Aufgabe, Detail (richtige Aufgabe), Kalender funktioniert in allen drei Richtungen",
+    "Überlappende Termine zeigen einen Konflikt-Hinweis mit nächster freier Zeit; Serien-Dialog bietet drei Optionen",
+    "Fokus-Timer läuft im Launcher, ist in QA eingefroren und deterministisch",
+    "Startseiten calendar.home und tasks.overview in 3 Richtungen strukturell verschieden, Abdeckung ohne Ersatz",
+    "Standard-DoD erfüllt (Bauplan 5.14)"
+   ]
+  },
+  {
+   "id": "MOD-HOME",
+   "title": "Start: Tagesübersicht, Briefing, Hinweise, Erste Schritte",
+   "kind": "modul",
+   "priority": "P1",
+   "dependsOn": [
+    "INF-1",
+    "INF-2",
+    "INF-3",
+    "DOC-0",
+    "MOD-CAL",
+    "MOD-FIN",
+    "MOD-FIT",
+    "MOD-NUT",
+    "MOD-WET"
+   ],
+   "files": [
+    "app/src/seed/modules/home.js",
+    "app/src/seed/world/persona.js",
+    "app/src/seed/world/home.js",
+    "app/src/library/components/home/index.js",
+    "app/src/library/components/home/*.js",
+    "tests/home-*.test.mjs"
+   ],
+   "scope": "Modul-Pflichtprogramm (5.12) für Start (zentrale Querschnittsseite). Alle Kennzahlen kommen aus den Aggregaten der Welt (allKpis, allHints) statt aus handkopierten Werten, jede Kachel verlinkt per to ins Modul. home.today (Tier 1, 3R: Kompakt Agenda plus Kennzahlenzeile, Visuell Karten und Diagramm, Fokus „Als Nächstes“ mit Hinweisen; Zustand firstrun mit Erste-Schritte-Checkliste statt leerer Karten; Zustand stress), home.briefing (Morgenbriefing: Wetter und Kleidungstipp, erster Termin, fällige Aufgaben, Gewohnheiten, Training und Wasser), home.review (Abendrückblick: erledigt, verschieben mit einem Tipp, morgen), home.hints (regelbasiert, jeder Hinweis mit Quelle und Aktion, Wegwischen und Später), home.customize als Skelett. Komponenten hint-card, briefing-card, day-timeline, firstrun-checklist. Persona-Datei pflegen (Platzhalter bleiben als Annahme gekennzeichnet bis der Nutzer bestätigt). Dublette Entscheidungen bereinigen, offene Entscheidung Startseiten-Konzept.",
+   "acceptance": [
+    "Jede Kennzahl der Start-Varianten ist aus Welt-Daten abgeleitet (Test: keine Zahl hartkodiert), tippen führt in das richtige Modul",
+    "Aufgabe oder Training im Launcher ändern wirkt sofort auf Start",
+    "Zustand firstrun zeigt Einrichtungsschritte mit erster Aktion je Modul, stress zeigt Hinweise ohne Überlauf",
+    "Hinweise nennen Quelle und Aktion; Schlummern entfernt den Hinweis in der Sitzung",
+    "Drei Richtungen strukturell verschieden, alle Zustände grün",
+    "Standard-DoD erfüllt (Bauplan 5.14)"
+   ]
+  },
+  {
+   "id": "MOD-SYS",
+   "title": "TAKT Kern: Erfassen, Suche, Mitteilungen und Querschnitts-Skelette",
+   "kind": "querschnitt",
+   "priority": "P1",
+   "dependsOn": [
+    "INF-1",
+    "INF-2",
+    "INF-3",
+    "INF-9",
+    "DOC-0"
+   ],
+   "files": [
+    "app/src/seed/modules/system.js",
+    "app/src/seed/world/system.js",
+    "app/src/library/components/system/index.js",
+    "app/src/library/components/system/*.js",
+    "tests/sys-*.test.mjs"
+   ],
+   "scope": "Modul system (Status Konzept, nicht in der Bottom-Navigation, nur über Shell). Features: capture (Tier 1, 3 Varianten einzeilig, Typ-Raster, Vorschläge aus Tageskontext; regelbasierte Erkennung der sechs Beispielsätze, Typ-Chips, Vorschau vor dem Speichern, Eingang für Unerkanntes, Mehrfacherfassung, Undo; schreibt über ctx.world.add in tasks, events, notes, transactions, shoppingItems), search (Tier 1, 3 Varianten Volltext in Gruppen, Karten, Befehlspalette; liest world.searchIndex, Filterchips, zuletzt gesucht, Befehle wie Zu Finanzen oder Theme wechseln, Tastatur Strg+K, Kein-Treffer-Zustand), notifications (Tier 2, 2 Varianten; liest world.allNotifications, nach Dringlichkeit, Aktionen Erledigt/Später/Öffnen, Ruhezeiten unterdrücken Nicht-Kritisches, Ungelesen-Zähler), trash, lock (Sperrbildschirm), onboarding, help, links, widgets, share als Skelett mit Anforderungen und Android-Annahmen (Hinweis, dass nur im Flutter-Projekt prüfbar). Komponenten capture-sheet, global-search, notification-list, pin-pad (Skelett). world/system.js: Summary/Hints, Befehlskatalog, Mitteilungstypen-Katalog. Der FAB und die Shell-Buttons werden von INF-1 mit diesen Features verbunden (Feature-IDs system.capture, system.search, system.notifications).",
+   "acceptance": [
+    "Die sechs Beispielsätze legen den richtigen Typ an, Eintrag erscheint sofort in Heute, Modul und Suche, Rückgängig innerhalb 5 Sekunden funktioniert",
+    "Suche nach Müller liefert Treffer aus mindestens 4 Modulen, Tippen springt ins Ziel, Befehle per Tastatur, Kein-Treffer gestaltet",
+    "Ruhezeit unterdrückt nicht-kritische Mitteilungen (in der Vorschau demonstrierbar), Glocke zeigt Ungelesen-Zähler",
+    "Von jedem Screen höchstens 2 Taps zur Eingabe, Sheet ohne horizontales Scrollen",
+    "Standard-DoD erfüllt (Bauplan 5.14)"
+   ]
+  },
+  {
+   "id": "MOD-SET",
+   "title": "Einstellungen: Gruppen, Modulwahl, Datenschutz, Daten",
+   "kind": "modul",
+   "priority": "P1",
+   "dependsOn": [
+    "INF-1",
+    "INF-2",
+    "INF-3",
+    "INF-9",
+    "DOC-0"
+   ],
+   "files": [
+    "app/src/seed/modules/settings.js",
+    "app/src/seed/world/settings.js",
+    "app/src/library/components/settings/index.js",
+    "app/src/library/components/settings/*.js",
+    "tests/set-*.test.mjs"
+   ],
+   "scope": "Modul-Pflichtprogramm (5.12) für settings. settings.home (Startseite 2R, gruppierte Liste mit Suchfeld), appearance (besteht, Startmodul aus dem Modulregister statt festem Select), modules (Tier 1, 2 Varianten: Module aktivieren, Favoriten setzen und sortieren, wirkt über world.prefs in der Navigation), notifications (Regeln, Ruhezeiten, Tagesdigest), region (Einheiten, Wochenstart), privacy (Tier 1, 2 Varianten: Privatmodus Beträge verbergen mit sofortiger Wirkung, App-Sperre-Optionen, Transparenzseite Welche Daten verlassen das Gerät, Löschen mit zweistufiger Bestätigung), data (Export, Backup, Papierkorb als Skelett mit Export-Assistent-Variante), about. Komponenten setting-row (Schalter, Auswahl, Stepper, Untermenü, Warnhinweis), settings-group, module-toggle-list. world/settings.js (Eigentümer von prefs). Texte ohne Fachjargon, Touch 44 px.",
+   "acceptance": [
+    "Favoriten ändern wirkt sofort in der Bottom-Navigation des Launchers (App-Modus), Reihenfolge änderbar",
+    "Privatmodus verbirgt Beträge in Finanzen, Sparen, Trading, Start (DOM-Test)",
+    "Einheitenwahl °C/°F wirkt in der Wetter-Vorschau",
+    "Alle Gruppen erreichbar, Suchfeld filtert, Löschen nur nach zwei Bestätigungen",
+    "Standard-DoD erfüllt (Bauplan 5.14)"
+   ]
+  },
+  {
+   "id": "MOD-HAB",
+   "title": "Gewohnheiten und Ziele: Tagesliste, Serien, Wochenfokus",
+   "kind": "modul",
+   "priority": "P1",
+   "dependsOn": [
+    "INF-1",
+    "INF-2",
+    "INF-3",
+    "INF-9",
+    "DOC-0"
+   ],
+   "files": [
+    "app/src/seed/modules/habits.js",
+    "app/src/seed/modules/goals.js",
+    "app/src/seed/world/habits.js",
+    "app/src/seed/world/goals.js",
+    "app/src/library/components/habits/index.js",
+    "app/src/library/components/habits/*.js",
+    "app/src/library/components/goals/index.js",
+    "app/src/library/components/goals/*.js",
+    "tests/hab-*.test.mjs"
+   ],
+   "scope": "Zwei Module (Platzhalter ersetzen). habits (Status Konzept, nicht gamifiziert, Pause statt verlorener Serie): home (Tier 1, 3R Tagesliste mit Abhaken in unter 2 Taps, Serie mit Pausenjoker, Wochenpunkte), create (Wiederholung über recurrence-picker aus INF-9), stats (Heatmap mit Zahl zusätzlich zur Farbe, Quote, beste Serie), routines und settings als Skelett. Streak-Logik aus library/health/calc.js, Test mit Pausentagen und Wochenfrequenz. goals (Status Konzept, Lebensbereich-Gruppierung): home (Tier 2, 3R Zielübersicht und Wochenfokus mit höchstens 3 Prioritäten), detail (Verlauf, Fortschritt aus Fremdmodulen über Welt-Schlüssel: Gewicht aus fitness, Sparstand aus savings, Umsatz aus sales), review als Skelett; Wochenfokus erscheint im Start über goalsSummary. Komponenten habit-row, habit-heatmap, streak-badge, goal-card. Welt habits.js und goals.js mit Summary/Hints/Search/Notifications und scenarios (erststart mit Vorlagen Wasser trinken, 10.000 Schritte). Gewohnheiten verknüpfen Wasser und Training nur, besitzen sie nicht.",
+   "acceptance": [
+    "Abhaken aktualisiert Serie und Start-Kachel; Pausentag zerstört die Serie nicht (Test)",
+    "Heatmap ist ohne Farbe lesbar (Zahl oder Muster), Kontrast-Audit bestanden",
+    "Ein Ziel bezieht Fortschritt aus mindestens 3 Fremdmodulen (Demo), Wochenfokus erscheint im Start",
+    "Leerzustand erklärt die Idee mit Vorlagen; Texte ohne Moralwörter",
+    "Standard-DoD erfüllt (Bauplan 5.14)"
+   ]
+  },
+  {
+   "id": "MOD-REG",
+   "title": "Skelett-Module (Dokumente, Einkauf) und Scope-Entscheidungen",
+   "kind": "modul",
+   "priority": "P1",
+   "dependsOn": [
+    "INF-1",
+    "INF-2",
+    "INF-3",
+    "DOC-0"
+   ],
+   "files": [
+    "app/src/seed/modules/documents.js",
+    "app/src/seed/modules/shopping.js",
+    "app/src/seed/world/documents.js",
+    "app/src/seed/world/shopping.js",
+    "app/src/seed/decisions.js",
+    "app/src/library/components/documents/index.js",
+    "app/src/library/components/documents/*.js",
+    "app/src/library/components/shopping/index.js",
+    "app/src/library/components/shopping/*.js",
+    "tests/reg-*.test.mjs"
+   ],
+   "scope": "Modulregister auf Zielumfang. documents (Dokumente und Verträge, stage 4) und shopping (Einkauf und Haushalt, stage 3): je Startseite mit 3 Richtungen aus vorhandenen Core-Komponenten (documents.home mit Fristen-Streifen und Kündigungsfristen 30/14/3 Tage, shopping.lists mit Laden-Modus: große Touchflächen, nach Gang sortiert, offline lauffähig mit Sync-Status), dazu alle weiteren Features als Skelett mit Zweck, Muss/Soll/Kann, Verknüpfungen (Zutaten aus Ernährung, Belege aus Picture to Text, Abos aus Finanzen), Datenquelle und Offline-Verhalten. Neue Komponenten nur wenn zwei Features sie brauchen (deadline-strip, shopping-list). Welt-Dateien mit Summary/Hints/Search/Notifications, scenarios. seed/decisions.js: app-weite Entscheidungen, mindestens 12 Scope-Einträge (9 Aufnahme: Ernährung, Sparen, Gewohnheiten, Ziele, Dokumente, Einkauf, Plattform; 3 Zurückstellung: Reisen als Vorlage, Rechnungen nur Export, Steuer/EÜR nur Beleg-Export; Verzicht: Passwörter, News-Feed, Smart-Home, Social; Backlog Kontakte, Zeit, Journal) jeweils mit Begründung (Häufigkeit mal Nutzen durch Aufwand), Nachteilen und Wiedervorlage, plus Architektur-Entscheidungen auf Ebene App (Datenhaltung lokal-first, Cloud-OCR, Android Dynamic Color, App-Shell-Richtung, Anrede, Rechtsprüfung der Hinweistexte).",
+   "acceptance": [
+    "Beide Module im Launcher erreichbar, Startseite in 3 Richtungen strukturell verschieden, Laden-Modus per Hand bedienbar (Touch mindestens 44 px)",
+    "seed/decisions.js enthält mindestens 12 Scope-Entscheidungen und 6 Architektur-Entscheidungen mit Wiedervorlage, im Decision Center sichtbar",
+    "Jedes Skelett-Feature hat Zweck, Anforderungen, Verknüpfungen, Datenquelle und Offline-Verhalten",
+    "Standard-DoD erfüllt (Bauplan 5.14)"
+   ]
+  },
+  {
+   "id": "MOD-KB",
+   "title": "Notizen und Wissensdatenbank: Startseiten und Navigation",
+   "kind": "modul",
+   "priority": "P2",
+   "dependsOn": [
+    "INF-1",
+    "INF-2",
+    "INF-3",
+    "DOC-0"
+   ],
+   "files": [
+    "app/src/seed/modules/notes.js",
+    "app/src/seed/modules/knowledge.js",
+    "app/src/seed/world/knowledge.js",
+    "app/src/library/components/content/note-editor.js",
+    "app/src/library/components/content/note-list.js",
+    "app/src/library/components/content/kb-article.js",
+    "app/src/library/components/content/kb-tree.js",
+    "app/src/library/components/content/content-util.js",
+    "app/src/library/components/knowledge/index.js",
+    "app/src/library/components/knowledge/*.js",
+    "tests/kb-*.test.mjs"
+   ],
+   "scope": "Modul-Pflichtprogramm (5.12) für notes und knowledge ohne Tiefenausbau. notes.overview und knowledge.browse werden Startseiten (3R, bestehende Varianten Richtungen zuordnen, fehlende ergänzen), Navigationsregeln Liste zu Editor und Artikel mit carry, Notiz-Checkliste zu Aufgabe, knowledge.links mit link-chips aus INF-9. Skelett-Features mit Anforderungen: notes.attachments, notebooks, templates, history, knowledge.inbox (Leseliste), cards, versions. Welt knowledge.js mit Notizen und Artikeln (Persona-konsistent, Notiz Ideen TAKT V2, Steuer-Pauschale), Summary/Hints/Search/Notifications, scenarios. Neu nur Komponenten mit zwei Nutzern.",
+   "acceptance": [
+    "Beide Startseiten in 3 Richtungen, Abdeckung ohne Ersatz",
+    "Notiz öffnen zeigt die richtige Notiz (carry), Treffer erscheinen in der globalen Suche",
+    "Skelette vollständig beschrieben",
+    "Standard-DoD erfüllt (Bauplan 5.14)"
+   ]
+  },
+  {
+   "id": "MOD-PTT",
+   "title": "Picture to Text: Scanner und Beleg zu Buchung",
+   "kind": "modul",
+   "priority": "P2",
+   "dependsOn": [
+    "INF-1",
+    "INF-2",
+    "INF-3",
+    "INF-9",
+    "DOC-0"
+   ],
+   "files": [
+    "app/src/seed/modules/picture-to-text.js",
+    "app/src/seed/world/scans.js",
+    "app/src/library/components/content/ocr-result.js",
+    "app/src/library/components/content/capture-panel.js",
+    "app/src/library/components/scan/index.js",
+    "app/src/library/components/scan/*.js",
+    "tests/ptt-*.test.mjs"
+   ],
+   "scope": "Modul-Pflichtprogramm (5.12) für picture-to-text. capture wird Startseite 3R. Neu: scan (Dokumenten-Scanner-Ablauf Kamera, Zuschnitt, Kontrast, Mehrseiten-Stapel; Zustände Kamera verweigert mit permission-card, schlechtes Licht, Erkennung unsicher), receipt (Tier 1: erkannte Felder Händler, Datum, Betrag, MwSt in prüfbarem Formular, Aktion Als Ausgabe buchen führt per carry nach finance.capture, Beleg an Umsatz anhängen), card (Visitenkarte als Skelett), settings (lokale Erkennung gegen Cloud mit Datenschutz-Hinweis, offene Entscheidung). Welt scans.js (Scans, Belege, Summary/Hints/Search). Erkennung bleibt gespielt (Demo-Daten), als solche gekennzeichnet.",
+   "acceptance": [
+    "Beleg-Foto lässt sich bis zur Buchung in Finanzen durchspielen, Betrag und Händler kommen vorbelegt an",
+    "Kamera-verweigert-Zustand ist gestaltet (permission-card), Alternative Galerie sichtbar",
+    "Startseite 3R, Navigation vollständig",
+    "Standard-DoD erfüllt (Bauplan 5.14)"
+   ]
+  },
+  {
+   "id": "MOD-SAL",
+   "title": "Sales Channels: Startseite, Navigation, Sync-Protokoll",
+   "kind": "modul",
+   "priority": "P2",
+   "dependsOn": [
+    "INF-1",
+    "INF-2",
+    "INF-3",
+    "DOC-0"
+   ],
+   "files": [
+    "app/src/seed/modules/sales.js",
+    "app/src/seed/world/sales.js",
+    "app/src/library/components/insights/channel-cards.js",
+    "app/src/library/components/insights/order-pipeline.js",
+    "app/src/library/components/sales/index.js",
+    "app/src/library/components/sales/*.js",
+    "tests/sal-*.test.mjs"
+   ],
+   "scope": "Modul-Pflichtprogramm (5.12) für sales. overview ist Startseite 3R (bestehende Varianten Richtungen zuordnen), Navigation Übersicht zu Bestellung zu Detail, Bestellung zu Finanz-Buchung per to/carry. Neu: sync-log (Tier 1, Fehlerzustand Etsy-Token abgelaufen mit Neu-Verbinden, Wiederholen, Offline-Warteschlange), shipping, inventory (Mindestbestand-Warnung), customers, margin als Skelett mit Anforderungen. Rechnungen: Entscheidung zurückgestellt, nur Export. Welt sales.js (Bestellungen konsistent zu Start und Finanzen, Umsatz Nov.), Summary/Hints/Search/Notifications (neue Bestellung), scenarios (stress mit Sync-Fehler).",
+   "acceptance": [
+    "Startseite 3R, Sync-Fehler und Neu-Verbinden bedienbar, Mitteilung bei neuer Bestellung im Katalog",
+    "Bestellung #4182 erscheint mit identischen Beträgen in Sales, Start und Finanzen",
+    "Standard-DoD erfüllt (Bauplan 5.14)"
+   ]
+  },
+  {
+   "id": "INT-1",
+   "title": "Integration, Querverweise, Baselines, Abnahme Basis v1",
+   "kind": "qualitaet",
+   "priority": "P1",
+   "dependsOn": [
+    "INF-4",
+    "INF-6",
+    "INF-7",
+    "MOD-FIN",
+    "MOD-SAV",
+    "MOD-TRD",
+    "MOD-FIT",
+    "MOD-NUT",
+    "MOD-WET",
+    "MOD-CAL",
+    "MOD-HOME",
+    "MOD-SYS",
+    "MOD-SET",
+    "MOD-HAB",
+    "MOD-REG"
+   ],
+   "files": [
+    "app/src/**",
+    "qa/**",
+    "tools/**",
+    "tests/**",
+    "server.mjs",
+    "package.json",
+    "QA_REPORT.md"
+   ],
+   "scope": "Letzter Schritt, darf als einziger Paket Dateien anderer Pakete anfassen, nur um Integrationsfehler zu beheben. (1) npm run verify, dann Navigationsgraph prüfen und fehlende modulübergreifende Wege ergänzen (Kalender-Aufgabe, Beleg zu Buchung, Bestellung zu Buchung, Sparplan zu Konto, Training zu Kalender, Rezept zu Einkauf). (2) Welt-Invarianten und Konsistenz über alle Module, Seed-Größe, Startzeit des Launchers bei CPU-Drosselung. (3) Volle QA: alle Varianten, drei Themes, vier Viewports, Zustände inklusive firstrun, denied, stress, Umgebung offline/privacy/scale 2, App-Modus je Richtung. (4) Abdeckungsmatrix und Tier-1-Quote je Richtung dokumentieren. (5) Seed-Patch-Test mit Altzustand, Migrationstest. (6) Bewusst qa:baseline. (7) Gerätetest-Vorlage ausfüllbar machen und die Handy-Checkliste in QA_REPORT.md festhalten (echtes Gerät bleibt Aufgabe des Nutzers). (8) Abschlussbericht mit offenen Punkten.",
+   "acceptance": [
+    "npm run verify grün, Launcher-E2E grün",
+    "Kein Modul landet ohne Startseite oder Skizze in einer Sackgasse, tote Ziele 0",
+    "Tier-1-Abdeckung je Richtung dokumentiert (Ziel mindestens 60 Prozent oder sichtbare Warnung)",
+    "Welt-Invarianten, Seed-Patch und Migrationstest grün",
+    "QA_REPORT.md aktualisiert mit Zahlen, bekannten Einschränkungen und Handy-Checkliste"
+   ]
+  },
+  {
+   "id": "DOC-1",
+   "title": "Abschlussdokumentation und Arbeitsabläufe",
+   "kind": "doku",
+   "priority": "P1",
+   "dependsOn": [
+    "INT-1"
+   ],
+   "files": [
+    "CLAUDE.md",
+    "HANDOFF.md",
+    "ARCHITECTURE.md",
+    "DESIGN_SYSTEM.md",
+    "TASKS.md",
+    "README.md",
+    "WORK_LOG.md",
+    ".claude/commands/takt-verify.md",
+    ".claude/commands/takt-launcher.md",
+    ".claude/commands/takt-decide.md",
+    ".claude/commands/takt-worker.md"
+   ],
+   "scope": "Dokumentation auf den Stand nach Basis v1 bringen: Schema v3, Zwei-Achsen-Version, Launcher-Bedienung (Laptop und Handy), Welt und Ownership, Zustände und Umgebung, Seed-Patch, verify und Tests, Gerätetest, Leitplanken, neue Komponentenverträge. CLAUDE.md: neue harte Regeln (Welt statt Kopie, ctx.now, Formatstandard, Legal-Pflicht, Gesundheits-Tonalität, Test-Namensraum). HANDOFF.md: Übernahmeanleitung zuhause (Seed-Patch statt Neuanlage, Phase 1 offen, Persona bestätigen, Gerätetest). TASKS.md: Backlog gemäß Abschnitt 11 und 12 des Bauplans. Neue Slash-Commands für verify, Launcher-Start mit Handy, Entscheidungsrunde, Modul-Worker-Briefing.",
+   "acceptance": [
+    "Alle Befehle und Pfade in den Dokumenten existieren und funktionieren (Stichprobe: npm run verify, npm run lan, QR-Dialog)",
+    "TASKS.md enthält die verschobenen Punkte mit Begründung",
+    "HANDOFF.md nennt Übernahme, offene Nutzer-Entscheidungen und Gerätetest-Schritte"
+   ]
+  }
+ ],
+ "decisionsForUser": [
+  "Persona bestätigen oder ändern (Name Jonas Keller, 38, Bielefeld, Shop Nordlicht Studio, ETF-Sparer, Krafttraining 3x pro Woche, 2.400 kcal): Bis dahin sind alle Daten Platzhalter und als Annahme gekennzeichnet.",
+  "App-Richtung und Shell: Welche der drei Versionen (Kompakt mit Tab-Leiste, Visuell mit Launchpad, Fokus mit Erfassen-Knopf) wird TAKT? Entscheidung erst im Launcher, am Handy und am Laptop, mit Pflichtbegründung. Mischformen über Meine Auswahl möglich.",
+  "Startseiten-Konzept (Heute zuerst, Modulraster oder Modul-Cockpit) und Anzahl der Favoriten in der Navigation (Vorschlag: 4 plus Mehr).",
+  "Datenhaltung: nur lokal auf dem Gerät oder lokal plus optionaler Sync/Backup (Konflikt, geteilte Einkaufsliste mit Partnerin, Cloud-OCR ja oder nein, verschlüsseltes Backup).",
+  "Moduldeckel: Kontakte, Reisen, Zeiterfassung, Journal, Wunschliste, Fahrzeug aufnehmen, als Vorlage in bestehenden Modulen führen oder bewusst verzichten (Vorschlag: Reisen als Vorlage, Rechnungen nur Export, Rest später).",
+  "Datenquellen: Wetter (DWD oder Open-Meteo, Pollen und Radar nur regional verfügbar), Kurse (kostenlos verzögert oder lizenziert), Lebensmittel (Open Food Facts mit ODbL-Namensnennung oder eigene Datenbank). Beeinflusst Alarme, Order-Plausibilität und Offline-Verhalten.",
+  "Kontoanbindung: Plan-Tracker und manuelle Erfassung plus CSV/CAMT-Import (Empfehlung) gegen Bank-Aggregator oder Broker-Anbindung (Backend, Lizenz, Haftung). Sparpläne führen die App nie selbst aus.",
+  "Gesundheitsfunktionen: Aktivitätskalorien nie als zusätzliches Essensbudget (Empfehlung), GPS-Tracking und Ausdauertraining aufnehmen oder bewusst ausklammern, Gewohnheitsmodus ohne Zahlen als Standard-Option.",
+  "Anrede und Tonalität (Du oder Sie, ruhig, keine Moralwörter) einmal für die ganze App festlegen.",
+  "Rechtsprüfung der Hinweistexte (Anlageberatung, Steuer, Gesundheit) vor jeder Veröffentlichung: wer prüft und wann.",
+  "Android-Plattform: Material-You-Dynamic-Color oder eigene TAKT-Themes, Edge-to-Edge und Predictive Back als Vorgabe für die Flutter-Umsetzung.",
+  "Seed-Übernahme in den echten Workbench-Stand zuhause: Seed-Patch (nur unveränderte, nicht gesperrte Features aktualisieren, Gesperrtes als Vorschlag) gegen komplette Neuanlage.",
+  "Gerätetest: Wann ein echtes Android-Gerät geprüft wird (Daumenzone, Tastatur, Timer im Hintergrund, Safe-Area, Schrift 200 Prozent) und ab welchem Tier ein Test Pflicht für die Freigabe ist (Vorschlag: Tier 1).",
+  "Bewertung von Richtungen mit Abdeckung unter 60 Prozent: Entscheidung blockieren oder mit Warnung zulassen (Vorschlag: Warnung, Entscheidung nur mit Begründung)."
+ ]
+}

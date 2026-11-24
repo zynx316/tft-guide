@@ -4,6 +4,7 @@
 // übertragen (keine Neuladung), Interaktionen kommen per postMessage zurück.
 // ============================================================================
 import { html } from '../../lib/html.js';
+import { SCENARIOS } from '../../core/world.js';
 import { useEffect, useRef, useState, useLayoutEffect } from 'preact/hooks';
 import { Icon } from '../../lib/icons.js';
 import { DEVICES, deviceById } from '../../core/devices.js';
@@ -70,6 +71,7 @@ export function PreviewToolbar({ settings, onChange, multi, onMulti, extra, comp
     ${onMulti && html`<${Btn} size="sm" icon="columns-3" pressed=${multi} onClick=${() => onMulti(!multi)} title="Mehrere Viewports gleichzeitig">Multi<//>`}
     <${Select} size="sm" value=${settings.previewTheme} onChange=${(v) => onChange({ previewTheme: v })} options=${THEME_IDS.map((t) => ({ value: t, label: `Theme: ${themes[t].label}` }))} style="width:auto" aria-label="Theme" />
     <${Select} size="sm" value=${settings.previewState} onChange=${(v) => onChange({ previewState: v })} options=${UI_STATES.map((s) => ({ value: s.id, label: `Zustand: ${s.label}` }))} style="width:auto" aria-label="Zustand" />
+    <${Select} size="sm" value=${settings.previewScenario || 'alltag'} onChange=${(v) => onChange({ previewScenario: v })} options=${SCENARIOS.map((x) => ({ value: x.id, label: `Daten: ${x.label}` }))} style="width:auto" aria-label="Szenario der Datenwelt" title=${SCENARIOS.find((x) => x.id === (settings.previewScenario || 'alltag'))?.hint} data-qa="preview-scenario" />
     <${Btn} size="sm" icon="smartphone" pressed=${settings.chrome} onClick=${() => onChange({ chrome: !settings.chrome })} title="TAKT-App-Rahmen (Navigation) anzeigen">Rahmen<//>
     ${extra}
   </div>`;

@@ -248,3 +248,7 @@ h1, h2, h3, h4, p { margin: 0; }
 .tk-sketch__lines { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
 .tk-sketch__lines i { display: block; height: 8px; border-radius: 4px; background: var(--tk-c-surface3); }
 .tk-sketch__lines i:last-child { width: 60%; }
+
+/* Umgebungshinweis (Offline / veraltet) */
+.tk-envbar { display: flex; align-items: center; gap: var(--tk-space-2); padding: var(--tk-space-2) var(--tk-space-3); margin-bottom: var(--tk-space-3); border-radius: var(--tk-radius-md);
+  background: var(--tk-c-surface2); color: var(--tk-c-text-muted); font-size: var(--tk-fs-sm); border: 1px solid var(--tk-c-border); }

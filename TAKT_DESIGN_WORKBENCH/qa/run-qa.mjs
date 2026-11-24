@@ -119,6 +119,7 @@ async function contractStage(page, base) {
       if (ids.has(c.id)) errors.push(`Doppelte Komponenten-ID ${c.id}`); ids.add(c.id);
       if (/#[0-9a-f]{3,8}\b/i.test(c.css || '')) warnings.push(`Komponente ${c.id}: Hex-Farbe im CSS (Token verwenden)`);
     }
+    const WORLD_KEYS = new Set(Object.keys((await import('./src/seed/world/index.js')).WORLD));
     const fids = new Set();
     for (const f of state.features) {
       if (fids.has(f.id)) errors.push(`Doppelte Feature-ID ${f.id}`); fids.add(f.id);
@@ -134,7 +135,7 @@ async function contractStage(page, base) {
           for (const slot of def.data || []) {
             const key = b.bind?.[slot.slot] ?? slot.default; const val = (f.demoData || {})[key];
             if (slot.required && !(key in (f.demoData || {}))) warnings.push(`${f.id}/${v.id}#${b.id}: Datenschlüssel „${key}“ fehlt in Demo-Daten`);
-            if (typeof val === 'string' && val.startsWith('@world:') && !(val.slice(7) in (state.world || {}))) errors.push(`${f.id}/${v.id}#${b.id}: Welt-Schlüssel „${val.slice(7)}“ existiert nicht`);
+            if (typeof val === 'string' && val.startsWith('@world:') && !WORLD_KEYS.has(val.slice(7))) errors.push(`${f.id}/${v.id}#${b.id}: Welt-Schlüssel „${val.slice(7)}“ existiert nicht`);
           }
           for (const k of Object.keys(b.props || {})) if (!(def.props || []).some((p) => p.name === k)) warnings.push(`${f.id}/${v.id}#${b.id}: Prop „${k}“ nicht im Schema von ${def.id}`);
         }
@@ -271,7 +272,8 @@ async function e2eStage(browser, base, log) {
   await T('Vorschau-Interaktion erscheint im Interaktions-Log', async () => {
     await go('#/features/home.today/interactions'); await page.waitForTimeout(900);
     const f = await frame(); await f.locator('[role="checkbox"]').first().click(); await page.waitForTimeout(300);
-    await page.locator('.wb-log__row', { hasText: 'item.toggle' }).first().waitFor({ timeout: 4000 });
+    // Event-Name hängt vom Seed ab (z. B. task.toggle) – geprüft wird, dass die Interaktion im Log landet
+    await page.locator('.wb-log__row', { hasText: /\.toggle/ }).first().waitFor({ timeout: 6000 });
   });
   await T('Variantenvergleich eines Seed-Features (3 bedienbare Varianten)', async () => {
     await go('#/features/calendar.week/compare'); await page.waitForTimeout(1500);
@@ -318,15 +320,30 @@ async function e2eStage(browser, base, log) {
     await lp.waitForTimeout(1500);
     const n = await lp.locator('[data-launcher-version]').count(); if (n < 2) throw new Error(`nur ${n} Versionen sichtbar`);
     const f0 = lp.frameLocator('[data-launcher-version] iframe').first();
-    await f0.locator('[data-nav-module="calendar"]').first().click(); await lp.waitForTimeout(1200);
-    const routes = await lp.locator('.ln-col__foot .wb-trunc').allTextContents();
-    if (!routes.every((r) => r.startsWith('Kalender'))) throw new Error(`Navigation nicht gekoppelt: ${routes.join(' | ')}`);
+    await f0.locator('[data-nav-module="calendar"]').first().click();
+    let routes = [];
+    await eventually(async () => { routes = await lp.locator('.ln-col__foot .wb-trunc').allTextContents(); return routes.length >= 2 && routes.every((r) => r.startsWith('Kalender')); }, `Navigation nicht gekoppelt: ${routes.join(' | ')}`, 8000).catch(() => { throw new Error(`Navigation nicht gekoppelt: ${routes.join(' | ')}`); });
     await lp.locator('.ln-stars button').nth(4).click(); await lp.waitForTimeout(400);
     await lp.locator('[data-launcher-version]').nth(1).getByRole('button', { name: 'Übernehmen' }).click();
     await lp.locator('.wb-dialog').getByRole('tab', { name: /^Modul/ }).click();
     await lp.locator('.wb-dialog textarea').first().fill('QA: im Launcher am klarsten'); await lp.locator('[data-confirm]').last().click(); await lp.waitForTimeout(800);
     await eventually(() => state().then((s) => s.decisions.some((d) => d.level === 'module' && /Richtung/.test(d.title) && /klarsten/.test(d.rationale)) && s.modules.find((m) => m.id === 'calendar').directionId), 'Übernehmen hat keine Modul-Entscheidung erzeugt');
     const fb = await lp.evaluate(async () => (await (await fetch('/api/feedback')).json()).length); if (fb < 2) throw new Error(`Feedback nicht gespeichert (${fb})`);
+    await lp.close();
+  });
+  await T('Launcher: Szenario „Erster Start“, Offline, Schrift 200 %, Meine Auswahl', async () => {
+    const lp = await ctx.newPage(); await lp.setViewportSize({ width: 1600, height: 1000 });
+    lp.on('pageerror', (e) => consoleErrors.push('Launcher: ' + e.message));
+    await lp.goto(base + '/launcher.html'); await lp.waitForSelector('body[data-ready]', { timeout: 15000 });
+    await lp.waitForFunction(() => document.querySelectorAll('[data-launcher-version] iframe').length >= 1, null, { timeout: 8000 });
+    await lp.locator('[data-qa="ln-scenario"]').selectOption('erststart'); await lp.locator('[data-qa="ln-offline"]').click(); await lp.locator('[data-qa="ln-scale"]').selectOption('2'); await lp.waitForTimeout(1500);
+    const f0 = lp.frameLocator('[data-launcher-version] iframe').first();
+    await f0.locator('[data-qa="envbar"]').first().waitFor({ timeout: 5000 });
+    const scale = await f0.locator('html').evaluate((el) => getComputedStyle(el).getPropertyValue('--tk-text-scale').trim());
+    if (scale !== '2') throw new Error(`Schriftskalierung nicht aktiv (${scale})`);
+    await lp.locator('[data-version="mix"]').click(); await lp.waitForTimeout(800);
+    await expect(lp.locator('[data-launcher-version="mix"] iframe').count().then((c) => c === 1), '„Meine Auswahl“ nicht angezeigt');
+    await lp.locator('[data-qa="ln-scenario"]').selectOption('alltag'); await lp.locator('[data-qa="ln-offline"]').click(); await lp.locator('[data-qa="ln-scale"]').selectOption('1');
     await lp.close();
   });
   await T('Demo & Entscheidung: Ebenen-Leiter und Feedback-Eingang', async () => {
@@ -357,9 +374,10 @@ async function e2eStage(browser, base, log) {
     const first = st.decisions.find((d) => d.id === r.agenda[0]);
     if (first.kind === 'app-direction') { await page.locator('[data-option-select]').first().click(); await page.locator('[data-qa="round-decide"]').click(); }
     else await page.locator('[data-qa="accept-recommendation"]').click();
-    await page.waitForTimeout(300);
-    await page.locator('[data-qa="accept-recommendation"]').click(); await page.waitForTimeout(300);
-    await page.getByRole('button', { name: /Parken/ }).click(); await page.waitForTimeout(300);
+    const outcomes = async (n) => eventually(async () => ((await state()).rounds[0].results || []).length >= n, `Rundenergebnis ${n} nicht gespeichert`, 8000);
+    await outcomes(1); await page.getByRole('heading', { name: 'Frage 2 von', exact: false }).waitFor();
+    await page.locator('[data-qa="accept-recommendation"]').click(); await outcomes(2); await page.getByRole('heading', { name: 'Frage 3 von', exact: false }).waitFor();
+    await page.getByRole('button', { name: /Parken/ }).click(); await outcomes(3);
     st = await state(); const res = st.rounds[0].results;
     await expect(res.filter((x) => x.outcome === 'entschieden').length === 2 && res.some((x) => x.outcome === 'geparkt'), `Ergebnisse falsch: ${JSON.stringify(res.map((x) => x.outcome))}`);
     if (first.kind === 'app-direction') await expect(!!st.app.directionId && st.decisions.filter((d) => d.kind === 'app-direction' && d.status === 'open').length === 0, 'App-Richtung nicht übernommen');
@@ -382,10 +400,11 @@ async function e2eStage(browser, base, log) {
   });
   await T('Feature-Gates, Design-Tiefe, Akzeptanzkriterien, Anmerkungen und Scorecard', async () => {
     const fid = 'calendar.week';
-    await go(`#/features/${encodeURIComponent(fid)}/overview`); await page.locator('[data-qa="tier-select"]').selectOption('1'); await page.waitForTimeout(200);
-    await page.locator('[data-qa="pin-input"]').fill('QA: Wochenstart prüfen'); await page.keyboard.press('Enter'); await page.waitForTimeout(200);
+    await go(`#/features/${encodeURIComponent(fid)}/overview`); await page.locator('[data-qa="tier-select"]').selectOption('3');
+    await eventually(async () => (await state()).features.find((x) => x.id === fid).tier === 3, 'Tier nicht gesetzt', 8000);
+    await page.locator('[data-qa="pin-input"]').fill('QA: Wochenstart prüfen'); await page.keyboard.press('Enter');
+    await eventually(async () => (await state()).pins.some((p) => p.featureId === fid && p.text === 'QA: Wochenstart prüfen'), 'Anmerkung fehlt', 8000);
     let st = await state(); const f = st.features.find((x) => x.id === fid);
-    await expect(f.tier === 1, 'Tier nicht gesetzt'); await expect(st.pins.some((p) => p.featureId === fid && p.text === 'QA: Wochenstart prüfen'), 'Anmerkung fehlt');
     if (!f.locked) { await go(`#/features/${encodeURIComponent(fid)}/requirements`); await page.locator('[data-qa="acceptance-input"]').fill('Gegeben eine Woche mit Terminen, wenn ich nach links wische, dann sehe ich die Vorwoche'); await page.keyboard.press('Enter'); await page.waitForTimeout(200); }
     await go(`#/features/${encodeURIComponent(fid)}/compare`); await page.locator('[data-qa="scorecard"]').waitFor();
     await page.locator('[data-qa="scorecard"] [role="radio"]').nth(4).click(); await page.waitForTimeout(200);

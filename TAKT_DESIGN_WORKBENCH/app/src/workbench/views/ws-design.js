@@ -30,7 +30,7 @@ export function DesignTab({ state, feature: f }) {
   const [multi, setMulti] = useState(false);
   const s = state.settings;
   const v = f.variants.find((x) => x.id === vid) || f.variants[0];
-  const payload = useMemo(() => (v ? buildFeaturePayload(state, f.id, v.id, { theme: s.previewTheme, state: s.previewState, chrome: s.chrome }) : null), [state, f.id, v?.id, s.previewTheme, s.previewState, s.chrome]);
+  const payload = useMemo(() => (v ? buildFeaturePayload(state, f.id, v.id, { theme: s.previewTheme, state: s.previewState, chrome: s.chrome, scenario: s.previewScenario }) : null), [state, f.id, v?.id, s.previewTheme, s.previewState, s.chrome, s.previewScenario]);
   if (!v) return html`<${Card}><${Empty} icon="palette" title="Noch keine Designvariante" text="Lege im Design Studio eine erste Variante an – aus Bibliothekskomponenten, mit Layout und Demo-Daten." action=${html`<${Btn} variant="primary" icon="plus" disabled=${f.locked} onClick=${() => { const id = act(() => actions.addVariant(f.id, {})); if (id) navigate(studioHref(f.id, id)); }}>Erste Variante anlegen<//>`} /><//>`;
   const st = variantStats(v);
   const devs = multi ? (s.multiViewports || ['desktop', 'tablet', 'mobile']) : [s.viewport];
@@ -71,7 +71,7 @@ export function CompareTab({ state, feature: f }) {
   const [device, setDevice] = useState(state.settings.viewport === 'desktop' || state.settings.viewport === 'notebook' ? 'notebook' : 'mobile');
   const s = state.settings;
   const sel = ids.map((id) => f.variants.find((v) => v.id === id)).filter(Boolean);
-  const payloads = useMemo(() => Object.fromEntries(sel.map((v) => [v.id, buildFeaturePayload(state, f.id, v.id, { theme: s.previewTheme, state: s.previewState, chrome: s.chrome })])), [state, ids.join(), s.previewTheme, s.previewState, s.chrome]);
+  const payloads = useMemo(() => Object.fromEntries(sel.map((v) => [v.id, buildFeaturePayload(state, f.id, v.id, { theme: s.previewTheme, state: s.previewState, chrome: s.chrome, scenario: s.previewScenario })])), [state, ids.join(), s.previewTheme, s.previewState, s.chrome, s.previewScenario]);
   if (f.variants.length < 2) return html`<${Card}><${Empty} icon="git-compare" title="Mindestens zwei Varianten nötig" text="Nicht jedes Feature braucht mehrere Entwürfe. Bei komplexen Features lohnt der Vergleich grundlegend unterschiedlicher Ansätze (Hierarchie, Layout, Bedienkonzept)." action=${html`<${Btn} icon="copy" disabled=${f.locked || !f.variants.length} onClick=${() => { const id = act(() => actions.addVariant(f.id, { from: f.variants[0].id })); if (id) navigate(studioHref(f.id, id)); }}>Variante ableiten<//>`} /><//>`;
   const stats = Object.fromEntries(sel.map((v) => [v.id, variantStats(v)]));
   const uniqueComps = (v) => stats[v.id].comps.filter((c) => sel.filter((o) => o.id !== v.id).every((o) => !stats[o.id].comps.includes(c)));

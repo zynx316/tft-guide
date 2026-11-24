@@ -9,7 +9,8 @@
 import { emptyState, createModule, createFeature, createDecision, migrate } from '../core/schema.js';
 import { makeVersion, bumpMinor, bumpMajor } from '../core/versioning.js';
 import { nowIso, uid } from '../lib/util.js';
-import { PATTERN_QUESTIONS } from './catalog.js';
+import { PATTERN_QUESTIONS, APP_QUESTIONS } from './catalog.js';
+import { seedHash } from '../core/seedpatch.js';
 
 import home from './modules/home.js';
 import calendar from './modules/calendar.js';
@@ -28,7 +29,7 @@ import nutrition from './modules/nutrition.js';
 import habits from './modules/habits.js';
 import system from './modules/system.js';
 
-export const SEED_VERSION = '2026-11-24.2';
+export const SEED_VERSION = '2026-11-24.3';
 export const MANIFESTS = [home, calendar, tasks, habits, finance, savings, trading, fitness, nutrition, notes, knowledge, pictureToText, weather, sales, system, settings];
 
 function buildModule(manifest, order) {
@@ -69,10 +70,12 @@ export function buildSeedState() {
     }
     for (const d of decisions) state.decisions.push(createDecision({ moduleId: module.id, ...d }));
   });
-  for (const pq of PATTERN_QUESTIONS) state.decisions.push(createDecision(pq));
+  for (const pq of [...APP_QUESTIONS, ...PATTERN_QUESTIONS]) state.decisions.push(createDecision(pq));
   state.history.push({ id: uid('h'), ts: nowIso(), type: 'seed', entity: 'workbench', entityId: null, summary: `Workbench aus Seed ${SEED_VERSION} angelegt (${state.modules.length} Module, ${state.features.length} Features)` });
   state.settings.lastFeatureId = state.features.find((f) => f.variants.length > 1)?.id || state.features[0]?.id || null;
-  return migrate(state);
+  const out = migrate(state);
+  for (const f of out.features) f.seedHash = seedHash(f); // Abdruck für den Seed-Patch (unverändert = sicher aktualisierbar)
+  return out;
 }
 
 /** Neue Module/Features aus dem Seed übernehmen (nach ID). Bestehendes bleibt unangetastet. */
@@ -92,7 +95,7 @@ export function mergeSeed(state) {
       if (!state.decisions.some((x) => x.title === d.title && x.featureId === d.featureId)) { state.decisions.push(d); added.decisions++; }
     }
   }
-  for (const pq of PATTERN_QUESTIONS) if (!state.decisions.some((x) => x.id === pq.id)) { state.decisions.push(createDecision(pq)); added.decisions++; }
+  for (const pq of [...APP_QUESTIONS, ...PATTERN_QUESTIONS]) if (!state.decisions.some((x) => x.id === pq.id)) { state.decisions.push(createDecision(pq)); added.decisions++; }
   state.meta.seedVersion = SEED_VERSION;
   return added;
 }

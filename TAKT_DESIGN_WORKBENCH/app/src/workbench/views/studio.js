@@ -119,7 +119,7 @@ export function StudioView({ state, feature: f, variantId }) {
   const s = state.settings;
   const v = f?.variants.find((x) => x.id === variantId) || f?.variants.find((x) => x.id === f.selectedVariantId) || f?.variants[0];
   const block = v?.blocks.find((b) => b.id === blockId);
-  const payload = useMemo(() => (f && v ? { ...buildFeaturePayload(state, f.id, v.id, { theme: s.previewTheme, state: s.previewState, chrome: s.chrome }), highlightBlock: blockId } : null), [state, f?.id, v?.id, s.previewTheme, s.previewState, s.chrome, blockId]);
+  const payload = useMemo(() => (f && v ? { ...buildFeaturePayload(state, f.id, v.id, { theme: s.previewTheme, state: s.previewState, chrome: s.chrome, scenario: s.previewScenario }), highlightBlock: blockId } : null), [state, f?.id, v?.id, s.previewTheme, s.previewState, s.chrome, s.previewScenario, blockId]);
   const onInteraction = useCallback((m) => {
     if (m.type === 'select-block') { setBlockId(m.blockId); return; }
     if (m.type === 'interaction' || m.type === 'render-error') setLog((l) => [{ id: Math.random(), ev: m.event || 'render-error', detail: m.detail || m.message, ts: new Date() }, ...l].slice(0, 40));
@@ -182,7 +182,8 @@ export function StudioView({ state, feature: f, variantId }) {
         extra=${html`${!multi && html`<${Seg} value=${zoom} onChange=${setZoom} options=${[{ value: 'fit', label: 'Einpassen' }, { value: '100', label: '100 %' }]} />`}
           <${Btn} size="sm" icon="zap" pressed=${showLog} onClick=${() => setShowLog(!showLog)}>Log${log.length ? ` (${log.length})` : ''}<//>
           <${Btn} size="sm" icon="shield-check" disabled=${!v} onClick=${() => qaRunDialog({ jobs: [{ featureId: f.id, variantId: v.id }], title: `QA – ${f.name} · Variante ${v.id}` })}>QA<//>
-          <${Btn} size="sm" icon="external-link" disabled=${!v} title="Vorschau in neuem Tab (Direktlink, auch für echte Geräte)" onClick=${() => window.open(`./preview.html?feature=${encodeURIComponent(f.id)}&variant=${encodeURIComponent(v.id)}&theme=${s.previewTheme}&state=${s.previewState}&chrome=${s.chrome ? 1 : 0}`, '_blank')} />`} /></div>
+          <${Btn} size="sm" icon="smartphone" disabled=${!v} title="In App ansehen: ganze App mit dieser Variante, Rest Arbeitsstand (Mobile, neuer Tab)" onClick=${() => window.open(`./preview.html?app=1&version=${encodeURIComponent(`pin:${f.id}:${v.id}`)}&theme=${s.previewTheme}&scenario=${s.previewScenario || 'alltag'}`, '_blank', 'popup,width=420,height=880')} data-qa="studio-in-app">In App<//>
+          <${Btn} size="sm" icon="external-link" disabled=${!v} title="Vorschau in neuem Tab (Direktlink, auch für echte Geräte)" onClick=${() => window.open(`./preview.html?feature=${encodeURIComponent(f.id)}&variant=${encodeURIComponent(v.id)}&theme=${s.previewTheme}&state=${s.previewState}&chrome=${s.chrome ? 1 : 0}&scenario=${s.previewScenario || 'alltag'}`, '_blank')} />`} /></div>
       <div class="wb-studio__stage wb-canvas" data-qa="studio-stage">
         ${!v ? html`<div class="wb-card" style="max-width:460px"><${Empty} icon="palette" title="Noch keine Variante" text="Lege eine Variante an und setze sie aus Bibliothekskomponenten zusammen." action=${html`<${Btn} variant="primary" icon="plus" disabled=${locked} onClick=${newVariant}>Variante anlegen<//>`} /></div>`
           : devs.map((d) => html`<div style=${zoom === '100' && !multi ? '' : `flex:${deviceById(d).width};min-width:0;max-width:${deviceById(d).width}px`}><${PreviewFrame} payload=${payload} device=${d} fit=${zoom !== '100' || multi} maxHeight=${multi ? 620 : 760} onInteraction=${onInteraction} /></div>`)}

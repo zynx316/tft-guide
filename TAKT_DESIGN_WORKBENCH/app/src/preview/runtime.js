@@ -144,7 +144,7 @@ function Overlays({ dialogs, closeDialog, toasts }) {
 // ------------------------------------------------------------- Screen ---
 // Ein Screen = eine Variante mit eigenen Vorschau-Daten und eigenem UI-Zustand.
 // cache (optional): Map, in der der Bedienzustand beim Navigieren erhalten bleibt (App-Modus).
-function Screen({ variant, demoData, cacheKey, cache, theme, today, forcedState, overlays, emit, bp, width, world, privacy, params }) {
+function Screen({ variant, demoData, cacheKey, cache, theme, today, forcedState, overlays, emit, bp, width, world, privacy, params, env }) {
   const cached = cache && cache.get(cacheKey);
   const [data, setDataState] = useState(() => cached?.data || clone(demoData || {}));
   const [ui, setUiState] = useState(() => ({ ...(cached?.ui || {}), ...(params?.id != null ? { selectedId: params.id } : {}), ...(params?.ui || {}) }));
@@ -158,12 +158,20 @@ function Screen({ variant, demoData, cacheKey, cache, theme, today, forcedState,
     },
   };
   const ctx = {
-    bp, width, theme, today: new Date(today || DEFAULT_TODAY), emit, ui, privacy: !!privacy,
+    bp, width, theme, today: new Date(today || DEFAULT_TODAY), emit, ui, privacy: !!privacy, env: env || {},
     setUi: (k, v) => setUiState((u) => ({ ...u, [k]: v })),
     openDialog: overlays.openDialog, toast: overlays.toast,
   };
-  return html`<div class="tk-screen"><${Layout} key=${variant.id} variant=${variant} bp=${bp} renderBlock=${(b) => html`<${Block} key=${b.id} block=${b} store=${store} ctx=${ctx} forcedState=${forcedState} />`} /></div>`;
+  return html`<div class="tk-screen">${(env?.offline || env?.stale) && html`<${EnvBar} env=${env} />`}<${Layout} key=${variant.id} variant=${variant} bp=${bp} renderBlock=${(b) => html`<${Block} key=${b.id} block=${b} store=${store} ctx=${ctx} forcedState=${forcedState} />`} /></div>`;
 }
+
+/** Umgebungshinweis (Offline / veralteter Stand) – generisch für alle Screens. */
+const EnvBar = ({ env }) => html`<div class="tk-envbar" role="status" data-qa="envbar">
+  <${Icon} name=${env.offline ? 'wifi-off' : 'clock'} size=${15} />
+  <span class="tk-grow">${env.offline ? 'Offline – Stand heute 09:15. Änderungen werden gespeichert und später abgeglichen.' : 'Daten von heute 09:15 – Aktualisierung läuft.'}</span></div>`;
+
+/** Schriftskalierung (Barrierefreiheit): wirkt über --tk-text-scale auf alle Schriftgrößen-Tokens. */
+const applyEnv = (env) => { document.documentElement.style.setProperty('--tk-text-scale', String(env?.scale || 1)); document.documentElement.toggleAttribute('data-tk-offline', !!env?.offline); };
 
 /** Gemeinsamer Weltzustand (Persona-Daten), geteilt von allen Screens einer Vorschau. */
 function useWorld(initial) {
@@ -182,10 +190,10 @@ const SketchScreen = ({ feature }) => html`<div class="tk-screen tk-sketch" data
 
 // ----------------------------------------------------------------- Root ---
 function PreviewRoot({ payload }) {
-  if (payload.mode === 'app') return html`<${AppPlayer} key=${`${payload.versionId}|${payload.revision || ''}`} payload=${payload} />`;
+  if (payload.mode === 'app') return html`<${AppPlayer} key=${`${payload.versionId}|${payload.revision || ''}|${payload.scenario || ''}`} payload=${payload} />`;
   // Daten/UI-Zustand werden zurückgesetzt, wenn Feature, Variante oder Demo-Daten wechseln –
   // reine Layout-/Prop-Änderungen (Design Studio) behalten den Bedienzustand.
-  const sig = `${payload.mode}|${payload.feature?.id}|${payload.variant?.id}|${payload.component?.id}|${JSON.stringify(payload.mode === 'component' ? payload.component?.data : payload.demoData)}`;
+  const sig = `${payload.mode}|${payload.feature?.id}|${payload.variant?.id}|${payload.component?.id}|${payload.scenario || ''}|${JSON.stringify(payload.mode === 'component' ? payload.component?.data : payload.demoData)}`;
   return html`<${PreviewInner} key=${sig} payload=${payload} />`;
 }
 
@@ -195,6 +203,7 @@ function PreviewInner({ payload }) {
   const ov = useOverlays(emit);
   const world = useWorld(payload.world);
   document.documentElement.setAttribute('data-tk-theme', payload.theme || 'graphite');
+  applyEnv(payload.env);
   let content;
   if (payload.mode === 'component') {
     const block = { id: 'preview', component: payload.component.id, props: payload.component.props || {} };
@@ -204,7 +213,7 @@ function PreviewInner({ payload }) {
     const navEvt = (event, detail) => () => post({ type: 'interaction', event, detail });
     content = html`<${AppShell} chrome=${payload.chrome} bp=${bp} modules=${payload.modules} activeModule=${payload.module?.id} moduleName=${payload.module?.name} title=${payload.feature?.name}
         onNavModule=${(id) => navEvt('nav.module', { module: id })()} onMore=${navEvt('nav.more')}>
-      ${payload.variant ? html`<${Screen} variant=${payload.variant} demoData=${payload.demoData} theme=${payload.theme} today=${payload.today} forcedState=${payload.state} overlays=${ov} emit=${emit} bp=${bp} width=${width} world=${world} privacy=${payload.privacy} />` : html`<${NoVariant} />`}
+      ${payload.variant ? html`<${Screen} variant=${payload.variant} demoData=${payload.demoData} theme=${payload.theme} today=${payload.today} forcedState=${payload.state} overlays=${ov} emit=${emit} bp=${bp} width=${width} world=${world} privacy=${payload.privacy} env=${payload.env} />` : html`<${NoVariant} />`}
     <//>`;
   }
   const hl = payload.highlightBlock ? html`<style>[data-block-id="${payload.highlightBlock}"]{outline:2px dashed var(--tk-c-accent);outline-offset:4px;border-radius:6px}</style>` : null;
@@ -215,6 +224,7 @@ function PreviewInner({ payload }) {
 // Ganze App klickbar (Demo-Launcher): Module, Features, Navigationsregeln, Zurück.
 let probePayload = null;
 let appNavigate = null;
+let appBack = null;
 function AppPlayer({ payload }) {
   const { width, bp } = useViewport();
   const features = payload.features || {};
@@ -234,9 +244,11 @@ function AppPlayer({ payload }) {
     const entry = { fid: to, params };
     setStack((st) => (reset ? [entry] : replace ? [...st.slice(0, -1), entry] : [...st, entry]));
   };
-  appNavigate = go;
+  // Von außen (gekoppelte Launcher-Rahmen): Modulwechsel setzt den Verlauf zurück wie ein Tipp auf die Leiste.
+  appNavigate = (to, params = null) => go(to, { reset: features[to] && features[to].moduleId !== f?.moduleId, params });
   const goModule = (mid) => { const m = (payload.modules || []).find((x) => x.id === mid); if (m?.home) go(m.home, { reset: true }); };
-  const back = () => setStack((st) => (st.length > 1 ? st.slice(0, -1) : st));
+  const back = () => { if (ov.dialogs?.length) return ov.closeDialog(ov.dialogs[ov.dialogs.length - 1].id); setStack((st) => (st.length > 1 ? st.slice(0, -1) : st)); };
+  appBack = back;
   const emit = useCallback((event, detail) => {
     post({ type: 'interaction', event, detail: detail ?? null, ts: Date.now(), featureId: fid });
     const rule = (features[fid]?.nav || []).find((r) => r.event === event);
@@ -254,6 +266,7 @@ function AppPlayer({ payload }) {
     window.addEventListener('keydown', onKey); return () => window.removeEventListener('keydown', onKey);
   }, []);
   document.documentElement.setAttribute('data-tk-theme', payload.theme || 'graphite');
+  applyEnv(payload.env);
 
   const groups = (list) => { const m = new Map(); for (const x of list) { const g = x.group || 'Allgemein'; if (!m.has(g)) m.set(g, []); m.get(g).push(x); } return [...m.entries()]; };
   const featureSheet = () => ov.openDialog({ title: mod?.name || 'Bereiche', body: (close) => html`<div class="tk-sheetlist">${groups(moduleFeatures).map(([g, list]) => html`<div class="tk-label" style="margin:6px 0 2px">${g}</div>
@@ -268,7 +281,7 @@ function AppPlayer({ payload }) {
       canBack=${stack.length > 1} onBack=${back} onNavModule=${goModule} onMore=${moreSheet} onTitle=${moduleFeatures.length > 1 ? featureSheet : null}
       sideFeatures=${moduleFeatures.filter((x) => x.variant)} activeFeature=${fid} onFeature=${(id) => go(id)}
       onSearch=${() => (features['system.search'] ? go('system.search') : ov.toast('Globale Suche – noch kein Design'))} onBell=${() => (features['system.notifications'] ? go('system.notifications') : ov.toast('Mitteilungen – noch kein Design'))}>
-    ${f?.variant ? html`<${Screen} key=${`${fid}|${JSON.stringify(top.params)}`} cacheKey=${`${fid}|${JSON.stringify(top.params)}`} cache=${cache} variant=${f.variant} demoData=${f.demoData} theme=${payload.theme} today=${payload.today} forcedState=${payload.state} overlays=${ov} emit=${emit} bp=${bp} width=${width} world=${world} privacy=${payload.privacy} params=${top.params} />` : f ? html`<${SketchScreen} feature=${f} />` : html`<${NoVariant} />`}
+    ${f?.variant ? html`<${Screen} key=${`${fid}|${JSON.stringify(top.params)}`} cacheKey=${`${fid}|${JSON.stringify(top.params)}`} cache=${cache} variant=${f.variant} demoData=${f.demoData} theme=${payload.theme} today=${payload.today} forcedState=${payload.state} overlays=${ov} emit=${emit} bp=${bp} width=${width} world=${world} privacy=${payload.privacy} params=${top.params} env=${payload.env} />` : f ? html`<${SketchScreen} feature=${f} />` : html`<${NoVariant} />`}
   <//><${Overlays} dialogs=${ov.dialogs} closeDialog=${ov.closeDialog} toasts=${ov.toasts} />`;
 }
 
@@ -281,7 +294,7 @@ function renderPayload(payload) {
   render(html`<${PreviewRoot} payload=${payload} />`, mount);
   document.body.dataset.ready = 'true';
 }
-window.__taktPreview = { render: renderPayload, get payload() { return current; }, navigate: (fid) => appNavigate && appNavigate(fid) };
+window.__taktPreview = { render: renderPayload, get payload() { return current; }, navigate: (fid, params) => appNavigate && appNavigate(fid, params), back: () => appBack && appBack() };
 window.__taktQA = {
   run: async () => {
     // rAF kann in verdeckten Frames gedrosselt sein -> mit Timeout absichern
@@ -304,7 +317,9 @@ window.addEventListener('message', (e) => { if (e.data?.target === 'takt-preview
 const params = new URLSearchParams(location.search);
 if (params.get('feature') || params.get('component') || params.get('app')) {
   import('../core/preview-payload.js').then(async ({ loadStateStandalone, buildFeaturePayload, buildComponentPayload, buildAppPayload }) => {
-    const opts = { theme: params.get('theme') || undefined, state: params.get('state') || 'default', chrome: params.get('chrome') !== '0' };
+    const envList = (params.get('env') || '').split(',');
+    const opts = { theme: params.get('theme') || undefined, state: params.get('state') || 'default', chrome: params.get('chrome') !== '0', scenario: params.get('scenario') || undefined,
+      privacy: envList.includes('privacy'), env: { offline: envList.includes('offline'), stale: envList.includes('stale'), scale: Number(params.get('scale')) || 1 } };
     if (params.get('component')) return renderPayload(buildComponentPayload(params.get('component'), opts));
     if (params.get('app')) { const st = await loadStateStandalone(); return renderPayload(buildAppPayload(st, params.get('version') || 'arbeitsstand', { ...opts, route: params.get('feature') || undefined })); }
     const state = await loadStateStandalone();
