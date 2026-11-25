@@ -364,8 +364,8 @@ export default {
       variants: [
         {
           id: 'A', name: 'Liste + Ergebnis', direction: 'kompakt', concept: 'Seitenleiste mit Suche, Quellenfilter und Verlaufsliste; im Hauptbereich das Ergebnis der gewählten Erfassung.',
-          description: '+ Schnell durchblättern  − Auf Mobile ist die Liste einklappbar',
-          layout: { type: 'sidebar', panelLabel: 'Verlauf & Suche', panelOpen: true },
+          description: '+ Schnell durchblättern  − Auf Mobile erst die Liste, nach dem Antippen das Ergebnis mit Zurück-Schritt',
+          layout: { type: 'sidebar', panelLabel: 'Verlauf & Suche', masterDetail: true, backLabel: 'Zurück zum Verlauf' },
           blocks: [
             { id: 'flt', component: 'search-filter', region: 'panel', props: { placeholder: 'Erkannten Text suchen …', filters: SRC, layout: 'stacked' } },
             { id: 'hist', component: 'count-list', region: 'panel', bind: { items: 'captures' }, props: { title: 'Erfassungen', emptyTitle: 'Keine Erfassungen gefunden', emptyText: 'Wähle oben einen Weg, um den ersten Text zu erkennen.' } },

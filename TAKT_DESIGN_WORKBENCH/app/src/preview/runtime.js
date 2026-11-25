@@ -212,7 +212,7 @@ function Screen({ variant, demoData, cacheKey, cache, theme, today, forcedState,
     setUi: (k, v) => setUiState((u) => ({ ...u, [k]: v })),
     openDialog: overlays.openDialog, toast: overlays.toast,
   };
-  return html`<div class="tk-screen">${(env?.offline || env?.stale) && html`<${EnvBar} env=${env} />`}<${Layout} key=${variant.id} variant=${variant} bp=${bp} renderBlock=${(b) => html`<${Block} key=${b.id} block=${b} store=${store} ctx=${ctx} forcedState=${forcedState} />`} /></div>`;
+  return html`<div class="tk-screen">${(env?.offline || env?.stale) && html`<${EnvBar} env=${env} />`}<${Layout} key=${variant.id} variant=${variant} bp=${bp} ui=${ui} setUi=${ctx.setUi} renderBlock=${(b) => html`<${Block} key=${b.id} block=${b} store=${store} ctx=${ctx} forcedState=${forcedState} />`} /></div>`;
 }
 
 /** Umgebungshinweis (Offline / veralteter Stand) – generisch für alle Screens. */

@@ -32,7 +32,7 @@ import shopping from './modules/shopping.js';
 import documents from './modules/documents.js';
 import system from './modules/system.js';
 
-export const SEED_VERSION = '2026-11-24.8';
+export const SEED_VERSION = '2026-11-24.9';
 export const MANIFESTS = [home, calendar, tasks, habits, goals, shopping, finance, savings, trading, fitness, nutrition, notes, knowledge, pictureToText, documents, weather, sales, system, settings];
 
 function buildModule(manifest, order) {

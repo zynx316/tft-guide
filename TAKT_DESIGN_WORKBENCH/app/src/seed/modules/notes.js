@@ -145,7 +145,7 @@ export default {
         {
           id: 'B', name: 'Master-Detail', direction: 'kompakt', concept: 'Zwei-Spalten-Arbeitsplatz: links Suche und kompakte Liste, rechts der Editor der gewählten Notiz. Schnelles Springen zwischen Notizen ohne Kontextverlust.',
           description: '+ Effizient für Vielschreiber, Bearbeiten direkt in der Übersicht  − Auf Mobile ist die Liste einklappbar und der Editor füllt den Bildschirm',
-          layout: { type: 'sidebar', panelLabel: 'Notizen & Suche', panelOpen: true },
+          layout: { type: 'sidebar', panelLabel: 'Notizen & Suche', masterDetail: true, backLabel: 'Zurück zu den Notizen' },
           blocks: [
             { id: 'flt', component: 'search-filter', region: 'panel', props: { placeholder: 'Suchen …', filters: FILTERS, layout: 'stacked' } },
             { id: 'list', component: 'note-list', region: 'panel', props: { title: 'Notizen', layout: 'list' } },

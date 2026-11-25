@@ -81,6 +81,11 @@ export const taskList = {
   `Switch` hat auf Mobile eine 44-px-Tippfläche, `Segmented` mindestens 44 px breite Buttons.
 - **Layout-Optionen:** `layout.stretch` (Raster: Karten einer Reihe gleich hoch), `layout.asideSticky` (Split: Seitenspalte
   läuft auf Desktop mit). Beide im Design Studio schaltbar – keine komponentenspezifischen CSS-Tricks dafür.
+- **Master-Detail mobil:** `layout.masterDetail: true` (nur Typ `sidebar`, optional `backLabel`). Auf Mobile (`ctx.bp === 'mobile'`)
+  zeigt das Layout zuerst nur die Region `panel` (Liste, volle Breite); sobald `ctx.ui.selectedId` gesetzt ist, nur `main` mit
+  einem 44-px-„Zurück“-Button (setzt `selectedId` auf `null`; Escape wirkt ebenso). Listenkomponenten setzen die Auswahl wie
+  gewohnt per `ctx.setUi('selectedId', id)`; Detailkomponenten werden in der Listenansicht gar nicht gerendert, ein
+  `autoSelectFirst` greift dort also nie (nur auf Tablet/Desktop). Tablet/Desktop unverändert; ersetzt `panelOpen` für diese Fälle.
 - **Flutter-Feld (neue Komponenten):** `flutter: { widget, propMap: { prop: 'parameter' }, events: ['event'] }`.
 - **CSS-Präfixe:** je Bereich eindeutig (`tk-fit-…`, `tk-nu-…`, `tk-wx<kürzel>_…`, `tk-hb-…`, `tk-fn-…`, `tk-sv-…`, `tk-trd-…`,
   `tk-cal-…`, `tk-tsk-…`, `tk-gl-…` für Ziele, `tk-shp…-` für Einkauf, `tk-dok-…` für Dokumente, `tk-note-…`/`tk-kb-…` für Notizen

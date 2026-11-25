@@ -441,6 +441,40 @@ async function e2eStage(browser, base, log) {
     await page.locator('[data-qa="scorecard"] [role="radio"]').nth(4).click(); await page.waitForTimeout(200);
     st = await state(); await expect(Object.keys(st.scores[fid] || {}).length >= 1, 'Score nicht gespeichert');
   });
+  await T('Master-Detail mobil (390): Liste → Eintrag → Detail → Zurück → Liste; breit weiterhin zweispaltig', async () => {
+    const mp = await ctx.newPage(); await mp.setViewportSize({ width: 390, height: 844 });
+    mp.on('pageerror', (e) => consoleErrors.push('Master-Detail: ' + e.message));
+    const cases = [['notes.overview', 'B', '.tk-note-row'], ['knowledge.browse', 'A', '.tk-kb-tree__row--art'], ['picture-to-text.history', 'A', '.tk-cnl__row']];
+    for (const [fid, v, rowSel] of cases) {
+      await mp.setViewportSize({ width: 390, height: 844 });
+      await mp.goto(`${base}/preview.html?feature=${fid}&variant=${v}`); await mp.waitForSelector('body[data-ready]');
+      await mp.locator('[data-region="panel"]').first().waitFor({ timeout: 6000 });
+      await expect(mp.locator('[data-master-detail="list"]').count().then((c) => c === 1), `${fid}/${v}: startet nicht in der Listenansicht`);
+      await expect(mp.locator('[data-region="main"]').count().then((c) => c === 0), `${fid}/${v}: Detail ist in der Liste sichtbar (autoSelectFirst?)`);
+      await expect(mp.locator('[data-qa="md-back"]').count().then((c) => c === 0), `${fid}/${v}: Zurück schon in der Liste`);
+      const pw = await mp.locator('[data-region="panel"]').first().evaluate((el) => el.getBoundingClientRect().width);
+      await expect(pw > 390 - 48, `${fid}/${v}: Liste nicht in voller Breite (${Math.round(pw)} px)`);
+      await mp.locator('[data-region="panel"]').first().locator(rowSel).first().click();
+      await mp.locator('[data-qa="md-back"]').waitFor({ timeout: 4000 });
+      await expect(mp.locator('[data-region="main"]').first().isVisible(), `${fid}/${v}: Detail fehlt nach Auswahl`);
+      await expect(mp.locator('[data-region="panel"]').first().isHidden(), `${fid}/${v}: Liste bleibt neben dem Detail sichtbar`);
+      const bb = await mp.locator('[data-qa="md-back"]').boundingBox();
+      await expect(bb.height >= 44 && bb.width >= 44, `${fid}/${v}: Zurück kleiner als 44 px`);
+      await expect(mp.locator('[data-qa="md-back"]').getAttribute('aria-label').then((a) => !!a), `${fid}/${v}: Zurück ohne aria-label`);
+      await mp.locator('[data-qa="md-back"]').click();
+      await eventually(() => mp.locator('[data-master-detail="list"]').count().then((c) => c === 1), `${fid}/${v}: Zurück führt nicht zur Liste`);
+      await expect(mp.locator('[data-region="panel"]').first().isVisible(), `${fid}/${v}: Liste nach Zurück unsichtbar`);
+      // Escape = Zurück
+      await mp.locator('[data-region="panel"]').first().locator(rowSel).first().click(); await mp.locator('[data-qa="md-back"]').waitFor({ timeout: 4000 }); await mp.waitForTimeout(200);
+      await mp.keyboard.press('Escape');
+      await eventually(() => mp.locator('[data-master-detail="list"]').count().then((c) => c === 1), `${fid}/${v}: Escape führt nicht zur Liste`);
+      // Tablet: unverändert zweispaltig, Liste und Detail zugleich, kein Zurück
+      await mp.setViewportSize({ width: 768, height: 1024 }); await mp.waitForTimeout(250);
+      await expect(mp.locator('[data-region="panel"]').first().isVisible().then(async (a) => a && (await mp.locator('[data-region="main"]').first().isVisible())), `${fid}/${v}: Tablet nicht zweispaltig`);
+      await expect(mp.locator('[data-qa="md-back"], [data-master-detail]').count().then((c) => c === 0), `${fid}/${v}: Master-Detail-Elemente auf Tablet`);
+    }
+    await mp.close();
+  });
   await T('Keine JavaScript-Fehler während der Bedienung', async () => { if (consoleErrors.length) throw new Error(consoleErrors.slice(0, 3).join(' | ')); });
   await ctx.close();
   return { total: tests.length, passed: tests.filter((t) => t.status === 'pass').length, failed: tests.filter((t) => t.status === 'fail').map((t) => t.name), tests };

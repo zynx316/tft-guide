@@ -127,8 +127,8 @@ export default {
       variants: [
         {
           id: 'A', name: 'Baum + Artikel', direction: 'kompakt', concept: 'Klassische Dokumentations-Navigation: links Suche, Bereichsfilter und Wissensbaum, rechts der gewählte Artikel mit Inhaltsverzeichnis. Struktur ist immer sichtbar.',
-          description: '+ Orientierung durch Struktur, schnelles Blättern  − Auf Mobile verschwindet der Baum hinter einem Umschalter',
-          layout: { type: 'sidebar', panelLabel: 'Wissensbaum', panelOpen: true },
+          description: '+ Orientierung durch Struktur, schnelles Blättern  − Auf Mobile erst der Baum, nach dem Antippen der Artikel mit Zurück-Schritt',
+          layout: { type: 'sidebar', panelLabel: 'Wissensbaum', masterDetail: true, backLabel: 'Zurück zum Wissensbaum' },
           blocks: [
             { id: 'flt', component: 'search-filter', region: 'panel', props: { placeholder: 'Wissen durchsuchen …', filters: AREA_CHIPS, layout: 'stacked' } },
             { id: 'tree', component: 'kb-tree', region: 'panel', props: { title: 'Wissensbasis' } },

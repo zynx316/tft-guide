@@ -26,12 +26,14 @@ export default {
       id: 'A', name: 'Kompakt', direction: 'kompakt',   // Design-Richtung: kompakt | visuell | fokus (Version im Demo-Launcher)
       concept: 'Kernidee in 1–2 Sätzen (Hierarchie, Bedienkonzept).',
       description: 'Stärken / Schwächen.',
-      layout: { type: 'sidebar' },   // stack | split | sidebar | grid | tabs  (+ narrow, even, asideFirstOnMobile, panelLabel)
+      layout: { type: 'sidebar' },   // stack | split | sidebar | grid | tabs  (+ narrow, even, asideFirstOnMobile, panelLabel, masterDetail, backLabel)
       blocks: [
         { id: 'hdr', component: 'page-header', region: 'header', props: { title: 'Woche' } },
         { id: 'cal', component: 'calendar-week', region: 'main', bind: { events: 'events' }, props: { density: 'compact' } },
         { id: 'mini', component: 'mini-month', region: 'panel', hideOn: ['mobile'] },
         // grid: span (1–12), spanTablet;  tabs: tab: 'Reitername'
+        // sidebar + layout.masterDetail: true → Mobile: erst Region panel (Liste), nach Auswahl (ctx.ui.selectedId) main mit „Zurück“;
+        //   Tablet/Desktop unverändert; backLabel = Text des Zurück-Buttons; Detail-Komponenten rendern in der Liste nicht (autoSelectFirst wirkt nur breit)
       ],
     }],
     selectedVariantId: 'B',

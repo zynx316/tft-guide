@@ -5,7 +5,7 @@
 //               panel (sidebar) | footer | bottom (sticky, z. B. Quick-Add)
 // ============================================================================
 import { html } from '../lib/html.js';
-import { useState } from 'preact/hooks';
+import { useState, useEffect, useRef } from 'preact/hooks';
 import { Icon } from '../lib/icons.js';
 
 export const LAYOUT_TYPES = [
@@ -30,9 +30,38 @@ export function blocksByRegion(variant) {
   return out;
 }
 
-export function Layout({ variant, renderBlock, bp }) {
+/**
+ * Master-Detail mobil (`layout.masterDetail`, nur Typ `sidebar`): liefert 'list' (Liste, volle Breite),
+ * 'detail' (gewählter Eintrag mit Zurück-Schritt) oder null (kein Master-Detail: Tablet/Desktop, anderer Typ, nicht gesetzt).
+ * Maßgeblich ist allein `ctx.ui.selectedId` – `autoSelectFirst` o. Ä. der Detail-Komponente wirkt dort nur auf breiten Viewports.
+ */
+export function masterDetailMode(layout, bp, selectedId) {
+  if (!layout?.masterDetail || layout.type !== 'sidebar' || bp !== 'mobile') return null;
+  return selectedId != null && selectedId !== '' ? 'detail' : 'list';
+}
+
+export function Layout({ variant, renderBlock, bp, ui, setUi }) {
   const L = variant.layout || { type: 'stack' };
   const reg = blocksByRegion(variant);
+  const md = reg.panel?.length ? masterDetailMode(L, bp, ui?.selectedId) : null;
+  const rootRef = useRef(null), backRef = useRef(null), prevMd = useRef(md);
+  const goBack = () => setUi && setUi('selectedId', null);
+  useEffect(() => { // Wechsel Liste <-> Detail: nach oben, Fokus auf „Zurück“ (Detail) bzw. in die Liste
+    if (prevMd.current === md) return; const was = prevMd.current; prevMd.current = md;
+    if (!md || !was) return;
+    rootRef.current?.scrollIntoView?.({ block: 'start' });
+    if (md === 'detail') backRef.current?.focus?.({ preventScroll: true });
+    else rootRef.current?.querySelector('[data-region="panel"] button, [data-region="panel"] [role="button"]')?.focus?.({ preventScroll: true });
+  }, [md]);
+  useEffect(() => { // Escape im Detail = Zurück (nicht in Eingabefeldern und nicht bei offenem Dialog)
+    if (md !== 'detail') return undefined;
+    const onKey = (e) => {
+      if (e.key !== 'Escape' || e.defaultPrevented || document.querySelector('[role="dialog"],[aria-modal="true"]')) return;
+      const t = e.target; if (t && (/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName) || t.isContentEditable)) return;
+      goBack();
+    };
+    document.addEventListener('keydown', onKey); return () => document.removeEventListener('keydown', onKey);
+  }, [md]);
   const [panelOpen, setPanelOpen] = useState(!!L.panelOpen); // layout.panelOpen: Seitenleiste (Liste) startet mobil aufgeklappt
   const tabsList = [...new Set((reg.main || []).map((b) => b.tab || 'Übersicht'))];
   const [tab, setTab] = useState(tabsList[0]);
@@ -49,6 +78,15 @@ export function Layout({ variant, renderBlock, bp }) {
       break;
     }
     case 'sidebar':
+      if (md) { // Master-Detail mobil: entweder nur die Liste (volle Breite) oder nur das Detail mit Zurück-Schritt
+        const backText = L.backLabel || 'Zurück zur Liste';
+        body = html`<div class="tk-layout__body" data-master-detail=${md}>
+          ${region('panel', reg.panel, { 'data-open': 'true', style: md === 'detail' ? 'display:none' : null })}
+          ${md === 'detail' && html`<div class="tk-col" style="gap:12px;min-width:0">
+            <button type="button" ref=${backRef} class="tk-btn" data-qa="md-back" aria-label=${backText} onClick=${goBack} style="min-height:44px;align-self:flex-start;gap:8px;padding-inline:12px 16px"><${Icon} name="arrow-left" size=${18} /><span>${backText}</span></button>
+            ${region('main', reg.main)}</div>`}</div>`;
+        break;
+      }
       body = html`<div class="tk-layout__body">
         ${reg.panel?.length ? html`<div class="tk-col" style="gap:0">
           <button type="button" class="tk-btn tk-panel-toggle" style="justify-content:space-between;width:100%;margin-bottom:12px" aria-expanded=${panelOpen ? 'true' : 'false'} onClick=${() => setPanelOpen(!panelOpen)}>
@@ -64,7 +102,7 @@ export function Layout({ variant, renderBlock, bp }) {
     default:
       body = html`<div class="tk-layout__body">${region('main', reg.main)}</div>`;
   }
-  return html`<div class=${`tk-layout tk-layout--${L.type || 'stack'} ${L.narrow ? 'tk-layout--narrow' : ''} ${L.even ? 'tk-layout--split-even' : ''} ${L.stretch ? 'tk-layout--stretch' : ''} ${L.asideSticky ? 'tk-layout--aside-sticky' : ''}`} data-layout=${L.type}>
+  return html`<div class=${`tk-layout tk-layout--${L.type || 'stack'} ${L.narrow ? 'tk-layout--narrow' : ''} ${L.even ? 'tk-layout--split-even' : ''} ${L.stretch ? 'tk-layout--stretch' : ''} ${L.asideSticky ? 'tk-layout--aside-sticky' : ''}`} data-layout=${L.type} ref=${rootRef} style=${md ? 'scroll-margin-top:80px' : null}>
     ${region('header', reg.header)}${body}${region('footer', reg.footer)}${region('bottom', reg.bottom)}
   </div>`;
 }

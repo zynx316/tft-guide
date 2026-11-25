@@ -59,7 +59,7 @@ Zusätzlich zu Modulen, Features, Varianten, Versionen, Historie und QA (siehe K
 | **Richtungen** | `directions[]: { id (kompakt/visuell/fokus), name, claim, description, principles[], shell, theme }` |
 | **Modul** | `+ area, homeFeatureId, directionId, assumptionStatus, assumptionNote` |
 | **Feature** | `+ tier (1–3), acceptance[], flows[], interactions[].to (Navigation), seedHash` |
-| **Variante** | `+ direction` (Zuordnung zu einer Richtung = Version im Launcher), `layout.stretch`, `layout.asideSticky` |
+| **Variante** | `+ direction` (Zuordnung zu einer Richtung = Version im Launcher), `layout.stretch`, `layout.asideSticky`, `layout.masterDetail` (+ `backLabel`; mobil Liste → Detail über `ctx.ui.selectedId`) |
 | **Entscheidung v2** | `level (app/pattern/module/feature/component), kind, question, options[{id,label,description,ref}], chosen, recommendation{optionId,reasons,by}, reversibility, status (open/decided/parked/superseded), revisitAt/If, rounds, supersedes` |
 | **Prozess** | `rounds[]` (Agenda, Zeitbox, Ergebnisse), `pins[]` (Anmerkungen), `scores{feature:{variant:{kriterium:1–5}}}`, `feedback[]` |
 | **Welt** | nur `worldOverrides` (bewusste Abweichungen); die Welt selbst kommt immer aus `seed/world` |
