@@ -36,7 +36,7 @@ export const pinField = {
   name: 'PIN-Feld',
   category: 'Querschnitt',
   description: 'Ziffernblock für die App-Sperre: PIN eingeben mit Punkten, Fehlversuchen (nach drei Versuchen Wartezeit), Biometrie-Simulation und „PIN vergessen“. Modus „Festlegen“ fragt die neue PIN zweimal. Demo-PIN ist 1234.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'mode', label: 'Modus', type: 'select', options: ['unlock', 'set'], default: 'unlock' },
     { name: 'length', label: 'Stellen', type: 'number', default: 4 },

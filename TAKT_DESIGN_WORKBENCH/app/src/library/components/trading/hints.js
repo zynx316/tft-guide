@@ -35,7 +35,7 @@ export const trdHints = {
   name: 'Hinweise Trading',
   category: 'Trading',
   description: 'Priorisierte, sachliche Hinweise: Kursalarm nah an der Marke, simulierte Orders offen, nächste Sparplan-Abbuchung mit Deckungs-Check, Abweichung vom Zielwert. Antippen führt zum passenden Bereich. Ohne Handlungsempfehlungen.',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Wichtig' },
     { name: 'limit', label: 'Max. Hinweise', type: 'number', default: 4 },
@@ -45,7 +45,8 @@ export const trdHints = {
   events: ['hint.alert', 'hint.order', 'hint.plan', 'hint.alloc'],
   states: ['empty'],
   css: `${TRD_CSS}
-  .tk-trd-hn { display:flex; align-items:center; gap:12px; padding:10px 4px; min-height:56px; width:100%; background:none; border:0; color:inherit; font:inherit; text-align:left; cursor:pointer; border-radius:var(--tk-radius-md); } .tk-trd-hn:hover { background:var(--tk-c-surface2); }`,
+  .tk-trd-hn { display:flex; align-items:center; gap:12px; padding:10px 4px; min-height:56px; width:100%; background:none; border:0; color:inherit; font:inherit; text-align:left; cursor:pointer; border-radius:var(--tk-radius-md); } .tk-trd-hn:hover { background:var(--tk-c-surface2); }
+  [data-tk-large-text] .tk-trd-hn > .tk-trd-ico { display:none; }`,
   example: { data: ex('alerts', 'instruments', 'positions', 'watchlist', 'orders', 'plans', 'accounts', 'cash', 'targets') },
   render: function TrdHints({ props, data, ctx }) {
     const list = buildHints(data, ctx, props.tolerance).slice(0, props.limit);

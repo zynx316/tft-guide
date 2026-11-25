@@ -9,7 +9,7 @@ export const dayStrip = {
   name: 'Tagesleiste',
   category: 'Ernährung',
   description: 'Sieben Tage als Streifen mit Vor/Zurück. Ein Tap wählt den Tag für alle Ernährungs-Blöcke der Seite (ctx.ui.day). Die Füllung zeigt die Kalorien ohne Wertung; nicht erfasste Tage bleiben leer.',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'quietEmpty', label: 'Im Erststart (noch nichts erfasst) nichts anzeigen', type: 'boolean', default: false },
     { name: 'days', label: 'Anzahl Tage', type: 'number', default: 7 },
@@ -30,7 +30,8 @@ export const dayStrip = {
   .tk-ds__wd { font-size:var(--tk-nfs-xs); text-transform:uppercase; letter-spacing:var(--tk-ls-wide); font-weight:var(--tk-fw-semibold); } .tk-ds__n { font-size:var(--tk-nfs-lg); font-weight:var(--tk-fw-semibold); color:var(--tk-c-text); font-variant-numeric:tabular-nums; } .tk-ds__day[aria-pressed="true"] .tk-ds__n { color:var(--tk-c-accent); }
   .tk-ds__fill { width:70%; height:4px; border-radius:2px; background:var(--tk-c-surface3); overflow:hidden; } .tk-ds__fill i { display:block; height:100%; background:var(--tk-c-text-subtle); } .tk-ds__day[aria-pressed="true"] .tk-ds__fill i { background:var(--tk-c-accent); }
   .tk-ds__today { font-size:10px; color:var(--tk-c-text-muted); line-height:1; min-height:10px; }
-  .bp-mobile .tk-ds > .tk-btn { display:none; }`,
+  .bp-mobile .tk-ds > .tk-btn { display:none; }
+  [data-tk-large-text] .tk-ds__days { grid-auto-flow:row; grid-auto-columns:auto; grid-template-columns:repeat(auto-fit, minmax(2.6em, 1fr)); row-gap:6px; } [data-tk-large-text] .tk-ds__wd { letter-spacing:0; }`,
   example: { data: { history: [-6, -5, -4, -3, -2, -1, 0].map((n, i) => ({ date: `2026-11-${24 + n}`, kcal: [2444, 0, 2466, 2089, 2701, 2273, 1490][i], logged: i !== 1 })), goals: { kcal: 2400 } } },
   render: function DayStrip({ props, data, ctx }) {
     const hist = arr(data.history), today = todayIso(ctx), sel = viewDay(ctx), goal = obj(data.goals).kcal || 2400;

@@ -26,7 +26,7 @@ export const trashList = {
   name: 'Papierkorb',
   category: 'Querschnitt',
   description: 'Alles Gelöschte an einem Ort: wiederherstellen, einzeln endgültig löschen oder den Papierkorb leeren. Zeigt die Restzeit (30 Tage) und warnt, wenn etwas bald verschwindet. Aufgaben und Termine kehren in die Datenwelt zurück.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'retention', label: 'Aufbewahrung (Tage)', type: 'number', default: 30 },
     { name: 'groupBy', label: 'Gruppieren nach', type: 'select', options: ['age', 'module'], default: 'age' },

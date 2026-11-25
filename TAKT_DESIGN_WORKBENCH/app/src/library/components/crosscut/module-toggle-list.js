@@ -42,7 +42,7 @@ export const moduleToggleList = {
   name: 'Module & Navigation',
   category: 'Querschnitt',
   description: 'Alle Module auf einen Blick: ein- und ausschalten, bis zu vier Favoriten für die Navigationsleiste wählen und ordnen. Die Vorschau zeigt die Leiste sofort. Darstellung „slots“: vier Plätze der Leiste, je Platz ein Modul über „Ändern“ wählen (Tausch möglich), Module ein-/ausschalten erst auf Wunsch. Änderungen landen in den gemeinsamen Einstellungen (Favoriten, aktive Module).',
-  version: '1.4',
+  version: '1.5',
   props: [
     { name: 'style', label: 'Darstellung', type: 'select', options: ['list', 'tiles', 'slots'], default: 'list' },
     { name: 'maxFavorites', label: 'Höchstens Favoriten', type: 'number', default: 4 },

@@ -305,7 +305,10 @@ h1, h2, h3, h4, p { margin: 0; }
 /* Badges: bei großer Schrift Höhe frei, nur umbrechen, wenn länger als die ganze Zeile */
 [data-tk-large-text] .tk-badge { height: auto; min-height: 22px; padding-top: 2px; padding-bottom: 2px; line-height: 1.25; white-space: normal; flex-shrink: 0; max-width: 100%; }
 /* Reiter: bei großer Schrift umbrechen statt versteckt seitlich wischen („Vorlagen“ → „Vo“) */
-[data-tk-large-text] .tk-tabs { flex-wrap: wrap; overflow-x: visible; }
+[data-tk-large-text] .tk-tabs { flex-wrap: wrap; overflow-x: visible; column-gap: 0; }
+/* umbrechende Reiter: Grundlinie unter jeder Zeile, nicht nur unter der letzten */
+[data-tk-large-text] .tk-tabs button { border-bottom-color: var(--tk-c-border); }
+[data-tk-large-text] .tk-tabs button[aria-selected="true"] { border-bottom-color: var(--tk-c-accent); }
 /* Große Schrift: abgeschnittene Texte (.tk-truncate) und Kartentitel brechen um statt „Einkauf …“ (QA: Schrift 200 % bei 390 px) */
 [data-tk-large-text] { hyphens: auto; -webkit-hyphens: auto; hyphenate-limit-chars: 8 2 2; } /* lange Wörter mit Trennstrich statt hartem Umbruch (lang="de"); Wörter unter 8 Zeichen bleiben ganz („Sparen“, „Details“) */
 [data-tk-large-text] .tk-truncate, [data-tk-large-text] .tk-card__title { white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: break-word; }

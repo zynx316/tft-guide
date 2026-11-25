@@ -13,7 +13,7 @@ export const trdAlerts = {
   name: 'Kursalarme',
   category: 'Trading',
   description: 'Kursalarme je Wertpapier mit Richtung und Kursmarke: aktive und ausgelöste Alarme, Abstand zum aktuellen Kurs, pausieren, löschen mit Rückgängig. Als Liste, als Karten mit Abstandsbalken oder kompakt mit Schnell-Anlage.',
-  version: '1.3',
+  version: '1.4',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Kursalarme' },
     { name: 'style', label: 'Darstellung', type: 'select', options: ['list', 'cards', 'quick'], default: 'list' },
@@ -32,7 +32,7 @@ export const trdAlerts = {
   .tk-trd-al__cards { display:grid; grid-template-columns:repeat(auto-fill, minmax(min(100%, calc(250px * var(--tk-text-scale, 1))), 1fr)); gap:var(--tk-space-3); }
   .tk-trd-al__card { border:1px solid var(--tk-c-border); border-radius:var(--tk-radius-lg); background:var(--tk-c-surface2); padding:var(--tk-space-4); display:flex; flex-direction:column; gap:10px; min-width:0; }
   .tk-trd-al__undo { display:flex; align-items:center; gap:8px; justify-content:space-between; padding:8px 12px; border-radius:var(--tk-radius-md); background:var(--tk-c-surface2); font-size:var(--tk-fs-sm); }
-  [data-tk-large-text] .tk-trd-al__row { flex-wrap:wrap; row-gap:4px; } [data-tk-large-text] .tk-trd-al__main { flex:1 1 100%; align-items:flex-start; } [data-tk-large-text] .tk-trd-al__main > .tk-trd-ico { display:none; } [data-tk-large-text] .tk-trd-al__undo { flex-wrap:wrap; }`,
+  [data-tk-large-text] .tk-trd-al__row { flex-wrap:wrap; row-gap:4px; } [data-tk-large-text] .tk-trd-al__main { flex:1 1 100%; align-items:flex-start; } [data-tk-large-text] .tk-trd-al__main > .tk-trd-ico { display:none; } [data-tk-large-text] .tk-trd-al__undo { flex-wrap:wrap; } [data-tk-large-text] .tk-trd-al__row > .tk-btn, [data-tk-large-text] .tk-trd-al__card .tk-btn { flex:0 1 auto; } [data-tk-large-text] .tk-trd-al__row > .tk-btn:not(.tk-btn--icon), [data-tk-large-text] .tk-trd-al__card .tk-btn:not(.tk-btn--icon) { padding-inline:8px; gap:4px; } [data-tk-large-text] .tk-trd-al__card > .tk-trd-row:last-child > span:last-child { display:flex; flex-wrap:wrap; gap:4px; }`,
   example: { data: ex('alerts', 'instruments', 'positions', 'watchlist') },
   render: function TrdAlerts({ props, data, setData, ctx }) {
     const [tab, setTab] = useState('aktiv'), [undo, setUndo] = useState(null), [form, setForm] = useState(false);
@@ -52,7 +52,14 @@ export const trdAlerts = {
     const dist = (a) => { const i = byId(data.instruments, a.securityId), s = alertInfo(a, i); return { i, s }; };
     const state = (a) => { const { i, s } = dist(a); return a.status === 'ausgelöst' ? html`erreicht ${fmtDate(a.triggeredAt, { style: 'short' })}, ${fmtTime(a.triggeredAt)} Uhr` : a.status === 'pausiert' ? 'pausiert' : html`Kurs <${Px} v=${s.price} /> · noch ${fmtPercent(Math.max(0, s.dist), { digits: 1 })}`; };
     const label = (a) => html`${name(a)} ${a.dir === 'above' ? 'über' : 'unter'} <${Px} v=${a.price} />`;
-    const acts = (a) => (a.status === 'ausgelöst' ? html`<${IconButton} icon="trash-2" label=${`Alarm ${name(a)} löschen`} onClick=${() => del(a)} />` : html`<${IconButton} icon=${a.status === 'aktiv' ? 'pause' : 'play'} label=${a.status === 'aktiv' ? `Alarm ${name(a)} pausieren` : `Alarm ${name(a)} fortsetzen`} onClick=${() => toggle(a)} /><${IconButton} icon="trash-2" label=${`Alarm ${name(a)} löschen`} onClick=${() => del(a)} />`);
+    const acts = (a) => {
+      const big = !!ctx.largeText && (ctx.blockWidth || ctx.width || 390) >= 170 * (ctx.textScale || 1), lbl = (v) => `Alarm ${name(a)} ${v}`;
+      const btn = (icon, label, text, fn) => (big ? html`<${Button} size="sm" variant="ghost" icon=${icon} aria-label=${label} title=${label} onClick=${fn}>${text}<//>` : html`<${IconButton} icon=${icon} label=${label} onClick=${fn} />`);
+      const del_ = btn('trash-2', lbl('löschen'), 'Löschen', () => del(a));
+      if (a.status === 'ausgelöst') return del_;
+      const pause = a.status === 'aktiv';
+      return html`${btn(pause ? 'pause' : 'play', lbl(pause ? 'pausieren' : 'fortsetzen'), pause ? 'Pausieren' : 'Fortsetzen', () => toggle(a))}${del_}`;
+    };
     const row = (a) => { const { s } = dist(a); return html`<div class="tk-trd-al__row" data-off=${String(a.status === 'pausiert')}><button type="button" class="tk-trd-al__main" onClick=${() => openSecurity(ctx, a.securityId, 'alert.open')} aria-label=${`${name(a)} öffnen`}>
       <${Tile} icon=${a.status === 'ausgelöst' ? 'check-circle-2' : 'bell'} tone=${a.status === 'ausgelöst' ? 'success' : s.near ? 'warning' : 'accent'} size=${34} /><span class="tk-trd-grow"><span class="tk-trd-wrap" style="display:block">${label(a)}</span><span class="tk-trd-sub">${state(a)}</span></span></button>${s.near && a.status === 'aktiv' && html`<span class="tk-trd-pill tk-trd-pill--warning">nah</span>`}${acts(a)}</div>`; };
     const card = (a) => { const { s } = dist(a), fill = a.status === 'ausgelöst' ? 1 : Math.max(0.04, 1 - Math.min(1, Math.max(0, s.dist) / 0.15)); return html`<div class="tk-trd-al__card"><div class="tk-trd-row"><${Tile} icon=${a.status === 'ausgelöst' ? 'check-circle-2' : 'bell'} tone=${a.status === 'ausgelöst' ? 'success' : s.near ? 'warning' : 'accent'} size=${34} /><span class="tk-trd-grow"><span class="tk-trd-wrap" style="display:block">${label(a)}</span><span class="tk-trd-sub">${state(a)}</span></span></div>

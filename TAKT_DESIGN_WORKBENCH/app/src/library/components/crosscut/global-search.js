@@ -15,7 +15,7 @@ export const globalSearch = {
   name: 'Globale Suche',
   category: 'Querschnitt',
   description: 'Eine Suche über alle Module: Aufgaben, Termine, Buchungen, Konten, Sparpläne, Depot, Rezepte und Module, dazu Befehle wie „Neue Aufgabe“. Drei Darstellungen: gruppierte Liste, Karten mit Vorschlägen und Befehlspalette mit Tastatur.',
-  version: '1.2',
+  version: '1.3',
   props: [
     { name: 'mode', label: 'Darstellung', type: 'select', options: ['list', 'cards', 'palette'], default: 'list' },
     { name: 'placeholder', label: 'Platzhalter', type: 'text', default: 'Suchen oder Befehl eingeben' },

@@ -57,7 +57,7 @@ export const onboardingSteps = {
   name: 'Onboarding',
   category: 'Querschnitt',
   description: 'Erststart in sechs kurzen Schritten: Willkommen, Module wählen (mit Vorlagen), Favoriten für die Navigation, Theme, Datenschutz und Zusammenfassung. Als Schritt-für-Schritt-Ablauf oder als eine Seite. Am Ende geht es zu „Start“.',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'flow', label: 'Ablauf', type: 'select', options: ['steps', 'single'], default: 'steps' },
     { name: 'startStep', label: 'Startschritt (Vorschau, 0–5)', type: 'number', default: 0 },

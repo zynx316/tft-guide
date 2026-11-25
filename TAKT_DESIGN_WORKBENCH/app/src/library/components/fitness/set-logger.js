@@ -46,7 +46,7 @@ export const setLogger = {
   name: 'Satz-Logger',
   category: 'Fitness',
   description: 'Alle Übungen der Einheit mit Sätzen: Vorgabe aus dem letzten Training, „Vorher“-Werte, kg- und Wiederholungs-Stepper (Dezimalkomma), 1-Tap-Haken, Übung tauschen oder auslassen, Bestwert-Hinweis. Modus „rows“ (dicht) oder „cards“ (Karte je Übung mit Fortschrittspunkten).',
-  version: '1.3',
+  version: '1.4',
   props: [
     { name: 'quietEmpty', label: 'Ohne Einheit nichts anzeigen (Erststart)', type: 'boolean', default: false },
     { name: 'mode', label: 'Darstellung', type: 'select', options: ['rows', 'cards'], default: 'rows' },
@@ -81,6 +81,10 @@ export const setLogger = {
   .tk-sl-row .tk-fit-step__u { display:none; }
   [data-tk-large-text]:not(.bp-mobile) .tk-sl-cols { display:none; } [data-tk-large-text]:not(.bp-mobile) .tk-sl-row { display:flex; flex-wrap:wrap; gap:6px 8px; align-items:center; } [data-tk-large-text]:not(.bp-mobile) .tk-sl-nr { flex:none; min-width:1.4em; } [data-tk-large-text]:not(.bp-mobile) .tk-sl-prev { flex:1 1 calc(100% - 1.4em - 44px - 18px); min-width:0; white-space:normal; }
   [data-tk-large-text]:not(.bp-mobile) .tk-sl-row .tk-fit-step { width:auto; min-width:0; flex:1 1 7em; order:2; } [data-tk-large-text]:not(.bp-mobile) .tk-sl-row .tk-fit-step__u { display:inline; } [data-tk-large-text]:not(.bp-mobile) .tk-sl-ok { flex:none; order:1; }
+  [data-tk-large-text] .tk-sl[data-narrow] .tk-sl-head { flex-wrap:wrap; row-gap:2px; } [data-tk-large-text] .tk-sl[data-narrow] .tk-sl-name { flex:1 1 100%; } [data-tk-large-text] .tk-sl[data-narrow] .tk-sl-head > .tk-grow { display:none; }
+  [data-tk-large-text] .tk-sl[data-narrow] .tk-sl-cols { display:none; } [data-tk-large-text] .tk-sl[data-narrow] .tk-sl-row { display:flex; flex-wrap:wrap; gap:6px 8px; align-items:center; padding-right:0; }
+  [data-tk-large-text] .tk-sl[data-narrow] .tk-sl-nr { flex:1 1 auto; text-align:left; order:1; } [data-tk-large-text] .tk-sl[data-narrow] .tk-sl-ok { flex:none; order:1; }
+  [data-tk-large-text] .tk-sl[data-narrow] .tk-sl-row .tk-fit-step { flex:1 1 100%; width:100%; order:2; } [data-tk-large-text] .tk-sl[data-narrow] .tk-sl-row .tk-fit-step__u { display:inline; }
   .tk-sl-head .tk-btn { flex:none; } .bp-mobile .tk-sl-head .tk-btn--icon { width:40px; height:40px; }`,
   example: { data: { session: { id: 's', dayId: 'upperA', title: 'Oberkörper A', status: 'running', exercises: [
     { id: 'x1', exerciseId: 'bankdruecken', name: 'Bankdrücken', muscle: 'Brust', equipment: 'Langhantel', unit: 'kg', step: 2.5, rest: 120, repLo: 8, repHi: 10, hint: 'Alle Sätze bei 10 Wdh. – heute 62,5 kg × 8.', best: 80, sets: [
@@ -93,7 +97,8 @@ export const setLogger = {
     if ((!s || !(s.exercises || []).length) && props.quietEmpty) return null;
     if (!s || !(s.exercises || []).length) return html`<${Card} title="Übungen" icon="dumbbell"><${EmptyState} icon="dumbbell" title="Keine Übungen" text="Wähle einen Trainingstag im Plan oder füge eine Übung hinzu." /><//>`;
     const live = liveExercises(s); const cur = live.find((e) => e.sets.some((x) => !x.done));
-    return html`<div class="tk-sl" data-qa="set-logger">${s.exercises.map((ex) => html`<${ExerciseBlock} key=${ex.id} ex=${ex} cur=${!ops.locked && cur && cur.id === ex.id} ops=${ops} props=${props} />`)}</div>`;
+    const narrow = !!ctx.largeText && (ctx.blockWidth || ctx.width || 390) < 150 * (ctx.textScale || 1); // sehr schmal bei großer Schrift (320 px, 200 %): Sätze in Zeilen umbrechen
+    return html`<div class="tk-sl" data-qa="set-logger" data-narrow=${narrow ? 'true' : undefined}>${s.exercises.map((ex) => html`<${ExerciseBlock} key=${ex.id} ex=${ex} cur=${!ops.locked && cur && cur.id === ex.id} ops=${ops} props=${props} />`)}</div>`;
   },
 };
 export default [setLogger];

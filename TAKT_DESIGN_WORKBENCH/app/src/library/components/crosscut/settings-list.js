@@ -44,7 +44,7 @@ export const settingsList = {
   name: 'Einstellungs-Liste',
   category: 'Querschnitt',
   description: 'Gruppierte Einstellungen: Zeilen zum Öffnen, Schalter, Auswahl, Stepper, Info, Status und Aktionen. Werte mit `pref` landen in den gemeinsamen Einstellungen (wirken in allen Screens), Stil „Kacheln“ zeigt die Gruppen als Einstiegskarten.',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'style', label: 'Darstellung', type: 'select', options: ['inset', 'tiles'], default: 'inset' },
     { name: 'searchable', label: 'Suchfeld', type: 'boolean', default: false },

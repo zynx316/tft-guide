@@ -29,7 +29,7 @@ export const exportWizard = {
   name: 'Export-Assistent',
   category: 'Querschnitt',
   description: 'Daten als Datei mitnehmen: Umfang (alles oder einzelne Module), Format (JSON, CSV, ICS, Markdown) und Ziel (speichern, teilen, verschlüsselt) mit geschätzter Größe, Fortschritt und Ergebnis. Der Export ist simuliert.',
-  version: '1.1',
+  version: '1.2',
   props: [{ name: 'title', label: 'Titel', type: 'text', default: 'Daten exportieren' }],
   data: [],
   events: ['export.scope', 'export.format', 'export.target', 'export.start', 'export.done', 'export.share', 'export.again'],

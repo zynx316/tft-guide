@@ -111,7 +111,7 @@ export const calendarWeek = {
     const sel = selDate(ctx);
     const view = props.view && props.view !== 'auto' ? props.view : props.respectView ? ctx.ui.view : null;
     const weekDays = props.showWeekend ? 7 : 5;
-    const bs = bigTextScale(), big = bs > 1; // große Schrift: weniger Tagesspalten, damit Termintexte lesbar bleiben
+    const bs = bigTextScale(ctx), big = bs > 1; // große Schrift: weniger Tagesspalten, damit Termintexte lesbar bleiben
     const bw = ctx.blockWidth || ctx.width || 390;
     const n0 = view === 'Tag' ? 1 : mobile ? Math.min(Number(props.mobileDays) || 3, 7) : weekDays;
     const n = big && n0 > 1 ? Math.max(1, Math.min(n0, Math.floor((bw - 16 - 20 * bs) / (100 * bs)))) : n0;

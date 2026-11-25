@@ -47,7 +47,7 @@ export const syncConflict = {
   name: 'Sync-Konflikt',
   category: 'Querschnitt',
   description: 'Zwei Geräte haben denselben Eintrag geändert: beide Stände nebeneinander, Unterschiede markiert, drei Auswahlmöglichkeiten (dieses Gerät, anderes Gerät, beide behalten). Nichts geht verloren, Rückgängig inklusive.',
-  version: '1.0',
+  version: '1.1',
   props: [{ name: 'state', label: 'Zustand', type: 'select', options: ['offen', 'gelöst'], default: 'offen' }],
   data: [],
   events: ['conflict.choose', 'conflict.resolve', 'conflict.undo', 'conflict.later'],
@@ -73,7 +73,7 @@ export const errorCard = {
   name: 'Fehlerkarte',
   category: 'Querschnitt',
   description: 'Fehler ohne Schuld und ohne Code: Ursache in einem Satz, ein klarer Ausweg und eine Alternative. Sechs Arten: Speichern, Laden, Speicher voll, Anmeldung abgelaufen, nicht gefunden, Dienst nicht erreichbar.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'kind', label: 'Art', type: 'select', options: Object.keys(ERRORS), default: 'save' },
     { name: 'showAlt', label: 'Alternative zeigen', type: 'boolean', default: true },

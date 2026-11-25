@@ -21,7 +21,7 @@ export const quietHours = {
   name: 'Ruhezeiten',
   category: 'Querschnitt',
   description: 'Ruhezeiten für Mitteilungen: Schalter, Von/Bis mit 24-Stunden-Band und die Ausnahme „Wichtiges durchlassen“. Gilt für alle Module.',
-  version: '1.0',
+  version: '1.1',
   props: [{ name: 'title', label: 'Titel', type: 'text', default: 'Ruhezeiten' }],
   data: [{ slot: 'prefs', label: 'Einstellungen', default: 'prefs', shape: 'Welt: prefs', required: false }],
   events: ['quiet.toggle', 'quiet.change', 'quiet.important'],

@@ -43,7 +43,7 @@ export const notificationList = {
   name: 'Mitteilungsliste',
   category: 'Querschnitt',
   description: 'Alle Mitteilungen der App an einem Ort: nach Zeit, Modul oder Dringlichkeit gruppiert, mit Erledigt, Schlummern und „Alle gelesen“. Aufgaben und Termine werden live aus der Datenwelt abgeleitet, Ruhezeiten erscheinen als Hinweis.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Mitteilungen' },
     { name: 'groupBy', label: 'Gruppieren nach', type: 'select', options: ['time', 'module', 'priority'], default: 'time' },

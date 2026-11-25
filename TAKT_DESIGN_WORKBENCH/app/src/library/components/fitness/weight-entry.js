@@ -11,7 +11,7 @@ export const weightEntry = {
   name: 'Gewicht erfassen',
   category: 'Fitness',
   description: 'Gewicht in 0,1-kg-Schritten erfassen (Vorbelegung: letzter Wert), speichern mit einem Tap. Bei einem Sprung über 3 kg folgt eine freundliche Rückfrage. Ein vorhandener Wert des Tages wird ersetzt.',
-  version: '1.3',
+  version: '1.4',
   props: [
     { name: 'quietEmpty', label: 'Ohne Verlauf nichts anzeigen (Erststart)', type: 'boolean', default: false },
     { name: 'title', label: 'Titel', type: 'text', default: 'Heute wiegen' },
@@ -23,6 +23,7 @@ export const weightEntry = {
   states: ['empty'],
   css: `
   .tk-we { display:flex; flex-direction:column; gap:var(--tk-space-3); } .tk-we--inline { flex-direction:row; align-items:center; flex-wrap:wrap; } .tk-we--inline > .tk-grow { min-width:160px; }
+  [data-tk-large-text] .tk-we[data-narrow] .tk-fit-step--lg input { font-size:var(--tk-fs-2xl); width:auto; flex:1 1 0; min-width:0; } [data-tk-large-text] .tk-we[data-narrow] .tk-fit-step--lg button { width:40px; }
   .bp-mobile .tk-we .tk-btn--primary { min-height:48px; } .bp-mobile .tk-we--inline .tk-btn--primary { flex:1 1 140px; }`,
   example: { data: { log: [{ date: '2026-11-22', kg: 78.2 }, { date: '2026-11-23', kg: 78.7 }] } },
   render: function WeightEntry({ props, data, setData, ctx }) {
@@ -35,7 +36,8 @@ export const weightEntry = {
         footer: (close) => html`<${Button} onClick=${close}>Korrigieren<//><${Button} variant="primary" onClick=${() => { ctx.emit('body.confirm', { kg: value }); commit(); close(); }}>Passt so<//>` });
       return commit();
     };
-    const body = html`<div class=${`tk-we tk-we--${props.layout}`}><div class="tk-grow"><div class="tk-muted" style="font-size:var(--tk-fs-sm);margin-bottom:6px">${dayShort(today)}${has ? ` · schon ${hideVal(ctx, fmtKg(last.kg))} eingetragen` : ' · am besten morgens, vor dem Frühstück'}</div>
+    const narrow = !!ctx.largeText && (ctx.blockWidth || ctx.width || 390) < 150 * (ctx.textScale || 1); // 320 px bei 200 %
+    const body = html`<div class=${`tk-we tk-we--${props.layout}`} data-narrow=${narrow ? 'true' : undefined}><div class="tk-grow"><div class="tk-muted" style="font-size:var(--tk-fs-sm);margin-bottom:6px">${dayShort(today)}${has ? ` · schon ${hideVal(ctx, fmtKg(last.kg))} eingetragen` : ' · am besten morgens, vor dem Frühstück'}</div>
       <${Stepper} label="Gewicht" value=${value} step=${0.1} min=${30} max=${250} decimals=${1} unit="kg" size="lg" onChange=${setKg} /></div>
       <${Button} variant="primary" icon="check" onClick=${save}>${has ? 'Aktualisieren' : 'Speichern'}<//>${props.openEvent && html`<${Button} icon="trending-down" onClick=${() => ctx.emit(props.openEvent)}>Verlauf<//>`}</div>`;
     return props.layout === 'inline' ? body : html`<${Card} title=${props.title} icon="scale">${body}<//>`;

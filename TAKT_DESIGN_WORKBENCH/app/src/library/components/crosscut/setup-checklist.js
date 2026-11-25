@@ -17,7 +17,7 @@ export const setupChecklist = {
   name: 'Empfehlungen',
   category: 'Querschnitt',
   description: 'Erste Schritte und Empfehlungen als kurze Liste mit Fortschritt („2 von 5 erledigt“). Jeder Schritt hat eine Aktion, die direkt zur passenden Einstellung führt.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'title', label: 'Titel', type: 'text', default: 'Empfohlen für dich' },
     { name: 'hideDone', label: 'Erledigte ausblenden', type: 'boolean', default: false },

@@ -19,7 +19,7 @@ export const XC_CSS = `
   .tk-xc-main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
   .tk-xc-t { font-weight: var(--tk-fw-medium); color: var(--tk-c-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
   .tk-xc-s { font-size: var(--tk-fs-sm); color: var(--tk-c-text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
-  [data-tk-large-text] .tk-xc-t, [data-tk-large-text] .tk-xc-s { white-space:normal; overflow:visible; text-overflow:clip; overflow-wrap:anywhere; }
+  [data-tk-large-text] .tk-xc-t, [data-tk-large-text] .tk-xc-s { white-space:normal; overflow:visible; text-overflow:clip; overflow-wrap:break-word; }
   .tk-xc-end { flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 2px; font-size: var(--tk-fs-sm); color: var(--tk-c-text-subtle); font-variant-numeric: tabular-nums; }
   .tk-xc-chips { display: flex; gap: var(--tk-space-2); overflow-x: auto; scrollbar-width: none; padding: 2px 1px; margin: 0 -1px; }
   .tk-xc-chips::-webkit-scrollbar { display: none; }

@@ -67,17 +67,17 @@
       Annahmen 3/5/7 % bleiben sichtbar) – Entscheidung des Nutzers
 - [ ] App-Rahmen bei großer Schrift: Kopfzeile und Reiterbeschriftungen der Leiste („Einstellun…“) bleiben gekürzt (feste Höhe);
       prüfen, ob Reiter bei 200 % nur Symbole zeigen sollen
-- [ ] Große Schrift, Feinschliff (alle Varianten sind bei 200 % ohne Befund der Sonde; Rest ist Optik): Querschnitt-Komponenten
-      `_xc-css.js` von `overflow-wrap:anywhere` auf `break-word` (Versionssprung ~20 Komponenten); Depot-Positionen und
-      „Auch wichtig“ mit Icon-Kachel; Kursalarm-Aktionen nur als Symbol; Kalender-Woche kürzt Termine in schmalen Überlappungsspalten (`data-clip-ok`, Volltext per Tippen); Wochenleiste nutrition.home/B eng;
-      Notizkarten kürzen die Vorschau (line-clamp); `calendar/_cal.js › bigTextScale()` auf `ctx.textScale` umstellen;
-      umbrechende Reiter (`.tk-tabs`) haben nur unter der letzten Zeile eine Grundlinie (optional: Linie je Zeile); Radar-Kachel
-      (weather.home/B): Datums-Chip verdeckt bei 200 % viel von der kleinen Karte
+- [ ] Große Schrift, Feinschliff (Rest ist Optik; erledigt am 25.11.2026: `_xc-css` auf `break-word`, Icon-Kacheln in Depot-Positionen/
+      „Auch wichtig“ ausgeblendet, Kursalarm-Aktionen mit Text, Wochenleiste nutrition.home/B in zwei Zeilen, `bigTextScale(ctx)`,
+      Reiter-Grundlinie je Zeile, Radar-Chip nur Uhrzeit): offen sind Kalender-Woche (kürzt Termine in schmalen Überlappungsspalten,
+      `data-clip-ok`, Volltext per Tippen) und Notizkarten (kürzen die Vorschau, line-clamp)
 - [ ] Kleinigkeiten beim allerersten Start: `GET /api/state` antwortet 404, solange es noch keine `data/workbench.json` gibt
       (harmlose rote Konsolenmeldung im Browser; Client erwartet heute genau das); `work-order --round latest` ohne Runde endet
       mit Exit 1 (Hinweis steht in `/takt-work-order`)
-- [ ] Viewport 320 px bei 200 % (außerhalb der Zielbreiten 360/390): Fitness `records-list`, `set-logger`, `weight-entry`,
-      `focus-set` haben noch enge Stellen
+- [x] Viewport 320 px bei 200 %: Fitness `records-list`, `set-logger`, `weight-entry`, `focus-set` ohne Befund (25.11.2026). Rest bei
+      320 px/200 % außerhalb der Zielbreiten (Sonde `clipped`/`overflow-x`): trading `trd-depot-hero` (Seite 330–353 px breit),
+      `trd-watchlist`, `weekly-recap` (fitness.goals/C), weather `wx-now`/`wx-stats`/`wx-places`, `execution-calendar`, `permission-card`,
+      `note-editor`, `calendar-month` (Rahmen)
 - [ ] Launcher: Tageszeit-Stationen (07:30/12:30/18:30) für kontextabhängige Startseiten
 - [ ] Bestehende Stände: nach jedem Pull **Daten & Backup › Seed abgleichen …** (neue Varianten, Bindungen, Module kommen sonst
       nicht in einen gespeicherten Stand)

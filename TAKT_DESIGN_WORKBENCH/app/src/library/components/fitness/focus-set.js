@@ -13,7 +13,7 @@ export const focusSet = {
   name: 'Fokus-Satz',
   category: 'Fitness',
   description: 'Ein Satz im Fokus: große kg- und Wiederholungs-Stepper, ein großer „Satz geschafft“-Knopf, Pause als Ring, Vor/Zurück zwischen Übungen. Für Training mit nassen Fingern.',
-  version: '1.2',
+  version: '1.3',
   props: [{ name: 'showUpcoming', label: 'Folgende Übungen zeigen', type: 'boolean', default: true }, { name: 'quietEmpty', label: 'Ohne Einheit nichts anzeigen (Erststart)', type: 'boolean', default: false }],
   data: [
     { slot: 'session', label: 'Live-Einheit', default: 'session', shape: 'Live-Einheit (siehe set-logger)', required: true },
@@ -25,6 +25,7 @@ export const focusSet = {
   css: `
   .tk-fs { display:flex; flex-direction:column; gap:var(--tk-space-4); align-items:stretch; }
   [data-tk-large-text] .tk-fs > .tk-row:first-child { flex-wrap:wrap; row-gap:4px; }
+  [data-tk-large-text] .tk-fs[data-narrow] .tk-fs__name { font-size:var(--tk-fs-xl); } [data-tk-large-text] .tk-fs[data-narrow] .tk-fs__ok { font-size:var(--tk-fs-lg); min-height:60px; } [data-tk-large-text] .tk-fs[data-narrow] .tk-fs__nav .tk-btn { flex:1 1 100%; }
   .tk-fs__name { font-size:var(--tk-fs-2xl); font-weight:var(--tk-fw-bold); letter-spacing:var(--tk-ls-tight); line-height:1.15; }
   .tk-fs__ctl { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:var(--tk-space-3); } .tk-fs__ctl > div { display:flex; flex-direction:column; gap:6px; align-items:center; min-width:0; }
   .tk-fs__ctl .tk-fit-step { width:100%; } .tk-fs__ctl .tk-fit-step input { flex:1 1 0; width:auto; } .tk-fs__ctl .tk-label { text-align:center; }
@@ -53,7 +54,8 @@ export const focusSet = {
     const st = ex.sets[Math.min(setIdx, ex.sets.length - 1)]; const kgUnit = ex.unit === 'kg'; const prev = prevText(ex);
     const go = (d) => { const t = live[Math.min(live.length - 1, Math.max(0, exIdx + d))]; setSel(t.id); ctx.emit('exercise.focus', { id: t.exerciseId }); };
     const ok = () => { setSel(null); ops.toggle(ex, st); };
-    return html`<${Card}><div class="tk-fs">
+    const narrow = !!ctx.largeText && (ctx.blockWidth || ctx.width || 390) < 150 * (ctx.textScale || 1); // 320 px bei 200 %
+    return html`<${Card}><div class="tk-fs" data-narrow=${narrow ? 'true' : undefined}>
       <div class="tk-row" style="gap:8px"><${Badge}>Übung ${exIdx + 1} von ${live.length}<//><${MuscleDot} muscle=${ex.muscle} /><span class="tk-grow"></span>
         <${Button} variant="ghost" size="sm" icon="refresh-cw" aria-label="Übung ersetzen" onClick=${() => ops.swap(ex)} /><${Button} variant="ghost" size="sm" icon="x" aria-label="Übung auslassen" onClick=${() => { setSel(null); ops.skip(ex); }} /></div>
       <div><button type="button" class="tk-fit-link tk-fs__name" onClick=${() => ops.open(ex)}>${ex.name}</button>

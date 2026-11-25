@@ -41,7 +41,7 @@ export const captureField = {
   name: 'Erfassen-Feld',
   category: 'Querschnitt',
   description: 'Ein Eingabefeld für alles: „morgen 14 Uhr Zahnarzt“, „!Angebot Müller schicken“, „−12,50 Rewe“, „Milch kaufen“. TAKT zeigt vor dem Speichern, was erkannt wurde, und legt es in der Datenwelt an. Art lässt sich umstellen, Rückgängig inklusive.',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'mode', label: 'Darstellung', type: 'select', options: ['line', 'tiles', 'smart'], default: 'line' },
     { name: 'placeholder', label: 'Platzhalter', type: 'text', default: 'Was möchtest du festhalten?' },

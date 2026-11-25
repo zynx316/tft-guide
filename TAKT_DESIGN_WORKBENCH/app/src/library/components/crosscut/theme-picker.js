@@ -35,7 +35,7 @@ export const themePicker = {
   name: 'Theme-Auswahl',
   category: 'Querschnitt',
   description: 'Darstellung wählen: drei Themes mit echter Mini-Vorschau (Graphite, Horizon, Intensiv), Dichte, Schriftgröße mit Beispiel und reduzierte Bewegung. Themes ändern nur Farben, nie die Anordnung.',
-  version: '1.0',
+  version: '1.1',
   props: [
     { name: 'style', label: 'Darstellung', type: 'select', options: ['cards', 'list'], default: 'cards' },
     { name: 'showOptions', label: 'Dichte, Schrift, Bewegung', type: 'boolean', default: true },

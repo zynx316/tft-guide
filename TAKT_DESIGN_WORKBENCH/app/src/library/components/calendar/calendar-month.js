@@ -80,7 +80,7 @@ export const calendarMonth = {
     const pick = (d) => { ctx.setUi('selectedDate', dayKey(d)); ctx.emit('date.select', { date: dayKey(d) }); };
     const cols = props.weekNumbers && !mobile ? 8 : 7;
     // Große Schrift: sind die Tageszellen zu schmal für Termin-Chips (Zeit + Titel), zeigt das Raster Punkte und die Tagesliste darunter die Termine.
-    const bs = bigTextScale(), compact = !mobile && bs > 1 && ((ctx.blockWidth || ctx.width || 1000) - (cols === 8 ? 40 : 0)) / cols < 140 * bs;
+    const bs = bigTextScale(ctx), compact = !mobile && bs > 1 && ((ctx.blockWidth || ctx.width || 1000) - (cols === 8 ? 40 : 0)) / cols < 140 * bs;
     const showList = props.dayList === 'always' || (props.dayList === 'auto' && (!desktop || compact));
     const dayEvs = onDay(occs, sel).sort((a, b) => (b.allDay ? 1 : 0) - (a.allDay ? 1 : 0) || a._s - b._s);
     return html`<div class="tk-cm">

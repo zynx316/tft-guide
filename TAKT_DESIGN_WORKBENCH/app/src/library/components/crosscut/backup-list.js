@@ -29,7 +29,7 @@ export const backupList = {
   name: 'Sicherung & Speicher',
   category: 'Querschnitt',
   description: 'Speichernutzung je Modul als Balken mit Zahlen, die letzten automatischen Sicherungen mit „Wiederherstellen“, „Jetzt sichern“ mit Fortschritt und „Alle Daten löschen“ mit doppelter Bestätigung (Eingabe von LÖSCHEN).',
-  version: '1.1',
+  version: '1.2',
   props: [
     { name: 'showStorage', label: 'Speicheranzeige', type: 'boolean', default: true },
     { name: 'showDanger', label: '„Alle Daten löschen“', type: 'boolean', default: true },

@@ -42,13 +42,8 @@ export const withBigText = (list) => list.map((c) => {
   const scoped = ['1.5', '1.75', '2'].map((v) => `:root[style*="--tk-text-scale: ${v}"] .tk-block[data-component="${c.id}"] .tk-truncate`).join(',\n');
   return { ...c, css: `${c.css || ''}\n${scoped} { white-space:normal; text-overflow:clip; overflow-wrap:break-word; hyphens:auto; }` };
 });
-/** Große Schrift aktiv (Attribut am Root, ab 125 %)? Liefert den Faktor (≥ 1,25) oder 1. Nur im Browser; sonst 1. */
-export const bigTextScale = () => {
-  try {
-    if (typeof document === 'undefined' || !document.documentElement.hasAttribute('data-tk-large-text')) return 1;
-    return Math.max(1.25, parseFloat(document.documentElement.style.getPropertyValue('--tk-text-scale')) || 1.25);
-  } catch (e) { return 1; }
-};
+/** Große Schrift aktiv (ctx.largeText, ab 125 %)? Liefert den Faktor (≥ 1,25) aus ctx.textScale oder 1. */
+export const bigTextScale = (ctx) => (ctx && ctx.largeText ? Math.max(1.25, Number(ctx.textScale) || 1.25) : 1);
 /** Neue Termin-ID: deterministisch über ctx.newId (kein Zufall, keine Uhrzeit). */
 export const newEventId = (ctx) => (ctx && ctx.newId ? ctx.newId('ev') : 'ev-neu');
 export const monthStart = (d) => { const x = dayStart(d); x.setDate(1); return x; };
